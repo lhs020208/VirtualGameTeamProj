@@ -1,0 +1,44 @@
+# Unreal Engine generated folders
+/Binaries/
+/DerivedDataCache/
+/Intermediate/
+/Saved/
+
+# Generated plugin build output
+/Plugins/**/Binaries/
+/Plugins/**/Intermediate/
+
+# Visual Studio and Rider user/workspace data
+/.vs/
+/.idea/
+*.suo
+*.user
+*.userprefs
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+
+# Generated IDE project files
+*.sln
+*.slnx
+*.xcodeproj
+*.xcworkspace
+.vsconfig
+
+# Native compilation output
+*.obj
+*.o
+*.pch
+*.pdb
+*.dll
+*.lib
+*.exe
+*.app
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Keep source-controlled Unreal project assets and configuration:
+# Config/, Content/, Source/, Plugins/, Build/, and *.uproject
