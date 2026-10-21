@@ -1,4 +1,4 @@
-"""Task 15: reproducible correctness and instrumented-core performance suite.
+"""Tasks 15-21: reproducible correctness and instrumented-core performance suite.
 Requires built matching Unreal module for optional --unreal-editor validation.
 """
 import argparse
@@ -94,7 +94,7 @@ def analyze(matrices):
     return cases, convergence
 
 def markdown(report):
-    lines = ['# DEM task 15 validation report', '', f"Status: **{'PASS' if report['passed'] else 'FAIL'}**", '',
+    lines = ['# DEM baseline validation report', '', f"Status: **{'PASS' if report['passed'] else 'FAIL'}**", '',
              f"UTC: {report['metadata']['started_utc']}; repeats: {report['metadata']['repeats']}; core version: {report['metadata']['core_version']}.",
              f"Source SHA-256: `{report['metadata']['source_sha256']}`", '',
              '## Verification', '', f"- Unit suites: {len(report['unit_runs'])}; all passed: {all(x['passed'] for x in report['unit_runs'])}.",
@@ -125,7 +125,7 @@ def markdown(report):
               '- Mass and momentum are independent conservation checks only where applicable. Wall impulses/gravity make isolated momentum conservation inapplicable; wall rows leave it blank. Energy is checked only in undamped analytic contact cases.',
               '- Overlap is the maximum reported at solver force evaluations, not a continuous-time upper bound. Remaining untested dt/material/count combinations are not certified.',
               '- Timing depends on machine/background load and includes benchmark instrumentation. Short-window wall/physical ratios are diagnostics, not guaranteed full-experiment completion times.',
-              '- Existing unit/Unreal tests cover additional Hertz, friction, tracking, supply and output cases; the new stiffness/performance matrix is linear-contact only.',
+              '- Existing unit/Unreal tests cover additional Hertz, sliding/rolling friction, tracking, supply and output cases; the new stiffness/performance matrix is linear-contact only.',
               '- No calibration to physical powder measurements, no CFD, and no universal realtime guarantee.', '']
     return '\n'.join(lines)
 
@@ -142,7 +142,7 @@ def main():
     try:
         provenance=sources()
         version=(ROOT/'Physics/PowderCore/include/powder/core.hpp').read_text().split('Version = "')[1].split('"')[0]
-        meta={'schema':1,'suite':'DEM_validation_v1','started_utc':dt.datetime.now(dt.timezone.utc).isoformat(),'repeats':args.repeats,
+        meta={'schema':1,'suite':'DEM_validation_v7','started_utc':dt.datetime.now(dt.timezone.utc).isoformat(),'repeats':args.repeats,
               'core_version':version,'source_sha256':digest_files(provenance),'source_files':provenance,
               'platform':platform.platform(),'machine':platform.machine(),'processor':os.environ.get('PROCESSOR_IDENTIFIER',platform.processor()),
               'logical_cpus':os.cpu_count(),'python':sys.version,'configuration':'Release', 'timing_scope':'instrumented core, no engine rendering',
@@ -161,14 +161,15 @@ def main():
         unit=[];engine=[];extra=[];matrices=[];bench=[]
         for i in range(1,args.repeats+1):
             u=run([ctest,'--test-dir',args.build,'-C','Release','--output-on-failure','--output-junit',out/f'unit_{i}.xml'],out/f'unit_{i}.log')
-            tree=ET.parse(out/f'unit_{i}.xml').getroot();u['tests']=int(tree.attrib['tests']);u['passed']=u['exit_code']==0 and u['tests']>=13;unit.append(u)
+            tree=ET.parse(out/f'unit_{i}.xml').getroot();u['tests']=int(tree.attrib['tests']);u['passed']=u['exit_code']==0 and u['tests']>=19;unit.append(u)
             for script in ('cli_tests.py','motion_tests.py','contact_cli_tests.py'):
                 x=run([sys.executable,'-B',ROOT/'Physics/PowderCore/tests'/script,args.build/'Release/powder_run.exe'],out/f'{script}_{i}.log');extra.append(x)
             extra.append(run([sys.executable,'-B',ROOT/'Scripts/test_dem_results.py',args.build/'result_fixture'],out/f'results_parser_{i}.log'))
+            extra.append(run([sys.executable,'-B',ROOT/'Scripts/test_dem_mixing.py',args.build/'mixing_fixture'],out/f'mixing_parser_{i}.log'))
             if args.unreal_editor:
                 folder=out/f'engine_{i}'
-                e=run([args.unreal_editor,ROOT/'VirtualGameTeamProj.uproject','-unattended','-nullrhi','-nosound','-ExecCmds=Automation RunTests Powder.DEM.','-TestExit=Automation Test Queue Empty',f'-ReportExportPath={folder}',f'-abslog={out / f"engine_{i}_full.log"}'],out/f'engine_{i}.log')
-                report=json.loads((folder/'index.json').read_text(encoding='utf-8-sig'));e['succeeded']=report['succeeded'];e['failed']=report['failed'];e['warnings']=report['succeededWithWarnings'];e['passed']=e['exit_code']==0 and e['succeeded']>=5 and e['failed']==0 and e['warnings']==0;engine.append(e)
+                e=run([args.unreal_editor,ROOT/'VirtualGameTeamProj.uproject','-unattended','-nullrhi','-nosound','-ini:Engine:[ConsoleVariables]:HomeScreen.EnableHomeScreen=0','-ExecCmds=Automation RunTests Powder.DEM.','-TestExit=Automation Test Queue Empty',f'-ReportExportPath={folder}',f'-abslog={out / f"engine_{i}_full.log"}'],out/f'engine_{i}.log')
+                report=json.loads((folder/'index.json').read_text(encoding='utf-8-sig'));e['succeeded']=report['succeeded'];e['failed']=report['failed'];e['warnings']=report['succeededWithWarnings'];e['passed']=e['exit_code']==0 and e['succeeded']>=11 and e['failed']==0 and e['warnings']==0;engine.append(e)
             run_result=run([exe,ROOT/'Physics/PowderCore/fixtures/L_Main.boxes',out/f'matrix_{i}.csv'],out/f'matrix_{i}.log');bench.append(run_result)
             matrices.append(read_matrix(out/f'matrix_{i}.csv'))
             print(f'REPEAT {i} COMPLETE',flush=True)

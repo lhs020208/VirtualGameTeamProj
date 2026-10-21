@@ -1,0 +1,3 @@
+PASS prescribed wall poses, relative slip/rolling, reaction torque, work balance, zero-motion equivalence and atomic guards
+work_energy_error_J=3.9193e-05,1.96157e-05,9.81266e-06
+clump_wall_work_J=1.64995e-05

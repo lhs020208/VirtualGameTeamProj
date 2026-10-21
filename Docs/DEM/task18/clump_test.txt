@@ -1,0 +1,8 @@
+
+		
+		free_spin_energy_error=1.38778e-16 half_dt=1.38778e-16
+asymmetric_energy_error=5.52343e-10
+mixed_fixture_mass=0.606537 sphere_z=0.0211297 clump_z=0.02469
+clump PASS
+
+	

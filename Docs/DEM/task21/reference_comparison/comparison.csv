@@ -1,0 +1,2 @@
+step,time_s,a_status,b_status,a_uniformity,b_uniformity,b_minus_a
+0,0.0,valid,valid,0.0,1.0,1.0

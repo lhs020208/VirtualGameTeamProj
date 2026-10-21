@@ -1,0 +1,8 @@
+
+		
+		bound_energy_error=7.27439e-09 half_dt_error=3.63668e-09 separation=0.998977
+escape_energy_error=9.72432e-07 separation=1.01853 off_separation=1.00277
+wall_hold_z=0.499266 released_z=0.551695 box_z=0.499266
+contact adhesion PASS
+
+	

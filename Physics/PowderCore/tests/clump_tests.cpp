@@ -1,0 +1,30 @@
+#include "powder/clump.hpp"
+#include <cmath>
+#include <iostream>
+#include <stdexcept>
+using namespace powder;
+constexpr double pi=3.14159265358979323846;
+void check(bool b,const char* s){if(!b)throw std::runtime_error(s);}
+void near(double a,double b,double t,const char* s){check(std::abs(a-b)<t,s);}
+double length(Vec3 x){return std::hypot(x.x,x.y,x.z);}
+double spin_error(double dt){auto b=make_clump(1,0,{{{-.5,0,0},1},{{.5,0,0},1}},6/pi);b.angular_momentum_world={.1,.2,.3};double initial=clump_kinetic_energy(b),error=0;for(int i=0;i<int(std::llround(1/dt));++i){integrate_clump(b,{}, {},dt);error=std::max(error,std::abs(clump_kinetic_energy(b)-initial));auto p=clump_particles(b);near(length({p[0].position_m.x-p[1].position_m.x,p[0].position_m.y-p[1].position_m.y,p[0].position_m.z-p[1].position_m.z}),1,1e-12,"rigid member spacing");}near(b.angular_momentum_world.x,.1,1e-14,"free angular momentum conserved");return error;}
+int main(){try{
+ auto p=clump_properties({{{0,0,0},1},{{1,0,0},1}},6/pi);near(p.mass_kg,2,1e-12,"two spheres mass");near(p.centroid_m.x,.5,1e-12,"COM");near(p.inertia_body.v[0],.2,1e-12,"axial inertia");near(p.inertia_body.v[4],.7,1e-12,"transverse parallel-axis inertia");
+ double d=std::sqrt(.125);p=clump_properties({{{-d,-d,0},1},{{d,d,0},1}},6/pi);near(p.inertia_body.v[1],-.25,1e-12,"full offdiagonal tensor");bool rejected=false;try{clump_properties({{{0,0,0},1},{{.9,0,0},1}},6/pi);}catch(const std::invalid_argument&){rejected=true;}check(rejected,"overlap rejected rather than double counted");
+ auto b=make_clump(1,0,{{{-.5,0,0},1},{{.5,0,0},1}},6/pi);integrate_clump(b,{2,0,0},{0,0,.7},.001);near(b.velocity_m_s.x,.001,1e-12,"COM Newton law");near(clump_omega(b).z,.001,1e-10,"tensor torque acceleration");
+ auto e=spin_error(.002),fine=spin_error(.001);std::cout<<"free_spin_energy_error="<<e<<" half_dt="<<fine<<'\n';check(e<1e-7&&fine<std::max(e*.3,1e-12),"free rotation energy convergence");
+ auto asymmetric=make_clump(9,0,{{{0,0,0},1},{{1,0,0},1},{{0,1.2,0},1}},6/pi);asymmetric.angular_momentum_world={.3,.5,.7};double ae=clump_kinetic_energy(asymmetric),maxerr=0;for(int i=0;i<1000;++i){integrate_clump(asymmetric,{},{},.001);maxerr=std::max(maxerr,std::abs(clump_kinetic_energy(asymmetric)-ae));}check(maxerr<1e-7,"asymmetric full tensor rotation energy");std::cout<<"asymmetric_energy_error="<<maxerr<<'\n';
+ ClumpWorld w;MaterialContact m;m.law=ContactLaw::Linear;m.linear={10000,0,2500,0,0};w.pair_models={{{0,0},m}};w.wall_models={{0,m}};w.gravity_m_s2={};b=make_clump(1,0,{{{-.5,0,0},1},{{.5,0,0},1}},6/pi);w.bodies={b};auto before=serialize_clump_state(w);auto rep=w.step(1e-5);check(rep.pair_contacts==0&&w.histories()==0&&serialize_clump_state(w)==before,"same body self contacts excluded");
+ // One-sphere clump reduces to the original translational sphere solver.
+ b=make_clump(1,0,{{{},1}},6/pi);b.position_m={0,0,.499};w.bodies={b};w.planes={{1,{0,0,1},0}};ParticleSystem sphere;sphere.model=m;sphere.gravity_m_s2={};sphere.planes=w.planes;sphere.particles=clump_particles(b);for(int i=0;i<100;++i){w.step(1e-5);sphere.step(1e-5);}near(w.bodies[0].position_m.z,sphere.particles[0].position_m.z,1e-14,"sphere reduction position");near(w.bodies[0].velocity_m_s.z,sphere.particles[0].velocity_m_s.z,1e-14,"sphere reduction velocity");
+ // Only one member contacts a floor: normal force creates aggregate torque about COM.
+ w.planes={{1,{0,0,1},0}};b=make_clump(1,0,{{{-.5,0,0},1},{{.5,0,0},1}},6/pi);double angle=.1;b.orientation={std::cos(angle/2),0,std::sin(angle/2),0};b.position_m.z=.499+.5*std::sin(angle);w.bodies={b};rep=w.step(1e-5);check(rep.wall_contacts==1&&w.bodies[0].angular_momentum_world.y<0,"external force lever arm torque");
+ // Two aggregates exchange force and total angular momentum (orbital+spin).
+ w.planes.clear();b=make_clump(1,0,{{{-.5,0,0},1},{{.5,0,0},1}},6/pi);auto other=make_clump(2,0,{{{},1}},6/pi);other.position_m={.5,0,.999};w.bodies={b,other};rep=w.step(1e-5);check(rep.pair_contacts==1,"external aggregate contact only");near(2*w.bodies[0].velocity_m_s.z+w.bodies[1].velocity_m_s.z,0,1e-12,"pair linear momentum");double orbital=-w.bodies[1].position_m.x*w.bodies[1].velocity_m_s.z;near(orbital+w.bodies[0].angular_momentum_world.y+w.bodies[1].angular_momentum_world.y,0,1e-10,"pair total angular momentum");
+ // Explicit different type table changes contact impulse, not just rendering.
+ auto typed=w;typed.bodies={b,other};typed.bodies[1].type=1;auto hard=m;hard.linear.kn=20000;typed.pair_models[std::make_pair(0u,1u)]=hard;typed.pair_models[std::make_pair(1u,1u)]=hard;typed.wall_models[1]=hard;typed.step(1e-5);near(typed.bodies[1].velocity_m_s.z,2*w.bodies[1].velocity_m_s.z,1e-12,"type contact stiffness used");
+ auto state=serialize_clump_state(typed);rejected=false;try{typed.step(1);}catch(const std::invalid_argument&){rejected=true;}check(rejected&&serialize_clump_state(typed)==state,"atomic clump failure");
+ auto demo=clump_demo();check(demo.bodies.size()==6&&clump_particles(demo.bodies[1]).size()==2,"powder and actual nonspherical inclusion");auto light=clump_properties(demo.bodies[0].pebbles,demo.bodies[0].density_kg_m3),heavy=clump_properties(demo.bodies[1].pebbles,demo.bodies[1].density_kg_m3);near(heavy.mass_kg/light.mass_kg,2*7800./2500,1e-12,"inclusion density changes actual mass");demo.bodies.resize(2);demo.bodies[0].position_m={-.1,0,.022};demo.bodies[1].position_m={.1,0,.03};bool hit=false;double mass=0;for(auto& body:demo.bodies)mass+=clump_properties(body.pebbles,body.density_kg_m3).mass_kg;
+ for(int i=0;i<25000;++i){auto rr=demo.step(2e-6);hit=hit||rr.wall_contacts>0;near(rr.mass_kg,mass,1e-12,"clump mass conservation");}check(hit,"mixed fixture hits finite box floor");check(demo.bodies[0].position_m.z>0&&demo.bodies[1].position_m.z>0,"no floor tunnelling");
+ std::cout<<"mixed_fixture_mass="<<mass<<" sphere_z="<<demo.bodies[0].position_m.z<<" clump_z="<<demo.bodies[1].position_m.z<<"\nclump PASS\n";return 0;
+}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

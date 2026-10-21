@@ -1,0 +1,23 @@
+clump_fixture_v1
+core 0.21.0
+dt 1.9999999999999999e-06
+powder_density 2500
+inclusion_density 2500
+powder_kn 10000
+mixed_kn 14000
+inclusion_kn 20000
+hertz 0
+powder_E 10000000
+inclusion_E 200000000000
+rolling_mu 0
+pair_gamma 0
+wall_gamma 0
+triangle_mesh_rig 0
+paddle_rig 1
+paddle_applied_rpm 30
+paddle_pivot_m 0 0 0.04
+paddle_axis 0 0 1
+paddle_linear_velocity_m_s 0 0 0
+paddle_phase_rad 0
+steps 250000
+physical_s 0.50000000000045863

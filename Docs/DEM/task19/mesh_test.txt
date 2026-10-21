@@ -1,0 +1,5 @@
+PASS static triangle mesh: face/edge/vertex, transformed box equivalence, units/topology/ports, thin wall atomic guard, BVH, seams and clumps
+plane_max_position_error_m=1.17961e-16
+clump_max_z_error_m=0
+triangle_checks=28896 / brute=205312
+pipe_final_z_m=-0.0314647

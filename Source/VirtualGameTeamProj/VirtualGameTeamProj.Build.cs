@@ -11,7 +11,7 @@ public class VirtualGameTeamProj : ModuleRules
         bEnableExceptions = true; // Solver rejects invalid steps without committing state.
         PublicIncludePaths.Add(System.IO.Path.Combine(ModuleDirectory, "../../Physics/PowderCore/include"));
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "PhysicsCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "PhysicsCore", "RenderCore" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

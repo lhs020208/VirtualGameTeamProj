@@ -1,0 +1,88 @@
+{
+  "schema": 1,
+  "metric": "mass_weighted_cell_uniformity_v1",
+  "a": "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\PowderCore\\mixing_fixture\\separated",
+  "b": "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\PowderCore\\mixing_fixture\\premixed",
+  "condition_differences": {
+    "premixed": {
+      "a": false,
+      "b": true
+    }
+  },
+  "configuration_sha256": {
+    "a": "c95412b8ef3f37261aa4cfe084c8704a47b19a87d352f0feee58f415ef6397ea",
+    "b": "c95412b8ef3f37261aa4cfe084c8704a47b19a87d352f0feee58f415ef6397ea"
+  },
+  "a_only_steps": [],
+  "b_only_steps": [],
+  "note": "Grid-dependent mass uniformity; no product quality threshold, interpolation or monotonic mixing assumption.",
+  "samples": [
+    {
+      "step": 0,
+      "time_s": 0.0,
+      "a_status": "valid",
+      "b_status": "valid",
+      "a_uniformity": 0.0,
+      "b_uniformity": 1.0,
+      "b_minus_a": 1.0
+    }
+  ],
+  "spatial_cells": [
+    {
+      "step": 0,
+      "time_s": 0.0,
+      "ix": 0,
+      "iy": 0,
+      "iz": 0,
+      "a_count": 8,
+      "b_count": 8,
+      "a_mass_kg": 0.6702064327658225,
+      "b_mass_kg": 0.6702064327658225,
+      "a_fraction_a": 1.0,
+      "b_fraction_a": 0.5,
+      "fraction_b_minus_a": -0.5
+    },
+    {
+      "step": 0,
+      "time_s": 0.0,
+      "ix": 0,
+      "iy": 1,
+      "iz": 0,
+      "a_count": 8,
+      "b_count": 8,
+      "a_mass_kg": 0.6702064327658225,
+      "b_mass_kg": 0.6702064327658225,
+      "a_fraction_a": 1.0,
+      "b_fraction_a": 0.5,
+      "fraction_b_minus_a": -0.5
+    },
+    {
+      "step": 0,
+      "time_s": 0.0,
+      "ix": 1,
+      "iy": 0,
+      "iz": 0,
+      "a_count": 8,
+      "b_count": 8,
+      "a_mass_kg": 0.6702064327658225,
+      "b_mass_kg": 0.6702064327658225,
+      "a_fraction_a": 0.0,
+      "b_fraction_a": 0.5,
+      "fraction_b_minus_a": 0.5
+    },
+    {
+      "step": 0,
+      "time_s": 0.0,
+      "ix": 1,
+      "iy": 1,
+      "iz": 0,
+      "a_count": 8,
+      "b_count": 8,
+      "a_mass_kg": 0.6702064327658225,
+      "b_mass_kg": 0.6702064327658225,
+      "a_fraction_a": 0.0,
+      "b_fraction_a": 0.5,
+      "fraction_b_minus_a": 0.5
+    }
+  ]
+}

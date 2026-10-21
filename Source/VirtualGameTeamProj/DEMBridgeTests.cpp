@@ -1,4 +1,5 @@
 #include "PowderDEMTest.h"
+#include "PowderClumpTest.h"
 #include "Misc/AutomationTest.h"
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Engine/World.h"
@@ -12,6 +13,7 @@
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
 #include "powder/geometry.hpp"
+#include "powder/clump.hpp"
 #include <sstream>
 #include <map>
 #include "HAL/FileManager.h"
@@ -131,11 +133,96 @@ bool FDEMResultsBridge::RunTest(const FString& Parameters)
  A->ParticleCount=1;A->ResultSampleSeconds=A->FixedDt;A->MaxResultSamples=2;A->ResetSimulation();Wait([&]{return A->IsReady();});TestTrue(TEXT("valid results configuration"),A->Error.IsEmpty());A->ToggleSimulation();Wait([&]{return A->ResultStatus().Contains(TEXT("LIMIT"));});TestEqual(TEXT("record limit stops at step 2"),A->StepCount(),uint64(2));TestFalse(TEXT("limit paused"),A->IsRunning());TestTrue(TEXT("export at limit"),A->ExportResults());
  const FString First=A->LastResultsDirectory;TestTrue(TEXT("completion marker exists"),IFileManager::Get().FileExists(*(First/TEXT("complete.json"))));
  for(const TCHAR* Name:{TEXT("metadata.json"),TEXT("summary.json"),TEXT("timeseries.csv"),TEXT("particles.csv"),TEXT("events.csv"),TEXT("settings.dem"),TEXT("run.json")})TestTrue(TEXT("bundle file exists"),IFileManager::Get().FileExists(*(First/Name)));
- FString Metadata;FFileHelper::LoadFileToString(Metadata,*(First/TEXT("metadata.json")));TestTrue(TEXT("actual code version recorded"),Metadata.Contains(TEXT("0.14.0")));TestTrue(TEXT("record limit recorded"),Metadata.Contains(TEXT("\"sample_limit_reached\":true")));
+ FString Metadata;FFileHelper::LoadFileToString(Metadata,*(First/TEXT("metadata.json")));TestTrue(TEXT("actual code version recorded"),Metadata.Contains(TEXT("0.21.0")));TestTrue(TEXT("record limit recorded"),Metadata.Contains(TEXT("\"sample_limit_reached\":true")));
  A->ResultSampleSeconds=999;TestTrue(TEXT("repeat export unique destination"),A->ExportResults());const FString Second=A->LastResultsDirectory;TestTrue(TEXT("previous export never overwritten"),Second!=First);FString Again;FFileHelper::LoadFileToString(Again,*(Second/TEXT("metadata.json")));TestEqual(TEXT("active snapshot criteria, not uncommitted UI fields"),Again,Metadata);
  A->MaxResultSamples=10000;A->ResetSimulation();Wait([&]{return A->IsReady();});A->ToggleSimulation();Wait([&]{return A->IsRunning();});TestFalse(TEXT("running export rejected"),A->ExportResults());TestEqual(TEXT("failed export keeps previous destination"),A->LastResultsDirectory,Second);A->PauseSimulation();Wait([&]{return !A->IsRunning();});
  TestTrue(TEXT("paused off-grid export"),A->ExportResults());const FString Third=A->LastResultsDirectory;TestTrue(TEXT("new run resets monitoring"),!A->ResultStatus().Contains(TEXT("LIMIT")));
  for(const auto& Dir:{First,Second,Third}){TestTrue(TEXT("test output under DEM results"),Dir.StartsWith(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()/TEXT("DEM/Results"))));IFileManager::Get().DeleteDirectory(*Dir,false,true);}
  A->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDEMRollingSettings,"Powder.DEM.RollingSettings",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FDEMRollingSettings::RunTest(const FString& Parameters)
+{
+ UWorld::InitializationValues IV;IV.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false);
+ UWorld* W=UWorld::CreateWorld(EWorldType::Game,false,NAME_None,nullptr,true,ERHIFeatureLevel::Num,&IV);if(!TestNotNull(TEXT("rolling world"),W))return false;
+ GEngine->CreateNewWorldContext(EWorldType::Game).SetCurrentWorld(W);
+ auto* Floor=W->SpawnActor<AStaticMeshActor>();Floor->Tags.Add(TEXT("PowderRig"));Floor->GetStaticMeshComponent()->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube")));Floor->SetActorLocation(FVector(0,0,-50));Floor->SetActorScale3D(FVector(4,4,1));
+ W->InitializeActorsForPlay(FURL());
+ auto* A=W->SpawnActor<APowderDEMTest>();A->DispatchBeginPlay();A->ParticleCount=1;
+ A->PairRollingStiffness=2000;A->PairRollingDamping=3;A->PairRollingFriction=.1;A->WallRollingStiffness=3000;A->WallRollingDamping=5;A->WallRollingFriction=.2;
+ A->SettingsFile=TEXT("Task16_")+FGuid::NewGuid().ToString()+TEXT(".dem");A->ResetSimulation();
+ auto Wait=[&]{const double End=FPlatformTime::Seconds()+15;while(FPlatformTime::Seconds()<End){A->Tick(1.f/60);if(A->IsReady())return true;FPlatformProcess::Sleep(.001f);}AddError(TEXT("rolling worker timeout"));return false;};
+ Wait();TestTrue(TEXT("rolling configuration valid"),A->Error.IsEmpty());TestTrue(TEXT("save rolling settings"),A->SaveSettings());
+ A->PairRollingFriction=0;A->WallRollingFriction=0;TestTrue(TEXT("load rolling settings"),A->LoadSettings());Wait();
+ TestEqual(TEXT("pair coefficient restored"),A->PairRollingFriction,.1);TestEqual(TEXT("wall coefficient restored"),A->WallRollingFriction,.2);TestEqual(TEXT("wall stiffness restored"),A->WallRollingStiffness,3000.);
+ TestTrue(TEXT("rolling settings exported"),A->ExportResults());FString Text;FFileHelper::LoadFileToString(Text,*(A->LastResultsDirectory/TEXT("settings.dem")));TestTrue(TEXT("new settings schema exported"),Text.Contains(TEXT("POWDER_SETTINGS 4")));TestTrue(TEXT("rolling model exported"),Text.Contains(TEXT("wall_rolling_sds 3000 5")));
+ if(!A->LastResultsDirectory.IsEmpty())IFileManager::Get().DeleteDirectory(*A->LastResultsDirectory,false,true);
+ IFileManager::Get().Delete(*(FPaths::ProjectSavedDir()/TEXT("DEM")/A->SettingsFile));
+ A->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDEMAdhesionSettings,"Powder.DEM.AdhesionSettings",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FDEMAdhesionSettings::RunTest(const FString& Parameters)
+{
+ UWorld::InitializationValues IV;IV.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false);
+ UWorld* W=UWorld::CreateWorld(EWorldType::Game,false,NAME_None,nullptr,true,ERHIFeatureLevel::Num,&IV);if(!TestNotNull(TEXT("rolling world"),W))return false;
+ GEngine->CreateNewWorldContext(EWorldType::Game).SetCurrentWorld(W);
+ auto* Floor=W->SpawnActor<AStaticMeshActor>();Floor->Tags.Add(TEXT("PowderRig"));Floor->GetStaticMeshComponent()->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube")));Floor->SetActorLocation(FVector(0,0,-50));Floor->SetActorScale3D(FVector(4,4,1));
+ W->InitializeActorsForPlay(FURL());
+ auto* A=W->SpawnActor<APowderDEMTest>();A->DispatchBeginPlay();A->ParticleCount=1;
+ A->PairAdhesionGamma=.1;A->WallAdhesionGamma=.2;A->PairRollingStiffness=2000;A->PairRollingDamping=3;A->PairRollingFriction=.1;A->WallRollingStiffness=3000;A->WallRollingDamping=5;A->WallRollingFriction=.2;
+ A->SettingsFile=TEXT("Task17_")+FGuid::NewGuid().ToString()+TEXT(".dem");A->ResetSimulation();
+ auto Wait=[&]{const double End=FPlatformTime::Seconds()+15;while(FPlatformTime::Seconds()<End){A->Tick(1.f/60);if(A->IsReady())return true;FPlatformProcess::Sleep(.001f);}AddError(TEXT("rolling worker timeout"));return false;};
+ Wait();TestTrue(TEXT("rolling configuration valid"),A->Error.IsEmpty());TestTrue(TEXT("save rolling settings"),A->SaveSettings());
+ A->PairAdhesionGamma=0;A->WallAdhesionGamma=0;A->PairRollingFriction=0;A->WallRollingFriction=0;TestTrue(TEXT("load rolling settings"),A->LoadSettings());Wait();
+ TestEqual(TEXT("pair adhesion restored"),A->PairAdhesionGamma,.1);TestEqual(TEXT("wall adhesion restored"),A->WallAdhesionGamma,.2);TestEqual(TEXT("pair coefficient restored"),A->PairRollingFriction,.1);TestEqual(TEXT("wall coefficient restored"),A->WallRollingFriction,.2);TestEqual(TEXT("wall stiffness restored"),A->WallRollingStiffness,3000.);
+ TestTrue(TEXT("rolling settings exported"),A->ExportResults());FString Text;FFileHelper::LoadFileToString(Text,*(A->LastResultsDirectory/TEXT("settings.dem")));TestTrue(TEXT("new settings schema exported"),Text.Contains(TEXT("POWDER_SETTINGS 4")));TestTrue(TEXT("adhesion exported"),Text.Contains(TEXT("contact_adhesion_gamma_j_m2 0.1")));TestTrue(TEXT("rolling model exported"),Text.Contains(TEXT("wall_rolling_sds 3000 5")));
+ if(!A->LastResultsDirectory.IsEmpty())IFileManager::Get().DeleteDirectory(*A->LastResultsDirectory,false,true);
+ IFileManager::Get().Delete(*(FPaths::ProjectSavedDir()/TEXT("DEM")/A->SettingsFile));
+ A->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
+}
+
+
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDEMClumpBridge,"Powder.DEM.ClumpBridge",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FDEMClumpBridge::RunTest(const FString& Parameters){
+ UWorld::InitializationValues IV;IV.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false);
+ UWorld* W=UWorld::CreateWorld(EWorldType::Game,false,NAME_None,nullptr,true,ERHIFeatureLevel::Num,&IV);if(!TestNotNull(TEXT("clump world"),W))return false;GEngine->CreateNewWorldContext(EWorldType::Game).SetCurrentWorld(W);W->InitializeActorsForPlay(FURL());auto* A=W->SpawnActor<APowderClumpTest>();A->DispatchBeginPlay();TestTrue(TEXT("clump initialization"),A->Error.IsEmpty());TestEqual(TEXT("body count distinct from render count"),A->BodyCount(),6);TestEqual(TEXT("render all rigid members"),A->RenderedPebbles(),9);auto Position=A->BodyPositionCm(1);A->StepSimulation();TestTrue(TEXT("fixed physical step"),A->PhysicalSeconds==A->FixedDt);TestTrue(TEXT("COM gravity movement"),A->BodyPositionCm(1).Z<Position.Z);TestTrue(TEXT("paused body export"),A->ExportState());FString Text;FFileHelper::LoadFileToString(Text,*(A->ExportDirectory/TEXT("pebbles.csv")));TestTrue(TEXT("shape geometry exported"),Text.Contains(TEXT("local_x_m")));auto Dir=A->ExportDirectory;A->InclusionDensity=1000;A->ResetSimulation();TestTrue(TEXT("material reset valid"),A->Error.IsEmpty());TestEqual(TEXT("reset physical clock"),A->PhysicalSeconds,0.);A->ToggleSimulation();TestFalse(TEXT("running export rejected"),A->ExportState());A->ToggleSimulation();A->FixedDt=1;A->ResetSimulation();TestTrue(TEXT("invalid clump dt rejected"),!A->Error.IsEmpty());TestEqual(TEXT("invalid reset no stale instances"),A->RenderedPebbles(),0);if(!Dir.IsEmpty())IFileManager::Get().DeleteDirectory(*Dir,false,true);A->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDEMMeshBridge,"Powder.DEM.MeshBridge",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FDEMMeshBridge::RunTest(const FString& Parameters){
+ UWorld::InitializationValues IV;IV.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false);
+ UWorld* W=UWorld::CreateWorld(EWorldType::Game,false,NAME_None,nullptr,true,ERHIFeatureLevel::Num,&IV);if(!TestNotNull(TEXT("mesh world"),W))return false;GEngine->CreateNewWorldContext(EWorldType::Game).SetCurrentWorld(W);W->InitializeActorsForPlay(FURL());
+ auto* A=W->SpawnActor<APowderClumpTest>();A->DispatchBeginPlay();A->bTriangleMeshRig=true;A->ResetSimulation();TestTrue(TEXT("actual render triangles converted to SI"),A->Error.IsEmpty());TestEqual(TEXT("six rendered Cube LOD0 meshes each 48 triangles"),A->MeshTriangleCount(),288);TestEqual(TEXT("same six rigid bodies"),A->BodyCount(),6);TestEqual(TEXT("same nine visible pebbles"),A->RenderedPebbles(),9);TestTrue(TEXT("geometry diagnostics"),A->GeometryDiagnostics.Contains(TEXT("coplanar_patches 6")));
+ auto Before=A->BodyPositionCm(0);A->StepSimulation();TestTrue(TEXT("mesh fixture falling in solver"),A->BodyPositionCm(0).Z<Before.Z);TestTrue(TEXT("mesh physical time"),A->PhysicalSeconds==A->FixedDt);TestTrue(TEXT("export analysis geometry"),A->ExportState());FString Geometry;FFileHelper::LoadFileToString(Geometry,*(A->ExportDirectory/TEXT("surface_0.mesh")));TestTrue(TEXT("export metres"),Geometry.StartsWith(TEXT("POWDER_TRIANGLES 1 1 ")));auto Dir=A->ExportDirectory;
+ // Run the actual exported render triangles through the solver, not just a synthetic box.
+ try{auto World=powder::clump_demo();World.boxes.clear();for(int32 I=0;I<6;++I){FString Text;TestTrue(TEXT("surface file exists"),FFileHelper::LoadFileToString(Text,*(Dir/FString::Printf(TEXT("surface_%d.mesh"),I))));std::istringstream Stream(TCHAR_TO_UTF8(*Text));World.meshes.emplace_back(powder::read_triangle_mesh(Stream));}
+ for(auto& B:World.bodies)B.position_m.z+=.30;std::size_t Hits=0;double Mass=0;for(int32 I=0;I<150000;++I){auto Report=World.step(2e-6);Hits+=Report.wall_contacts;Mass=Report.mass_kg;}TestTrue(TEXT("actual mesh ramp/tube contact after 0.3 seconds"),Hits>0);TestTrue(TEXT("mass conserved through mesh rig"),FMath::Abs(Mass-3*.606536821173063)<1e-6);for(const auto& B:World.bodies)TestTrue(TEXT("no floor leak in mesh rig"),B.position_m.z>0);
+ AddInfo(FString::Printf(TEXT("Mesh fixture 0.3 s: contacts=%llu, mass=%.17g kg"),static_cast<uint64>(Hits),Mass));
+ }catch(const std::exception& E){AddError(FString::Printf(TEXT("Actual mesh drop failed: %s"),UTF8_TO_TCHAR(E.what())));}
+ A->bTriangleMeshRig=false;A->ResetSimulation();TestEqual(TEXT("reset back to analytic mode"),A->MeshTriangleCount(),0);TestTrue(TEXT("analytic restored"),A->Error.IsEmpty());A->bTriangleMeshRig=true;A->SetActorScale3D(FVector(100));A->ResetSimulation();TestFalse(TEXT("unsupported fixture scale rejected"),A->Error.IsEmpty());TestEqual(TEXT("no stale particles after bad geometry"),A->RenderedPebbles(),0);
+ if(!Dir.IsEmpty())IFileManager::Get().DeleteDirectory(*Dir,false,true);A->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDEMPaddleBridge,"Powder.DEM.PaddleBridge",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FDEMPaddleBridge::RunTest(const FString& Parameters){
+ UWorld::InitializationValues IV;IV.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false);UWorld* W=UWorld::CreateWorld(EWorldType::Game,false,NAME_None,nullptr,true,ERHIFeatureLevel::Num,&IV);if(!TestNotNull(TEXT("paddle world"),W))return false;GEngine->CreateNewWorldContext(EWorldType::Game).SetCurrentWorld(W);W->InitializeActorsForPlay(FURL());auto* A=W->SpawnActor<APowderClumpTest>();A->DispatchBeginPlay();A->bPaddleRig=true;A->ResetSimulation();TestTrue(TEXT("paddle initialization"),A->Error.IsEmpty());TestEqual(TEXT("static tray + moving blade render triangles"),A->MeshTriangleCount(),288);TestEqual(TEXT("applied target RPM"),A->AppliedPaddleRPM(),30.);
+ A->StepSimulation();auto Expected=FQuat(FVector::UpVector,30.*2*PI/60*A->PhysicalSeconds);TestTrue(TEXT("display pose uses same physical time"),A->DisplayedPaddleRotation().Equals(Expected,1e-12));auto Time=A->PhysicalSeconds;auto Q=A->DisplayedPaddleRotation();A->Tick(1.f);TestEqual(TEXT("paused rendering does not advance physics"),A->PhysicalSeconds,Time);TestTrue(TEXT("paused blade does not spin"),A->DisplayedPaddleRotation().Equals(Q,1e-12));A->PaddleRPM=60;A->StepSimulation();TestEqual(TEXT("UI change not applied until reset"),A->AppliedPaddleRPM(),30.);TestTrue(TEXT("export moving geometry and work"),A->ExportState());auto Dir=A->ExportDirectory;FString State;FFileHelper::LoadFileToString(State,*(Dir/TEXT("paddle_state.csv")));TestTrue(TEXT("power bookkeeping exported"),State.Contains(TEXT("wall_work_to_particles_J")));
+ try{auto World=powder::clump_demo();World.boxes.clear();for(auto& B:World.bodies){B.position_m.z=.022;B.orientation={};}for(int32 I=0;I<5;++I){FString Text;FFileHelper::LoadFileToString(Text,*(Dir/FString::Printf(TEXT("surface_%d.mesh"),I)));std::istringstream Stream(TCHAR_TO_UTF8(*Text));World.meshes.emplace_back(powder::read_triangle_mesh(Stream));}FString Text;FFileHelper::LoadFileToString(Text,*(Dir/TEXT("moving_reference_0.mesh")));std::istringstream Stream(TCHAR_TO_UTF8(*Text));powder::PrescribedMotion Motion;Motion.pivot_m={0,0,.04};Motion.rpm=30;World.moving_meshes.emplace_back(powder::StaticTriangleMesh(powder::read_triangle_mesh(Stream)),Motion);double MaxTorque=0;std::size_t Contacts=0;for(int32 I=0;I<150000;++I){auto R=World.step(2e-6);Contacts+=R.wall_contacts;MaxTorque=FMath::Max(MaxTorque,FMath::Abs(R.moving_wall_loads[0].reaction_torque_nm.z));}TestTrue(TEXT("blade transfers actual work"),World.moving_wall_work_j>0);TestTrue(TEXT("nonzero paddle torque"),MaxTorque>0);for(const auto& B:World.bodies)TestTrue(TEXT("no floor leakage"),B.position_m.z>0);AddInfo(FString::Printf(TEXT("Paddle 30 RPM / 0.3 s: work=%.17g J, peak |Tz|=%.17g Nm, wall contact observations=%llu"),World.moving_wall_work_j,MaxTorque,static_cast<uint64>(Contacts)));}catch(const std::exception& E){AddError(FString::Printf(TEXT("Paddle fixture failed: %s"),UTF8_TO_TCHAR(E.what())));}
+ A->PaddleRPM=-30;A->ResetSimulation();TestEqual(TEXT("reset reverse RPM"),A->AppliedPaddleRPM(),-30.);TestEqual(TEXT("reset work"),A->WallWorkJ,0.);A->StepSimulation();TestTrue(TEXT("reverse display rotation"),A->DisplayedPaddleRotation().Equals(FQuat(FVector::UpVector,-30.*2*PI/60*A->PhysicalSeconds),1e-12));A->PaddleRPM=1e9;A->ResetSimulation();TestFalse(TEXT("unsafe paddle speed rejected"),A->Error.IsEmpty());TestEqual(TEXT("invalid reset clears bodies"),A->BodyCount(),0);if(!Dir.IsEmpty())IFileManager::Get().DeleteDirectory(*Dir,false,true);A->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDEMMixingBridge,"Powder.DEM.MixingBridge",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FDEMMixingBridge::RunTest(const FString& Parameters){
+ UWorld::InitializationValues IV;IV.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false);UWorld* W=UWorld::CreateWorld(EWorldType::Game,false,NAME_None,nullptr,true,ERHIFeatureLevel::Num,&IV);if(!TestNotNull(TEXT("mixing world"),W))return false;GEngine->CreateNewWorldContext(EWorldType::Game).SetCurrentWorld(W);W->InitializeActorsForPlay(FURL());auto* A=W->SpawnActor<APowderClumpTest>();A->DispatchBeginPlay();A->bMixingRig=true;A->MixingDurationSeconds=4*A->FixedDt;A->MixingSampleSeconds=2*A->FixedDt;A->ResetSimulation();
+ TestTrue(TEXT("mixing initialization"),A->Error.IsEmpty());TestEqual(TEXT("charge count"),A->BodyCount(),32);TestEqual(TEXT("all charge visible"),A->RenderedPebbles(),32);TestEqual(TEXT("separate B display group"),A->RenderedGroupB(),16);TestTrue(TEXT("separated reference valid"),A->bMixingIndexValid);TestTrue(TEXT("separated index zero"),FMath::Abs(A->MixingIndex)<1e-12);TestTrue(TEXT("charge mass SI"),FMath::Abs(A->ChargeMassKg-32*2500*3.14159265358979323846/6*FMath::Pow(.04,3))<1e-12);TestEqual(TEXT("initial sample"),A->MixingSampleCount(),1);
+ A->MixingDurationSeconds=1;A->GroupACount=128;A->PaddleRPM=60;for(int32 I=0;I<8;++I)A->StepSimulation();TestTrue(TEXT("applied duration stops exactly"),A->bMixingFinished);TestTrue(TEXT("physical end time"),FMath::Abs(A->PhysicalSeconds-8e-6)<1e-15);TestEqual(TEXT("initial middle final samples"),A->MixingSampleCount(),3);TestEqual(TEXT("charge config snapshotted"),A->BodyCount(),32);TestEqual(TEXT("RPM snapshotted"),A->AppliedPaddleRPM(),30.);A->ToggleSimulation();TestFalse(TEXT("completed experiment cannot resume past limit"),A->bRunning);
+ TestTrue(TEXT("mixing export"),A->ExportState());auto Dir=A->ExportDirectory;FString Text;FFileHelper::LoadFileToString(Text,*(Dir/TEXT("mixing_metadata.json")));TestTrue(TEXT("defined metric exported"),Text.Contains(TEXT("mass_weighted_cell_uniformity_v1")));TestTrue(TEXT("finished export metadata"),Text.Contains(TEXT("\"run_finished\":true")));TestTrue(TEXT("applied count exported"),Text.Contains(TEXT("\"count_a\":16")));FFileHelper::LoadFileToString(Text,*(Dir/TEXT("mixing_cells.csv")));TestTrue(TEXT("spatial mass and counts exported"),Text.Contains(TEXT("count_a,count_b,mass_a_kg,mass_b_kg")));
+ A->GroupACount=16;A->PaddleRPM=30;A->bStartPremixed=true;A->MixingDurationSeconds=.5;A->MixingSampleSeconds=.05;A->ResetSimulation();TestTrue(TEXT("premixed reference"),A->Error.IsEmpty()&&A->bMixingIndexValid&&FMath::Abs(A->MixingIndex-1)<1e-12);TestFalse(TEXT("reset finished flag"),A->bMixingFinished);
+ A->MixingGrid=FIntVector(8,8,1);A->ResetSimulation();TestTrue(TEXT("sparse grid still simulates"),A->Error.IsEmpty());TestFalse(TEXT("sparse score invalid"),A->bMixingIndexValid);A->MixingGrid.X=0;A->ResetSimulation();TestFalse(TEXT("invalid grid rejected"),A->Error.IsEmpty());TestEqual(TEXT("failed reset clears both render groups"),A->RenderedPebbles(),0);
+ if(!Dir.IsEmpty())IFileManager::Get().DeleteDirectory(*Dir,false,true);A->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
+}
+
 #endif

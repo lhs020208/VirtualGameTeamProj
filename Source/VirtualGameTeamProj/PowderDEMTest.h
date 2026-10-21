@@ -121,6 +121,14 @@ public:
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DEM|PairLinear") double TangentStiffness=1e6;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DEM|PairLinear") double TangentDamping=10;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DEM|PairLinear") double Friction=.3;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DEM|PairRolling",meta=(ToolTip="Contact rolling SDS: stiffness N/m, damping Ns/m, friction dimensionless. Friction zero disables. Reset simulation after changes.")) double PairRollingStiffness=1000;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DEM|PairRolling",meta=(ToolTip="Contact rolling SDS: stiffness N/m, damping Ns/m, friction dimensionless. Friction zero disables. Reset simulation after changes.")) double PairRollingDamping=1;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DEM|PairRolling",meta=(ToolTip="Contact rolling SDS: stiffness N/m, damping Ns/m, friction dimensionless. Friction zero disables. Reset simulation after changes.")) double PairRollingFriction=0;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DEM|WallRolling",meta=(ToolTip="Contact rolling SDS: stiffness N/m, damping Ns/m, friction dimensionless. Friction zero disables. Reset simulation after changes.")) double WallRollingStiffness=1000;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DEM|WallRolling",meta=(ToolTip="Contact rolling SDS: stiffness N/m, damping Ns/m, friction dimensionless. Friction zero disables. Reset simulation after changes.")) double WallRollingDamping=1;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DEM|WallRolling",meta=(ToolTip="Contact rolling SDS: stiffness N/m, damping Ns/m, friction dimensionless. Friction zero disables. Reset simulation after changes.")) double WallRollingFriction=0;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DEM|Adhesion",meta=(ClampMin="0",ToolTip="Contact-only attraction gamma (J/m2), pair Fc=4*pi*gamma*R_eff. Zero disables; reset after edits.")) double PairAdhesionGamma=0;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DEM|Adhesion",meta=(ClampMin="0",ToolTip="Contact-only wall attraction gamma (J/m2), Fc=4*pi*gamma*radius. Zero disables; reset after edits.")) double WallAdhesionGamma=0;
 private:
  powder::PowderSettings MakeSettings() const;
  void ApplySettings(const powder::PowderSettings& Settings);

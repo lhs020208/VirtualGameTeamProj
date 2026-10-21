@@ -1,0 +1,10 @@
+
+		
+		slope_mu0 x=1.39757 speed=1.39753 KE=1.36869
+slope_mu0.2 x=0.00136729 speed=7.48942e-15 KE=3.52725e-29
+slope_dt_half x=0.00136729 speed=9.51587e-15
+pile_mu0 spread=2.82295 KE=5.98424 energy_excess=0
+pile_mu0.2 spread=1.00462 KE=1.23412e-12 energy_excess=0
+rolling resistance PASS
+
+	

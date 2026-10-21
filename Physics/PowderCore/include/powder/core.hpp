@@ -3,7 +3,7 @@
 #include <vector>
 
 namespace powder {
-inline constexpr const char* Version = "0.14.0";
+inline constexpr const char* Version = "0.21.0";
 inline constexpr const char* Model = "translation_symplectic_euler";
 using ParticleId = std::uint64_t;
 struct Vec3 { double x=0, y=0, z=0; };

@@ -113,6 +113,8 @@ powder::PowderSettings APowderDEMTest::MakeSettings()const{
  S.law=ContactLaw==EDEMContactLaw::Linear?powder::ContactLaw::Linear:powder::ContactLaw::HertzMindlin;
  S.particle_material={ParticleYoungPa,ParticlePoisson};S.wall_material={WallYoungPa,WallPoisson};
  S.pair.linear={NormalStiffness,NormalDamping,TangentStiffness,TangentDamping,Friction};S.wall.linear={WallNormalStiffness,WallNormalDamping,WallTangentStiffness,WallTangentDamping,WallFriction};
+ S.pair.adhesion_gamma_j_m2=PairAdhesionGamma;S.wall.adhesion_gamma_j_m2=WallAdhesionGamma;
+ S.pair.rolling={PairRollingStiffness,PairRollingDamping,PairRollingFriction};S.wall.rolling={WallRollingStiffness,WallRollingDamping,WallRollingFriction};
  S.pair.cn=HertzNormalDamping;S.pair.ct=HertzTangentDamping;S.pair.mu=HertzFriction;S.pair.overlap_cap=HertzOverlapCap;
  S.wall.cn=WallHertzNormalDamping;S.wall.ct=WallHertzTangentDamping;S.wall.mu=WallHertzFriction;S.wall.overlap_cap=WallHertzOverlapCap;
  S.centre_m=V(InitialPositionCm*.01);S.half_m=V(SpawnHalfExtentsCm*.01);S.velocity_m_s=V(InitialVelocityMps);S.gravity_m_s2=V(GravityMps2);S.spacing_factor=SpacingFactor;S.wall_clearance_m=InitialWallClearanceM;S.dt_s=FixedDt;
@@ -130,6 +132,8 @@ void APowderDEMTest::ApplySettings(const powder::PowderSettings& S){
  ParticleYoungPa=S.particle_material.young_pa;ParticlePoisson=S.particle_material.poisson;WallYoungPa=S.wall_material.young_pa;WallPoisson=S.wall_material.poisson;
  NormalStiffness=S.pair.linear.kn;NormalDamping=S.pair.linear.cn;TangentStiffness=S.pair.linear.kt;TangentDamping=S.pair.linear.ct;Friction=S.pair.linear.mu;
  WallNormalStiffness=S.wall.linear.kn;WallNormalDamping=S.wall.linear.cn;WallTangentStiffness=S.wall.linear.kt;WallTangentDamping=S.wall.linear.ct;WallFriction=S.wall.linear.mu;
+ PairAdhesionGamma=S.pair.adhesion_gamma_j_m2;WallAdhesionGamma=S.wall.adhesion_gamma_j_m2;
+ PairRollingStiffness=S.pair.rolling.stiffness_n_m;PairRollingDamping=S.pair.rolling.damping_ns_m;PairRollingFriction=S.pair.rolling.mu;WallRollingStiffness=S.wall.rolling.stiffness_n_m;WallRollingDamping=S.wall.rolling.damping_ns_m;WallRollingFriction=S.wall.rolling.mu;
  HertzNormalDamping=S.pair.cn;HertzTangentDamping=S.pair.ct;HertzFriction=S.pair.mu;HertzOverlapCap=S.pair.overlap_cap;
  WallHertzNormalDamping=S.wall.cn;WallHertzTangentDamping=S.wall.ct;WallHertzFriction=S.wall.mu;WallHertzOverlapCap=S.wall.overlap_cap;
  InitialPositionCm=FVector(S.centre_m.x,S.centre_m.y,S.centre_m.z)*100;SpawnHalfExtentsCm=FVector(S.half_m.x,S.half_m.y,S.half_m.z)*100;

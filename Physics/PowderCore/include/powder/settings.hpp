@@ -9,6 +9,8 @@ enum class AmountMode { Count, Mass };
 struct ContactSettings {
  FrictionModel linear{4e6,40,1e6,10,.3};
  double cn=40,ct=10,mu=.3,overlap_cap=.01;
+ RollingModel rolling;
+ double adhesion_gamma_j_m2=0;
 };
 struct PowderSettings {
  SupplyMode supply_mode=SupplyMode::Batch;

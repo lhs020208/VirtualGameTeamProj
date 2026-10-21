@@ -1,0 +1,12 @@
+{
+  "previous": "task20",
+  "current": "task21",
+  "cases": 42,
+  "exact_non_timing_match": true,
+  "excluded_fields": [
+    "particle_steps_per_s",
+    "steps_per_s",
+    "wall_s",
+    "wall_s_per_physical_s"
+  ]
+}

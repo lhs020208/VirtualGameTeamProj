@@ -1,0 +1,28 @@
+#include "powder/mixing.hpp"
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+using namespace powder;
+void check(bool b,const char* s){if(!b)throw std::runtime_error(s);}
+void near(double a,double b,const char* s){check(std::abs(a-b)<1e-12,s);}
+template<class F>void rejects(F f){bool bad=false;try{f();}catch(const std::exception&){bad=true;}check(bad,"expected rejection");}
+void write(const std::filesystem::path& root,const char* name,const MixingMonitor& m,const std::vector<ClumpBody>& b,std::uint64_t step=0){auto dir=root/name;std::filesystem::create_directories(dir);for(const auto& e:m.files(b,step)){std::ofstream f(dir/e.first);f<<e.second;if(!f)throw std::runtime_error("fixture write failed");}std::ofstream(dir/"configuration.txt")<<"mixing test reference\n";std::ofstream(dir/"complete.json")<<"{\"schema\":1,\"complete\":true}";}
+int main(int argc,char** argv){try{
+ MixingConfig c;auto separated=mixing_charge(c);MixingMonitor sm(c,separated);check(sm.samples[0].valid,"separated valid");near(sm.samples[0].index,0,"separated zero");check(sm.samples[0].occupied==4,"four occupied cells");
+ c.premixed=true;auto mixed=mixing_charge(c);MixingMonitor mm(c,mixed);near(mm.samples[0].index,1,"premixed unity");
+ auto reversed=mixed;std::reverse(reversed.begin(),reversed.end());near(mm.current(reversed,0).index,1,"input order independent");
+ c.density_b=7800;auto unequal=mixing_charge(c);MixingMonitor um(c,unequal);near(um.samples[0].index,1,"unequal mass identical local mass fractions");near(um.samples[0].mass[1]/um.samples[0].mass[0],7800./2500,"mass weighting");
+ auto outside=mixed;outside[0].position_m.x=.31;check(mm.current(outside,0).status=="outside_region","outside invalid instead of inflated score");
+ auto boundary=mixed;boundary[0].position_m={.3,.3,.3};check(mm.current(boundary,0).outside==0,"upper boundary included");boundary[0].position_m.x=std::nextafter(.3,1.0);check(mm.current(boundary,0).outside==1,"outside exact boundary");
+ auto duplicate=mixed;duplicate[1].id=duplicate[0].id;rejects([&]{mm.current(duplicate,0);});auto unknown=mixed;unknown[0].id=999;rejects([&]{mm.current(unknown,0);});auto changed=mixed;changed[0].density_kg_m3*=2;rejects([&]{mm.current(changed,0);});auto nan=mixed;nan[0].position_m.x=std::numeric_limits<double>::quiet_NaN();rejects([&]{mm.current(nan,0);});
+ auto grid=c;grid.grid={{8,8,1}};auto sparse=measure_mixing(grid,mixed,mm.groups,0);check(!sparse.valid&&sparse.undersampled>0,"fine grid sparse invalid");grid.grid={{1,1,1}};check(measure_mixing(grid,mixed,mm.groups,0).status=="insufficient_occupied_cells","one cell cannot prove mixing");
+ auto clumps=mixed;clumps[0]=make_clump(clumps[0].id,0,{{{-.02,0,0},.04},{{.02,0,0},.04}},2500);clumps[0].position_m=mixed[0].position_m;auto cs=measure_mixing(mm.config,clumps,mm.groups,0);check(cs.count[0]==16,"clump counted once");near(cs.mass[0]/mm.samples[0].mass[0],17./16,"clump full mass assigned");
+ auto invalid=c;invalid.grid[0]=0;rejects([&]{invalid.validate();});invalid=c;invalid.duration_s=.500001;rejects([&]{invalid.validate();});invalid=c;invalid.count_a=129;rejects([&]{mixing_charge(invalid);});
+ for(int a:{1,16,128})for(int b:{1,17,128})for(bool premix:{false,true}){MixingConfig capacity;capacity.count_a=a;capacity.count_b=b;capacity.premixed=premix;auto charge=mixing_charge(capacity);check(charge.size()==static_cast<std::size_t>(a+b),"charge quotas");for(std::size_t i=0;i<charge.size();++i)for(std::size_t j=0;j<i;++j){auto p=charge[i].position_m,q=charge[j].position_m;Vec3 d{p.x-q.x,p.y-q.y,p.z-q.z};check(d.x*d.x+d.y*d.y+d.z*d.z>=.04*.04,"nonoverlapping charge");}}
+ auto timing=mm.config;timing.duration_s=10*timing.dt;timing.sample_s=4*timing.dt;MixingMonitor monitor(timing,mixed);for(std::uint64_t i=1;i<=10;++i)monitor.record(mixed,i);check(monitor.samples.size()==4&&monitor.samples.back().step==10,"initial periodic and final records");check(monitor.finished(10)&&!monitor.finished(9),"duration boundary");
+ // Real DEM evolution under a prescribed blade; the metric need not increase monotonically.
+ auto world=clump_demo();world.bodies=separated;world.boxes.clear();FixedBox floor;floor.id=1;floor.centre_m={0,0,-.05};floor.half_m={.5,.4,.05};world.meshes.emplace_back(triangulated_box(floor));for(int i=0;i<4;++i){FixedBox wall;wall.id=static_cast<ParticleId>(10+i);wall.centre_m=i<2?Vec3{i==0?-.31:.31,0,.1}:Vec3{0,i==2?-.31:.31,.1};wall.half_m=i<2?Vec3{.01,.32,.1}:Vec3{.30,.01,.1};world.meshes.emplace_back(triangulated_box(wall));}FixedBox paddle;paddle.id=2;paddle.centre_m={0,0,.04};paddle.half_m={.18,.01,.03};PrescribedMotion motion;motion.pivot_m={0,0,.04};motion.rpm=30;world.moving_meshes.emplace_back(StaticTriangleMesh(triangulated_box(paddle)),motion);MixingMonitor evolution(sm.config,world.bodies);
+ for(std::uint64_t i=1;i<=250000;++i){world.step(2e-6);evolution.record(world.bodies,i);}check(world.moving_wall_work_j>0,"rotor does work on charge");auto final=evolution.current(world.bodies,250000);near(final.mass[0],sm.samples[0].mass[0],"A mass conserved");near(final.mass[1],sm.samples[0].mass[1],"B mass conserved");check(final.outside==0,"short dynamic test remains in domain");
+ if(argc>1){write(argv[1],"separated",sm,separated);write(argv[1],"premixed",mm,mixed);MixingMonitor om(mm.config,outside);write(argv[1],"outside",om,outside);write(argv[1],"dynamic",evolution,world.bodies,250000);}
+ std::cout<<"PASS mixing references, mass/COM weighting, sampling guards, quotas, boundaries, conservation and export\nseparated=0 premixed=1 dynamic_work_J="<<world.moving_wall_work_j<<" dynamic_index="<<final.index<<" valid="<<final.valid<<'\n';return 0;
+ }catch(const std::exception& e){std::cerr<<"FAIL "<<e.what()<<'\n';return 1;}}

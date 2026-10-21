@@ -8,7 +8,10 @@ void finite(double v){if(!std::isfinite(v))throw std::invalid_argument("nonfinit
 void positive(double v){finite(v);if(v<=0)throw std::invalid_argument("elastic parameter/result must be positive");}
 void material(ElasticMaterial m){positive(m.young_pa);finite(m.poisson);if(m.poisson<=-1||m.poisson>=.5)throw std::invalid_argument("Poisson ratio must be in (-1,0.5)");}
 double distance(Vec3 a,Vec3 b){return std::hypot(a.x-b.x,a.y-b.y,a.z-b.z);}
+FrictionModel linear_model(const MaterialContact& m){auto value=m.linear;value.rolling=m.rolling;value.adhesion_gamma_j_m2=m.adhesion_gamma_j_m2;return value;}
 void configuration(const MaterialContact& m){
+ validate_rolling_model(m.rolling);
+ finite(m.adhesion_gamma_j_m2);if(m.adhesion_gamma_j_m2<0)throw std::invalid_argument("negative adhesion gamma");
  if(m.law!=ContactLaw::HertzMindlin)throw std::invalid_argument("unknown contact law");
  material(m.a);material(m.b);
  for(double x:{m.cn,m.ct,m.mu}){finite(x);if(x<0)throw std::invalid_argument("negative Hertz damping/friction");}
@@ -25,10 +28,12 @@ FrictionModel resolve(const MaterialContact& m,double radius,double overlap,doub
  // Airborne contacts have no force; use cap coefficients solely for legacy validation.
  const double delta=overlap>0 ? overlap : cap;
  const auto value=hertz_response(m.a,m.b,radius,delta);
- return {value.elastic_force_n/delta,m.cn,value.tangent_stiffness_n_m,m.ct,m.mu};
+ return {value.elastic_force_n/delta,m.cn,value.tangent_stiffness_n_m,m.ct,m.mu,m.rolling,m.adhesion_gamma_j_m2};
 }
 }
 void validate_contact_model(const MaterialContact& m){
+ validate_rolling_model(m.rolling);
+ finite(m.adhesion_gamma_j_m2);if(m.adhesion_gamma_j_m2<0)throw std::invalid_argument("negative adhesion gamma");
  if(m.law==ContactLaw::Linear){
   const auto k=m.linear;for(double x:{k.kn,k.cn,k.kt,k.ct,k.mu})finite(x);
   if(k.kn<=0||k.kt<=0||k.cn<0||k.ct<0||k.mu<0)throw std::invalid_argument("invalid linear material");
@@ -49,7 +54,7 @@ HertzResponse hertz_response(ElasticMaterial a,ElasticMaterial b,double radius,d
  return r;
 }
 FrictionResponse step_material_plane(Particle& p,ForceAccumulator& f,Vec3 n,double offset,const MaterialContact& m,ContactHistory& h,double dt){
- if(m.law==ContactLaw::Linear)return step_friction_plane(p,f,n,offset,m.linear,h,dt);
+ if(m.law==ContactLaw::Linear)return step_friction_plane(p,f,n,offset,linear_model(m),h,dt);
  configuration(m);validate(p);
  const auto sphere=sphere_properties(p.diameter_m,p.material);
  const double projection=p.position_m.x*n.x+p.position_m.y*n.y+p.position_m.z*n.z-offset;
@@ -63,7 +68,7 @@ FrictionResponse step_material_plane(Particle& p,ForceAccumulator& f,Vec3 n,doub
  p=next;f.clear();h=history;return result;
 }
 FrictionResponse step_material_pair(Particle& a,Particle& b,ForceAccumulator& fa,ForceAccumulator& fb,const MaterialContact& m,ContactHistory& h,double dt){
- if(m.law==ContactLaw::Linear)return step_friction_pair(a,b,fa,fb,m.linear,h,dt);
+ if(m.law==ContactLaw::Linear)return step_friction_pair(a,b,fa,fb,linear_model(m),h,dt);
  configuration(m);validate(a);validate(b);
  if(&a==&b||&fa==&fb)throw std::invalid_argument("pair aliases forbidden");
  const auto sa=sphere_properties(a.diameter_m,a.material),sb=sphere_properties(b.diameter_m,b.material);
@@ -76,18 +81,18 @@ FrictionResponse step_material_pair(Particle& a,Particle& b,ForceAccumulator& fa
  if(sa.radius_m+sb.radius_m-distance(na.position_m,nb.position_m)>cap)throw std::invalid_argument("step exceeds Hertz pair overlap cap");
  a=na;b=nb;fa.clear();fb.clear();h=history;return result;
 }
-ContactWrench evaluate_material_plane(const Particle& p,Vec3 n,double offset,const MaterialContact& m,ContactHistory& h,double dt){
- if(m.law==ContactLaw::Linear)return evaluate_friction_plane(p,n,offset,m.linear,h,dt);
+ContactWrench evaluate_material_plane(const Particle& p,Vec3 n,double offset,const MaterialContact& m,ContactHistory& h,double dt,Vec3 wall_velocity,Vec3 wall_omega){
+ if(m.law==ContactLaw::Linear)return evaluate_friction_plane(p,n,offset,linear_model(m),h,dt,wall_velocity,wall_omega);
  configuration(m);validate(p);
  const auto sphere=sphere_properties(p.diameter_m,p.material);
  const double projection=p.position_m.x*n.x+p.position_m.y*n.y+p.position_m.z*n.z-offset;
  const double overlap=sphere.radius_m-projection,cap=m.max_overlap_radius_ratio*sphere.radius_m;
  const double mt=sphere.mass_kg/3.5; // Conservative arm <= radius while touching.
  const auto resolved=resolve(m,sphere.radius_m,overlap,cap,sphere.mass_kg,mt,dt);
- return evaluate_friction_plane(p,n,offset,resolved,h,dt);
+ return evaluate_friction_plane(p,n,offset,resolved,h,dt,wall_velocity,wall_omega);
 }
 ContactWrench evaluate_material_pair(const Particle& a,const Particle& b,const MaterialContact& m,ContactHistory& h,double dt){
- if(m.law==ContactLaw::Linear)return evaluate_friction_pair(a,b,m.linear,h,dt);
+ if(m.law==ContactLaw::Linear)return evaluate_friction_pair(a,b,linear_model(m),h,dt);
  configuration(m);validate(a);validate(b);
  if(&a==&b)throw std::invalid_argument("pair aliases forbidden");
  const auto sa=sphere_properties(a.diameter_m,a.material),sb=sphere_properties(b.diameter_m,b.material);

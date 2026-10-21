@@ -1,0 +1,11 @@
+{
+  "baseline": "Saved/DEM_task16_validation_final/matrix_1.csv",
+  "cases": 42,
+  "ignored_fields": [
+    "particle_steps_per_s",
+    "steps_per_s",
+    "wall_s",
+    "wall_s_per_physical_s"
+  ],
+  "differences": []
+}

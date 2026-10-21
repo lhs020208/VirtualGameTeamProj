@@ -19,7 +19,7 @@ void finite(Vec3 v){finite(v.x);finite(v.y);finite(v.z);}
 double dot(Vec3 a,Vec3 b){return a.x*b.x+a.y*b.y+a.z*b.z;}
 MaterialContact contact(const PowderSettings& s,const ContactSettings& c,bool wall){
  MaterialContact m;m.law=s.law;m.linear=c.linear;m.a=s.particle_material;m.b=wall?s.wall_material:s.particle_material;
- m.cn=c.cn;m.ct=c.ct;m.mu=c.mu;m.max_overlap_radius_ratio=c.overlap_cap;return m;
+ m.cn=c.cn;m.ct=c.ct;m.mu=c.mu;m.max_overlap_radius_ratio=c.overlap_cap;m.rolling=c.rolling;m.adhesion_gamma_j_m2=c.adhesion_gamma_j_m2;return m;
 }
 struct Random {
  std::mt19937_64 engine;
@@ -68,16 +68,18 @@ void validate_settings(const PowderSettings& s){
 }
 std::string serialize_settings(const PowderSettings& s){
  validate_settings(s);std::ostringstream out;out.imbue(std::locale::classic());out<<std::setprecision(17);
- out<<"POWDER_SETTINGS 2\ngenerator lattice_v1\nsize "<<(s.distribution==SizeDistribution::Mono?"mono":"uniform_number")<<' '<<s.diameter_min_m<<' '<<s.diameter_max_m<<"\ndensity_kg_m3 "<<s.density_kg_m3<<"\namount ";
+ out<<"POWDER_SETTINGS 4\ngenerator lattice_v1\nsize "<<(s.distribution==SizeDistribution::Mono?"mono":"uniform_number")<<' '<<s.diameter_min_m<<' '<<s.diameter_max_m<<"\ndensity_kg_m3 "<<s.density_kg_m3<<"\namount ";
  if(s.amount==AmountMode::Count)out<<"count "<<s.count;else out<<"mass "<<s.target_mass_kg<<' '<<s.mass_tolerance_kg;
  out<<"\nseed "<<s.seed<<"\nlaw "<<(s.law==ContactLaw::Linear?"linear":"hertz_mindlin")<<"\nparticle_elastic "<<s.particle_material.young_pa<<' '<<s.particle_material.poisson<<"\nwall_elastic "<<s.wall_material.young_pa<<' '<<s.wall_material.poisson;
  auto material=[&](const char* name,const ContactSettings& c){out<<'\n'<<name<<"_linear "<<c.linear.kn<<' '<<c.linear.cn<<' '<<c.linear.kt<<' '<<c.linear.ct<<' '<<c.linear.mu;out<<'\n'<<name<<"_hertz "<<c.cn<<' '<<c.ct<<' '<<c.mu<<' '<<c.overlap_cap;};material("pair",s.pair);material("wall",s.wall);
  auto vector=[&](const char* name,Vec3 v){out<<'\n'<<name<<' '<<v.x<<' '<<v.y<<' '<<v.z;};vector("centre_m",s.centre_m);vector("half_m",s.half_m);vector("velocity_m_s",s.velocity_m_s);vector("gravity_m_s2",s.gravity_m_s2);
- out<<"\nspacing_factor "<<s.spacing_factor<<"\nwall_clearance_m "<<s.wall_clearance_m<<"\nmax_candidates "<<s.max_candidates<<"\ndt_s "<<s.dt_s<<'\n';out<<"supply "<<(s.supply_mode==SupplyMode::Batch?"batch":"timed")<<' '<<s.supply_start_s<<' '<<s.supply_interval_s<<' '<<s.supply_per_event<<' '<<s.retry_interval_s<<'\n';return out.str();
+ out<<"\nspacing_factor "<<s.spacing_factor<<"\nwall_clearance_m "<<s.wall_clearance_m<<"\nmax_candidates "<<s.max_candidates<<"\ndt_s "<<s.dt_s<<'\n';out<<"supply "<<(s.supply_mode==SupplyMode::Batch?"batch":"timed")<<' '<<s.supply_start_s<<' '<<s.supply_interval_s<<' '<<s.supply_per_event<<' '<<s.retry_interval_s<<'\n';
+ auto rolling=[&](const char* name,const RollingModel& m){out<<name<<' '<<m.stiffness_n_m<<' '<<m.damping_ns_m<<' '<<m.mu<<'\n';};rolling("pair_rolling_sds",s.pair.rolling);rolling("wall_rolling_sds",s.wall.rolling);
+ out<<"contact_adhesion_gamma_j_m2 "<<s.pair.adhesion_gamma_j_m2<<' '<<s.wall.adhesion_gamma_j_m2<<'\n';return out.str();
 }
 PowderSettings parse_settings(const std::string& text){
  require(text.size()<=65536,"settings file exceeds 64 KiB");std::istringstream in(text);in.imbue(std::locale::classic());PowderSettings s;
- expect(in,"POWDER_SETTINGS");const auto version=unsigned_value(in);require(version==1||version==2,"unsupported settings schema version");expect(in,"generator");expect(in,"lattice_v1");expect(in,"size");std::string name;in>>name;
+ expect(in,"POWDER_SETTINGS");const auto version=unsigned_value(in);require(version>=1&&version<=4,"unsupported settings schema version");expect(in,"generator");expect(in,"lattice_v1");expect(in,"size");std::string name;in>>name;
  if(name=="mono")s.distribution=SizeDistribution::Mono;else if(name=="uniform_number")s.distribution=SizeDistribution::UniformNumber;else throw std::invalid_argument("unknown size distribution");
  in>>s.diameter_min_m>>s.diameter_max_m;expect(in,"density_kg_m3");in>>s.density_kg_m3;expect(in,"amount");in>>name;
  if(name=="count")s.count=unsigned_value(in);else if(name=="mass"){s.amount=AmountMode::Mass;s.count=0;in>>s.target_mass_kg>>s.mass_tolerance_kg;}else throw std::invalid_argument("unknown amount mode");
@@ -87,7 +89,9 @@ PowderSettings parse_settings(const std::string& text){
  auto material=[&](const char* linear,const char* hertz,ContactSettings& c){expect(in,linear);in>>c.linear.kn>>c.linear.cn>>c.linear.kt>>c.linear.ct>>c.linear.mu;expect(in,hertz);in>>c.cn>>c.ct>>c.mu>>c.overlap_cap;};material("pair_linear","pair_hertz",s.pair);material("wall_linear","wall_hertz",s.wall);
  auto vector=[&](const char* key,Vec3& v){expect(in,key);in>>v.x>>v.y>>v.z;};vector("centre_m",s.centre_m);vector("half_m",s.half_m);vector("velocity_m_s",s.velocity_m_s);vector("gravity_m_s2",s.gravity_m_s2);
  expect(in,"spacing_factor");in>>s.spacing_factor;expect(in,"wall_clearance_m");in>>s.wall_clearance_m;expect(in,"max_candidates");s.max_candidates=unsigned_value(in);expect(in,"dt_s");in>>s.dt_s;
- if(version==2){expect(in,"supply");in>>name;if(name=="batch")s.supply_mode=SupplyMode::Batch;else if(name=="timed")s.supply_mode=SupplyMode::Timed;else throw std::invalid_argument("unknown supply mode");in>>s.supply_start_s>>s.supply_interval_s;s.supply_per_event=unsigned_value(in);in>>s.retry_interval_s;}
+ if(version>=2){expect(in,"supply");in>>name;if(name=="batch")s.supply_mode=SupplyMode::Batch;else if(name=="timed")s.supply_mode=SupplyMode::Timed;else throw std::invalid_argument("unknown supply mode");in>>s.supply_start_s>>s.supply_interval_s;s.supply_per_event=unsigned_value(in);in>>s.retry_interval_s;}
+ if(version>=3){expect(in,"pair_rolling_sds");in>>s.pair.rolling.stiffness_n_m>>s.pair.rolling.damping_ns_m>>s.pair.rolling.mu;expect(in,"wall_rolling_sds");in>>s.wall.rolling.stiffness_n_m>>s.wall.rolling.damping_ns_m>>s.wall.rolling.mu;}
+ if(version>=4){expect(in,"contact_adhesion_gamma_j_m2");in>>s.pair.adhesion_gamma_j_m2>>s.wall.adhesion_gamma_j_m2;}
  require(!in.fail(),"invalid or truncated settings value");std::string extra;require(!(in>>extra),"unexpected trailing settings token");validate_settings(s);return s;
 }
 InitialBatch make_inventory(const PowderSettings& s,ParticleSystem world){

@@ -1,0 +1,2 @@
+step,time_s,valid,status,uniformity,mass_a_kg,mass_b_kg,count_a,count_b,occupied,undersampled,outside,outside_mass_a_kg,outside_mass_b_kg
+0,0,0,outside_region,,1.3404128655316445,1.3404128655316445,16,16,4,0,1,0.08377580409572781,0

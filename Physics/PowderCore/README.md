@@ -1,4 +1,4 @@
-# PowderCore 0.14.0 — tasks 01 through 14
+# PowderCore 0.20.0 — tasks 01 through 18
 
 Standalone C++17 translational dynamics with gravity and constant external forces. Optional horizontal-plane normal contact; no Unreal dependencies. The default Unreal GameMode now uses the task 10 background DEM bridge with 300 particles; historical sections below describe their original scope.
 
@@ -560,3 +560,109 @@ rig drop is a separate enlarged single sphere. This is not a full 300-particle
 discharge validation or real-powder calibration. Timing includes metric collection,
 and short-window cost ratios do not guarantee full-run completion times. See
 Docs/DEM/task15/report.md and the task 15 completion record for measured limits.
+
+## Task 16: contact rolling resistance
+
+Contact-local SDS rolling resistance is available for pair, plane and box contacts
+with linear or Hertz normal forces. Pair and wall RollingModel settings are separate:
+stiffness_n_m (N/m), damping_ns_m (Ns/m), mu (dimensionless). Defaults 1000, 1, 0
+disable rolling, preserving the task 15 baseline. Relative tangent angular motion
+drives a transported spring; torque is capped at mu * normal_force * effective_radius.
+Pair torques are equal and opposite. Pure twist and airborne spin are unaffected.
+Rolling stiffness/damping enter individual and multi-contact timestep guards.
+
+Unreal exposes DEM|PairRolling and DEM|WallRolling fields; reset after edits. Settings
+v3 saves both sets, exports them with results, and reads v1/v2 with rolling disabled.
+14 core tests and 6 Unreal tests passed twice, including an analytic rotational
+oscillator, inclined resting sphere, six-sphere pile and preset/export checks.
+The 42 baseline cases remain exactly unchanged with rolling disabled (excluding time).
+The test coefficients are synthetic, not calibrated powder. No twist resistance,
+cohesion or 300-particle long-duration rolling validation is claimed. See
+Docs/DEM/작업16_구름저항_완료기록.md and Docs/DEM/task16/.
+
+## Task 17: contact-only cohesion and wall adhesion
+
+Pair/wall adhesion_gamma_j_m2 (default zero) adds constant attractive normal force
+Fc=4*pi*gamma*R_eff while overlap>0. R_eff=Ra*Rb/(Ra+Rb) for pairs, radius for walls.
+Gamma is single-surface energy in J/m2 (work of adhesion=2*gamma). Hertz plus this
+term is a contact-only DMT form; the linear combination is a synthetic spring model.
+Adhesion potential is -Fc*overlap, zero for overlap<=0. The potential is continuous
+at separation; the force is discontinuous. There is no finite-gap attraction or
+JKR/liquid-bridge history. Friction and rolling caps retain repulsive load scaling.
+
+Unreal DEM|Adhesion exposes PairAdhesionGamma and WallAdhesionGamma. Reset after edits.
+Settings v4 saves these values; v1-v3 load with adhesion disabled. Tests cover
+force/energy consistency, equilibrium, binding and separation, wall pull-off, boxes,
+parameter validation and dt guards. 15 core and 7 Unreal tests passed twice; the
+42 disabled-cohesion baseline cases match task 16 exactly except timing.
+No real-powder calibration, humidity/electrostatics or full 300-particle cohesive
+discharge validation is claimed. See Docs/DEM/작업17_응집_벽부착_완료기록.md.
+
+## Task 18: rigid nonoverlapping sphere clumps
+
+ClumpWorld is an isolated rigid-body solver reusing the existing contact laws.
+Mass, COM and full inertia tensors are summed for nonoverlapping spheres with ideal
+massless rigid connections. Overlapping members are rejected. Members have no
+independent motion and same-body pairs never contact. External loads include
+COM lever arms; world angular momentum and midpoint quaternion orientation handle
+anisotropic inertia. Type-pair and wall material tables are explicit.
+
+Open L_ClumpTest and Play: 3 sphere powder bodies + 3 two-sphere inclusions = 6 bodies
+and 9 rendered pebbles. Space toggles, N steps, R resets, O exports a paused state.
+Details exposes material controls. This small fixture uses a fixed-dt main-thread
+work budget, separate from the existing spherical Worker and supply/tracking/results
+pipeline. Exports are diagnostic body/shape files, not restart checkpoints.
+
+16 core tests and 8 Unreal tests passed twice; the prior 42 baseline conditions are
+unchanged except timing. Full tensor/free rotation, sphere reduction, off-centre
+contact torque, momentum, type stiffness, floor collision and failure atomicity
+were checked. Large clumps, overlapping-member unions and 300-body deposition are
+not validated. See Docs/DEM/작업18_비구형입자_이물질_완료기록.md.
+
+## Task 19: static triangle analysis surfaces
+
+StaticTriangleMesh provides immutable SI geometry, BVH candidate search, closest
+face/edge/vertex contacts, coplanar seam history, explicit open-boundary labels,
+closed-solid interior rejection and atomic centre-crossing guards. ParticleSystem
+and ClumpWorld both use the existing wall contact laws on these surfaces.
+Declared source units and independent expected SI size bounds are mandatory.
+Open sheets are two-sided and zero thickness; every boundary edge must be labelled.
+Duplicate/degenerate/nonmanifold/inconsistently wound faces are rejected. This is
+not a CAD self-intersection or cross-component overlap repair tool.
+
+L_MeshTest reads the actual rendered Cube LOD0 for a floor, ramp and four tube walls:
+6 surfaces / 288 triangles, with 6 bodies / 9 pebbles. Play then Space/N/R/O as in
+task 18. O also exports applied SI surface geometry. Existing L_Main stays analytic.
+The mesh fixture is separate from the spherical supply/tracking/Worker pipeline.
+17 core and 9 Unreal tests passed twice. Actual exported render surfaces completed
+0.3 s / 150000 steps with contacts and mass conservation; the prior 42 baseline
+cases are unchanged except timing. See Docs/DEM/작업19_정적삼각형메시접촉_완료기록.md.
+
+## Task 20: prescribed moving surfaces and paddle
+
+MovingTriangleMesh shares a reference BVH and transforms queries with physical time.
+Constant translation plus fixed-axis signed RPM/initial phase gives point velocities
+V + omega cross (q - pivot). Both sphere and clump worlds use relative contact-point
+velocity, relative rolling angular velocity and average spin for history transport.
+Per-surface wall reaction force/torque and signed external work include rolling couples.
+Step failure leaves particles, histories, physical clock and accumulated work unchanged.
+Wall angle/displacement guards and relative-frame crossing checks are discrete guards,
+not continuous collision-time resolution or automatic timestep adaptation.
+
+L_PaddleTest contains five static surfaces and one 30 RPM paddle (288 actual render
+triangles), 6 bodies / 9 pebbles. Space/N/R/O controls apply. Change Paddle RPM then
+Reset; display and collision geometry share the same physical time. Export records
+reference moving geometry, applied motion and last reaction/work state. Reaction
+loads do not alter prescribed RPM: motor/drive dynamics are outside this task.
+
+18 core / 10 Unreal tests passed twice; old 42 baseline cases match task 19 except
+timing. A translating-wall work/energy test converges on dt halving; actual paddle
+mesh runs 0.3 s with positive work and nonzero torque. This is a small fixture,
+not a validated bulk-mixing or motor-sizing model. See Docs/DEM/작업20_가동벽_패들_완료기록.md.
+
+
+## Task 21: mixing experiment (0.21.0)
+
+`powder/mixing.hpp` provides deterministic two-group charging, body-COM mass-weighted cell uniformity, validity diagnostics, integer-step sampling and spatial/time-series exports. This is not the random-variance-corrected Lacey index or a product quality threshold. `/Game/L_MixingTest` supplies a blue/orange 32-body fixture using the prescribed paddle; count, density, RPM, duration and sampling grid can be reset in the actor. Default 40 mm virtual spheres are a numerical experiment, not calibrated fine powder.
+
+`Scripts/compare_dem_mixing.py A B --out NEW_DIRECTORY` verifies completed export ledgers and compares compatible physical sample steps and spatial cells. Invalid scores remain blank. See `Docs/DEM/작업21_혼합실험_공간분포_완료기록.md` for the formula, sampling limits, controls and evidence, and `Docs/DEM/task21/report.md` for the repeated regression report.

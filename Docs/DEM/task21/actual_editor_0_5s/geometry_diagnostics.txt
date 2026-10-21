@@ -1,0 +1,1 @@
+Paddle: prescribed constant RPM, 5 static surfaces + 1 moving surface; forces do not change the imposed speed.
