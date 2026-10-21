@@ -1,0 +1,246 @@
+{
+  "schema": 1,
+  "scope": "restricted_2D_air_only_solver_no_DEM_coupling",
+  "flow_core_version": "0.2.0",
+  "started_utc": "2026-10-21T14:58:51.799703+00:00",
+  "source_files": {
+    "Physics/FlowCore/app/main.cpp": "8d2f83cd19f2e83b83a5dce8b15e50c21873c7786c2059a9333dcb4f8b09ff41",
+    "Physics/FlowCore/app/run.cpp": "08a0cebe7cab5662ae30cb718a6eca3aa47c2f6a29f46426cda1c515ae24a1fb",
+    "Physics/FlowCore/CMakeLists.txt": "9f4c8a4b18bc75308a4b87db5152ab554fa6b2f77efcb78cc2b65b2a8f8d0cac",
+    "Physics/FlowCore/fixtures/pressure_channel.flow": "11b9d0c51d2d65d1930a8a7f2fc11575319013d0041864ca46ffc1f90ac646cf",
+    "Physics/FlowCore/fixtures/unsupported_vacuum.flow": "31ce703d840b080a8c598c2e04f51d0bc1a98a1cda2b0c18225f44bd164220f6",
+    "Physics/FlowCore/fixtures/velocity_channel.flow": "57582d6bea57f0600b52ec754ef03c8f8252e1a1055b8c978613a2b6252e1ea1",
+    "Physics/FlowCore/fixtures/zero_drive.flow": "cce3756b5fb6f7151f4d149bc4e343db76a06dde80e3d64560da692ce57af6cf",
+    "Physics/FlowCore/include/flow/contract.hpp": "26ae3bca4ebf95e0919f51fb9a950d8b590a48226fe70315fc0b2846449cc75c",
+    "Physics/FlowCore/include/flow/solver.hpp": "3d66b370553c09f2873175ee27646f81da94f2d7a23d2a04aa48b2e812199277",
+    "Physics/FlowCore/src/contract.cpp": "038c58e2244cf13223a7c46f83af62c6af6b868e33a45ec1da9ab33f6384d46a",
+    "Physics/FlowCore/src/solver.cpp": "023438d4784bf3641dfe65aa98168158dcb4d0f46ca604631ac189a37a02236b",
+    "Physics/FlowCore/tests/cli_tests.py": "70f52e38d601dc93ed6248b2c75563d2dd86a38fb2707a671613e560940d75c1",
+    "Physics/FlowCore/tests/contract_tests.cpp": "8d04cee4343671b3d916ede00396c3053d184be9b48f64f4413324370e9b7dd1",
+    "Physics/FlowCore/tests/run_cli_tests.py": "5263ddadecce4eb8c7a3524bd07fc654812ed3f9c92043ed25be9693223dfbd8",
+    "Physics/FlowCore/tests/solver_tests.cpp": "731c79ba43a5a8a83ddd4cefb22f9bdfc5e88dba8225bb449ac84254f33f1ae7",
+    "Scripts/run_flow_solver_validation.py": "d8551edd576fee79aebc2f56c4acb0b2f88b2d39f2912ba7166135445a5db58f",
+    "Scripts/run_flow_contract_validation.py": "c8b13da4cf72eed0109426851680549a3df78de430ac13d099f2008f50f4f1c0"
+  },
+  "source_sha256": "ef58311cebfb17a35ea59afed7b9d02ad8733423d906805058cf553db7cb880a",
+  "passed": true,
+  "runs": [
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+        "-S",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore",
+        "-B",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore"
+      ],
+      "log": "configure.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+        "--build",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "--config",
+        "Release"
+      ],
+      "log": "build.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+        "--test-dir",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "-C",
+        "Release",
+        "--output-on-failure",
+        "--output-junit",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task23_validation\\tests_1.xml"
+      ],
+      "log": "tests_1.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\pressure_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task23_validation\\pressure_channel_1"
+      ],
+      "log": "pressure_channel_1.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\velocity_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task23_validation\\velocity_channel_1"
+      ],
+      "log": "velocity_channel_1.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\zero_drive.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task23_validation\\zero_drive_1"
+      ],
+      "log": "zero_drive_1.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+        "--test-dir",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "-C",
+        "Release",
+        "--output-on-failure",
+        "--output-junit",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task23_validation\\tests_2.xml"
+      ],
+      "log": "tests_2.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\pressure_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task23_validation\\pressure_channel_2"
+      ],
+      "log": "pressure_channel_2.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\velocity_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task23_validation\\velocity_channel_2"
+      ],
+      "log": "velocity_channel_2.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\zero_drive.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task23_validation\\zero_drive_2"
+      ],
+      "log": "zero_drive_2.log",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "pressure_channel_1": {
+      "schema": 1,
+      "flow_core_version": "0.2.0",
+      "solver_implemented": true,
+      "result_kind": "computed_air_only_MAC_fields",
+      "passed": true,
+      "accepted_steps": 10000,
+      "requested_steps": 10000,
+      "physical_time_s": 5,
+      "wall_time_s": 0.6542309,
+      "max_divergence_linf_s_inv": 9.414493182683556e-12,
+      "max_mass_balance_relative": 1.8199440760288306e-11,
+      "max_pressure_residual_pa_m2": 2.2668163330278697e-08,
+      "total_pressure_iterations": 1711,
+      "last_inlet_mass_kg_s": 0.000242558620415443,
+      "last_outlet_mass_kg_s": 0.0002425586204128978,
+      "error": ""
+    },
+    "velocity_channel_1": {
+      "schema": 1,
+      "flow_core_version": "0.2.0",
+      "solver_implemented": true,
+      "result_kind": "computed_air_only_MAC_fields",
+      "passed": true,
+      "accepted_steps": 10000,
+      "requested_steps": 10000,
+      "physical_time_s": 5,
+      "wall_time_s": 22.2379053,
+      "max_divergence_linf_s_inv": 9.999979316832608e-11,
+      "max_mass_balance_relative": 1.489543130866712e-10,
+      "max_pressure_residual_pa_m2": 2.4082338254127755e-07,
+      "total_pressure_iterations": 2695676,
+      "last_inlet_mass_kg_s": 0.00024082366327492303,
+      "last_outlet_mass_kg_s": 0.00024082366327503178,
+      "error": ""
+    },
+    "zero_drive_1": {
+      "schema": 1,
+      "flow_core_version": "0.2.0",
+      "solver_implemented": true,
+      "result_kind": "computed_air_only_MAC_fields",
+      "passed": true,
+      "accepted_steps": 10000,
+      "requested_steps": 10000,
+      "physical_time_s": 5,
+      "wall_time_s": 0.5792415,
+      "max_divergence_linf_s_inv": 0,
+      "max_mass_balance_relative": 0,
+      "max_pressure_residual_pa_m2": 0,
+      "total_pressure_iterations": 0,
+      "last_inlet_mass_kg_s": 0,
+      "last_outlet_mass_kg_s": 0,
+      "error": ""
+    },
+    "pressure_channel_2": {
+      "schema": 1,
+      "flow_core_version": "0.2.0",
+      "solver_implemented": true,
+      "result_kind": "computed_air_only_MAC_fields",
+      "passed": true,
+      "accepted_steps": 10000,
+      "requested_steps": 10000,
+      "physical_time_s": 5,
+      "wall_time_s": 0.648933,
+      "max_divergence_linf_s_inv": 9.414493182683556e-12,
+      "max_mass_balance_relative": 1.8199440760288306e-11,
+      "max_pressure_residual_pa_m2": 2.2668163330278697e-08,
+      "total_pressure_iterations": 1711,
+      "last_inlet_mass_kg_s": 0.000242558620415443,
+      "last_outlet_mass_kg_s": 0.0002425586204128978,
+      "error": ""
+    },
+    "velocity_channel_2": {
+      "schema": 1,
+      "flow_core_version": "0.2.0",
+      "solver_implemented": true,
+      "result_kind": "computed_air_only_MAC_fields",
+      "passed": true,
+      "accepted_steps": 10000,
+      "requested_steps": 10000,
+      "physical_time_s": 5,
+      "wall_time_s": 21.857703,
+      "max_divergence_linf_s_inv": 9.999979316832608e-11,
+      "max_mass_balance_relative": 1.489543130866712e-10,
+      "max_pressure_residual_pa_m2": 2.4082338254127755e-07,
+      "total_pressure_iterations": 2695676,
+      "last_inlet_mass_kg_s": 0.00024082366327492303,
+      "last_outlet_mass_kg_s": 0.00024082366327503178,
+      "error": ""
+    },
+    "zero_drive_2": {
+      "schema": 1,
+      "flow_core_version": "0.2.0",
+      "solver_implemented": true,
+      "result_kind": "computed_air_only_MAC_fields",
+      "passed": true,
+      "accepted_steps": 10000,
+      "requested_steps": 10000,
+      "physical_time_s": 5,
+      "wall_time_s": 0.5837145,
+      "max_divergence_linf_s_inv": 0,
+      "max_mass_balance_relative": 0,
+      "max_pressure_residual_pa_m2": 0,
+      "total_pressure_iterations": 0,
+      "last_inlet_mass_kg_s": 0,
+      "last_outlet_mass_kg_s": 0,
+      "error": ""
+    }
+  },
+  "numerical_metrics_exact_repeat": true,
+  "computed_fields_exact_repeat": true,
+  "sources_unchanged": true
+}

@@ -1,0 +1,1 @@
+{"version":"0.4.0-dilute-two-way","coupling_substeps":20,"kernel_radius_m":0.0025000000000000001,"diameter_m":3.0000000000000001e-05,"density_kg_m3":1000,"gravity_m_s2":[0,0,0],"initial_position_m":[0.01,0.0050000000000000001,0],"initial_velocity_m_s":[0,0,0],"reaction_enabled":false,"finite_porosity_equations":false,"max_solid_fraction":0.001}

@@ -1,0 +1,24 @@
+Internal ctest changing into directory: D:/GitHub/VirtualGameTeamProj/Intermediate/FlowCore
+Test project D:/GitHub/VirtualGameTeamProj/Intermediate/FlowCore
+    Start 1: flow_two_way
+1/9 Test #1: flow_two_way .....................   Passed    0.52 sec
+    Start 2: flow_one_way
+2/9 Test #2: flow_one_way .....................   Passed    0.20 sec
+    Start 3: particle_motion_regression
+3/9 Test #3: particle_motion_regression .......   Passed    0.03 sec
+    Start 4: flow_solver
+4/9 Test #4: flow_solver ......................   Passed   16.29 sec
+    Start 5: flow_contract
+5/9 Test #5: flow_contract ....................   Passed    0.04 sec
+    Start 6: flow_two_way_cli
+6/9 Test #6: flow_two_way_cli .................   Passed    0.42 sec
+    Start 7: flow_particle_cli
+7/9 Test #7: flow_particle_cli ................   Passed    0.40 sec
+    Start 8: flow_run_cli
+8/9 Test #8: flow_run_cli .....................   Passed    1.03 sec
+    Start 9: flow_contract_cli
+9/9 Test #9: flow_contract_cli ................   Passed    0.48 sec
+
+100% tests passed, 0 tests failed out of 9
+
+Total Test time (real) =  19.41 sec

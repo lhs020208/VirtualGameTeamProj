@@ -1,0 +1,6 @@
+{
+"schema":1,"flow_core_version":"0.2.0","solver_implemented":true,"result_kind":"computed_air_only_MAC_fields","passed":true,
+"accepted_steps":10000,"requested_steps":10000,"physical_time_s":5,"wall_time_s":0.58371450000000003,
+"max_divergence_linf_s_inv":0,"max_mass_balance_relative":0,"max_pressure_residual_pa_m2":0,"total_pressure_iterations":0,
+"last_inlet_mass_kg_s":0,"last_outlet_mass_kg_s":0,"error":""
+}

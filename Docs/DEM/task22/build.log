@@ -1,0 +1,12 @@
+msbuild 버전 17.14.23+b0019275e(.NET Framework용)
+
+  1>Checking Build System
+  Building Custom Rule D:/GitHub/VirtualGameTeamProj/Physics/FlowCore/CMakeLists.txt
+  contract.cpp
+  flow_core.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\FlowCore\Release\flow_core.lib
+  Building Custom Rule D:/GitHub/VirtualGameTeamProj/Physics/FlowCore/CMakeLists.txt
+  flow_contract.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\FlowCore\Release\flow_contract.exe
+  Building Custom Rule D:/GitHub/VirtualGameTeamProj/Physics/FlowCore/CMakeLists.txt
+  contract_tests.cpp
+  flow_contract_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\FlowCore\Release\flow_contract_tests.exe
+  Building Custom Rule D:/GitHub/VirtualGameTeamProj/Physics/FlowCore/CMakeLists.txt

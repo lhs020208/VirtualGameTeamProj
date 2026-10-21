@@ -1,0 +1,1 @@
+{"version":"0.3.0-one-way","mode":"one_way_stokes","diameter_m":3.0000000000000001e-05,"density_kg_m3":1000,"substeps":20,"gravity_m_s2":[0,-9.81,0],"initial_position_m":[0.050000000000000003,0.0050000000000000001,0],"initial_velocity_m_s":[0,0,0],"drag_enabled":true,"air_reaction_enabled":false}

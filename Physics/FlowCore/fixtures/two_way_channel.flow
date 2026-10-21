@@ -1,0 +1,17 @@
+FLOW_CONTRACT 1
+units SI
+model planar_isothermal_laminar
+geometry parallel_plates
+grid 32 16 0.02 0.01
+reporting_depth_m 0.001
+reference_pressure_absolute_pa 101325
+temperature_k 293.15
+left pressure_absolute_pa 101325.0008688
+right pressure_absolute_pa 101325
+bottom no_slip 0
+top no_slip 0
+time_s 0.0005 0.01
+velocity_component_bound_m_s 0.05
+projection 20000 1e-7 1e-8 1e-7 1e-8
+initial steady_analytic_reference
+end

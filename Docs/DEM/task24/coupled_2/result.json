@@ -1,0 +1,1 @@
+{"version":"0.3.0-one-way","passed":true,"coupling":"air_to_particle_only","air_reaction_enabled":false,"accepted_air_steps":100,"physical_time_s":0.050000000000000003,"particle_substeps_per_air_step":20,"max_particle_Re":0.054084794442359328,"max_dt_over_tau":0.009049999999999999,"error":""}

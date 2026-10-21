@@ -1,0 +1,16 @@
+case,value,auxiliary
+volume_relative_error,1.1102230246251565e-16,1.731802950291373e-06
+force_balance_N,1.5509636485369269e-25,0
+adjoint_power_residual_W,-1.0344352984512788e-27,0
+exchange_decay_relative_error,0.0050209380886589994,4.1359030627651384e-24
+actual_exchange_residual_Ns,1.6976286680361796e-26,0
+reaction_air_difference_m_s,1.0771574799242623e-05,0
+coupling_time_ratio,2.027012354820545,0
+grid_velocity_8,0.014694276284468831,0
+grid_velocity_16,0.014815324761502153,0
+grid_velocity_32,0.014845587251342256,0
+grid_difference_ratio,3.999951017675603,0
+off_node_fine_grid_relative_difference,0.0020370408424149242,0
+overlapping_kernel_exchange_residual_Ns,1.4551328257840557e-26,0
+weak_to_strong_difference_ratio,0.0010000630332551157,0
+rejection_and_rollback,1,0

@@ -1,0 +1,206 @@
+{
+  "schema": 1,
+  "version": "0.4.0-dilute-two-way",
+  "scope": "conservative_volume_diagnostics_and_dilute_momentum_feedback",
+  "finite_porosity_equations": false,
+  "started_utc": "2026-10-21T15:26:24.729645+00:00",
+  "source_files": {
+    "Physics/FlowCore/app/main.cpp": "8d2f83cd19f2e83b83a5dce8b15e50c21873c7786c2059a9333dcb4f8b09ff41",
+    "Physics/FlowCore/app/particle_run.cpp": "0436388ac96ac16935a931c5458e3c20885d9b86e4065ec749df86ccc33b0c76",
+    "Physics/FlowCore/app/run.cpp": "08a0cebe7cab5662ae30cb718a6eca3aa47c2f6a29f46426cda1c515ae24a1fb",
+    "Physics/FlowCore/app/two_way_run.cpp": "bc85e9d039d6266305e221f5bf9271fdbfa9402710ee14865368d02305149b60",
+    "Physics/FlowCore/CMakeLists.txt": "c1b4f7c63171330c6c252d839988c060b493fad939efd38e077f3d4e0edeb25a",
+    "Physics/FlowCore/fixtures/one_way_channel.flow": "f5ccef6aea45674e7bac1874aaa218be4c489a66e37ae4d08095c746fab5c56d",
+    "Physics/FlowCore/fixtures/pressure_channel.flow": "11b9d0c51d2d65d1930a8a7f2fc11575319013d0041864ca46ffc1f90ac646cf",
+    "Physics/FlowCore/fixtures/two_way_channel.flow": "8309c141b44f283d6986d24fab27623372c8b5bbfe972f26342dad022ce31a2d",
+    "Physics/FlowCore/fixtures/unsupported_vacuum.flow": "31ce703d840b080a8c598c2e04f51d0bc1a98a1cda2b0c18225f44bd164220f6",
+    "Physics/FlowCore/fixtures/velocity_channel.flow": "57582d6bea57f0600b52ec754ef03c8f8252e1a1055b8c978613a2b6252e1ea1",
+    "Physics/FlowCore/fixtures/zero_drive.flow": "cce3756b5fb6f7151f4d149bc4e343db76a06dde80e3d64560da692ce57af6cf",
+    "Physics/FlowCore/include/flow/contract.hpp": "26ae3bca4ebf95e0919f51fb9a950d8b590a48226fe70315fc0b2846449cc75c",
+    "Physics/FlowCore/include/flow/one_way.hpp": "58053a21f6a53d706ddb85f329c275f9cb615824454a7541469a8c500f3cc387",
+    "Physics/FlowCore/include/flow/solver.hpp": "8eeac4a3b201f806d6b7ad610cb31a6cb1c54a5506cb9afd99754c714d2cd5dd",
+    "Physics/FlowCore/include/flow/two_way.hpp": "d65e9e6fa31a5a466fd3b3005f9f569dd2ba5e135f107b6650d431694bd48463",
+    "Physics/FlowCore/src/contract.cpp": "038c58e2244cf13223a7c46f83af62c6af6b868e33a45ec1da9ab33f6384d46a",
+    "Physics/FlowCore/src/one_way.cpp": "95c514138b901042c1c777890965b385fca9ab9db3414414f59041d00d1a98fe",
+    "Physics/FlowCore/src/solver.cpp": "3ac6eea4b313598bfcfd67792263b59dad74af49e689d7f9b03a033356fbcfdc",
+    "Physics/FlowCore/src/two_way.cpp": "f3feb8b16904cb40b1a0676feedee9d8df8d8b000234bbf1e4af1f96f9c5dd91",
+    "Physics/FlowCore/tests/cli_tests.py": "70f52e38d601dc93ed6248b2c75563d2dd86a38fb2707a671613e560940d75c1",
+    "Physics/FlowCore/tests/contract_tests.cpp": "8d04cee4343671b3d916ede00396c3053d184be9b48f64f4413324370e9b7dd1",
+    "Physics/FlowCore/tests/one_way_tests.cpp": "40adb17fc3009add6d3fa2ec0441758db19734aa55288aaa9592e788d6b1709a",
+    "Physics/FlowCore/tests/particle_cli_tests.py": "6be01fe1d9abf6b1cb8a34b194c7641c76bc57ae9663934057cc7179c17cd0e4",
+    "Physics/FlowCore/tests/run_cli_tests.py": "5263ddadecce4eb8c7a3524bd07fc654812ed3f9c92043ed25be9693223dfbd8",
+    "Physics/FlowCore/tests/solver_tests.cpp": "731c79ba43a5a8a83ddd4cefb22f9bdfc5e88dba8225bb449ac84254f33f1ae7",
+    "Physics/FlowCore/tests/two_way_cli_tests.py": "2e23d79f49b764d279593e2bf6b4379225a243cd70196072f26f0062ff3bbe9c",
+    "Physics/FlowCore/tests/two_way_tests.cpp": "777cb0f3ae7876a890c7f38fe349a1cda7254cc9c74625b0bdd982c73be3f971",
+    "Physics/PowderCore/src/core.cpp": "65356cec332b086cfed69b29ab7ba871f276d5221df3a4fe7e3b78bbda682d8e",
+    "Physics/PowderCore/include/powder/core.hpp": "d5ab4ee7a2a4f3fac3152628edfd0d1201578eae3c2953cedfd6a01d74839425",
+    "Physics/PowderCore/tests/core_tests.cpp": "f295f2b129d0bb4f895d551bd2584d64a5601193454bb74dbf23b276bdcd527d",
+    "Scripts/run_flow_contract_validation.py": "c8b13da4cf72eed0109426851680549a3df78de430ac13d099f2008f50f4f1c0",
+    "Scripts/run_flow_solver_validation.py": "54a4e20f4d2aeb0d71f144a2a050d4ec24060f17d80594729fd9fc8fab8287c3",
+    "Scripts/run_one_way_validation.py": "1b92b17418f8f5083dbce326ab83ac6885cab829637835a2863a6d2e6b3d36f4",
+    "Scripts/run_two_way_validation.py": "9989466fce87885807b0d3301dfee5b9626de69abea5a473ea9ff2f91ad36efe"
+  },
+  "source_sha256": "ba6ef1b8c75a2418dae460029bbeb90536149ec29ad4369e3c55c4db67d90800",
+  "passed": true,
+  "runs": [
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+        "-S",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore",
+        "-B",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore"
+      ],
+      "log": "configure.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+        "--build",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "--config",
+        "Release"
+      ],
+      "log": "build.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+        "--test-dir",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "-C",
+        "Release",
+        "--output-on-failure",
+        "--output-junit",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task25_validation\\tests_1.xml"
+      ],
+      "log": "tests_1.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_two_way_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\two_way_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task25_validation\\two_way_1",
+        "20",
+        "1"
+      ],
+      "log": "two_way_1.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_two_way_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\two_way_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task25_validation\\control_1",
+        "20",
+        "0"
+      ],
+      "log": "control_1.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+        "--test-dir",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "-C",
+        "Release",
+        "--output-on-failure",
+        "--output-junit",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task25_validation\\tests_2.xml"
+      ],
+      "log": "tests_2.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_two_way_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\two_way_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task25_validation\\two_way_2",
+        "20",
+        "1"
+      ],
+      "log": "two_way_2.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_two_way_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\two_way_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task25_validation\\control_2",
+        "20",
+        "0"
+      ],
+      "log": "control_2.log",
+      "exit_code": 0
+    }
+  ],
+  "computed_runs": [
+    {
+      "version": "0.4.0-dilute-two-way",
+      "passed": true,
+      "reaction_enabled": true,
+      "model": "dilute_regularized_point_force",
+      "finite_porosity_equations": false,
+      "accepted_steps": 20,
+      "physical_time_s": 0.01,
+      "max_exchange_error_Ns": 2.9331475481774863e-26,
+      "max_solid_fraction": 1.8982496044881718e-06,
+      "particle_volume_m3": 1.413716694115407e-14,
+      "mapped_volume_m3": 1.413716694115407e-14,
+      "final_particle_vx_m_s": 0.027907076990720436,
+      "error": ""
+    },
+    {
+      "version": "0.4.0-dilute-two-way",
+      "passed": true,
+      "reaction_enabled": false,
+      "model": "dilute_regularized_point_force",
+      "finite_porosity_equations": false,
+      "accepted_steps": 20,
+      "physical_time_s": 0.01,
+      "max_exchange_error_Ns": 0,
+      "max_solid_fraction": 1.8982929141666472e-06,
+      "particle_volume_m3": 1.413716694115407e-14,
+      "mapped_volume_m3": 1.4137166941154068e-14,
+      "final_particle_vx_m_s": 0.027916517047203042,
+      "error": ""
+    },
+    {
+      "version": "0.4.0-dilute-two-way",
+      "passed": true,
+      "reaction_enabled": true,
+      "model": "dilute_regularized_point_force",
+      "finite_porosity_equations": false,
+      "accepted_steps": 20,
+      "physical_time_s": 0.01,
+      "max_exchange_error_Ns": 2.9331475481774863e-26,
+      "max_solid_fraction": 1.8982496044881718e-06,
+      "particle_volume_m3": 1.413716694115407e-14,
+      "mapped_volume_m3": 1.413716694115407e-14,
+      "final_particle_vx_m_s": 0.027907076990720436,
+      "error": ""
+    },
+    {
+      "version": "0.4.0-dilute-two-way",
+      "passed": true,
+      "reaction_enabled": false,
+      "model": "dilute_regularized_point_force",
+      "finite_porosity_equations": false,
+      "accepted_steps": 20,
+      "physical_time_s": 0.01,
+      "max_exchange_error_Ns": 0,
+      "max_solid_fraction": 1.8982929141666472e-06,
+      "particle_volume_m3": 1.413716694115407e-14,
+      "mapped_volume_m3": 1.4137166941154068e-14,
+      "final_particle_vx_m_s": 0.027916517047203042,
+      "error": ""
+    }
+  ],
+  "metrics_exact_repeat": true,
+  "results_exact_repeat": true,
+  "sources_unchanged": true
+}

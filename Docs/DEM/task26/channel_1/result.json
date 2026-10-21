@@ -1,0 +1,1 @@
+{"version":"0.5.0-buffered-channel","passed":true,"all_arrived":true,"accepted_steps":600,"physical_time_s":0.29999999999999999,"pending":0,"active":0,"exited":3,"exited_mass_kg":4.2411500823462208e-11,"max_particle_mass_residual_kg":0,"max_air_mass_residual_kg":4.5055535349028354e-19,"max_exchange_residual_Ns":3.4928566057310593e-26,"error":""}

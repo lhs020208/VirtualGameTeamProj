@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Win32-MSBuild"
+	tests="2"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname="PC"
+	time="0"
+	timestamp="2026-10-21T23:43:44"
+	>
+	<testcase name="flow_contract" classname="flow_contract" time="0.0118829" status="run">
+		<properties/>
+		<system-out>PASS 2135 checks: scope, pressure units, BC topology, MAC layout, fields, reference flux, timestep and strict serialization
+</system-out>
+	</testcase>
+	<testcase name="flow_contract_cli" classname="flow_contract_cli" time="0.437547" status="run">
+		<properties/>
+		<system-out>PASS 21 CLI cases: valid fixtures, finite reports, exact repeat, overwrite protection and invalid contracts
+</system-out>
+	</testcase>
+</testsuite>

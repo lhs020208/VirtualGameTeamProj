@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "version": "0.3.0-one-way",
+  "scope": "isolated_heavy_spheres_Stokes_air_to_particle_only",
+  "started_utc": "2026-10-21T15:11:29.313697+00:00",
+  "source_files": {
+    "Physics/FlowCore/app/main.cpp": "8d2f83cd19f2e83b83a5dce8b15e50c21873c7786c2059a9333dcb4f8b09ff41",
+    "Physics/FlowCore/app/particle_run.cpp": "0436388ac96ac16935a931c5458e3c20885d9b86e4065ec749df86ccc33b0c76",
+    "Physics/FlowCore/app/run.cpp": "08a0cebe7cab5662ae30cb718a6eca3aa47c2f6a29f46426cda1c515ae24a1fb",
+    "Physics/FlowCore/CMakeLists.txt": "4874d1188f6e653acef9ce8b12d93d897505849d6e5d143e9804301851079feb",
+    "Physics/FlowCore/fixtures/one_way_channel.flow": "f5ccef6aea45674e7bac1874aaa218be4c489a66e37ae4d08095c746fab5c56d",
+    "Physics/FlowCore/fixtures/pressure_channel.flow": "11b9d0c51d2d65d1930a8a7f2fc11575319013d0041864ca46ffc1f90ac646cf",
+    "Physics/FlowCore/fixtures/unsupported_vacuum.flow": "31ce703d840b080a8c598c2e04f51d0bc1a98a1cda2b0c18225f44bd164220f6",
+    "Physics/FlowCore/fixtures/velocity_channel.flow": "57582d6bea57f0600b52ec754ef03c8f8252e1a1055b8c978613a2b6252e1ea1",
+    "Physics/FlowCore/fixtures/zero_drive.flow": "cce3756b5fb6f7151f4d149bc4e343db76a06dde80e3d64560da692ce57af6cf",
+    "Physics/FlowCore/include/flow/contract.hpp": "26ae3bca4ebf95e0919f51fb9a950d8b590a48226fe70315fc0b2846449cc75c",
+    "Physics/FlowCore/include/flow/one_way.hpp": "58053a21f6a53d706ddb85f329c275f9cb615824454a7541469a8c500f3cc387",
+    "Physics/FlowCore/include/flow/solver.hpp": "3d66b370553c09f2873175ee27646f81da94f2d7a23d2a04aa48b2e812199277",
+    "Physics/FlowCore/src/contract.cpp": "038c58e2244cf13223a7c46f83af62c6af6b868e33a45ec1da9ab33f6384d46a",
+    "Physics/FlowCore/src/one_way.cpp": "95c514138b901042c1c777890965b385fca9ab9db3414414f59041d00d1a98fe",
+    "Physics/FlowCore/src/solver.cpp": "023438d4784bf3641dfe65aa98168158dcb4d0f46ca604631ac189a37a02236b",
+    "Physics/FlowCore/tests/cli_tests.py": "70f52e38d601dc93ed6248b2c75563d2dd86a38fb2707a671613e560940d75c1",
+    "Physics/FlowCore/tests/contract_tests.cpp": "8d04cee4343671b3d916ede00396c3053d184be9b48f64f4413324370e9b7dd1",
+    "Physics/FlowCore/tests/one_way_tests.cpp": "40adb17fc3009add6d3fa2ec0441758db19734aa55288aaa9592e788d6b1709a",
+    "Physics/FlowCore/tests/particle_cli_tests.py": "6be01fe1d9abf6b1cb8a34b194c7641c76bc57ae9663934057cc7179c17cd0e4",
+    "Physics/FlowCore/tests/run_cli_tests.py": "5263ddadecce4eb8c7a3524bd07fc654812ed3f9c92043ed25be9693223dfbd8",
+    "Physics/FlowCore/tests/solver_tests.cpp": "731c79ba43a5a8a83ddd4cefb22f9bdfc5e88dba8225bb449ac84254f33f1ae7",
+    "Physics/PowderCore/src/core.cpp": "65356cec332b086cfed69b29ab7ba871f276d5221df3a4fe7e3b78bbda682d8e",
+    "Physics/PowderCore/include/powder/core.hpp": "d5ab4ee7a2a4f3fac3152628edfd0d1201578eae3c2953cedfd6a01d74839425",
+    "Physics/PowderCore/tests/core_tests.cpp": "f295f2b129d0bb4f895d551bd2584d64a5601193454bb74dbf23b276bdcd527d",
+    "Scripts/run_flow_contract_validation.py": "c8b13da4cf72eed0109426851680549a3df78de430ac13d099f2008f50f4f1c0",
+    "Scripts/run_flow_solver_validation.py": "54a4e20f4d2aeb0d71f144a2a050d4ec24060f17d80594729fd9fc8fab8287c3",
+    "Scripts/run_one_way_validation.py": "cbd7b007e0390518d70a05c72224cf0cc8aa11cd5eab957c07053db98db36fe1"
+  },
+  "source_sha256": "205ed6a24db72c19db959464bddec696075769fede580119c2c96daa456d8353",
+  "passed": true,
+  "runs": [
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+        "-S",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore",
+        "-B",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore"
+      ],
+      "log": "configure.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+        "--build",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "--config",
+        "Release"
+      ],
+      "log": "build.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+        "--test-dir",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "-C",
+        "Release",
+        "--output-on-failure",
+        "--output-junit",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task24_validation\\tests_1.xml"
+      ],
+      "log": "tests_1.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_particle_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\one_way_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task24_validation\\coupled_1"
+      ],
+      "log": "coupled_1.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+        "--test-dir",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "-C",
+        "Release",
+        "--output-on-failure",
+        "--output-junit",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task24_validation\\tests_2.xml"
+      ],
+      "log": "tests_2.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_particle_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\one_way_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task24_validation\\coupled_2"
+      ],
+      "log": "coupled_2.log",
+      "exit_code": 0
+    }
+  ],
+  "computed_runs": [
+    {
+      "version": "0.3.0-one-way",
+      "passed": true,
+      "coupling": "air_to_particle_only",
+      "air_reaction_enabled": false,
+      "accepted_air_steps": 100,
+      "physical_time_s": 0.05,
+      "particle_substeps_per_air_step": 20,
+      "max_particle_Re": 0.05408479444235933,
+      "max_dt_over_tau": 0.009049999999999999,
+      "error": ""
+    },
+    {
+      "version": "0.3.0-one-way",
+      "passed": true,
+      "coupling": "air_to_particle_only",
+      "air_reaction_enabled": false,
+      "accepted_air_steps": 100,
+      "physical_time_s": 0.05,
+      "particle_substeps_per_air_step": 20,
+      "max_particle_Re": 0.05408479444235933,
+      "max_dt_over_tau": 0.009049999999999999,
+      "error": ""
+    }
+  ],
+  "metrics_exact_repeat": true,
+  "trajectory_exact_repeat": true,
+  "sources_unchanged": true
+}

@@ -1,0 +1,11 @@
+{
+"schema":1,"flow_core_version":"0.1.0-contract","contract_valid":true,"solver_implemented":false,"result_kind":"input_contract_and_analytic_estimates_only",
+"model":"2D_planar_incompressible_isothermal_laminar","units":"SI","initial":"rest",
+"grid":{"nx":64,"ny":16,"length_m":0.10000000000000001,"height_m":0.01,"reporting_depth_m":1,"dx_m":0.0015625000000000001,"dy_m":0.00062500000000000001,"p_cells":1024,"u_faces":1040,"v_faces":1088},
+"boundaries":[{"kind":"pressure_absolute_pa","value":101325.004344},{"kind":"pressure_absolute_pa","value":101325},{"kind":"no_slip","value":0},{"kind":"no_slip","value":0}],
+"reference_pressure_absolute_pa":101325,"temperature_k":293.14999999999998,"rho_kg_m3":1.2041183163746156,"mu_pa_s":1.8099999999999999e-05,"nu_m2_s":1.5031745430545275e-05,"sound_speed_m_s":343.23197767690584,
+"hydraulic_diameter_m":0.02,"estimated_pressure_drop_pa":0.0043440000008558854,"estimated_inlet_absolute_pa":101325.004344,"analytic_mean_m_s":0.020000000003940539,"analytic_peak_m_s":0.030000000005910809,"analytic_mass_flow_kg_s":0.00024082366332237186,
+"velocity_component_bound_m_s":0.050000000000000003,"reynolds_bound":94.081793023140278,"mach_bound":0.0002060142490138747,"knudsen_estimate":7.0000000000000007e-06,"relative_pressure_span":4.2871946714590529e-08,
+"dt_s":0.00050000000000000001,"duration_s":5,"steps":10000,"advection_budget":0.056000000000000001,"diffusion_budget":0.044638271230547248,"combined_budget":0.10063827123054725,"max_dt_s":0.0024841444208365559,
+"projection":{"max_iterations":20000,"absolute_residual_pa_m2":9.9999999999999995e-08,"relative_residual":1e-08,"divergence_linf_s_inv":9.9999999999999995e-08,"mass_balance_relative":1e-08}
+}

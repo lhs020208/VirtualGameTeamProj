@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "scope": "input_contract_only_no_flow_solver",
+  "started_utc": "2026-10-21T14:43:41.174638+00:00",
+  "source_files": {
+    "Physics/FlowCore/app/main.cpp": "8d2f83cd19f2e83b83a5dce8b15e50c21873c7786c2059a9333dcb4f8b09ff41",
+    "Physics/FlowCore/CMakeLists.txt": "cd441da1b7012bf8b05309b07d00a9e6d8c71f3ba18c41cae4f1c0df609741d2",
+    "Physics/FlowCore/fixtures/pressure_channel.flow": "11b9d0c51d2d65d1930a8a7f2fc11575319013d0041864ca46ffc1f90ac646cf",
+    "Physics/FlowCore/fixtures/unsupported_vacuum.flow": "31ce703d840b080a8c598c2e04f51d0bc1a98a1cda2b0c18225f44bd164220f6",
+    "Physics/FlowCore/fixtures/velocity_channel.flow": "57582d6bea57f0600b52ec754ef03c8f8252e1a1055b8c978613a2b6252e1ea1",
+    "Physics/FlowCore/fixtures/zero_drive.flow": "cce3756b5fb6f7151f4d149bc4e343db76a06dde80e3d64560da692ce57af6cf",
+    "Physics/FlowCore/include/flow/contract.hpp": "dfec18b67250ae2de48d20a88998070ad206feffe1571e11e54f7e7d6ec034d1",
+    "Physics/FlowCore/src/contract.cpp": "859d1a05e42b52faf627450f7f035e51102a5bf8b6d54cefea1d6cf9d6e8ac7d",
+    "Physics/FlowCore/tests/cli_tests.py": "a03ef36abe8a72dccab849e17070e1624b315044fc194f6b9fb2637ffad80926",
+    "Physics/FlowCore/tests/contract_tests.cpp": "6db9830ebcab844f88ea670ceaabe3d724f882b0a9ee7716dc634c225b42db83",
+    "Scripts/run_flow_contract_validation.py": "db356e1e59264a73391ee2d848b6d22aa47ed3dc0310e3155637b41e65fc4f15"
+  },
+  "source_sha256": "8440d6500ecef446b9d6e8da2bd303119679081fb504c0c27b83526224adee66",
+  "passed": true,
+  "runs": [
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+        "-S",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore",
+        "-B",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore"
+      ],
+      "log": "configure.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+        "--build",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "--config",
+        "Release"
+      ],
+      "log": "build.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+        "--test-dir",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "-C",
+        "Release",
+        "--output-on-failure",
+        "--output-junit",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task22_verified\\tests_1.xml"
+      ],
+      "log": "tests_1.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_contract.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\pressure_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task22_verified\\pressure_channel_1.json"
+      ],
+      "log": "pressure_channel_1.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_contract.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\velocity_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task22_verified\\velocity_channel_1.json"
+      ],
+      "log": "velocity_channel_1.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_contract.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\zero_drive.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task22_verified\\zero_drive_1.json"
+      ],
+      "log": "zero_drive_1.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+        "--test-dir",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "-C",
+        "Release",
+        "--output-on-failure",
+        "--output-junit",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task22_verified\\tests_2.xml"
+      ],
+      "log": "tests_2.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_contract.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\pressure_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task22_verified\\pressure_channel_2.json"
+      ],
+      "log": "pressure_channel_2.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_contract.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\velocity_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task22_verified\\velocity_channel_2.json"
+      ],
+      "log": "velocity_channel_2.log",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_contract.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\zero_drive.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task22_verified\\zero_drive_2.json"
+      ],
+      "log": "zero_drive_2.log",
+      "exit_code": 0
+    }
+  ],
+  "exact_repeat": true,
+  "sources_unchanged": true
+}

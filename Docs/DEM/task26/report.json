@@ -1,0 +1,166 @@
+{
+  "schema": 1,
+  "version": "0.5.0-buffered-channel",
+  "scope": "dilute_planar_virtual_particle_ports_inside_padded_gas_domain",
+  "started_utc": "2026-10-21T15:45:00.149992+00:00",
+  "source_files": {
+    "Physics/FlowCore/app/channel_run.cpp": "e1a9233afa1b6f316548f826dc360028947204c6ab4d83f97f7137bd82943ade",
+    "Physics/FlowCore/app/main.cpp": "8d2f83cd19f2e83b83a5dce8b15e50c21873c7786c2059a9333dcb4f8b09ff41",
+    "Physics/FlowCore/app/particle_run.cpp": "0436388ac96ac16935a931c5458e3c20885d9b86e4065ec749df86ccc33b0c76",
+    "Physics/FlowCore/app/run.cpp": "08a0cebe7cab5662ae30cb718a6eca3aa47c2f6a29f46426cda1c515ae24a1fb",
+    "Physics/FlowCore/app/two_way_run.cpp": "bc85e9d039d6266305e221f5bf9271fdbfa9402710ee14865368d02305149b60",
+    "Physics/FlowCore/CMakeLists.txt": "40d48723a0214ecf2d179928c36123f782b371d9eb6334cdc84b839fa80832e7",
+    "Physics/FlowCore/fixtures/buffered.channel": "004c5b40683968ff9b4334d64c7449592f9fde0a84877d5978a343ce96c029c4",
+    "Physics/FlowCore/fixtures/buffered_channel.flow": "4fb11d565d69b821b8aad873f429f058f7092ac8ee3a781e4361f1f7a5a9b154",
+    "Physics/FlowCore/fixtures/one_way_channel.flow": "f5ccef6aea45674e7bac1874aaa218be4c489a66e37ae4d08095c746fab5c56d",
+    "Physics/FlowCore/fixtures/pressure_channel.flow": "11b9d0c51d2d65d1930a8a7f2fc11575319013d0041864ca46ffc1f90ac646cf",
+    "Physics/FlowCore/fixtures/two_way_channel.flow": "8309c141b44f283d6986d24fab27623372c8b5bbfe972f26342dad022ce31a2d",
+    "Physics/FlowCore/fixtures/unsupported_vacuum.flow": "31ce703d840b080a8c598c2e04f51d0bc1a98a1cda2b0c18225f44bd164220f6",
+    "Physics/FlowCore/fixtures/velocity_channel.flow": "57582d6bea57f0600b52ec754ef03c8f8252e1a1055b8c978613a2b6252e1ea1",
+    "Physics/FlowCore/fixtures/zero_drive.flow": "cce3756b5fb6f7151f4d149bc4e343db76a06dde80e3d64560da692ce57af6cf",
+    "Physics/FlowCore/include/flow/channel.hpp": "3db9059db3ec63da0fec27fc54054880170426dea0f1bf297c67361b8c3cad28",
+    "Physics/FlowCore/include/flow/contract.hpp": "26ae3bca4ebf95e0919f51fb9a950d8b590a48226fe70315fc0b2846449cc75c",
+    "Physics/FlowCore/include/flow/one_way.hpp": "58053a21f6a53d706ddb85f329c275f9cb615824454a7541469a8c500f3cc387",
+    "Physics/FlowCore/include/flow/solver.hpp": "8eeac4a3b201f806d6b7ad610cb31a6cb1c54a5506cb9afd99754c714d2cd5dd",
+    "Physics/FlowCore/include/flow/two_way.hpp": "d65e9e6fa31a5a466fd3b3005f9f569dd2ba5e135f107b6650d431694bd48463",
+    "Physics/FlowCore/src/channel.cpp": "9319ba670b71bccc75b73d96b24d50ec16c98902c616c52087e44793e7aa3125",
+    "Physics/FlowCore/src/contract.cpp": "038c58e2244cf13223a7c46f83af62c6af6b868e33a45ec1da9ab33f6384d46a",
+    "Physics/FlowCore/src/one_way.cpp": "95c514138b901042c1c777890965b385fca9ab9db3414414f59041d00d1a98fe",
+    "Physics/FlowCore/src/solver.cpp": "3ac6eea4b313598bfcfd67792263b59dad74af49e689d7f9b03a033356fbcfdc",
+    "Physics/FlowCore/src/two_way.cpp": "f3feb8b16904cb40b1a0676feedee9d8df8d8b000234bbf1e4af1f96f9c5dd91",
+    "Physics/FlowCore/tests/channel_cli_tests.py": "43e2b34a0a93cc01ce569bf77d7de0dff641d339f6c4898a329d270292d01bd2",
+    "Physics/FlowCore/tests/channel_tests.cpp": "84179914cb50205bd60aee62228bbd70b821ae8b6c15584ac1c7252fd55b6f06",
+    "Physics/FlowCore/tests/cli_tests.py": "70f52e38d601dc93ed6248b2c75563d2dd86a38fb2707a671613e560940d75c1",
+    "Physics/FlowCore/tests/contract_tests.cpp": "8d04cee4343671b3d916ede00396c3053d184be9b48f64f4413324370e9b7dd1",
+    "Physics/FlowCore/tests/one_way_tests.cpp": "40adb17fc3009add6d3fa2ec0441758db19734aa55288aaa9592e788d6b1709a",
+    "Physics/FlowCore/tests/particle_cli_tests.py": "6be01fe1d9abf6b1cb8a34b194c7641c76bc57ae9663934057cc7179c17cd0e4",
+    "Physics/FlowCore/tests/run_cli_tests.py": "5263ddadecce4eb8c7a3524bd07fc654812ed3f9c92043ed25be9693223dfbd8",
+    "Physics/FlowCore/tests/solver_tests.cpp": "731c79ba43a5a8a83ddd4cefb22f9bdfc5e88dba8225bb449ac84254f33f1ae7",
+    "Physics/FlowCore/tests/two_way_cli_tests.py": "2e23d79f49b764d279593e2bf6b4379225a243cd70196072f26f0062ff3bbe9c",
+    "Physics/FlowCore/tests/two_way_tests.cpp": "777cb0f3ae7876a890c7f38fe349a1cda7254cc9c74625b0bdd982c73be3f971",
+    "Physics/PowderCore/src/core.cpp": "65356cec332b086cfed69b29ab7ba871f276d5221df3a4fe7e3b78bbda682d8e",
+    "Physics/PowderCore/include/powder/core.hpp": "d5ab4ee7a2a4f3fac3152628edfd0d1201578eae3c2953cedfd6a01d74839425",
+    "Physics/PowderCore/tests/core_tests.cpp": "f295f2b129d0bb4f895d551bd2584d64a5601193454bb74dbf23b276bdcd527d",
+    "Scripts/run_flow_contract_validation.py": "c8b13da4cf72eed0109426851680549a3df78de430ac13d099f2008f50f4f1c0",
+    "Scripts/run_flow_solver_validation.py": "54a4e20f4d2aeb0d71f144a2a050d4ec24060f17d80594729fd9fc8fab8287c3",
+    "Scripts/run_one_way_validation.py": "7e9dcd3c3745dcc852b7ae9325e2c1495a8c7d82b5288f2989fdcbaf17670f09",
+    "Scripts/run_two_way_validation.py": "bfdb5b8835bead1b547aed70f44d2d0ab7584aa4ea407fcbe5294fb01493bc81",
+    "Scripts/run_channel_validation.py": "157be94dbc23e5a04c8331902e72de665a61c48511b155c3bd881828a294538d"
+  },
+  "source_sha256": "c6b207ebabc9c1c1694aa02f75418d86892cb92b5a37ce01583382cc084b5c0b",
+  "passed": true,
+  "runs": [
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+        "-S",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore",
+        "-B",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore"
+      ],
+      "log": "configure.log",
+      "exit_code": 0,
+      "wall_seconds": 0.958361099998001
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+        "--build",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "--config",
+        "Release"
+      ],
+      "log": "build.log",
+      "exit_code": 0,
+      "wall_seconds": 1.634573699964676
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+        "--test-dir",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "-C",
+        "Release",
+        "--output-on-failure",
+        "--output-junit",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task26_validation\\tests_1.xml"
+      ],
+      "log": "tests_1.log",
+      "exit_code": 0,
+      "wall_seconds": 27.735999100026675
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_channel_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\buffered_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\buffered.channel",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task26_validation\\channel_1"
+      ],
+      "log": "channel_1.log",
+      "exit_code": 0,
+      "wall_seconds": 2.7975064999773167
+    },
+    {
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+        "--test-dir",
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore",
+        "-C",
+        "Release",
+        "--output-on-failure",
+        "--output-junit",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task26_validation\\tests_2.xml"
+      ],
+      "log": "tests_2.log",
+      "exit_code": 0,
+      "wall_seconds": 27.383489199972246
+    },
+    {
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\FlowCore\\Release\\flow_channel_run.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\buffered_channel.flow",
+        "D:\\GitHub\\VirtualGameTeamProj\\Physics\\FlowCore\\fixtures\\buffered.channel",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Flow_task26_validation\\channel_2"
+      ],
+      "log": "channel_2.log",
+      "exit_code": 0,
+      "wall_seconds": 2.8278033999959007
+    }
+  ],
+  "computed_runs": [
+    {
+      "version": "0.5.0-buffered-channel",
+      "passed": true,
+      "all_arrived": true,
+      "accepted_steps": 600,
+      "physical_time_s": 0.3,
+      "pending": 0,
+      "active": 0,
+      "exited": 3,
+      "exited_mass_kg": 4.241150082346221e-11,
+      "max_particle_mass_residual_kg": 0,
+      "max_air_mass_residual_kg": 4.505553534902835e-19,
+      "max_exchange_residual_Ns": 3.492856605731059e-26,
+      "error": ""
+    },
+    {
+      "version": "0.5.0-buffered-channel",
+      "passed": true,
+      "all_arrived": true,
+      "accepted_steps": 600,
+      "physical_time_s": 0.3,
+      "pending": 0,
+      "active": 0,
+      "exited": 3,
+      "exited_mass_kg": 4.241150082346221e-11,
+      "max_particle_mass_residual_kg": 0,
+      "max_air_mass_residual_kg": 4.505553534902835e-19,
+      "max_exchange_residual_Ns": 3.492856605731059e-26,
+      "error": ""
+    }
+  ],
+  "metrics_exact_repeat": true,
+  "outputs_exact_repeat": true,
+  "sources_unchanged": true,
+  "wall_seconds": 63.369588700006716
+}
