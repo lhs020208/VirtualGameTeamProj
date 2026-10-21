@@ -1,4 +1,5 @@
 #include "PowderDropTest.h"
+#include "PowderDEMTest.h"
 #include "PowderCameraController.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
@@ -199,14 +200,15 @@ APowderDropGameMode::APowderDropGameMode()
 {
     DefaultPawnClass = nullptr;
     PlayerControllerClass = APowderCameraController::StaticClass();
-    HUDClass = APowderDropHUD::StaticClass();
+    HUDClass = APowderDEMHUD::StaticClass();
 }
 
 void APowderDropGameMode::StartPlay()
 {
     Super::StartPlay();
-    for (TActorIterator<APowderDropTest> It(GetWorld()); It; ++It) return;
-    GetWorld()->SpawnActor<APowderDropTest>();
+    for (TActorIterator<APowderDropTest> It(GetWorld()); It; ++It) It->Destroy();
+    for (TActorIterator<APowderDEMTest> It(GetWorld()); It; ++It) return;
+    GetWorld()->SpawnActor<APowderDEMTest>();
 }
 
 void APowderDropTest::BuildObstacleCourse()

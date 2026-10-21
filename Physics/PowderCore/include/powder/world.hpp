@@ -1,6 +1,8 @@
 #pragma once
 #include "powder/elastic.hpp"
+#include "powder/geometry.hpp"
 #include <map>
+#include <optional>
 #include <utility>
 #include <vector>
 namespace powder {
@@ -14,13 +16,15 @@ public:
     // Reconfiguration requires reset_history. Models are shared by all contacts in task 07.
     std::vector<Particle> particles;
     std::vector<FixedPlane> planes;
-    MaterialContact model;
+    std::vector<FixedBox> boxes;
+    MaterialContact model; // Particle-particle contact.
+    std::optional<MaterialContact> wall_model; // If unset, legacy shared model is retained.
     Vec3 gravity_m_s2{0,0,-9.81};
     StepReport step(double dt,bool brute_force=false);
-    void reset_history() { pairs_.clear();walls_.clear(); }
+    void reset_history() { pairs_.clear();walls_.clear();boxes_history_.clear(); }
     std::size_t active_pair_histories() const {return pairs_.size();}
-    std::size_t active_wall_histories() const {return walls_.size();}
+    std::size_t active_wall_histories() const {return walls_.size()+boxes_history_.size();}
 private:
-    std::map<PairKey,ContactHistory> pairs_,walls_;
+    std::map<PairKey,ContactHistory> pairs_,walls_,boxes_history_;
 };
 }

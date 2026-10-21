@@ -10,6 +10,7 @@ struct MaterialContact {
     double cn=0,ct=0,mu=.3; // Ns/m, Ns/m, dimensionless; not restitution coefficients.
     double max_overlap_radius_ratio=.01;
 };
+void validate_contact_model(const MaterialContact& model);
 struct HertzResponse {
     double effective_young_pa=0,effective_shear_pa=0,elastic_force_n=0;
     double normal_derivative_n_m=0,tangent_stiffness_n_m=0,elastic_energy_j=0;

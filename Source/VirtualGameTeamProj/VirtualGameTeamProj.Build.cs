@@ -6,7 +6,10 @@ public class VirtualGameTeamProj : ModuleRules
 {
 	public VirtualGameTeamProj(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		PCHUsage = PCHUsageMode.NoPCHs;
+        bUseUnity = false; // Core translation units contain private helper namespaces.
+        bEnableExceptions = true; // Solver rejects invalid steps without committing state.
+        PublicIncludePaths.Add(System.IO.Path.Combine(ModuleDirectory, "../../Physics/PowderCore/include"));
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "PhysicsCore" });
 

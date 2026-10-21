@@ -1,5 +1,6 @@
 #include "PowderCameraController.h"
 #include "PowderDropTest.h"
+#include "PowderDEMTest.h"
 #include "Camera/CameraActor.h"
 #include "Components/InputComponent.h"
 #include "Engine/GameViewportClient.h"
@@ -115,6 +116,11 @@ void APowderCameraController::Scroll(float Direction)
 
 void APowderCameraController::FocusPowder()
 {
+    if (auto* DEMCamera = Cast<ACameraActor>(GetViewTarget()))
+        for (TActorIterator<APowderDEMTest> It(GetWorld()); It; ++It) {
+            DEMCamera->SetActorLocation(It->ParticlePosition() - DEMCamera->GetActorForwardVector() * 220.f);
+            Velocity = FVector::ZeroVector; return;
+        }
     auto* Camera = Cast<ACameraActor>(GetViewTarget());
     if (!Camera) return;
     for (TActorIterator<APowderDropTest> It(GetWorld()); It; ++It)
@@ -128,6 +134,13 @@ void APowderCameraController::FocusPowder()
 
 void APowderCameraController::RestoreView()
 {
+    if (auto* DEMCamera = Cast<ACameraActor>(GetViewTarget()))
+        for (TActorIterator<APowderDEMTest> It(GetWorld()); It; ++It) {
+            const FVector Position = APowderDropTest::OverviewOffset();
+            DEMCamera->SetActorLocation(Position);
+            DEMCamera->SetActorRotation((APowderDropTest::OverviewTarget() - Position).Rotation());
+            Velocity = FVector::ZeroVector; return;
+        }
     auto* Camera = Cast<ACameraActor>(GetViewTarget());
     if (!Camera) return;
     for (TActorIterator<APowderDropTest> It(GetWorld()); It; ++It)

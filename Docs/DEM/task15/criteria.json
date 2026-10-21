@@ -1,0 +1,46 @@
+{
+  "pair_analytic_v1": {
+    "position_m_lt": 1e-05,
+    "velocity_m_s_lt": 0.001,
+    "relative_energy_lt": 0.005,
+    "mass_kg_lt": 1e-12,
+    "momentum_kg_m_s_lt": 1e-12,
+    "contacts_required": true
+  },
+  "floor_analytic_v1": {
+    "position_m_lt": 2e-08,
+    "velocity_m_s_lt": 0.0002,
+    "relative_energy_lt": 0.005,
+    "mass_kg_lt": 1e-12,
+    "contact_every_step": true
+  },
+  "dense_conservation_v1": {
+    "mass_kg_lt": 1e-10,
+    "momentum_kg_m_s_lt": 1e-10,
+    "overlap_radius_ratio_lt": 0.01,
+    "contacts_required": true
+  },
+  "rig_freefall_v1": {
+    "position_m_lt": 3e-11,
+    "velocity_m_s_lt": 1e-12,
+    "mass_kg_lt": 1e-10,
+    "momentum_kg_m_s_lt": 1e-10,
+    "contacts_zero": true
+  },
+  "existing_rig_drop_v1": {
+    "max_overlap_m_lt": 0.005,
+    "mass_kg_lt": 1e-12,
+    "passed_tube_and_contacted_collector": true,
+    "final_z_gt": 1.04
+  },
+  "atomic_rejection_v1": {
+    "invalid_dt_or_hertz_overlap_rejected_without_state_change": true
+  },
+  "convergence": {
+    "metric": "pair velocity / floor position",
+    "coarse_over_fine_min": 1.8,
+    "coarse_over_fine_max": 2.2
+  },
+  "reproducibility": "Exact 17-digit final state text and deterministic metrics across repeats on this build/machine. Contact history counts included, full history vectors not serialized.",
+  "performance": "Diagnostic only; no fixed timing pass threshold. Stepping + metric collection; excludes initialization/rendering/file I/O."
+}

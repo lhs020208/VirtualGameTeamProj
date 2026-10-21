@@ -16,6 +16,8 @@ def box(name,xyz,size,folder,rotation=(0,0,0),tube=False,cut=False):
     a.set_actor_label(name)
     a.set_folder_path('PowderTest/'+folder)
     a.tags=[u.Name('PowderRig')]+([u.Name('PowderTube')] if tube else [])+([u.Name('PowderCutaway')] if cut else [])
+    for prefix,tag in (('Feed_Wall_','PowderFeed'),('Feed_Funnel_','PowderFunnel'),('Collector_','PowderCollector')):
+        if name.startswith(prefix): a.tags=list(a.tags)+[u.Name(tag)]
     m=a.static_mesh_component
     m.set_static_mesh(cube)
     m.set_collision_profile_name('BlockAll')

@@ -19,17 +19,8 @@ long long coordinate(double x,double width){
  if(!std::isfinite(cell)||std::abs(cell)>1e12)throw std::invalid_argument("grid coordinate out of supported range");
  return static_cast<long long>(cell);
 }
-void checked_model(const MaterialContact& m){
- if(m.law==ContactLaw::Linear){
-  const auto k=m.linear;for(double x:{k.kn,k.cn,k.kt,k.ct,k.mu})finite(x);
-  if(k.kn<=0||k.kt<=0||k.cn<0||k.ct<0||k.mu<0)throw std::invalid_argument("invalid linear material");
- }else if(m.law==ContactLaw::HertzMindlin){
-  (void)hertz_response(m.a,m.b,1,.001);
-  for(double x:{m.cn,m.ct,m.mu,m.max_overlap_radius_ratio})finite(x);
-  if(m.cn<0||m.ct<0||m.mu<0||m.max_overlap_radius_ratio<=0||m.max_overlap_radius_ratio>.05)throw std::invalid_argument("invalid Hertz material");
- }else throw std::invalid_argument("unknown world contact model");
-}
-void geometric_guard(const std::vector<Particle>& p,const std::vector<FixedPlane>& walls,const MaterialContact& model){
+void geometric_guard(const std::vector<Particle>& p,const std::vector<FixedPlane>& walls,const std::vector<FixedBox>& boxes,const MaterialContact& model,const MaterialContact& wall_model){
+ for(const auto& a:p)for(const auto& c:box_contacts(a,boxes))if(wall_model.law==ContactLaw::HertzMindlin&&c.overlap_m>wall_model.max_overlap_radius_ratio*a.diameter_m/2)throw std::invalid_argument("world Hertz box overlap cap exceeded");
  auto contacts=find_contacts(p);
  std::map<ParticleId,const Particle*> lookup;for(const auto& a:p)lookup.emplace(a.id,&a);
  for(const auto& key:contacts.contacts){const auto& a=*lookup.at(key.first);const auto& b=*lookup.at(key.second);
@@ -40,7 +31,7 @@ void geometric_guard(const std::vector<Particle>& p,const std::vector<FixedPlane
  for(const auto& a:p)for(const auto& wall:walls){
   const double d=dot(a.position_m,wall.normal)-wall.offset_m,r=a.diameter_m/2;
   if(d<0)throw std::invalid_argument("particle centre crossed wall");
-  if(model.law==ContactLaw::HertzMindlin&&r-d>model.max_overlap_radius_ratio*r)throw std::invalid_argument("world Hertz wall overlap cap exceeded");
+  if(wall_model.law==ContactLaw::HertzMindlin&&r-d>wall_model.max_overlap_radius_ratio*r)throw std::invalid_argument("world Hertz wall overlap cap exceeded");
  }
 }
 }
@@ -65,7 +56,8 @@ SearchResult find_contacts(const std::vector<Particle>& particles,bool brute){
  std::sort(result.contacts.begin(),result.contacts.end());return result;
 }
 StepReport ParticleSystem::step(double dt,bool brute){
- finite(dt);if(dt<=0)throw std::invalid_argument("world dt must be positive");checked_model(model);
+ validate_boxes(boxes);
+ finite(dt);if(dt<=0)throw std::invalid_argument("world dt must be positive");const auto& wall_material=wall_model?*wall_model:model;validate_contact_model(model);validate_contact_model(wall_material);
  finite(gravity_m_s2.x);finite(gravity_m_s2.y);finite(gravity_m_s2.z);validate_particles(particles);
  auto ordered=particles;std::sort(ordered.begin(),ordered.end(),[](const Particle& a,const Particle& b){return a.id<b.id;});
  auto walls=planes;std::sort(walls.begin(),walls.end(),[](const FixedPlane& a,const FixedPlane& b){return a.id<b.id;});
@@ -77,16 +69,21 @@ StepReport ParticleSystem::step(double dt,bool brute){
  finite(report.total_mass_kg);
  for(const auto& key:found.contacts){++degree[index.at(key.first)];++degree[index.at(key.second)];}
  for(std::size_t i=0;i<ordered.size();++i)for(const auto& wall:walls)if(ordered[i].diameter_m/2>dot(ordered[i].position_m,wall.normal)-wall.offset_m)++degree[i];
+ std::vector<std::vector<BoxContact>> box_hits;for(std::size_t i=0;i<ordered.size();++i){box_hits.push_back(box_contacts(ordered[i],boxes));degree[i]+=box_hits.back().size();}
  if(!ordered.empty()){
   const double count=static_cast<double>(std::max<std::size_t>(1,*std::max_element(degree.begin(),degree.end())));
-  double kn=model.linear.kn,kt=model.linear.kt,cn=model.linear.cn,ct=model.linear.ct;
-  if(model.law==ContactLaw::HertzMindlin){auto v=hertz_response(model.a,model.b,max_radius,max_radius*model.max_overlap_radius_ratio);kn=v.normal_derivative_n_m;kt=v.tangent_stiffness_n_m;cn=model.cn;ct=model.ct;}
+  double kn=0,kt=0,cn=0,ct=0;
+  for(const auto* material:std::array<const MaterialContact*,2>{&model,&wall_material}){
+   double nk=material->linear.kn,tk=material->linear.kt,nd=material->linear.cn,td=material->linear.ct;
+   if(material->law==ContactLaw::HertzMindlin){auto v=hertz_response(material->a,material->b,max_radius,max_radius*material->max_overlap_radius_ratio);nk=v.normal_derivative_n_m;tk=v.tangent_stiffness_n_m;nd=material->cn;td=material->ct;}
+   kn=std::max(kn,nk);kt=std::max(kt,tk);cn=std::max(cn,nd);ct=std::max(ct,td);
+  }
   const double rate=std::max(std::sqrt(count*kn/(min_mass/2))+count*cn/(min_mass/2),std::sqrt(count*kt/(min_mass/7))+count*ct/(min_mass/7));
   finite(rate);if(dt>.02/rate)throw std::invalid_argument("dt exceeds multi-contact world limit");
  }
- geometric_guard(ordered,walls,model);
+ geometric_guard(ordered,walls,boxes,model,wall_material);
  std::vector<ForceAccumulator> forces(ordered.size()),torques(ordered.size());
- std::map<PairKey,ContactHistory> new_pairs,new_walls;
+ std::map<PairKey,ContactHistory> new_pairs,new_walls,new_boxes;
  for(std::size_t i=0;i<ordered.size();++i)forces[i].add_gravity(sphere_properties(ordered[i].diameter_m,ordered[i].material).mass_kg,gravity_m_s2);
  for(const auto& key:found.contacts){
   const auto i=index.at(key.first),j=index.at(key.second);ContactHistory history;
@@ -99,9 +96,15 @@ StepReport ParticleSystem::step(double dt,bool brute){
  for(std::size_t i=0;i<ordered.size();++i)for(const auto& wall:walls){
   const double o=ordered[i].diameter_m/2-(dot(ordered[i].position_m,wall.normal)-wall.offset_m);if(o<=0)continue;
   const PairKey key{ordered[i].id,wall.id};ContactHistory history;auto old=walls_.find(key);if(old!=walls_.end())history=old->second;
-  const auto w=evaluate_material_plane(ordered[i],wall.normal,wall.offset_m,model,history,dt);
+  const auto w=evaluate_material_plane(ordered[i],wall.normal,wall.offset_m,wall_material,history,dt);
   forces[i].add(w.force_a);torques[i].add(w.torque_a);if(history.active)new_walls.emplace(key,history);
   ++report.wall_contacts;report.max_overlap_m=std::max(report.max_overlap_m,o);
+ }
+ for(std::size_t i=0;i<ordered.size();++i)for(const auto& c:box_hits[i]){
+  const PairKey key{ordered[i].id,c.surface_id};ContactHistory history;auto old=boxes_history_.find(key);if(old!=boxes_history_.end())history=old->second;
+  const auto w=evaluate_material_plane(ordered[i],c.normal,dot(c.normal,c.point_m),wall_material,history,dt);
+  forces[i].add(w.force_a);torques[i].add(w.torque_a);if(history.active)new_boxes.emplace(key,history);
+  ++report.wall_contacts;report.max_overlap_m=std::max(report.max_overlap_m,c.overlap_m);
  }
  auto next=ordered;
  for(std::size_t i=0;i<next.size();++i){integrate_rigid(next[i],forces[i],torques[i].total_n(),dt);
@@ -109,9 +112,9 @@ StepReport ParticleSystem::step(double dt,bool brute){
   if(travel>.1*min_radius)throw std::invalid_argument("step displacement too large for discrete contact search");
   report.max_speed_m_s=std::max(report.max_speed_m_s,length(next[i].velocity_m_s));
  }
- geometric_guard(next,walls,model);
+ geometric_guard(next,walls,boxes,model,wall_material);
  // Preserve caller array order, but sum and integrate deterministically in ID order.
  auto committed=particles;for(auto& p:committed)p=next[index.at(p.id)];
- particles.swap(committed);pairs_.swap(new_pairs);walls_.swap(new_walls);return report;
+ particles.swap(committed);pairs_.swap(new_pairs);walls_.swap(new_walls);boxes_history_.swap(new_boxes);return report;
 }
 }

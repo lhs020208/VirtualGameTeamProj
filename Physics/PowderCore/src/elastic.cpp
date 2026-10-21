@@ -28,6 +28,12 @@ FrictionModel resolve(const MaterialContact& m,double radius,double overlap,doub
  return {value.elastic_force_n/delta,m.cn,value.tangent_stiffness_n_m,m.ct,m.mu};
 }
 }
+void validate_contact_model(const MaterialContact& m){
+ if(m.law==ContactLaw::Linear){
+  const auto k=m.linear;for(double x:{k.kn,k.cn,k.kt,k.ct,k.mu})finite(x);
+  if(k.kn<=0||k.kt<=0||k.cn<0||k.ct<0||k.mu<0)throw std::invalid_argument("invalid linear material");
+ }else configuration(m);
+}
 HertzResponse hertz_response(ElasticMaterial a,ElasticMaterial b,double radius,double delta){
  material(a);material(b);positive(radius);finite(delta);
  if(delta<0)throw std::invalid_argument("Hertz overlap must be nonnegative");
