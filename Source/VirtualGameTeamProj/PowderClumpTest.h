@@ -15,7 +15,7 @@ class VIRTUALGAMETEAMPROJ_API APowderClumpTest:public AActor {
 public:
  APowderClumpTest();virtual ~APowderClumpTest()override;
  virtual void OnConstruction(const FTransform& Transform)override;
- virtual void BeginPlay()override;virtual void Tick(float DeltaSeconds)override;
+ virtual void BeginPlay()override;virtual void EndPlay(const EEndPlayReason::Type Reason)override;virtual void Tick(float DeltaSeconds)override;
  UFUNCTION(BlueprintCallable,CallInEditor,Category="Clump") void ResetSimulation();
  UFUNCTION(BlueprintCallable,Category="Clump") void ToggleSimulation();
  UFUNCTION(BlueprintCallable,Category="Clump") void StepSimulation();
@@ -64,13 +64,27 @@ public:
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Materials") double PairAdhesionGamma=0;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Materials") double WallAdhesionGamma=0;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation") double FixedDt=2e-6;
- UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation",meta=(ClampMin="1",ClampMax="5000")) int32 StepsPerFrame=200;
- // Real-time pacing preserves FixedDt; the budget only limits UI stalls.
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation",meta=(ClampMin="1",ClampMax="5000",DisplayName="Worker Batch Steps",ToolTip="Maximum steps per worker batch, independent of display FPS.")) int32 StepsPerFrame=200;
+ // Worker pacing preserves FixedDt. StepsPerFrame is now the worker batch size, independent of rendering FPS.
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation") bool bRealtimePacing=true;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation",meta=(ClampMin="0.01",ClampMax="10")) double TargetSimulationRate=1;
- UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation",meta=(ClampMin="1",ClampMax="100")) double ComputeBudgetMs=50;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation",meta=(ClampMin="1",ClampMax="100",DisplayName="Worker Batch Budget (ms)")) double ComputeBudgetMs=50;
+ // Snapshot/LOD settings affect presentation only. Reset applies the snapshot rate.
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Display",meta=(ClampMin="1",ClampMax="120")) double DisplaySnapshotHz=30;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Display",meta=(ClampMin="0")) int32 MaxDisplayedPebbles=1024;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Display") int32 TotalPebbles=0;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Display") int64 SnapshotGeneration=0;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Display") int64 SnapshotSteps=0;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Profiling") double WorkerComputeSeconds=0;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Profiling") double SnapshotCopySeconds=0;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Mixing") double MixingMeasurementTimeSeconds=0;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Simulation") double ActualSimulationRate=0;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Simulation") double SimulationLagSeconds=0;
+ // Diagnostic clocks are opt-in and never affect physics values or time steps.
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Profiling") bool bProfilePerformance=false;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Profiling") double ProfiledPhysicsSeconds=0;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Profiling") double ProfiledDisplaySeconds=0;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Profiling") int32 ProfiledDisplayUpdates=0;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump") FString Error;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump") FString ExportDirectory;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump") double PhysicalSeconds=0;
@@ -84,8 +98,7 @@ private:
  UPROPERTY() TObjectPtr<UStaticMeshComponent> Paddle;
  UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> TrayWalls;
  TUniquePtr<FClumpRuntime,FClumpDeleter> Runtime;
- double PacingLastWallSeconds=0, PacingTargetSeconds=0, RateWindowWallSeconds=0, RateWindowPhysicalSeconds=0;
- bool Advance();void Sync();
+ void Sync();
 };
 UCLASS()
 class VIRTUALGAMETEAMPROJ_API APowderClumpGameMode:public AGameModeBase {

@@ -37,6 +37,7 @@ Closest closest(Vec3 p,const std::array<std::size_t,3>& t,const std::vector<Vec3
 bool segment_hit(Vec3 a,Vec3 b,Vec3 p,Vec3 q,Vec3 r,double& time){auto n=cross(sub(q,p),sub(r,p));double l=norm(n);n=mul(n,1/l);double da=dot(sub(a,p),n),db=dot(sub(b,p),n);if((da>tol&&db>tol)||(da<-tol&&db<-tol)||std::abs(da-db)<1e-15)return false;time=da/(da-db);if(time<-tol||time>1+tol)return false;Vec3 x=add(a,mul(sub(b,a),time));auto e0=sub(q,p),e1=sub(r,p),d=sub(x,p);double aa=dot(e0,e0),bb=dot(e0,e1),cc=dot(e1,e1),dd=dot(d,e0),ee=dot(d,e1),det=aa*cc-bb*bb;double u=(cc*dd-bb*ee)/det,v=(aa*ee-bb*dd)/det;return u>=-tol&&v>=-tol&&u+v<=1+tol;}
 }
 struct StaticTriangleMesh::Data {
+ bool axis_box=false;
  MeshInput input;MeshDiagnostics diag;std::vector<Vec3> normals;std::vector<std::size_t> patch,order;
  std::map<MeshEdge,std::vector<std::size_t>> edges;std::map<MeshEdge,std::uint64_t> edge_ids;
  struct Node {Bounds box;std::size_t begin=0,end=0;int left=-1,right=-1;};std::vector<Node> tree;
@@ -57,10 +58,34 @@ StaticTriangleMesh::StaticTriangleMesh(const MeshInput& source){auto d=std::make
  for(const auto& entry:d->edges){const auto& e=entry.first;const auto& ts=entry.second;require(ts.size()<=2,"nonmanifold mesh edge");d->edge_ids[e]=eid++;if(ts.size()==1){require(!m.closed_solid,"closed mesh has a hole");auto l=labels.find(e);require(l!=labels.end(),"unclassified open edge: possible unintended gap");if(l->second==BoundaryKind::Inlet)++diag.inlet_edges;else if(l->second==BoundaryKind::Outlet)++diag.outlet_edges;else ++diag.perimeter_edges;labels.erase(l);}else{auto direction=[&](std::size_t i){auto t=m.triangles[i];for(int k=0;k<3;++k)if(t[k]==e[0]&&t[(k+1)%3]==e[1])return 1;return -1;};require(direction(ts[0])!=direction(ts[1]),"inconsistent triangle winding at shared edge");if(dot(d->normals[ts[0]],d->normals[ts[1]])>1-1e-12){auto a=root(ts[0]),b=root(ts[1]);d->patch[std::max(a,b)]=std::min(a,b);}}}
  require(labels.empty(),"boundary label does not name an open edge");for(std::size_t i=0;i<d->patch.size();++i)d->patch[i]=root(i);diag.patches=std::set<std::size_t>(d->patch.begin(),d->patch.end()).size();
  if(m.closed_solid){std::vector<bool> visited(m.triangles.size(),false);std::vector<std::size_t> stack{0};visited[0]=true;while(!stack.empty()){auto i=stack.back();stack.pop_back();auto t=m.triangles[i];for(int k=0;k<3;++k)for(auto j:d->edges.at(edge(t[k],t[(k+1)%3])))if(!visited[j]){visited[j]=true;stack.push_back(j);}}require(std::all_of(visited.begin(),visited.end(),[](bool v){return v;}),"closed mesh must contain one connected shell; split separate solids");double volume=0;for(auto t:m.triangles)volume+=dot(sub(m.vertices[t[0]],bounds.lo),cross(sub(m.vertices[t[1]],bounds.lo),sub(m.vertices[t[2]],bounds.lo)))/6;require(volume>tol*tol*tol,"closed mesh must have outward winding and positive volume");}
- diag.vertices=m.vertices.size();diag.triangles=m.triangles.size();diag.two_sided_sheet=!m.closed_solid;d->order.resize(m.triangles.size());std::iota(d->order.begin(),d->order.end(),0);d->build(0,d->order.size());data_=std::move(d);
+ diag.vertices=m.vertices.size();diag.triangles=m.triangles.size();diag.two_sided_sheet=!m.closed_solid;d->order.resize(m.triangles.size());std::iota(d->order.begin(),d->order.end(),0);d->build(0,d->order.size());
+ // Exact recognition only: no fitting or removal of small gaps/features.
+ const std::vector<std::array<std::size_t,3>> box_triangles={{{0,2,3}},{{0,3,1}},{{4,5,7}},{{4,7,6}},{{0,1,5}},{{0,5,4}},{{2,6,7}},{{2,7,3}},{{0,4,6}},{{0,6,2}},{{1,3,7}},{{1,7,5}}};
+ d->axis_box=m.closed_solid&&m.vertices.size()==8&&m.triangles==box_triangles;
+ if(d->axis_box)for(std::size_t i=0;i<8;++i){const auto& v=m.vertices[i];if(v.x!=((i&1)?bounds.hi.x:bounds.lo.x)||v.y!=((i&2)?bounds.hi.y:bounds.lo.y)||v.z!=((i&4)?bounds.hi.z:bounds.lo.z))d->axis_box=false;}
+ data_=std::move(d);
 }
 const MeshDiagnostics& StaticTriangleMesh::diagnostics()const{return data_->diag;}
-MeshQuery StaticTriangleMesh::query(const Particle& p,bool brute)const{validate(p);const auto& d=*data_;require(!d.inside(p.position_m),"sphere centre inside closed mesh solid");double radius=p.diameter_m/2;Bounds b;b.include(sub(p.position_m,{radius,radius,radius}));b.include(add(p.position_m,{radius,radius,radius}));std::vector<std::size_t> candidates;if(brute){candidates.resize(d.input.triangles.size());std::iota(candidates.begin(),candidates.end(),0);}else candidates=d.query_box(b);
+MeshQuery StaticTriangleMesh::query(const Particle& p,bool brute)const{return query_impl(p,brute,false);}
+MeshQuery StaticTriangleMesh::query_optimized(const Particle& p)const{return query_impl(p,false,true);}
+double StaticTriangleMesh::radius_bound(Vec3 pivot)const{require(finite(pivot),"invalid radius pivot");double result=0;for(auto p:data_->input.vertices)result=std::max(result,norm(sub(p,pivot)));return result;}
+MeshQuery StaticTriangleMesh::query_impl(const Particle& p,bool brute,bool optimized)const{validate(p);const auto& d=*data_;double radius=p.diameter_m/2;Bounds b;b.include(sub(p.position_m,{radius,radius,radius}));b.include(add(p.position_m,{radius,radius,radius}));
+ if(optimized){
+  if(!d.tree[0].box.meets(b)){MeshQuery result;result.bounds_rejects=1;return result;}
+  if(d.axis_box){const auto& bounds=d.tree[0].box;int outside=0,which=0;double distance=0,sign=0;bool interior=true;
+   for(int k=0;k<3;++k){double x=axis(p.position_m,k),lo=axis(bounds.lo,k),hi=axis(bounds.hi,k);
+    if(x<lo||x>hi){++outside;which=k;sign=x>hi?1.:-1.;distance=x>hi?x-hi:lo-x;}
+    else if(x-lo<radius+tol||hi-x<radius+tol)interior=false;
+   }
+   if(outside==1&&interior&&distance>tol){MeshQuery result;result.analytic_queries=1;
+    if(distance<radius){auto point=p.position_m;Vec3 normal;const auto& side=sign>0?bounds.hi:bounds.lo;
+     if(which==0){point.x=side.x;normal.x=sign;}else if(which==1){point.y=side.y;normal.y=sign;}else{point.z=side.z;normal.z=sign;}
+     const std::uint64_t face=which==0?(sign>0?10:8):which==1?(sign>0?6:4):(sign>0?2:0);
+     result.contacts.push_back({face,point,normal,radius-distance});}return result;
+   }
+  }
+ }
+ require(!d.inside(p.position_m),"sphere centre inside closed mesh solid");std::vector<std::size_t> candidates;if(brute){candidates.resize(d.input.triangles.size());std::iota(candidates.begin(),candidates.end(),0);}else candidates=d.query_box(b);
  struct Candidate{MeshHit hit;std::size_t patch;bool face;};std::vector<Candidate> raw;std::set<std::size_t> face_patches;MeshQuery result;
  for(auto i:candidates){++result.triangle_checks;auto t=d.input.triangles[i];auto q=closest(p.position_m,t,d.input.vertices);auto delta=sub(p.position_m,q.point);double distance=norm(delta);if(distance>=radius)continue;require(distance>tol,"sphere centre on mesh surface; reduce dt/check initial state");if(d.input.closed_solid&&dot(delta,d.normals[i])<-tol)continue;
   // A projection onto a shared edge/vertex is a face contact when it lies on the plane normal.

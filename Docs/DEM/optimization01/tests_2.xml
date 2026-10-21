@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Win32-MSBuild"
+	tests="21"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname="PC"
+	time="79"
+	timestamp="2026-10-22T01:32:43"
+	>
+	<testcase name="core_contract" classname="core_contract" time="0.0103887" status="run">
+		<properties/>
+		<system-out>PASS 48 checks; relative tolerance 1e-12
+</system-out>
+	</testcase>
+	<testcase name="plane_contact" classname="plane_contact" time="0.0306761" status="run">
+		<properties/>
+		<system-out>PASS plane contact
+elastic: e=1.00000012072 tc=0.0314159252268 peak=0.0100000010425 maxEnergyError=0.000250125000621
+damped reference: e=0.756134926838 tc=0.0296847354716 peak=0.00756134926838
+damped fine: e=0.756140602617 tc=0.0296845806803 peak=0.00756140602088
+restitution errors coarse/fine: 5.68475089872e-05 / 5.67577883448e-06
+</system-out>
+	</testcase>
+	<testcase name="sphere_pair" classname="sphere_pair" time="0.0438276" status="run">
+		<properties/>
+		<system-out>masses=1,1 diameters=1,1 c=0 dt=1e-06 e=1.00000000243 e_error=2.42620834534e-09 maxMomentumError=9.99200722163e-15 energyLoss=-1.21310739232e-09
+masses=1,3 diameters=0.4,0.8 c=0 dt=1e-06 e=1.00000000006 e_error=6.29909457928e-11 maxMomentumError=8.881784197e-15 energyLoss=-4.72435424115e-11
+masses=1,3 diameters=0.4,0.8 c=40 dt=1e-05 e=0.728019236622 e_error=7.00505989467e-05 maxMomentumError=2.77555756156e-15 energyLoss=0.176245496666
+masses=1,3 diameters=0.4,0.8 c=40 dt=1e-06 e=0.727956184813 e_error=6.99878943722e-06 maxMomentumError=1.487698853e-14 energyLoss=0.176279922372
+PASS sphere pair
+</system-out>
+	</testcase>
+	<testcase name="rotation_friction" classname="rotation_friction" time="0.140941" status="run">
+		<properties/>
+		<system-out>rolling v=0.713483 omega=1.42977 energy=0.356742
+incline rolling speed=0.695287 reference=0.696052
+oblique max angular momentum error=2.51354e-13
+PASS rotation and friction
+</system-out>
+	</testcase>
+	<testcase name="hertz_mindlin" classname="hertz_mindlin" time="0.248158" status="run">
+		<properties/>
+		<system-out>PASS Hertz-Mindlin
+reference peak=0.000361572189001 time=0.0106420645123
+fine e=0.999999999983 peak=0.000361572189037 time=0.0106420645104
+elastic e errors coarse/fine=4.24376089825e-11 / 1.73998593311e-11
+damped e coarse/fine/reference=0.943358194107 / 0.94335009328 / 0.943349418313
+</system-out>
+	</testcase>
+	<testcase name="many_body" classname="many_body" time="8.45712" status="run">
+		<properties/>
+		<system-out>search N=402 contacts=52 checks grid/brute=1343/80601
+settling diagnostic z=0.497056911845,1.49509484115,2.49411380192 speed=1.83772182437e-05
+stack t=5s N=3 mass=3 maxSpeed=1.83772182437e-05 maxOverlap=0.00802659978977 z=0.497056911845,1.49509484115,2.49411380192 wallSeconds=2.7746135
+search scale N=100 checks=342 ms=0.1894
+search scale N=300 checks=2594 ms=0.707
+search scale N=1000 checks=10476 ms=2.8671
+integrate scale N=27 100stepsSeconds=0.0150576 maxOverlap=0.000999999998657
+integrate scale N=125 100stepsSeconds=0.1180956 maxOverlap=0.00100001669084
+integrate scale N=300 100stepsSeconds=0.311377 maxOverlap=0.000999999998927
+PASS many-body search and deposition
+</system-out>
+	</testcase>
+	<testcase name="box_geometry" classname="box_geometry" time="14.7065" status="run">
+		<properties/>
+		<system-out>PASS box faces/edges/corners, transforms, welded seam friction, Hertz and actual 53-box rig; final z=3.51182 maxOverlap=0.00349938
+</system-out>
+	</testcase>
+	<testcase name="session_controls" classname="session_controls" time="0.0760451" status="run">
+		<properties/>
+		<system-out>PASS session: frame partition, controls, reset history, fault stop
+</system-out>
+	</testcase>
+	<testcase name="background_worker" classname="background_worker" time="1.22877" status="run">
+		<properties/>
+		<system-out>300 particles, 53 boxes, 100 fixed steps; compute=0.735669s; mass=25.1327kg
+1000 snapshot reads during computation=9.12e-05s
+PASS worker commands, generation isolation, immutable snapshots, 300 particles, shutdown
+</system-out>
+	</testcase>
+	<testcase name="particle_tracking" classname="particle_tracking" time="0.0570367" status="run">
+		<properties/>
+		<system-out>Legacy predicate replay: 298; centre crossings: 300; historical cause remains unproven
+PASS tracking: conservation, timestamps, fast crossings, reverse/reentry, side escape, IDs, real rig transforms, worker/reset
+</system-out>
+	</testcase>
+	<testcase name="powder_settings" classname="powder_settings" time="0.106826" status="run">
+		<properties/>
+		<system-out>300 uniform-number: mass=25.8135kg, mean d=0.0396015m, candidates=300
+Requested 10kg +/-0.1: count=113 actual=10.0113 delta=0.011303
+PASS settings, masses, seeded packing, wall material isolation, atomic failure, worker reset
+</system-out>
+	</testcase>
+	<testcase name="powder_supply" classname="powder_supply" time="0.105608" status="run">
+		<properties/>
+		<system-out>Supply scheduling, backlog, mass, birth tracking and worker checks passed
+</system-out>
+	</testcase>
+	<testcase name="experiment_results" classname="experiment_results" time="0.106604" status="run">
+		<properties/>
+		<system-out>Result metrics, residence, snapshots, limits and export passed
+</system-out>
+	</testcase>
+	<testcase name="rolling_resistance" classname="rolling_resistance" time="12.1337" status="run">
+		<properties/>
+		<system-out>slope_mu0 x=1.39757 speed=1.39753 KE=1.36869
+slope_mu0.2 x=0.00136729 speed=7.48942e-15 KE=3.52725e-29
+slope_dt_half x=0.00136729 speed=9.51587e-15
+pile_mu0 spread=2.82295 KE=5.98424 energy_excess=0
+pile_mu0.2 spread=1.00462 KE=1.23412e-12 energy_excess=0
+rolling resistance PASS
+</system-out>
+	</testcase>
+	<testcase name="contact_adhesion" classname="contact_adhesion" time="0.491507" status="run">
+		<properties/>
+		<system-out>bound_energy_error=7.27439e-09 half_dt_error=3.63668e-09 separation=0.998977
+escape_energy_error=9.72432e-07 separation=1.01853 off_separation=1.00277
+wall_hold_z=0.499266 released_z=0.551695 box_z=0.499266
+contact adhesion PASS
+</system-out>
+	</testcase>
+	<testcase name="rigid_clumps" classname="rigid_clumps" time="0.148335" status="run">
+		<properties/>
+		<system-out>free_spin_energy_error=1.38778e-16 half_dt=1.38778e-16
+asymmetric_energy_error=5.52343e-10
+mixed_fixture_mass=0.606537 sphere_z=0.0211297 clump_z=0.02469
+clump PASS
+</system-out>
+	</testcase>
+	<testcase name="static_triangle_mesh" classname="static_triangle_mesh" time="0.524922" status="run">
+		<properties/>
+		<system-out>PASS static triangle mesh: face/edge/vertex, transformed box equivalence, units/topology/ports, thin wall atomic guard, BVH, seams and clumps
+plane_max_position_error_m=1.17961e-16
+clump_max_z_error_m=0
+triangle_checks=28896 / brute=205312
+pipe_final_z_m=-0.0314647
+</system-out>
+	</testcase>
+	<testcase name="prescribed_moving_walls" classname="prescribed_moving_walls" time="0.0352053" status="run">
+		<properties/>
+		<system-out>PASS prescribed wall poses, relative slip/rolling, reaction torque, work balance, zero-motion equivalence and atomic guards
+work_energy_error_J=3.9193e-05,1.96157e-05,9.81266e-06
+clump_wall_work_J=1.64995e-05
+</system-out>
+	</testcase>
+	<testcase name="mixing_experiment" classname="mixing_experiment" time="40.9511" status="run">
+		<properties/>
+		<system-out>PASS mixing references, mass/COM weighting, sampling guards, quotas, boundaries, conservation and export
+separated=0 premixed=1 dynamic_work_J=0.571776 dynamic_index=0.606061 valid=1
+</system-out>
+	</testcase>
+	<testcase name="optimization_profile" classname="optimization_profile" time="0.016559" status="run">
+		<properties/>
+		<system-out>PASS opt-in timers/counters, identical physics and continued history, failure accounting, unchanged capacity
+</system-out>
+	</testcase>
+	<testcase name="optimization_cli" classname="optimization_cli" time="0.139353" status="run">
+		<properties/>
+		<system-out>PASS optimization CLI formats, nonoverwrite, invalid input, exact profile parity, last accepted state
+</system-out>
+	</testcase>
+</testsuite>

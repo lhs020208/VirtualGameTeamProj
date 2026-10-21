@@ -1,0 +1,10 @@
+{
+  "scope": "displacement-based Verlet neighbors, contiguous AoS particle/force/work arrays, double-buffered flat histories",
+  "skin": "0.2 * minimum pebble diameter",
+  "validity": "all node IDs, ownership and diameters unchanged; every actual pebble displacement <= skin/4; evaluated at pre-force and future snapshots",
+  "proof": "pair separation shrinks by at most skin/2, less than the full build margin skin; rotation included by actual pebble positions",
+  "accuracy": "exact physical/state/event CSV bytes against archived optimization03 and forced rebuild; no tolerance relaxation",
+  "capacity": "300 bodies / 1024 pebbles unchanged; no scale expansion",
+  "measurement": "3 alternating unprofiled runs, one profiled each; rebuild/reuse counts, retained capacities, global C++ new counts in warmed test; capacities are not total RSS",
+  "failure": "state/history/time atomic; cache may rebuild after failure but must remain conservative"
+}

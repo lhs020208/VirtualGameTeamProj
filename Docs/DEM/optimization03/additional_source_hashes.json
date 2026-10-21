@@ -1,0 +1,5 @@
+{
+  "Scripts/run_optimization03_validation.py": "17aad9770ec7f76222ec6a4a13bf2b1b1050f9b323165a73a0483a0c12df3877",
+  "Physics/PowderCore/fixtures/optimization03_contract.json": "315fb27aa2b1960f515f481b2edf6b3e7f211f1efc2e4c223fb159f4cbca75a3",
+  "Physics/PowderCore/include/powder/spatial.hpp": "b789863d9111d97652e049d5dc9ad2de29533ea2919006fb82cd8249bf9451af"
+}

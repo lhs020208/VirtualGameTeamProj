@@ -1,0 +1,39 @@
+CMake is re-running because D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore/CMakeFiles/generate.stamp is out-of-date.
+  the file 'D:/GitHub/VirtualGameTeamProj/Physics/PowderCore/CMakeLists.txt'
+  is newer than 'D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore/CMakeFiles/generate.stamp.depend'
+  result='-1'
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.26300.
+-- Configuring done (0.5s)
+-- Generating done (0.7s)
+-- Build files have been written to: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+msbuild 버전 17.14.23+b0019275e(.NET Framework용)
+
+  powder_core.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_core.lib
+  world_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\world_tests.exe
+  tracking_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\tracking_tests.exe
+  rolling_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\rolling_tests.exe
+  powder_run.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_run.exe
+  motion_wall_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\motion_wall_tests.exe
+  powder_opt01.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_opt01.exe
+  results_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\results_tests.exe
+  adhesion_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\adhesion_tests.exe
+  settings_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\settings_tests.exe
+  supply_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\supply_tests.exe
+  spatial_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\spatial_tests.exe
+  sphere_cache_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\sphere_cache_tests.exe
+  session_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\session_tests.exe
+  worker_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\worker_tests.exe
+  contact_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\contact_tests.exe
+  profile_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\profile_tests.exe
+  mesh_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\mesh_tests.exe
+  clump_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\clump_tests.exe
+  powder_bench.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_bench.exe
+  pair_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\pair_tests.exe
+  mixing_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\mixing_tests.exe
+  geometry_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\geometry_tests.exe
+  friction_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\friction_tests.exe
+  Building Custom Rule D:/GitHub/VirtualGameTeamProj/Physics/PowderCore/CMakeLists.txt
+  powder_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_tests.exe
+  hertz_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\hertz_tests.exe
+  reuse_tests.cpp
+  reuse_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\reuse_tests.exe

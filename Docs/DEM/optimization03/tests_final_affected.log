@@ -1,0 +1,22 @@
+Internal ctest changing into directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+Test project D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+    Start 16: rigid_clumps
+1/8 Test #16: rigid_clumps .....................   Passed    0.13 sec
+    Start 17: static_triangle_mesh
+2/8 Test #17: static_triangle_mesh .............   Passed    0.49 sec
+    Start 18: prescribed_moving_walls
+3/8 Test #18: prescribed_moving_walls ..........   Passed    0.05 sec
+    Start 19: mixing_experiment
+4/8 Test #19: mixing_experiment ................   Passed   29.53 sec
+    Start 20: optimization_profile
+5/8 Test #20: optimization_profile .............   Passed    0.03 sec
+    Start 21: optimization_cli
+6/8 Test #21: optimization_cli .................   Passed    0.14 sec
+    Start 22: optimization_sphere_cache
+7/8 Test #22: optimization_sphere_cache ........   Passed    0.21 sec
+    Start 23: optimization_spatial
+8/8 Test #23: optimization_spatial .............   Passed    0.73 sec
+
+100% tests passed, 0 tests failed out of 8
+
+Total Test time (real) =  31.32 sec

@@ -1,0 +1,18 @@
+Internal ctest changing into directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+Test project D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+    Start 20: optimization_profile
+1/6 Test #20: optimization_profile .............   Passed    0.03 sec
+    Start 21: optimization_cli
+2/6 Test #21: optimization_cli .................   Passed    0.15 sec
+    Start 22: optimization_sphere_cache
+3/6 Test #22: optimization_sphere_cache ........   Passed    0.15 sec
+    Start 23: optimization_spatial
+4/6 Test #23: optimization_spatial .............   Passed    0.64 sec
+    Start 24: optimization_neighbor_reuse
+5/6 Test #24: optimization_neighbor_reuse ......   Passed    0.39 sec
+    Start 25: optimization_prepared_walls
+6/6 Test #25: optimization_prepared_walls ......   Passed    0.04 sec
+
+100% tests passed, 0 tests failed out of 6
+
+Total Test time (real) =   1.42 sec

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Win32-MSBuild"
+	tests="8"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname="PC"
+	time="31"
+	timestamp="2026-10-22T02:00:34"
+	>
+	<testcase name="rigid_clumps" classname="rigid_clumps" time="0.126815" status="run">
+		<properties/>
+		<system-out>free_spin_energy_error=1.38778e-16 half_dt=1.38778e-16
+asymmetric_energy_error=5.52343e-10
+mixed_fixture_mass=0.606537 sphere_z=0.0211297 clump_z=0.02469
+clump PASS
+</system-out>
+	</testcase>
+	<testcase name="static_triangle_mesh" classname="static_triangle_mesh" time="0.493918" status="run">
+		<properties/>
+		<system-out>PASS static triangle mesh: face/edge/vertex, transformed box equivalence, units/topology/ports, thin wall atomic guard, BVH, seams and clumps
+plane_max_position_error_m=1.17961e-16
+clump_max_z_error_m=0
+triangle_checks=28896 / brute=205312
+pipe_final_z_m=-0.0314647
+</system-out>
+	</testcase>
+	<testcase name="prescribed_moving_walls" classname="prescribed_moving_walls" time="0.0489015" status="run">
+		<properties/>
+		<system-out>PASS prescribed wall poses, relative slip/rolling, reaction torque, work balance, zero-motion equivalence and atomic guards
+work_energy_error_J=3.9193e-05,1.96157e-05,9.81266e-06
+clump_wall_work_J=1.64995e-05
+</system-out>
+	</testcase>
+	<testcase name="mixing_experiment" classname="mixing_experiment" time="29.5331" status="run">
+		<properties/>
+		<system-out>PASS mixing references, mass/COM weighting, sampling guards, quotas, boundaries, conservation and export
+separated=0 premixed=1 dynamic_work_J=0.571776 dynamic_index=0.606061 valid=1
+</system-out>
+	</testcase>
+	<testcase name="optimization_profile" classname="optimization_profile" time="0.0346068" status="run">
+		<properties/>
+		<system-out>PASS opt-in timers/counters, identical physics and continued history, failure accounting, unchanged capacity
+</system-out>
+	</testcase>
+	<testcase name="optimization_cli" classname="optimization_cli" time="0.142048" status="run">
+		<properties/>
+		<system-out>PASS optimization CLI formats, nonoverwrite, invalid input, exact profile parity, last accepted state
+</system-out>
+	</testcase>
+	<testcase name="optimization_sphere_cache" classname="optimization_sphere_cache" time="0.209748" status="run">
+		<properties/>
+		<system-out>PASS sphere/generic parity, fall/pair/plane/box/Hertz/rolling/adhesion/moving-wall, cache edits, copies and rollback
+</system-out>
+	</testcase>
+	<testcase name="optimization_spatial" classname="optimization_spatial" time="0.727327" status="run">
+		<properties/>
+		<system-out>PASS grid/exhaustive sets, polydispersity, signed cell boundaries, extreme fallback, owner exclusion, edits, exact trajectories and new post-step contact rejection
+</system-out>
+	</testcase>
+</testsuite>

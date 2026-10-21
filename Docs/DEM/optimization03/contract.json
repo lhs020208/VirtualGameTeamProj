@@ -1,0 +1,12 @@
+{
+  "scope": "spatial candidates at both pre-force and post-integration snapshots; ID-index commit",
+  "accuracy": "exact contact sets and physical/state/event CSV bytes against optimization02",
+  "grid_width": "1.01 * maximum pebble diameter",
+  "flat_cell_budget": "16 * node_count + 64 cells; otherwise sparse hash",
+  "coordinate_fallback": "nonfinite width/quotient or abs(floor(position/width)) > 1e12 uses exhaustive candidates",
+  "owner_exclusion": "same body excluded before narrow phase",
+  "ordering": "lexicographic node index, preserves force accumulation order",
+  "capacity": "300 bodies / 1024 pebbles unchanged",
+  "performance": "3 alternating unprofiled repeats of archived optimization02 executable and final grid binary; report regressions too; one profiled run each",
+  "target_achieved": false
+}

@@ -1,0 +1,48 @@
+Internal ctest changing into directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+Test project D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+      Start  1: core_contract
+ 1/21 Test  #1: core_contract ....................   Passed    0.03 sec
+      Start  2: plane_contact
+ 2/21 Test  #2: plane_contact ....................   Passed    0.04 sec
+      Start  3: sphere_pair
+ 3/21 Test  #3: sphere_pair ......................   Passed    0.05 sec
+      Start  4: rotation_friction
+ 4/21 Test  #4: rotation_friction ................   Passed    0.15 sec
+      Start  5: hertz_mindlin
+ 5/21 Test  #5: hertz_mindlin ....................   Passed    0.26 sec
+      Start  6: many_body
+ 6/21 Test  #6: many_body ........................   Passed    8.28 sec
+      Start  7: box_geometry
+ 7/21 Test  #7: box_geometry .....................   Passed   14.28 sec
+      Start  8: session_controls
+ 8/21 Test  #8: session_controls .................   Passed    0.09 sec
+      Start  9: background_worker
+ 9/21 Test  #9: background_worker ................   Passed    1.25 sec
+      Start 10: particle_tracking
+10/21 Test #10: particle_tracking ................   Passed    0.07 sec
+      Start 11: powder_settings
+11/21 Test #11: powder_settings ..................   Passed    0.08 sec
+      Start 12: powder_supply
+12/21 Test #12: powder_supply ....................   Passed    0.14 sec
+      Start 13: experiment_results
+13/21 Test #13: experiment_results ...............   Passed    0.15 sec
+      Start 14: rolling_resistance
+14/21 Test #14: rolling_resistance ...............   Passed   13.09 sec
+      Start 15: contact_adhesion
+15/21 Test #15: contact_adhesion .................   Passed    0.48 sec
+      Start 16: rigid_clumps
+16/21 Test #16: rigid_clumps .....................   Passed    0.16 sec
+      Start 17: static_triangle_mesh
+17/21 Test #17: static_triangle_mesh .............   Passed    0.53 sec
+      Start 18: prescribed_moving_walls
+18/21 Test #18: prescribed_moving_walls ..........   Passed    0.06 sec
+      Start 19: mixing_experiment
+19/21 Test #19: mixing_experiment ................   Passed   39.66 sec
+      Start 20: optimization_profile
+20/21 Test #20: optimization_profile .............   Passed    0.02 sec
+      Start 21: optimization_cli
+21/21 Test #21: optimization_cli .................   Passed    0.17 sec
+
+100% tests passed, 0 tests failed out of 21
+
+Total Test time (real) =  79.07 sec

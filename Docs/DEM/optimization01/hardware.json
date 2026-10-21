@@ -1,0 +1,14 @@
+{
+  "deviceName": "PC",
+  "instance": "45E7C3714B503175BDFAD8ADDAF4A8F7",
+  "instanceName": "PC-30580",
+  "platform": "WindowsEditor",
+  "oSVersion": "Windows 11 (26H2) [10.0.26300.9711] ",
+  "model": "Default",
+  "gPU": "NVIDIA GeForce RTX 4060 Ti",
+  "cPUModel": "Intel(R) Core(TM) i7-14700KF",
+  "rAMInGB": 32,
+  "renderMode": "SM6",
+  "rHI": "",
+  "appInstanceLog": ""
+}

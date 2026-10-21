@@ -1,0 +1,142 @@
+{
+  "schema": 1,
+  "id": "optimization01_v1",
+  "date": "2026-10-22",
+  "status": "provisional_virtual_material_not_experimental_calibration",
+  "target": {
+    "rate_physical_seconds_per_wall_second": 0.1,
+    "groups": [
+      {
+        "name": "A",
+        "requested_mass_kg": 5
+      },
+      {
+        "name": "B",
+        "requested_mass_kg": 5
+      }
+    ],
+    "radius_m": 0.001,
+    "diameter_m": 0.002,
+    "solid_material_density_kg_m3": 1500,
+    "shape": "sphere",
+    "count_per_group": 795775,
+    "actual_total_mass_kg_after_rounding": 10.000003575641669,
+    "coarse_graining_ratio": 1,
+    "simultaneously_active_scope": "entire_process",
+    "baseline_counts": [
+      1000,
+      10000,
+      100000
+    ],
+    "sensitivity_radius_m": [
+      0.0005,
+      0.001,
+      0.002
+    ]
+  },
+  "final_acceptance": {
+    "measured_physical_duration_s_min": 60,
+    "physical_window_s": 1,
+    "all_complete_windows_rate_min": 0.1,
+    "include": [
+      "solver",
+      "required_sampling",
+      "state_transfer",
+      "required_output",
+      "Unreal_display"
+    ],
+    "exclude_from_steady_rate_but_report": [
+      "initialization",
+      "build"
+    ],
+    "repeats": 3,
+    "hardware": "record per run; same hardware for comparisons",
+    "full_air_transport": "requires separate validated dense/3D flow model and included cost; not provided by this DEM baseline"
+  },
+  "strict_implementation_checks": {
+    "profile_on_off_state_and_physics": "exact_same_build",
+    "same_mode_repeats": "exact_deterministic_fields",
+    "contact_search": "exact_contact_ID_set_on_small_reference",
+    "parallel_later": "define_before_implementation; macro tolerances do not excuse missed contacts"
+  },
+  "baseline_acceptance": {
+    "group_mass_absolute_floor_kg": 1e-18,
+    "group_mass_relative": 1e-12,
+    "freefall_discrete_position_error_m": 1e-11,
+    "max_overlap_divided_by_radius_exclusive": 0.05,
+    "packing_requires_pair_and_wall_contacts": true,
+    "mixing_requires_wall_contacts_and_valid_metric": true,
+    "discharge_requires_all_32_collected": true,
+    "known_reference_rejection": "mixing_32 at 30 RPM exceeds overlap threshold; retain as diagnostic, never as accurate reference"
+  },
+  "simplification_acceptance_proposal_frozen": {
+    "group_mass": "same numerical mass ledger as baseline; supplied/removed masses explicit",
+    "cumulative_discharge_mass_relative": 0.05,
+    "near_zero_discharge_absolute_fraction_of_initial_mass": 0.0001,
+    "mean_discharge_rate_relative": 0.05,
+    "residence_mean_median_p95_relative": 0.05,
+    "near_zero_residence_absolute_s": 0.001,
+    "mixing_index_absolute": 0.05,
+    "mean_torque_relative": 0.1,
+    "near_zero_torque_absolute_nm": 0.0001,
+    "near_zero_definition": "use max(relative tolerance times abs(reference), stated absolute tolerance)",
+    "qualitative": "critical clogging/leakage/segregation occurrence must not change; requires separate challenge fixtures before simplification acceptance",
+    "experimental_validity": false
+  },
+  "fixtures": {
+    "file": "optimization01.bench",
+    "recipe": "optimization_baseline.cpp fixture() versioned by source digest",
+    "legacy_radius_m": 0.02,
+    "legacy_density_kg_m3": 2500,
+    "legacy_linear_coefficients": {
+      "kn_n_m": 10000,
+      "cn_ns_m": 8,
+      "kt_n_m": 2500,
+      "ct_ns_m": 2,
+      "mu": 0.4
+    },
+    "mm_probe_radius_m": 0.001,
+    "mm_probe_density_kg_m3": 1500,
+    "mm_probe_linear_coefficients": {
+      "kn_n_m": 10000,
+      "cn_ns_m": 0.01,
+      "kt_n_m": 2500,
+      "ct_ns_m": 0.0025,
+      "mu": 0.4
+    },
+    "mm_dt_s": 2e-08,
+    "mm_coefficients_note": "new virtual test inputs, not a modification or softening of the existing production material",
+    "gravity_m_s2": [
+      0,
+      0,
+      -9.81
+    ],
+    "randomness": "none; deterministic lattice/ID placement",
+    "small_timing_windows": "explicit step count in fixture; too short to certify sustained final target",
+    "packing": "initial close lattice, transient load, not an equilibrated bulk sample",
+    "discharge": "single layer with imposed downward velocity through virtual z=0 collector; not hopper-flow validation",
+    "mixing": "short paddle-contact probe, not a complete mixed product; index remains grid dependent"
+  },
+  "profiler": {
+    "enabled_by_default": false,
+    "scope": "ClumpWorld only; nine exclusive phases; pair search/force and mesh query/force grouped to avoid per-contact clock overhead",
+    "failed_attempts": "included in counters/time, accepted state unchanged",
+    "overhead": "compare solver_call_s with and without profiling; no correction/subtraction from reported times",
+    "memory": "peak working set of benchmark child process; includes allocator/output buffers, not per-particle memory or GPU VRAM",
+    "render": "Unreal display_sync_cpu measures transform/instance preparation only; no GPU draw measurement claim"
+  },
+  "current_capacity": {
+    "clump_bodies": 300,
+    "pebbles": 1024,
+    "unchanged": true,
+    "larger_requests": "unsupported without allocating requested huge arrays; unit test checks actual guard at 301"
+  },
+  "scope_exclusions": [
+    "optimization of algorithm",
+    "change to contact force or integration",
+    "relaxed runtime safety checks",
+    "GPU acceleration",
+    "full-duration large-scale acceptance",
+    "real material calibration"
+  ]
+}

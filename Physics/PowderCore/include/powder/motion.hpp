@@ -14,6 +14,14 @@ struct PrescribedMotion {
  Vec3 vector(Vec3 reference,double time_s)const;
  Vec3 velocity(Vec3 world_point,double time_s)const;
 };
+// Immutable values shared by all particle queries at one prescribed time.
+class PreparedMotion {
+ Quaternion q_;Vec3 reference_pivot_,pivot_,omega_,linear_;
+public:
+ PreparedMotion(const PrescribedMotion&,double time_s);
+ Vec3 point(Vec3)const;Vec3 inverse_point(Vec3)const;Vec3 vector(Vec3)const;Vec3 velocity(Vec3)const;
+ Vec3 omega()const{return omega_;}Vec3 pivot()const{return pivot_;}
+};
 struct MovingMeshHit {MeshHit geometry;Vec3 velocity_m_s,omega_rad_s,pivot_m;};
 struct WallExchange {Vec3 reaction_force_n,reaction_torque_nm;double power_to_particles_w=0;};
 struct MovingWallWrench {ContactWrench particle;WallExchange wall;};
@@ -23,7 +31,9 @@ public:
  MovingTriangleMesh(StaticTriangleMesh,PrescribedMotion);
  const StaticTriangleMesh& reference()const{return reference_;}
  const PrescribedMotion& motion()const{return motion_;}
- std::vector<MovingMeshHit> query(const Particle&,double time_s)const;
+ std::vector<MovingMeshHit> query(const Particle&,double time_s,MeshQuery* counters=nullptr)const;
+ std::vector<MovingMeshHit> query_prepared(const Particle&,const PreparedMotion&,MeshQuery* counters=nullptr)const;
+ void guard_prepared(Vec3 from,Vec3 to,const PreparedMotion& start,const PreparedMotion& end)const;
  void validate_step(double time_s,double dt,double minimum_radius_m)const;
  void guard_motion(Vec3 from,Vec3 to,double time_s,double dt)const;
 private:

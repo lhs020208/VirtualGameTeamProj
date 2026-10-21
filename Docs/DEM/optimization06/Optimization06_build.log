@@ -1,0 +1,33 @@
+msbuild 버전 17.14.23+b0019275e(.NET Framework용)
+
+  clump_worker.cpp
+  powder_core.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_core.lib
+  sphere_cache_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\sphere_cache_tests.exe
+  supply_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\supply_tests.exe
+  powder_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_tests.exe
+  world_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\world_tests.exe
+  tracking_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\tracking_tests.exe
+  worker_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\worker_tests.exe
+  rolling_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\rolling_tests.exe
+  adhesion_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\adhesion_tests.exe
+  results_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\results_tests.exe
+  wall_cache_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\wall_cache_tests.exe
+  spatial_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\spatial_tests.exe
+  settings_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\settings_tests.exe
+  reuse_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\reuse_tests.exe
+  session_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\session_tests.exe
+  profile_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\profile_tests.exe
+  contact_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\contact_tests.exe
+  powder_run.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_run.exe
+  mixing_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\mixing_tests.exe
+  powder_bench.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_bench.exe
+  powder_opt01.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_opt01.exe
+  pair_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\pair_tests.exe
+  motion_wall_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\motion_wall_tests.exe
+  clump_worker_tests.cpp
+  hertz_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\hertz_tests.exe
+  friction_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\friction_tests.exe
+  mesh_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\mesh_tests.exe
+  geometry_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\geometry_tests.exe
+  clump_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\clump_tests.exe
+  clump_worker_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\clump_worker_tests.exe

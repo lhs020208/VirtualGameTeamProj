@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "scope": "cached invariant properties/material validation and centred sphere integration",
+  "reference": "use_cached_sphere_path=false, original validation/integration",
+  "default": "use_cached_sphere_path=true",
+  "numerical_acceptance": {
+    "absolute": 1e-12,
+    "relative": 1e-09,
+    "formula": "abs(a-b) <= absolute + relative*max(abs(a),abs(b))",
+    "discrete": "exact contact/step/arrival counts, statuses and history counts"
+  },
+  "unchanged": [
+    "dt",
+    "forces",
+    "friction",
+    "rolling",
+    "adhesion",
+    "motion guards",
+    "capacity 300 bodies/1024 pebbles"
+  ],
+  "benchmark": "optimization01.bench, same executable, alternating reference/cached repetitions, loop timings include checks and measurement; not a large-scale claim"
+}

@@ -1,0 +1,4 @@
+rebuild_allocations=20200 requested_bytes=1188800 workspace_capacity_bytes=8760
+reuse_allocations=19000 requested_bytes=945600 workspace_capacity_bytes=8760
+neighbor_rebuilds=1 neighbor_reuses=5999 neighbor_capacity_bytes=2376
+PASS exact reuse/rebuild trajectories, contacts, topology/diameter/rotation/fast approach, rollback, history reset, allocation reduction

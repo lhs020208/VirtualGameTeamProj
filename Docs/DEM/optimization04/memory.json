@@ -1,0 +1,12 @@
+[
+  {
+    "mode": "optimization03",
+    "process_peak_working_set_bytes": 7888896,
+    "scope": "entire benchmark process, not isolated solver buffers; separate run from timing trials"
+  },
+  {
+    "mode": "optimization04",
+    "process_peak_working_set_bytes": 7024640,
+    "scope": "entire benchmark process, not isolated solver buffers; separate run from timing trials"
+  }
+]

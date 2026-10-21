@@ -1,0 +1,15 @@
+{
+  "scope": "certified axis-aligned box face interiors, shared rigid motion snapshots, whole-object bounds; immutable BVH retained",
+  "direct_geometry": "exact 8 vertices and canonical 12 triangles, closed outward solid; face projection separated from all face edges by >= particle radius + 1e-10m",
+  "fallback": "edges, corners, near-surface singularities, transformed/noncanonical boxes, general meshes keep original triangle contacts and feature IDs",
+  "numeric": "abs(a-b)<=1e-12 + 1e-9*max(abs(a),abs(b)); discrete contact/step/arrival counts and statuses exact",
+  "motion": "start and end pose built each step, existing angular/travel guards and segment crossing guard retained",
+  "benchmark": "3 alternating unprofiled repeats vs preserved optimization04, one profiled each; compare wall phase time separately",
+  "unchanged": [
+    "dt",
+    "material coefficients",
+    "gap geometry",
+    "capacity 300 bodies/1024 pebbles"
+  ],
+  "large_scale_target_achieved": false
+}

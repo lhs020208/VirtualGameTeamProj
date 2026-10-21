@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "task": "optimization06",
+  "physics": "unchanged fixed dt/contact models and capacity",
+  "acceptance": [
+    "direct/threaded body state and exported mixing measurements byte-identical at fixed steps",
+    "checkpoint history continuation identical",
+    "snapshot cadence 1/30/120Hz and consumer polling do not alter fixed-step result",
+    "single step and pause are barriers",
+    "reset generations monotonic; stale immutable snapshots cannot replace current state",
+    "shutdown joins; worker never accesses Unreal objects",
+    "display LOD never alters physics population",
+    "report worker/transfer/display CPU separately; NullRHI is not GPU performance"
+  ],
+  "non_goals": [
+    "million-particle capacity",
+    "0.1x target achievement",
+    "parallel contact solver"
+  ]
+}

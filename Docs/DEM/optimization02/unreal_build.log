@@ -1,0 +1,32 @@
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" VirtualGameTeamProjEditor Win64 Development -Project=D:/GitHub/VirtualGameTeamProj/VirtualGameTeamProj.uproject -WaitMutex -NoHotReloadFromIDE
+Log file: C:\Users\lpet2\AppData\Local\UnrealBuildTool\Log.txt
+Determining max actions to execute in parallel (20 physical cores, 28 logical cores)
+  Executing up to 20 processes, one per physical core
+Using 'git status' to determine working set for adaptive non-unity build (D:\GitHub\VirtualGameTeamProj).
+UbaServer - Listening on 0.0.0.0:1345
+Building VirtualGameTeamProjEditor...
+===== Toolchain Information =====
+Using ISPC compiler (C:\Program Files\Epic Games\UE_5.8\Engine\Source\ThirdParty\Intel\ISPC\bin\Windows\ispc.exe)
+  Intel(r) Implicit SPMD Program Compiler (Intel(r) ISPC), 1.24.0 (build commit  @ 20250404, LLVM 18.1.2) 
+Using Visual Studio 14.44.35217 toolchain (C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+[Adaptive Build] Excluded from VirtualGameTeamProj unity file: DEMBridgeTests.cpp, DEMCore_clump.cpp, DEMCore_mesh.cpp, DEMCore_motion.cpp, PowderClumpTest.cpp, PowderDEMTest.cpp, PowderMeshGeometry.cpp
+=================================
+Using Unreal Build Accelerator local executor to run 6 action(s)
+  CPU 20 physical cores, 28 logical cores
+  Memory 31.85 GB physical, 26.95 GB/58.85 GB committed
+  UBA Storage capacity 40 GB
+[1/6] Compile [x64] DEMCore_clump.cpp
+[2/6] Compile [x64] DEMBridgeTests.cpp
+[3/6] Compile [x64] PowderClumpTest.cpp
+[4/6] Link [x64] UnrealEditor-VirtualGameTeamProj.lib
+   D:/GitHub/VirtualGameTeamProj/Intermediate/Build/Win64/x64/UnrealEditor/Development/VirtualGameTeamProj/UnrealEditor-VirtualGameTeamProj.lib 라이브러리 및 D:/GitHub/VirtualGameTeamProj/Intermediate/Build/Win64/x64/UnrealEditor/Development/VirtualGameTeamProj/UnrealEditor-VirtualGameTeamProj.exp 개체를 생성하고 있습니다.
+[5/6] Link [x64] UnrealEditor-VirtualGameTeamProj.dll
+[6/6] WriteMetadata VirtualGameTeamProjEditor.target [NoUba]
+
+Total time in Unreal Build Accelerator local executor: 10.75 seconds
+Output binary: C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe
+
+Result: Succeeded
+Total execution time: 11.40 seconds
+Trace written to file C:\Users\lpet2\AppData\Local\UnrealBuildTool\Trace.uba with size 6.6kb

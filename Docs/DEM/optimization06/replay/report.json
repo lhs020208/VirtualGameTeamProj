@@ -1,0 +1,157 @@
+{
+  "status": "PASS",
+  "exe_sha256": "f1de8c9af849d2752817238952c42f063dbd82a095e20f2d08b8cc662c8eb71e",
+  "source_sha256": {
+    "Physics/PowderCore/CMakeLists.txt": "8211525f60e73f37894e9aee6484b159eb49a5f1ea7e93f0c07fc6a55baf4ff2",
+    "Physics/PowderCore/include/powder/clump.hpp": "3a20e758fda629cd105a938706ee8bcf34754c68b1ea53c5383a35aee1bd310d",
+    "Physics/PowderCore/include/powder/clump_worker.hpp": "9d27592242f09c41549f7dd7810ac5300a6532944c80d542534f159188075d6d",
+    "Physics/PowderCore/include/powder/core.hpp": "d5ab4ee7a2a4f3fac3152628edfd0d1201578eae3c2953cedfd6a01d74839425",
+    "Physics/PowderCore/include/powder/elastic.hpp": "86bca44720424385231ddf5dc4ecfc25875c43b91430563239ad482f2f0a5b43",
+    "Physics/PowderCore/include/powder/friction.hpp": "49b24ba38a8c7efc74a1e7e947895623f906191290ac9df92b7b0136d93a2a18",
+    "Physics/PowderCore/include/powder/geometry.hpp": "5239274da266a07fa7f8b8d94a4570f4ee0510f9378e8a4b75c1c66d6df09780",
+    "Physics/PowderCore/include/powder/mesh.hpp": "2e2f98cf2b7a5e1b889cd2aa71c9d2f4879a29d9e553f6c03d3f087aaa1cfb8d",
+    "Physics/PowderCore/include/powder/mixing.hpp": "9f409d685c42de5bbe03bc38ebef11adeb61eee142c6713a930abec10707d78d",
+    "Physics/PowderCore/include/powder/motion.hpp": "4343647c9490c0cb8eeb80534d96967996732ffa525f92c98d3eabceef5e6150",
+    "Physics/PowderCore/include/powder/profile.hpp": "b2cb8bafcd9f0755ada8bc87a1e38eac9ee22890a35317b6391d34d4b88c529c",
+    "Physics/PowderCore/include/powder/results.hpp": "7212dc39ad717bbc00add1be1b03bc5c76e91575da486816c0ee6718ab5b92ad",
+    "Physics/PowderCore/include/powder/reuse.hpp": "5ba50440840c63b05a21624d47599f6672f0a83c979a0ab61cea066a2e13e8b9",
+    "Physics/PowderCore/include/powder/session.hpp": "5dfbc2e4c7fd5d72b67a349fb89684420e6dde67d6060b597375fec5f94de063",
+    "Physics/PowderCore/include/powder/settings.hpp": "a48840634e102e62bb067c6be2044726627f2a57580137ce93d50924e26cadaf",
+    "Physics/PowderCore/include/powder/spatial.hpp": "b789863d9111d97652e049d5dc9ad2de29533ea2919006fb82cd8249bf9451af",
+    "Physics/PowderCore/include/powder/supply.hpp": "5fca5c6861c7dbe05369e7aaf9ad7368491d6bdd49a080cfd536dc3b4c104477",
+    "Physics/PowderCore/include/powder/tracking.hpp": "d131cf4adf0b59e46d97b32616fb5d941f1cf57a3b64fb2f6662c23e92e8cbf0",
+    "Physics/PowderCore/include/powder/worker.hpp": "b7a6c1e0ad22ba81596d7356ef4025c7e956262f91a0ae960b7147160c8dd41e",
+    "Physics/PowderCore/include/powder/world.hpp": "23e377e14b25a6bfc58f9ff8a97468d4bcd02b8419035b4f8c054c46fddbf471",
+    "Physics/PowderCore/src/clump.cpp": "ee27e1d0964395132d32a74a5d61bfd1b74ab766405ed5c6e2d7bbeffc67f023",
+    "Physics/PowderCore/src/clump_worker.cpp": "7cfc4448164275ef4e628820b1d614916615cb8a8143d0646953474aeaaa7687",
+    "Physics/PowderCore/src/core.cpp": "65356cec332b086cfed69b29ab7ba871f276d5221df3a4fe7e3b78bbda682d8e",
+    "Physics/PowderCore/src/elastic.cpp": "852462fb0705151ea42f23f21673fce7d8af3c3560a447998f9e9a8db22c9ad1",
+    "Physics/PowderCore/src/friction.cpp": "61eb1437cecd85fe9851af7c4a1b0f76b48a9282b1f2c4df73cf0e6cbcaf8ad4",
+    "Physics/PowderCore/src/geometry.cpp": "2cbb8dd5e552aaac0ca3af9829859a43880ebb0ba8759b598826792a378e900d",
+    "Physics/PowderCore/src/mesh.cpp": "e9b6fbdc4649fda71dd2771bde8d09ed2689532a4bbb285bf50258d15d0baaf5",
+    "Physics/PowderCore/src/motion.cpp": "bdc1dc09fb6fb723e57839664b822bb1edde7b1d8723629cb3c09de6ece918a9",
+    "Physics/PowderCore/src/results.cpp": "706037a57bee7cefa460e3e9a5b0358c6ef30682e39073c86ebb2cdaead0d79a",
+    "Physics/PowderCore/src/settings.cpp": "e919c1439010899e6dd6bf06f9337d0c221a43627cb5aac9e485223263b63b29",
+    "Physics/PowderCore/src/supply.cpp": "84b87e66743c39ad7b7a228f6fec0ff48430af5c509e14c14dfa9da34f2dc645",
+    "Physics/PowderCore/src/tracking.cpp": "878cdd325d14f527f92a94aed38dee1fbe791a65fdb031a19f95457048774da6",
+    "Physics/PowderCore/src/worker.cpp": "ba163888d04c69fb4d43d0c72eb3c4919e43c9f25ade910ecb842d745220cfab",
+    "Physics/PowderCore/src/world.cpp": "7ef426653e2e37489c6c83abec0bf8147f7d3fbc6d1d987dbcc727e299553925",
+    "Physics/PowderCore/tests/clump_worker_tests.cpp": "9cda62c4df075c432bc68748d32f9db9804409b0a8f2e044d4158d5d7ece9623",
+    "Source/VirtualGameTeamProj/PowderClumpTest.cpp": "f74c4319626aa163f82f33a0cab8bc1019d9ad43c193d8bd30096c874c04a988",
+    "Source/VirtualGameTeamProj/PowderClumpTest.h": "794d82027edd79c06fe748059f1518413423f5d8610e28618817f7cb5192d883",
+    "Source/VirtualGameTeamProj/DEMBridgeTests.cpp": "2458cc5533439dfc7ac4379aa53b6bafc0727c4642a30ab7d3a777fee198739d"
+  },
+  "runs": [
+    {
+      "repeat": 0.0,
+      "hz": 1.0,
+      "wall_s": 0.4304581,
+      "compute_s": 0.3914733999999957,
+      "snapshot_s": 2.2100000000000002e-05,
+      "publications": 4.0,
+      "rate": 0.05575455543755657
+    },
+    {
+      "repeat": 0.0,
+      "hz": 30.0,
+      "wall_s": 0.4385911,
+      "compute_s": 0.4110702999999965,
+      "snapshot_s": 7.67e-05,
+      "publications": 16.0,
+      "rate": 0.054720672626497144
+    },
+    {
+      "repeat": 0.0,
+      "hz": 120.0,
+      "wall_s": 0.4179958,
+      "compute_s": 0.40558280000000085,
+      "snapshot_s": 9.229999999999998e-05,
+      "publications": 52.0,
+      "rate": 0.05741684485823846
+    },
+    {
+      "repeat": 1.0,
+      "hz": 1.0,
+      "wall_s": 0.4304713,
+      "compute_s": 0.40937279999999965,
+      "snapshot_s": 1.59e-05,
+      "publications": 4.0,
+      "rate": 0.055752845776234725
+    },
+    {
+      "repeat": 1.0,
+      "hz": 30.0,
+      "wall_s": 0.4309527,
+      "compute_s": 0.41116860000002464,
+      "snapshot_s": 3.44e-05,
+      "publications": 16.0,
+      "rate": 0.05569056650531548
+    },
+    {
+      "repeat": 1.0,
+      "hz": 120.0,
+      "wall_s": 0.427815,
+      "compute_s": 0.4118796000000059,
+      "snapshot_s": 9.269999999999996e-05,
+      "publications": 53.0,
+      "rate": 0.056099014761042204
+    },
+    {
+      "repeat": 2.0,
+      "hz": 1.0,
+      "wall_s": 0.4275764,
+      "compute_s": 0.4093722000000032,
+      "snapshot_s": 1.5700000000000002e-05,
+      "publications": 4.0,
+      "rate": 0.056130319634094095
+    },
+    {
+      "repeat": 2.0,
+      "hz": 30.0,
+      "wall_s": 0.4185074,
+      "compute_s": 0.41395990000000327,
+      "snapshot_s": 3.29e-05,
+      "publications": 16.0,
+      "rate": 0.05734665623593579
+    },
+    {
+      "repeat": 2.0,
+      "hz": 120.0,
+      "wall_s": 0.4170615,
+      "compute_s": 0.4094360000000004,
+      "snapshot_s": 0.00010350000000000002,
+      "publications": 53.0,
+      "rate": 0.05754546991269938
+    }
+  ],
+  "physics_steps": 12000,
+  "physical_seconds": 0.024,
+  "bodies": 32,
+  "agreement": "byte-identical body CSV and mixing files at fixed step count; history continuation identical",
+  "limitations": [
+    "32-body synthetic fixture, not kg-scale mm powder",
+    "worker is single-threaded physics; no contact parallelism",
+    "polling includes observation delay; timings are not a solver speedup claim",
+    "display/GPU cost not measured in standalone runner"
+  ],
+  "contract": {
+    "schema": 1,
+    "task": "optimization06",
+    "physics": "unchanged fixed dt/contact models and capacity",
+    "acceptance": [
+      "direct/threaded body state and exported mixing measurements byte-identical at fixed steps",
+      "checkpoint history continuation identical",
+      "snapshot cadence 1/30/120Hz and consumer polling do not alter fixed-step result",
+      "single step and pause are barriers",
+      "reset generations monotonic; stale immutable snapshots cannot replace current state",
+      "shutdown joins; worker never accesses Unreal objects",
+      "display LOD never alters physics population",
+      "report worker/transfer/display CPU separately; NullRHI is not GPU performance"
+    ],
+    "non_goals": [
+      "million-particle capacity",
+      "0.1x target achievement",
+      "parallel contact solver"
+    ]
+  }
+}

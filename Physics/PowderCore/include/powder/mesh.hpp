@@ -21,16 +21,19 @@ struct MeshDiagnostics {
  std::string text()const;
 };
 struct MeshHit {std::uint64_t feature_id=0;Vec3 point_m,normal;double overlap_m=0;};
-struct MeshQuery {std::vector<MeshHit> contacts;std::size_t triangle_checks=0;};
+struct MeshQuery {std::vector<MeshHit> contacts;std::size_t triangle_checks=0,analytic_queries=0,bounds_rejects=0;};
 // Immutable after construction; copies share the precomputed BVH and seam topology.
 class StaticTriangleMesh {
 public:
  explicit StaticTriangleMesh(const MeshInput&);
  const MeshDiagnostics& diagnostics()const;
  MeshQuery query(const Particle&,bool brute_force=false)const;
+ MeshQuery query_optimized(const Particle&)const;
+ double radius_bound(Vec3 pivot)const;
  void guard_motion(Vec3 from,Vec3 to)const; // Reject centre crossing; does not silently teleport or repair.
  std::string serialize()const;
 private:
+ MeshQuery query_impl(const Particle&,bool brute,bool optimized)const;
  struct Data;std::shared_ptr<const Data> data_;
 };
 MeshInput read_triangle_mesh(std::istream&);

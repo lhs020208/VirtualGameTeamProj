@@ -666,3 +666,64 @@ not a validated bulk-mixing or motor-sizing model. See Docs/DEM/작업20_가동�
 `powder/mixing.hpp` provides deterministic two-group charging, body-COM mass-weighted cell uniformity, validity diagnostics, integer-step sampling and spatial/time-series exports. This is not the random-variance-corrected Lacey index or a product quality threshold. `/Game/L_MixingTest` supplies a blue/orange 32-body fixture using the prescribed paddle; count, density, RPM, duration and sampling grid can be reset in the actor. Default 40 mm virtual spheres are a numerical experiment, not calibrated fine powder.
 
 `Scripts/compare_dem_mixing.py A B --out NEW_DIRECTORY` verifies completed export ledgers and compares compatible physical sample steps and spatial cells. Invalid scores remain blank. See `Docs/DEM/작업21_혼합실험_공간분포_완료기록.md` for the formula, sampling limits, controls and evidence, and `Docs/DEM/task21/report.md` for the repeated regression report.
+
+## Optimization 01: reference conditions and opt-in profiling
+
+Branch: `PowderSimulationOptimization`. No contact/integration algorithm or existing capacity guard was changed. `ClumpWorld::step(dt)` remains unprofiled; `step_profiled(dt, ClumpProfile*)` optionally collects nine exclusive phase times and validation/pair-check counts. Pair search and force evaluation are grouped, as are mesh query and force evaluation. Profiling must never drive physics decisions.
+
+```powershell
+python -B Scripts/run_optimization01_validation.py --output Saved/Optimization01_new_check
+```
+
+Use the actual benchmark command:
+
+```powershell
+& ./Intermediate/PowderCore/Release/powder_opt01.exe Physics/PowderCore/fixtures/optimization01.bench Saved/MyOpt01 1
+```
+
+The final flag is 1 for profiling, 0 for no profiling; the output directory must be new. The fixture rows contain `case name kind count radius_m density_kg_m3 kn_N_m cn_Ns_m kt_N_m ct_Ns_m mu dt_s steps window_steps rpm expected_outcome`, with `pass` or `reject_overlap` expectations. `optimization01_contract.json` fixes virtual material assumptions, future performance acceptance and numerical criteria. Physics/state/event CSVs must match exactly between modes and repeats on the same build. Timings, short-window rates, process peak working set, executable/source hashes and hardware are reported separately.
+
+There are nine accepted small reference cases, one explicitly reference-rejected 30 RPM near-paddle challenge, and four unsupported size requests. The 300-body limit is unchanged. A passing test harness is NOT certification of 0.1x, kg-scale mm powder, full mixing, actual hopper discharge or calibrated material physics. The fixed-discharge probe starts with downward velocity; the packing/mixing probes are short transients. The 30 RPM challenge exceeds the predeclared 5% overlap/radius criterion and must not be used as an accurate reference. No criterion was relaxed; a separate 5 RPM case is available.
+
+In Unreal, enable `Clump > Profiling > Profile Performance`, then Reset. Physics phases and CPU display synchronization are accumulated; paused O export adds `performance.csv`. GPU rendering time is not measured by this CPU counter or the NullRHI automation test. Reset clears prior measurements (the initial Sync counts as a new display update). Defaults remain unprofiled.
+
+See [completion record](../../Docs/DEM/최적화01_기준조건_성능계측_완료기록.md), [work plan](../../Docs/DEM/대량분말_최적화_작업단위_개발계획.md), and `Docs/DEM/optimization01/` for reproducible evidence. Next: Optimization 02, sphere-specific computation and immutable property caching.
+
+## Optimization 02: cached invariants and centred-sphere path
+
+`ClumpWorld::use_cached_sphere_path` defaults to true. Centred single spheres use isotropic angular momentum integration and direct COM force/torque transfer; friction, rolling, adhesion, quaternion orientation and all step guards remain active. Non-spherical bodies retain the tensor/midpoint route with cached properties. Set false only for reference comparison.
+
+Properties are validated lazily before first force evaluation. Exact density/pebble comparisons invalidate per-ID entries; removed IDs are pruned. Exact active-type and full material-field/table comparisons invalidate material validation. Dynamic state is still checked each step. `invalidate_caches()` explicitly clears these caches without modifying contact history. Copies own their caches. Restart changed experiments with the normal Reset operation.
+
+```powershell
+python -B Scripts/run_optimization02_validation.py --output Saved/Optimization02_new_check
+```
+
+The baseline CLI accepts an optional final `cached` (default) or `reference` argument. The new runner alternates 3 unprofiled runs of each path, also checks profiling parity and numerical differences against `optimization02_contract.json`, and reports measured speedup. The 300-body limit and all-pairs contact/post-step loops remain; this is not kg-scale or 0.1x certification. See `Docs/DEM/optimization02/` and [completion record](../../Docs/DEM/최적화02_구형경로_불변량캐시_완료기록.md). Next: Optimization 03, spatial contact and post-step checks.
+
+## Optimization 03: owner-aware spatial candidates and post-step guards
+
+`ClumpWorld::use_spatial_search` defaults to true. Both the current and integrated snapshots build conservative candidate grids independently; internal clump pairs are excluded and candidates are sorted before force accumulation. Compact domains use a bounded flat linked-bucket grid, sparse domains use hashing, and extreme cell coordinates use exhaustive enumeration. The maximum-diameter cell width supports polydisperse pebbles. ID-index lookup replaces linear searches during commit. Capacity and all physical guards remain unchanged.
+
+The baseline CLI final mode `grid` exercises this path; `cached`/`reference` retain exhaustive comparison modes. Optimization 03 timing uses the preserved Optimization 02 executable to avoid charging new candidate-list allocation to the old baseline. See [completion record](../../Docs/DEM/최적화03_공간격자_접촉안전검사_완료기록.md) and `Docs/DEM/optimization03/` for exact physical parity, candidate counts, timing gains AND small-case regressions. No claim of large-scale 0.1x is made. Next: Optimization 04, neighbor reuse and data layout.
+
+## Optimization 04: displacement-based neighbors and reusable storage
+
+`ClumpWorld::reuse_neighbor_list` defaults to true. A list is built with skin = 0.2 * smallest pebble diameter and checked before both forces and post-step guards. Reuse requires matching node IDs/owners/diameters and each actual world-space pebble displacement <= skin/4. This accounts for clump rotation; relative approach is bounded by skin/2. A changed configuration or larger displacement rebuilds before use. No fixed step-count skipping is used.
+
+Particle/force/owner/property/body work arrays retain capacity, and sorted contiguous contact histories use two buffers for atomic commit. This is AoS plus separate force buffers, not a complete SoA/GPU conversion or an allocation-free solver. Copies own their buffers. Explicit cache invalidation invalidates neighbors too. Empty snapshots currently count as rebuild queries.
+
+The baseline CLI final mode `reuse` enables this path; `grid` forces rebuilding. `Scripts/run_optimization04_validation.py` compares archived Optimization 03 and current builds, including current forced-rebuild parity. `Scripts/measure_optimization04_memory.py` measures process peak working set separately. See [completion record](../../Docs/DEM/최적화04_이웃목록_자료재사용_완료기록.md) and `Docs/DEM/optimization04/` for exact physics parity, allocation counts and retained capacities. The body/pebble limits remain unchanged. Small freefall rates above 0.1x are not kg-scale mm powder certification. Next: Optimization 05, apparatus surface and moving-geometry reuse.
+
+
+## Optimization 05 — prepared walls
+
+Certified canonical axis-aligned box faces use direct contacts; edges, seams and noncanonical meshes retain the triangle path. Whole-mesh bounds reject distant particles; moving wall transforms are prepared once at each step time. Guards, contact laws and capacity are unchanged. `walls` selects this route in the baseline CLI; `reuse` retains the prior comparison path. See `Docs/DEM/optimization05/` and its Korean completion record (25 Core / 13 Unreal tests).
+
+## Optimization 06 — worker-owned clump simulation
+
+`ClumpWorker` owns all mutable solver/measurement state. Its immutable latest-only snapshot is published at a configurable 1–120 Hz (default 30); control barriers also publish immediately. No engine object enters the worker. Pause/single/reset serialize between physical steps; destruction joins. Checkpoints include full contact history and are available only while paused. Callers must finish public API calls before destroying the worker.
+
+Unreal uses batched instance updates and display-only `MaxDisplayedPebbles` (0 hides rendering, not physics). `StepsPerFrame` remains the serialized property name but now means worker batch size, independent of FPS. Mixing measurement remains on fixed physical-time samples; UI shows the sample timestamp. Export CPU categories overlap: worker compute includes phase profiling; do not add them together. GPU costs are not measured by NullRHI tests.
+
+Build Release and run `python Scripts/run_optimization06_validation.py` from the project root. Run `Powder.DEM.` engine automation for bridge/LOD tests. See `Docs/DEM/optimization06/` and the completion record for exact state/measurement/history parity, lifecycle tests and measured overhead. Capacity and the unachieved kg-scale 0.1x target are unchanged. Next: Optimization 07.

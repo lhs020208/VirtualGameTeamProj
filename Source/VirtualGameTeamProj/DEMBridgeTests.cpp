@@ -240,12 +240,58 @@ bool FDEMRealtimePacing::RunTest(const FString& Parameters){
  TestTrue(TEXT("does not fake elapsed physical time"),Physical<=Wall+Dt);
  TestTrue(TEXT("actual throughput reported"),A->ActualSimulationRate>0&&FMath::IsFinite(A->ActualSimulationRate));
  AddInfo(FString::Printf(TEXT("PACING_BENCHMARK: 32 bodies, physical %.9g s, wall %.9g s, rate %.9g x, fixed dt %.9g s, lag %.9g s"),Physical,Wall,Physical/Wall,Dt,A->SimulationLagSeconds));
- A->ToggleSimulation();A->Tick(1);TestEqual(TEXT("pause does not advance"),A->PhysicalSeconds,Physical);
- A->ToggleSimulation();A->Tick(100);TestEqual(TEXT("resume excludes paused time and engine delta"),A->PhysicalSeconds,Physical);
- A->StepSimulation();TestTrue(TEXT("manual step still exactly FixedDt"),FMath::Abs(A->PhysicalSeconds-Physical-Dt)<1e-12);
+ A->ToggleSimulation();const double Paused=A->PhysicalSeconds;A->Tick(1);TestEqual(TEXT("pause barrier does not advance"),A->PhysicalSeconds,Paused);
+ FPlatformProcess::Sleep(.02f);A->Tick(100);TestEqual(TEXT("engine delta never drives physics"),A->PhysicalSeconds,Paused);
+ A->StepSimulation();TestTrue(TEXT("manual step still exactly FixedDt"),FMath::Abs(A->PhysicalSeconds-Paused-Dt)<1e-12);
  A->ResetSimulation();TestEqual(TEXT("reset clears lag"),A->SimulationLagSeconds,0.);TestEqual(TEXT("reset clears speed"),A->ActualSimulationRate,0.);
- A->bRealtimePacing=false;A->StepsPerFrame=3;A->ComputeBudgetMs=100;A->ToggleSimulation();A->Tick(0);TestTrue(TEXT("legacy bounded steps supported"),FMath::Abs(A->PhysicalSeconds-3*Dt)<1e-12);
+ A->bRealtimePacing=false;A->StepsPerFrame=3;A->ComputeBudgetMs=100;A->ToggleSimulation();FPlatformProcess::Sleep(.03f);A->ToggleSimulation();TestTrue(TEXT("worker advances without any render ticks"),A->PhysicalSeconds>3*Dt);
  A->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
+}
+
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDEMProfileBridge,"Powder.DEM.OptimizationProfile",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FDEMProfileBridge::RunTest(const FString& Parameters){
+ UWorld::InitializationValues IV;IV.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false);
+ auto* W=UWorld::CreateWorld(EWorldType::Game,false,NAME_None,nullptr,true,ERHIFeatureLevel::Num,&IV);if(!TestNotNull(TEXT("profile world"),W))return false;
+ GEngine->CreateNewWorldContext(EWorldType::Game).SetCurrentWorld(W);W->InitializeActorsForPlay(FURL());
+ auto* A=W->SpawnActor<APowderClumpTest>();auto* B=W->SpawnActor<APowderClumpTest>();A->DispatchBeginPlay();B->DispatchBeginPlay();
+ A->bMixingRig=B->bMixingRig=true;A->bProfilePerformance=true;A->ResetSimulation();B->ResetSimulation();
+ const double Start=FPlatformTime::Seconds();for(int I=0;I<500;++I){A->StepSimulation();B->StepSimulation();}
+ TestTrue(TEXT("profile enabled and disabled no physics errors"),A->Error.IsEmpty()&&B->Error.IsEmpty());TestEqual(TEXT("same physical time"),A->PhysicalSeconds,B->PhysicalSeconds);
+ for(int I=0;I<A->BodyCount();++I)TestTrue(TEXT("same body position with clocks"),A->BodyPositionCm(I).Equals(B->BodyPositionCm(I),0));
+ TestTrue(TEXT("physics and display timings collected"),A->ProfiledPhysicsSeconds>0&&A->ProfiledDisplaySeconds>0&&A->ProfiledDisplayUpdates==501);TestEqual(TEXT("disabled profiling has no counters"),B->ProfiledDisplayUpdates,0);
+ AddInfo(FString::Printf(TEXT("OPT01_UNREAL_CPU: 500 fixed steps, physics %.9g s, display_sync %.9g s, paired_loop %.9g s; display_sync excludes GPU drawing"),A->ProfiledPhysicsSeconds,A->ProfiledDisplaySeconds,FPlatformTime::Seconds()-Start));
+ TestTrue(TEXT("profile export"),A->ExportState());const auto Dir=A->ExportDirectory;FString Text;TestTrue(TEXT("CSV profiling output"),FFileHelper::LoadFileToString(Text,*(Dir/TEXT("performance.csv")))&&Text.Contains(TEXT("display_sync_cpu"))&&Text.Contains(TEXT("post_step_guards")));
+ A->ResetSimulation();TestEqual(TEXT("reset clears physics profile"),A->ProfiledPhysicsSeconds,0.);TestEqual(TEXT("reset begins one new display update"),A->ProfiledDisplayUpdates,1);
+ if(!Dir.IsEmpty())IFileManager::Get().DeleteDirectory(*Dir,false,true);A->Destroy();B->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
+}
+
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDEMWorkerDisplay,"Powder.DEM.WorkerDisplay",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FDEMWorkerDisplay::RunTest(const FString& Parameters){
+ UWorld::InitializationValues IV;IV.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false);
+ auto* W=UWorld::CreateWorld(EWorldType::Game,false,NAME_None,nullptr,true,ERHIFeatureLevel::Num,&IV);if(!TestNotNull(TEXT("worker display world"),W))return false;
+ GEngine->CreateNewWorldContext(EWorldType::Game).SetCurrentWorld(W);W->InitializeActorsForPlay(FURL());
+ auto* A=W->SpawnActor<APowderClumpTest>();auto* B=W->SpawnActor<APowderClumpTest>();A->DispatchBeginPlay();B->DispatchBeginPlay();
+ A->bMixingRig=B->bMixingRig=true;A->bRealtimePacing=B->bRealtimePacing=false;A->bProfilePerformance=B->bProfilePerformance=true;
+ A->MixingDurationSeconds=B->MixingDurationSeconds=2000*A->FixedDt;A->MixingSampleSeconds=B->MixingSampleSeconds=200*A->FixedDt;
+ A->MaxDisplayedPebbles=8;B->MaxDisplayedPebbles=0;A->ResetSimulation();B->ResetSimulation();
+ TestEqual(TEXT("display LOD only"),A->RenderedPebbles(),8);TestEqual(TEXT("hidden display"),B->RenderedPebbles(),0);TestEqual(TEXT("all 32 particles still simulated"),B->TotalPebbles,32);
+ A->ToggleSimulation();B->ToggleSimulation();const double Start=FPlatformTime::Seconds();
+ while(FPlatformTime::Seconds()-Start<10&&(A->bRunning||B->bRunning)){A->Tick(.001f);B->Tick(1.f);FPlatformProcess::Sleep(.001f);}
+ TestTrue(TEXT("workers finished cleanly"),A->bMixingFinished&&B->bMixingFinished&&A->Error.IsEmpty()&&B->Error.IsEmpty());
+ TestEqual(TEXT("same step count independent of delta and LOD"),A->SnapshotSteps,B->SnapshotSteps);
+ for(int I=0;I<A->BodyCount();++I)TestTrue(TEXT("display LOD never alters physics"),A->BodyPositionCm(I).Equals(B->BodyPositionCm(I),0));
+ TestEqual(TEXT("measurements not driven by render frames"),A->MixingSampleCount(),11);
+ TestTrue(TEXT("bounded snapshots not every physics step"),A->ProfiledDisplayUpdates<100);
+ const int32 Updates=A->ProfiledDisplayUpdates;for(int I=0;I<100;++I)A->Tick(.1f);TestEqual(TEXT("unchanged snapshot skips render update"),A->ProfiledDisplayUpdates,Updates);
+ TestTrue(TEXT("worker export after finish"),A->ExportState()&&B->ExportState());FString AT,BT;
+ FFileHelper::LoadFileToString(AT,*(A->ExportDirectory/TEXT("bodies.csv")));FFileHelper::LoadFileToString(BT,*(B->ExportDirectory/TEXT("bodies.csv")));TestEqual(TEXT("all bodies export identical with display disabled"),AT,BT);
+ AddInfo(FString::Printf(TEXT("OPT06_UNREAL_CPU: 2000 steps / 32 bodies; LOD8 worker %.9g s snapshot %.9g s display %.9g s (%d updates); hidden worker %.9g s snapshot %.9g s display %.9g s (%d updates). NullRHI excludes GPU drawing; concurrent workers are not speedup evidence."),A->WorkerComputeSeconds,A->SnapshotCopySeconds,A->ProfiledDisplaySeconds,A->ProfiledDisplayUpdates,B->WorkerComputeSeconds,B->SnapshotCopySeconds,B->ProfiledDisplaySeconds,B->ProfiledDisplayUpdates));
+ IFileManager::Get().DeleteDirectory(*A->ExportDirectory,false,true);IFileManager::Get().DeleteDirectory(*B->ExportDirectory,false,true);
+ const int64 Gen=A->SnapshotGeneration;A->ToggleSimulation();A->ResetSimulation();TestTrue(TEXT("reset retires old generation"),A->SnapshotGeneration>Gen&&A->SnapshotSteps==0&&A->PhysicalSeconds==0);
+ A->ToggleSimulation();FPlatformProcess::Sleep(.005f);A->ResetSimulation();A->Tick(1);TestEqual(TEXT("running reset cannot publish old time"),A->PhysicalSeconds,0.);
+ A->ToggleSimulation();A->Destroy();B->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
 }
 
 #endif
