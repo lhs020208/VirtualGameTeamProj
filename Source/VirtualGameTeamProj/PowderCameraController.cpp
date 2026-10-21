@@ -133,9 +133,9 @@ void APowderCameraController::RestoreView()
     for (TActorIterator<APowderDropTest> It(GetWorld()); It; ++It)
     {
         const FVector Origin = It->GetActorLocation();
-        const FVector Position = Origin + FVector(340, -480, 290);
+        const FVector Position = Origin + APowderDropTest::OverviewOffset();
         Camera->SetActorLocation(Position);
-        Camera->SetActorRotation((Origin + FVector(0, 0, 105) - Position).Rotation());
+        Camera->SetActorRotation((Origin + APowderDropTest::OverviewTarget() - Position).Rotation());
         Velocity = FVector::ZeroVector;
         return;
     }
