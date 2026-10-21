@@ -225,4 +225,27 @@ bool FDEMMixingBridge::RunTest(const FString& Parameters){
  if(!Dir.IsEmpty())IFileManager::Get().DeleteDirectory(*Dir,false,true);A->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
 }
 
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDEMRealtimePacing,"Powder.DEM.RealtimePacing",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FDEMRealtimePacing::RunTest(const FString& Parameters){
+ UWorld::InitializationValues IV;IV.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false);
+ auto* W=UWorld::CreateWorld(EWorldType::Game,false,NAME_None,nullptr,true,ERHIFeatureLevel::Num,&IV);if(!TestNotNull(TEXT("pacing world"),W))return false;
+ GEngine->CreateNewWorldContext(EWorldType::Game).SetCurrentWorld(W);W->InitializeActorsForPlay(FURL());
+ auto* A=W->SpawnActor<APowderClumpTest>();A->DispatchBeginPlay();A->bMixingRig=true;A->ResetSimulation();
+ TestTrue(TEXT("mixing initialized"),A->Error.IsEmpty());TestEqual(TEXT("one physical second per real second target"),A->TargetSimulationRate,1.);
+ const double Dt=A->FixedDt;A->ToggleSimulation();const double Start=FPlatformTime::Seconds();
+ do{A->Tick(1.f/60);}while(FPlatformTime::Seconds()-Start<1.1&&A->bRunning);
+ const double Wall=FPlatformTime::Seconds()-Start,Physical=A->PhysicalSeconds;
+ TestTrue(TEXT("real calculation advanced"),Physical>0&&A->Error.IsEmpty());TestEqual(TEXT("unchanged integration step"),A->FixedDt,Dt);
+ TestTrue(TEXT("does not fake elapsed physical time"),Physical<=Wall+Dt);
+ TestTrue(TEXT("actual throughput reported"),A->ActualSimulationRate>0&&FMath::IsFinite(A->ActualSimulationRate));
+ AddInfo(FString::Printf(TEXT("PACING_BENCHMARK: 32 bodies, physical %.9g s, wall %.9g s, rate %.9g x, fixed dt %.9g s, lag %.9g s"),Physical,Wall,Physical/Wall,Dt,A->SimulationLagSeconds));
+ A->ToggleSimulation();A->Tick(1);TestEqual(TEXT("pause does not advance"),A->PhysicalSeconds,Physical);
+ A->ToggleSimulation();A->Tick(100);TestEqual(TEXT("resume excludes paused time and engine delta"),A->PhysicalSeconds,Physical);
+ A->StepSimulation();TestTrue(TEXT("manual step still exactly FixedDt"),FMath::Abs(A->PhysicalSeconds-Physical-Dt)<1e-12);
+ A->ResetSimulation();TestEqual(TEXT("reset clears lag"),A->SimulationLagSeconds,0.);TestEqual(TEXT("reset clears speed"),A->ActualSimulationRate,0.);
+ A->bRealtimePacing=false;A->StepsPerFrame=3;A->ComputeBudgetMs=100;A->ToggleSimulation();A->Tick(0);TestTrue(TEXT("legacy bounded steps supported"),FMath::Abs(A->PhysicalSeconds-3*Dt)<1e-12);
+ A->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
+}
+
 #endif

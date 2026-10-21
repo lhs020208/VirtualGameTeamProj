@@ -65,6 +65,12 @@ public:
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Materials") double WallAdhesionGamma=0;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation") double FixedDt=2e-6;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation",meta=(ClampMin="1",ClampMax="5000")) int32 StepsPerFrame=200;
+ // Real-time pacing preserves FixedDt; the budget only limits UI stalls.
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation") bool bRealtimePacing=true;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation",meta=(ClampMin="0.01",ClampMax="10")) double TargetSimulationRate=1;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation",meta=(ClampMin="1",ClampMax="100")) double ComputeBudgetMs=50;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Simulation") double ActualSimulationRate=0;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Simulation") double SimulationLagSeconds=0;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump") FString Error;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump") FString ExportDirectory;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump") double PhysicalSeconds=0;
@@ -78,6 +84,7 @@ private:
  UPROPERTY() TObjectPtr<UStaticMeshComponent> Paddle;
  UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> TrayWalls;
  TUniquePtr<FClumpRuntime,FClumpDeleter> Runtime;
+ double PacingLastWallSeconds=0, PacingTargetSeconds=0, RateWindowWallSeconds=0, RateWindowPhysicalSeconds=0;
  bool Advance();void Sync();
 };
 UCLASS()
