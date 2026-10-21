@@ -1,4 +1,5 @@
 #include "PowderDropTest.h"
+#include "PowderCameraController.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -155,20 +156,25 @@ void APowderDropHUD::DrawHUD()
     for (TActorIterator<APowderDropTest> It(GetWorld()); It; ++It) { Test = *It; break; }
     if (!Test) return;
     const float W = FMath::Min(530.f, Canvas->SizeX - 32.f);
-    DrawRect(FLinearColor(.015f, .025f, .045f, .88f), 16, 16, W, 148);
+    DrawRect(FLinearColor(.015f, .025f, .045f, .88f), 16, 16, W, 212);
     DrawText(TEXT("POWDER / FREE FALL"), FLinearColor(.2f, .8f, 1.f), 30, 26, nullptr, 1.5f);
     const FString State = UGameplayStatics::IsGamePaused(this) ? TEXT("PAUSED") :
         (!Test->bReleased ? TEXT("READY - release in 1.5 seconds") : (Test->MovingCount > 0 ? TEXT("FALLING / CONTACT") : TEXT("SETTLED")));
     DrawText(State, FLinearColor::White, 30, 57, nullptr, 1.1f);
     DrawText(FString::Printf(TEXT("100 particles | moving %d | t %.2f s | g 9.8 m/s2"), Test->MovingCount, FMath::Max(0.f, Test->Elapsed - 1.5f)), FLinearColor::White, 30, 81);
-    DrawText(TEXT("R  Restart     SPACE  Pause / Resume     ESC  Stop"), FLinearColor(.9f, .85f, .45f), 30, 105);
+    DrawText(TEXT("R  Restart     SPACE  Pause / Resume     SHIFT+ESC  Stop"), FLinearColor(.9f, .85f, .45f), 30, 105);
     DrawText(TEXT("Enlarged powder proxies (6 cm). Gravity + contact only."), FLinearColor(.65f, .72f, .8f), 30, 130);
-    if (Test->EscapedCount > 0) DrawText(TEXT("WARNING: particle outside test platform"), FLinearColor::Red, 30, 170);
+    DrawText(TEXT("RMB + mouse: Look | RMB + WASD / Q,E: Fly / Down,Up"), FLinearColor::White, 30, 154);
+    DrawText(TEXT("MMB: Pan | Wheel: Dolly | RMB + Wheel: Speed"), FLinearColor::White, 30, 175);
+    const auto* PC = Cast<APowderCameraController>(GetOwningPlayerController());
+    DrawText(FString::Printf(TEXT("Shift: Boost | F: Focus | Home: Reset view | %.0f cm/s"), PC ? PC->GetNavigationSpeed() : 0.f), FLinearColor(.65f, .8f, 1.f), 30, 196);
+    if (Test->EscapedCount > 0) DrawText(TEXT("WARNING: particle outside test platform"), FLinearColor::Red, 30, 235);
 }
 
 APowderDropGameMode::APowderDropGameMode()
 {
     DefaultPawnClass = nullptr;
+    PlayerControllerClass = APowderCameraController::StaticClass();
     HUDClass = APowderDropHUD::StaticClass();
 }
 

@@ -9,8 +9,20 @@ Open `L_Main` and press Play. The default `PowderDropGameMode` spawns the test a
 - Gravity: project default −980 cm/s². Linear drag: zero. Friction: 0.65. Restitution: 0.15.
 - Angular damping: 3.0, an illustrative rotational dissipation to reduce prolonged rolling after impact.
 - CCD is enabled to reduce tunneling. Physics results can differ slightly across frame rates/machines.
-- R: reset the same seeded initial arrangement. Space: pause/resume. Escape: stop PIE.
+- R: reset the same seeded initial arrangement. Space: pause/resume. Shift+Escape: stop PIE (current editor shortcut).
 - Click the play viewport first if keys do not respond.
+
+## Camera navigation during Play
+
+- Hold right mouse: mouse look; W/S forward/back, A/D strafe, Q/E world down/up.
+- Hold right mouse and scroll: change flight speed (10–4000 cm/s; default 200).
+- Hold Shift while flying: temporary 3× speed.
+- Middle mouse drag: pan. Wheel without right mouse: move forward/back.
+- F: frame the powder at its current mean height. Home: restore the original overview.
+- Space pauses powder physics while camera navigation remains available.
+- R resets the powder without resetting the camera. Shift+Escape stops Play with the current editor shortcut; Shift+F1 releases the mouse to the editor.
+
+This mirrors the editor's common flight controls, not every editor orbit/selection shortcut or the user's editor preference settings. Navigation has no collisions and does not push particles.
 
 This is a gravity/contact demonstration, not molecular dynamics, calibrated powder DEM, or a process/mixing simulation. No machinery or original Blender assets are imported. There are no molecular forces, air flow, cohesion, or quality predictions.
 
