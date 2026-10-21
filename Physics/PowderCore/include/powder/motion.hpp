@@ -34,6 +34,7 @@ public:
  std::vector<MovingMeshHit> query(const Particle&,double time_s,MeshQuery* counters=nullptr)const;
  std::vector<MovingMeshHit> query_prepared(const Particle&,const PreparedMotion&,MeshQuery* counters=nullptr)const;
  void guard_prepared(Vec3 from,Vec3 to,const PreparedMotion& start,const PreparedMotion& end)const;
+ double step_limit(double minimum_radius_m)const; // Existing travel/angular guards, diagnostic only.
  void validate_step(double time_s,double dt,double minimum_radius_m)const;
  void guard_motion(Vec3 from,Vec3 to,double time_s,double dt)const;
 private:

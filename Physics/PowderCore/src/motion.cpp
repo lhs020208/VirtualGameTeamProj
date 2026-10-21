@@ -1,3 +1,4 @@
+#include <limits>
 #include "powder/motion.hpp"
 #include <cmath>
 #include <algorithm>
@@ -34,6 +35,7 @@ std::vector<MovingMeshHit> MovingTriangleMesh::query_prepared(const Particle& p,
  std::vector<MovingMeshHit> out;out.reserve(query.contacts.size());for(auto c:query.contacts){c.point_m=pose.point(c.point_m);c.normal=pose.vector(c.normal);out.push_back({c,pose.velocity(c.point_m),pose.omega(),pose.pivot()});}return out;
 }
 void MovingTriangleMesh::guard_prepared(Vec3 from,Vec3 to,const PreparedMotion& start,const PreparedMotion& end)const{reference_.guard_motion(start.inverse_point(from),end.inverse_point(to));}
+double MovingTriangleMesh::step_limit(double r)const{finite(r);require(r>0,"invalid moving mesh radius");const double omega=norm(motion_.omega()),speed=norm(motion_.linear_velocity_m_s)+omega*radius_bound_m_;return std::min(omega>0?.01/omega:std::numeric_limits<double>::infinity(),speed>0?.05*r/speed:std::numeric_limits<double>::infinity());}
 void MovingTriangleMesh::validate_step(double t,double dt,double r)const{finite(t);finite(dt);finite(r);require(dt>0&&r>0,"invalid moving mesh step");motion_.rotation(t+dt);double angle=norm(motion_.omega())*dt;require(angle<=.01,"wall angular step exceeds 0.01 radians");double travel=(norm(motion_.linear_velocity_m_s)+norm(motion_.omega())*radius_bound_m_)*dt;require(travel<=.05*r,"wall displacement too large for discrete mesh contact");}
 void MovingTriangleMesh::guard_motion(Vec3 from,Vec3 to,double t,double dt)const{reference_.guard_motion(motion_.inverse_point(from,t),motion_.inverse_point(to,t+dt));}
 MovingWallWrench evaluate_moving_wall(const Particle& p,const MovingMeshHit& c,const MaterialContact& model,ContactHistory& history,double dt){

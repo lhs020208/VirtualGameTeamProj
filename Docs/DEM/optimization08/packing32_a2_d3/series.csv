@@ -1,0 +1,2 @@
+sample,time_s,com_z,energy_j,wall_work_j,torque_impulse_z,contact_integral_s,mixing_valid,mixing_index,outside,arrived_count,arrived_mass_kg,mean_residence_s,p95_residence_s,active_mass_kg
+0,0,0.039999599999999989,0,0,0,0,1,0,0,0,0,0,0,2.680825731063289

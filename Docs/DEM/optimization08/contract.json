@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "task": "optimization08",
+  "cases": [
+    "packing32",
+    "mixing5_long",
+    "mm_packing32",
+    "discharge_wide"
+  ],
+  "alphas": [
+    1,
+    0.9,
+    0.8,
+    0.5,
+    0.25,
+    0.1
+  ],
+  "dt_factors": [
+    0.5,
+    1,
+    1.5625,
+    2,
+    4
+  ],
+  "baseline_dt_s": 2e-06,
+  "mm_baseline_dt_s": 2e-08,
+  "model": "linear bulk only; kn,kt *= alpha; cn,ct *= sqrt(alpha); physical coefficients retained separately",
+  "prohibited": [
+    "clearance/clogging",
+    "impact/deformation",
+    "Hertz scaling",
+    "rolling resistance scaling",
+    "adhesion scaling"
+  ],
+  "safety": {
+    "max_overlap_ratio_exclusive": 0.05,
+    "mass_relative": 1e-12,
+    "mass_absolute_kg": 1e-18,
+    "require_all_discharge": true,
+    "require_contacts": true
+  },
+  "integration": {
+    "bulk_relative": 0.02,
+    "com_radius_fraction": 0.005,
+    "mixing_abs": 0.01,
+    "overlap_abs": 0.001,
+    "residence_relative": 0.01,
+    "residence_absolute_s": 1e-05,
+    "discharge_fraction_abs": 0.02
+  },
+  "surrogate": {
+    "bulk_relative": 0.1,
+    "com_radius_fraction": 0.1,
+    "mixing_abs": 0.02,
+    "overlap_increase_abs": 0.01,
+    "residence_relative": 0.05,
+    "residence_absolute_s": 0.0001,
+    "discharge_fraction_abs": 0.05
+  },
+  "floors": {
+    "energy_mass_g_radius": 0.0001,
+    "torque_impulse_mass_radius_0_1": 0.0001,
+    "contact_duration": 0.01
+  },
+  "gate": "physical alpha=1 half-step baseline must converge at baseline dt; each surrogate half-step must satisfy physical bulk accuracy; selected dt must converge to its own half-step AND satisfy physical bulk accuracy; all four fixtures required for common candidate",
+  "default": "no automatic runtime changes; no stiffness claim for real materials",
+  "no_claims": [
+    "impact peak force",
+    "breakage",
+    "elastic deformation",
+    "kg-scale accuracy",
+    "all-process duration validity"
+  ],
+  "durations_s": {
+    "packing32": 0.04,
+    "mixing5_long": 0.1,
+    "mm_packing32": 0.0004,
+    "discharge_wide": 0.16
+  },
+  "revision": 2,
+  "revision_reason": "Retain original 64 cases and thresholds; add modest 10%/20% stiffness reductions and the 07 packing dt of 3.125us. Acceleration now requires fewer steps than the best unsoftened passing candidate, not merely the original default dt."
+}

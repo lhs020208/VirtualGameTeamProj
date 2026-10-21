@@ -63,12 +63,17 @@ public:
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Materials") double RollingFriction=0;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Materials") double PairAdhesionGamma=0;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Materials") double WallAdhesionGamma=0;
+ // CPU settings are latched by Reset; worker threads never access UObjects.
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation",meta=(ClampMin="1",ClampMax="32")) int32 CPUThreads=1;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation",meta=(ClampMin="1")) int32 ParallelMinJobs=128;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation") double FixedDt=2e-6;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation",meta=(ClampMin="1",ClampMax="5000",DisplayName="Worker Batch Steps",ToolTip="Maximum steps per worker batch, independent of display FPS.")) int32 StepsPerFrame=200;
  // Worker pacing preserves FixedDt. StepsPerFrame is now the worker batch size, independent of rendering FPS.
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation") bool bRealtimePacing=true;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation",meta=(ClampMin="0.01",ClampMax="10")) double TargetSimulationRate=1;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation",meta=(ClampMin="1",ClampMax="100",DisplayName="Worker Batch Budget (ms)")) double ComputeBudgetMs=50;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Profiling") int32 LastPairThreads=1;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Profiling") int32 LastIntegrationThreads=1;
  // Snapshot/LOD settings affect presentation only. Reset applies the snapshot rate.
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Display",meta=(ClampMin="1",ClampMax="120")) double DisplaySnapshotHz=30;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Display",meta=(ClampMin="0")) int32 MaxDisplayedPebbles=1024;

@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "files_compared": 31,
+  "comparison": "byte-identical",
+  "reference": "Docs/DEM/optimization05/walls_1",
+  "current": "Saved/Optimization07_baseline_parity"
+}

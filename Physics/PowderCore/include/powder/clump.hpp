@@ -1,7 +1,9 @@
 #pragma once
 #include "powder/world.hpp"
 #include "powder/profile.hpp"
+#include "powder/timestep.hpp"
 #include "powder/reuse.hpp"
+#include "powder/parallel.hpp"
 #include <array>
 #include <string>
 namespace powder {
@@ -21,7 +23,7 @@ Vec3 clump_omega(const ClumpBody&);
 std::vector<Particle> clump_particles(const ClumpBody&);
 void integrate_clump(ClumpBody&,Vec3 force_n,Vec3 torque_nm,double dt);
 double clump_kinetic_energy(const ClumpBody&);
-struct ClumpReport {std::size_t pair_contacts=0,wall_contacts=0;double mass_kg=0,max_overlap_m=0;std::vector<WallExchange> moving_wall_loads;double moving_wall_work_j=0;};
+struct ClumpReport {unsigned pair_lanes=1,integration_lanes=1;StepScale step_scale;std::size_t pair_contacts=0,wall_contacts=0;double mass_kg=0,max_overlap_m=0;std::vector<WallExchange> moving_wall_loads;double moving_wall_work_j=0;};
 class ClumpWorld {
 public:
  std::vector<ClumpBody> bodies;
@@ -39,6 +41,12 @@ public:
  bool use_spatial_search=true; // false: exhaustive optimization-02 comparison
  bool use_prepared_walls=true;
  bool reuse_neighbor_list=true; // false: rebuild candidates at both snapshots
+ // Reset applies these settings in UE. One thread is the measured small-scene default.
+ // Explicit capacity contract; editor defaults remain the small reference limits.
+ std::size_t maximum_bodies=300,maximum_pebbles=1024,maximum_candidates=1048576;
+ unsigned cpu_threads=1;
+ std::size_t parallel_min_jobs=128;
+ unsigned resident_cpu_workers()const{return executor_.resident_workers();}
  std::size_t workspace_capacity_bytes()const;
  void invalidate_caches(){neighbors_.invalidate();body_cache_.clear();material_cache_valid_=false;}
  ClumpReport step(double dt);
@@ -46,6 +54,9 @@ public:
  void reset_history(){pairs_.clear();walls_.clear();box_history_.clear();mesh_history_.clear();moving_history_.clear();}
  std::size_t histories()const{return pairs_.size()+walls_.size()+box_history_.size()+mesh_history_.size()+moving_history_.size();}
 private:
+ struct PairResult {double overlap=0;ContactHistory history;ContactWrench wrench;};
+ std::vector<PairResult> pair_results_;
+ ParallelExecutor executor_;
  struct BodyCache {double density=0;std::vector<Pebble> pebbles;ClumpProperties properties;};
  std::map<ParticleId,BodyCache> body_cache_;
  bool material_cache_valid_=false;

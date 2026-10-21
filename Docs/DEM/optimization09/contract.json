@@ -1,0 +1,35 @@
+{
+  "threads": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "repeats": 3,
+  "warmup_steps": 100,
+  "measured_steps": 2000,
+  "dt_s": 1e-08,
+  "counts": [
+    32,
+    128,
+    256
+  ],
+  "clumps": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "default_threads": 1,
+  "default_min_jobs": 128,
+  "physics_tolerance": "bit-exact same-build trajectory, history continuation and reports; momentum absolute < 1e-12 kg m/s",
+  "scope": "pair force evaluation and rigid integration; serial deterministic force reduction, wall geometry/contact and post guards",
+  "race_detector": "not run; disjoint output ownership and stress/barrier tests",
+  "large_scale_target_achieved": false,
+  "fixture_codes": {
+    "0": "sphere contact network",
+    "1": "two-pebble clump contact network",
+    "2": "sphere contacts plus static/moving mesh walls",
+    "3": "freefall without contacts"
+  }
+}

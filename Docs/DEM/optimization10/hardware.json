@@ -1,0 +1,15 @@
+{
+  "cpu": "Intel Core i7-14700KF",
+  "physical_cores": 20,
+  "logical_processors": 28,
+  "installed_ram_kib": 33398876,
+  "free_ram_before_matrix_kib": 11665420,
+  "free_ram_before_target_kib": 16394208,
+  "gpu": "NVIDIA GeForce RTX 4060 Ti",
+  "vram_total_mib": 16380,
+  "vram_free_sample_mib": 12947,
+  "driver": "610.88",
+  "gpu_solver_tested": false,
+  "build": "Windows MSVC Release /fp:strict",
+  "gpu_query": "nvidia-smi --query-gpu=name,memory.total,memory.free,driver_version --format=csv,noheader"
+}

@@ -26,7 +26,7 @@ class ClumpNeighbors {
 public:
  void invalidate(){valid_=false;}
  std::size_t capacity_bytes()const{return (reference_.capacity()+expanded_.capacity())*sizeof(Particle)+owner_.capacity()*sizeof(std::size_t)+pairs_.capacity()*sizeof(NodePair);}
- const std::vector<NodePair>& query(const std::vector<Particle>& nodes,const std::vector<std::size_t>& owner,bool grid,bool reuse,ClumpProfile* profile){
+ const std::vector<NodePair>& query(const std::vector<Particle>& nodes,const std::vector<std::size_t>& owner,bool grid,bool reuse,ClumpProfile* profile,std::size_t maximum_pairs=std::numeric_limits<std::size_t>::max()){
   bool hit=grid&&reuse&&valid_&&nodes.size()==reference_.size()&&owner==owner_;
   if(hit)for(std::size_t i=0;i<nodes.size();++i){const auto& a=nodes[i];const auto& b=reference_[i];
    if(a.id!=b.id||a.diameter_m!=b.diameter_m||std::hypot(a.position_m.x-b.position_m.x,a.position_m.y-b.position_m.y,a.position_m.z-b.position_m.z)>skin_*.25){hit=false;break;}}
@@ -35,12 +35,13 @@ public:
    if(grid&&reuse&&!nodes.empty()){
     double smallest=nodes.front().diameter_m;for(const auto& n:nodes)smallest=std::min(smallest,n.diameter_m);
     skin_=.2*smallest;expanded_=nodes;for(auto& n:expanded_)n.diameter_m+=skin_;
-    auto candidates=clump_candidates(expanded_,owner,true);pairs_.clear();
+    auto candidates=clump_candidates(expanded_,owner,true,maximum_pairs);pairs_.clear();
     for(auto pair:candidates){const auto& a=nodes[pair.first];const auto& b=nodes[pair.second];if(std::hypot(a.position_m.x-b.position_m.x,a.position_m.y-b.position_m.y,a.position_m.z-b.position_m.z)<=(a.diameter_m+b.diameter_m)/2+skin_)pairs_.push_back(pair);}
     reference_=nodes;owner_=owner;valid_=true;
-   }else{pairs_=clump_candidates(nodes,owner,grid);reference_.clear();owner_.clear();}
+   }else{pairs_=clump_candidates(nodes,owner,grid,maximum_pairs);reference_.clear();owner_.clear();}
    if(profile)++profile->neighbor_rebuilds;
   }else if(profile)++profile->neighbor_reuses;
+  if(pairs_.size()>maximum_pairs)throw std::length_error("cached candidate capacity exceeded");
   if(profile)profile->neighbor_capacity_bytes=std::max<std::uint64_t>(profile->neighbor_capacity_bytes,capacity_bytes());
   return pairs_;
  }

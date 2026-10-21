@@ -8,6 +8,12 @@ with tempfile.TemporaryDirectory() as temp:
   result=run(f,p/str(flag),flag);assert result.returncode==0,result.stderr;assert json.loads((p/str(flag)/'result.json').read_text())['passed']
  for name in ('physics.csv','tiny_initial.csv','tiny_final.csv','tiny_events.csv'):
   assert (p/'0'/name).read_bytes()==(p/'1'/name).read_bytes()
+ for threads in (2,4,8):
+  result=run(f,p/f'parallel{threads}',1,'walls',threads,1);assert result.returncode==0,result.stderr
+  assert (p/'0'/'tiny_final.csv').read_bytes()==(p/f'parallel{threads}'/'tiny_final.csv').read_bytes()
+ for bad in ('0','33','4x','-1'):
+  assert run(f,p/'badcpu',1,'walls',bad,1).returncode==2 and not (p/'badcpu').exists()
+ assert run(f,p/'badminimum',1,'walls',4,0).returncode==2 and not (p/'badminimum').exists()
  old=(p/'0'/'result.json').read_bytes();assert run(f,p/'0',0).returncode==2 and (p/'0'/'result.json').read_bytes()==old
  assert run(f,p/'bad',2).returncode==2 and not (p/'bad').exists()
  f.write_text(text+'junk');assert run(f,p/'junk',0).returncode==2 and not (p/'junk').exists()

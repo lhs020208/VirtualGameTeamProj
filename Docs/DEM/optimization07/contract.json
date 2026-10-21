@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "task": "optimization07",
+  "cases": [
+    "collision_linear",
+    "collision_hertz",
+    "collision_hertz_gentle",
+    "packing32",
+    "mixing5_short",
+    "mixing5_long",
+    "mixing30_diagnostic",
+    "mm_packing32"
+  ],
+  "factors": [
+    0.25,
+    0.5,
+    1,
+    1.25,
+    1.5625,
+    2,
+    4,
+    5,
+    10,
+    20
+  ],
+  "baseline_dt_s": 2e-06,
+  "mm_baseline_dt_s": 2e-08,
+  "samples": 21,
+  "unchanged": [
+    "stiffness",
+    "damping",
+    "contact law",
+    "gravity",
+    "geometry",
+    "safety bound .02/rate",
+    "angular wall limit .01 rad",
+    "wall travel limit .05*minimum radius"
+  ],
+  "safety": {
+    "overlap_radius_ratio_max_exclusive": 0.05,
+    "collision_energy_growth_relative": 0.0001,
+    "collision_momentum_residual_relative_mass_times_0_1_m_s": 1e-10,
+    "mixing_valid_and_inside": true
+  },
+  "convergence": {
+    "position_max_norm_div_radius": 0.005,
+    "velocity_max_norm_div_0_1_m_s": 0.01,
+    "omega_max_norm_div_0_1_over_radius": 0.01,
+    "energy_relative": 0.02,
+    "energy_absolute_scale_mass_g_radius": 0.0001,
+    "work_relative": 0.02,
+    "work_absolute_scale_mass_g_radius": 0.0001,
+    "torque_impulse_relative": 0.02,
+    "torque_impulse_absolute_scale_mass_radius_0_1": 0.0001,
+    "contact_time_relative": 0.02,
+    "contact_time_absolute_scale_duration": 0.01,
+    "overlap_ratio_abs": 0.001,
+    "overlap_ratio_relative": 0.02,
+    "collision_peak_force_relative": 0.02,
+    "collision_peak_force_abs_n": 1e-08,
+    "mixing_index_abs": 0.01
+  },
+  "selection": "finest safe and next finest convergent first; largest tested passing step only for identical fixture/duration; no automatic editor default change; failed reference is ineligible",
+  "limitations": [
+    "virtual materials only",
+    "20 mm and 1 mm radius are distinct",
+    "not a process-length or kg-scale certificate",
+    "no monotonic convergence assumed across contact events"
+  ],
+  "revision": 2,
+  "revision_reason": "Retain all initial cases/results and tolerances. Add intermediate dt between 2 and 4 microseconds and a separate 0.02 m/s Hertz collision because the original 0.1 m/s fixture fails the cap even at the finest dt. No parameter changes within any sweep."
+}

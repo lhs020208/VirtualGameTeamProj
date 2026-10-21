@@ -1,0 +1,21 @@
+{
+  "mixing5_long": {
+    "alpha": 0.9,
+    "dt_s": 8e-06,
+    "unsoftened_dt_s": 4e-06,
+    "loop_seconds": {
+      "unsoftened": [
+        1.0800873,
+        1.0881604,
+        1.0823699
+      ],
+      "softened": [
+        0.5622419,
+        0.5742598,
+        0.5637667
+      ]
+    },
+    "median_loop_speedup": 1.9198897345302588,
+    "scope": "only this synthetic short fixture; CPU loop includes collection; not GPU/editor/kg-scale evidence"
+  }
+}

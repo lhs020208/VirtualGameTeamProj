@@ -294,4 +294,22 @@ bool FDEMWorkerDisplay::RunTest(const FString& Parameters){
  A->ToggleSimulation();A->Destroy();B->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDEMCPUParallel,"Powder.DEM.CPUParallel",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FDEMCPUParallel::RunTest(const FString& Parameters){
+ UWorld::InitializationValues IV;IV.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false);
+ auto* W=UWorld::CreateWorld(EWorldType::Game,false,NAME_None,nullptr,true,ERHIFeatureLevel::Num,&IV);if(!TestNotNull(TEXT("CPU parallel world"),W))return false;
+ GEngine->CreateNewWorldContext(EWorldType::Game).SetCurrentWorld(W);W->InitializeActorsForPlay(FURL());
+ auto* A=W->SpawnActor<APowderClumpTest>();auto* B=W->SpawnActor<APowderClumpTest>();A->DispatchBeginPlay();B->DispatchBeginPlay();
+ A->CPUThreads=4;A->ParallelMinJobs=1;A->bMixingRig=B->bMixingRig=true;A->ResetSimulation();B->ResetSimulation();
+ for(int I=0;I<200;++I){A->StepSimulation();B->StepSimulation();}
+ TestTrue(TEXT("parallel worker no errors"),A->Error.IsEmpty()&&B->Error.IsEmpty());TestEqual(TEXT("parallel integration applied"),A->LastIntegrationThreads,4);
+ for(int I=0;I<A->BodyCount();++I)TestTrue(TEXT("parallel exact position parity"),A->BodyPositionCm(I).Equals(B->BodyPositionCm(I),0));
+ TestEqual(TEXT("physical clock parity"),A->PhysicalSeconds,B->PhysicalSeconds);
+ A->CPUThreads=2;A->StepSimulation();TestEqual(TEXT("CPU edits require reset"),A->LastIntegrationThreads,4);A->ResetSimulation();A->StepSimulation();TestEqual(TEXT("reset applies CPU threads"),A->LastIntegrationThreads,2);
+ TestTrue(TEXT("parallel export"),A->ExportState());FString Text;FFileHelper::LoadFileToString(Text,*(A->ExportDirectory/TEXT("configuration.txt")));TestTrue(TEXT("export records CPU settings"),Text.Contains(TEXT("cpu_threads 2")));if(!A->ExportDirectory.IsEmpty())IFileManager::Get().DeleteDirectory(*A->ExportDirectory,false,true);
+ A->CPUThreads=0;A->ResetSimulation();TestFalse(TEXT("invalid CPU setting rejected"),A->Error.IsEmpty());TestEqual(TEXT("invalid reset clears particles"),A->RenderedPebbles(),0);
+ A->CPUThreads=4;A->ParallelMinJobs=10000;A->ResetSimulation();A->StepSimulation();TestEqual(TEXT("small workload serial fallback"),A->LastIntegrationThreads,1);
+ A->Destroy();B->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
+}
+
 #endif

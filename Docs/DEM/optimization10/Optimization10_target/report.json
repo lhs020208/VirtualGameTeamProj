@@ -1,0 +1,87 @@
+{
+  "contract": {
+    "count": 1591550,
+    "radius_m": 0.001,
+    "density_kg_m3": 1500,
+    "threads": 8,
+    "measured_steps": 5,
+    "cold_steps": 1,
+    "dt_s": 2e-08,
+    "candidate_budget": 32000000,
+    "memory_budget_bytes": 8589934592,
+    "timeout_s": 180,
+    "repeats": 1,
+    "scope": "resource-bounded smoke; no sustained process acceptance"
+  },
+  "results": [
+    {
+      "dense": false,
+      "monitor_peak_private_bytes": 4379385856,
+      "process_wall_s": 30.35999999998603,
+      "status": "completed",
+      "measurement": {
+        "passed": true,
+        "count": 1591550,
+        "threads": 8,
+        "dense": false,
+        "steps": 5,
+        "radius_m": 0.001,
+        "density": 1500,
+        "dt_s": 2e-08,
+        "mass_kg": 10.000003575602559,
+        "mass_a_kg": 5.000001787820835,
+        "mass_b_kg": 5.000001787820835,
+        "physical_s": 1.2e-07,
+        "setup_s": 0.4544813,
+        "cold_step_s": 2.7555206,
+        "loop_s": 10.2680215,
+        "rate": 9.738974543440525e-09,
+        "minimum_step_rate": 5.449212211477496e-09,
+        "cold_inclusive_rate": 9.21408316405719e-09,
+        "freefall_error_m": 1.3877787807814457e-17,
+        "momentum_error": 4.657546185749331e-16,
+        "max_overlap_radius_ratio": 0,
+        "max_pair_contacts": 0,
+        "history_count": 0,
+        "kinetic_j": 6.929001677734062e-12,
+        "state_fnv64": "12141412476634528305",
+        "workspace_bytes": 2025929792,
+        "neighbor_bytes": 420169200,
+        "working_set_bytes": 3112964096,
+        "peak_working_set_bytes": 3779551232,
+        "private_bytes": 3507531776,
+        "phase_s": [
+          4.3335657,
+          0.08070440000000001,
+          2.6339828,
+          0.0036983999999999997,
+          0.0047809,
+          0.038914,
+          0.7167060999999999,
+          0.7007222999999999,
+          1.7549367
+        ],
+        "cold_phase_s": [
+          1.5073198,
+          0.2890049,
+          0.1167626,
+          0.0006952,
+          0.0009406,
+          0.0071947,
+          0.3079156,
+          0.1331725,
+          0.3925006
+        ]
+      }
+    },
+    {
+      "dense": true,
+      "monitor_peak_private_bytes": 3455090688,
+      "process_wall_s": 2.8130000000237487,
+      "status": "rejected",
+      "error": "CAPACITY_REJECTED spatial candidate capacity exceeded\n"
+    }
+  ],
+  "throughput_goal_achieved": false,
+  "executable_sha256": "2de0f6bb921906a484dd6df7120c91d74d3f67114f0e4ae38e839a93868411d2"
+}

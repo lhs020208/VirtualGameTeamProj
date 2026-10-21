@@ -1,0 +1,2 @@
+sample,time_s,com_z,energy_j,wall_work_j,torque_impulse_z,contact_integral_s,mixing_valid,mixing_index,outside
+0,0,0.10000000000000001,0.00083775804095727823,0,0,0,1,0,0

@@ -1,0 +1,23 @@
+{
+  "runtime_enabled": false,
+  "profiles": [
+    {
+      "enabled_by_default": false,
+      "case": "mixing5_long",
+      "alpha": 0.8,
+      "dt_s": 8e-06,
+      "duration_s": 0.1,
+      "scope": "exact synthetic fixture only; not arbitrary equipment, process-length or kg/mm powder",
+      "fixture_source_sha256": "e0df9bb7bff54e026555817bc39fb073030c996f098542ee1190c5b27ed85b50"
+    },
+    {
+      "enabled_by_default": false,
+      "case": "mixing5_long",
+      "alpha": 0.9,
+      "dt_s": 8e-06,
+      "duration_s": 0.1,
+      "scope": "exact synthetic fixture only; not arbitrary equipment, process-length or kg/mm powder",
+      "fixture_source_sha256": "e0df9bb7bff54e026555817bc39fb073030c996f098542ee1190c5b27ed85b50"
+    }
+  ]
+}

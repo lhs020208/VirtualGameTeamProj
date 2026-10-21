@@ -1,0 +1,2 @@
+case,alpha,dt_s,duration_s,accepted_steps,requested_steps,radius_m,density_kg_m3,mass_kg,count,max_overlap_ratio,contact_integral_s,torque_impulse_z,wall_work_j,min_contact_limit_s,mixing_valid,outside,arrived_count,arrived_mass_kg,mean_residence_s,p95_residence_s,max_mass_error,wall_s,rate,error
+mixing5_long,0.5,7.9999999999999996e-06,0.10000000000000001,12500,12500,0.02,2500,2.6808257310632899,32,0.018759400664079655,3.2071199999993008,-0.013542238691622072,0.0070906995977932158,1.0756020624941293e-05,1,0,0,0,0,0,0,0.54946890000000004,0.1819939217670008,

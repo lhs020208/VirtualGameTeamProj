@@ -6,15 +6,17 @@
 #include <unordered_map>
 #include <vector>
 #include <stdexcept>
+#include <limits>
 namespace powder {
 using NodePair=std::pair<std::size_t,std::size_t>;
 // Input indices, not particle IDs. Both snapshots are searched independently.
 // Validated particles are supplied by ClumpWorld. Extreme coordinates fall back
 // to exhaustive enumeration rather than narrowing the supported physical domain.
-inline std::vector<NodePair> clump_candidates(const std::vector<Particle>& nodes,const std::vector<std::size_t>& owner,bool grid=true){
+inline std::vector<NodePair> clump_candidates(const std::vector<Particle>& nodes,const std::vector<std::size_t>& owner,bool grid=true,std::size_t maximum_pairs=std::numeric_limits<std::size_t>::max()){
  if(nodes.size()!=owner.size())throw std::invalid_argument("candidate owner size mismatch");
  std::vector<NodePair> pairs;
- auto exhaustive=[&]{for(std::size_t i=0;i<nodes.size();++i)for(std::size_t j=i+1;j<nodes.size();++j)if(owner[i]!=owner[j])pairs.emplace_back(i,j);};
+ auto append=[&](std::size_t i,std::size_t j){if(pairs.size()>=maximum_pairs)throw std::length_error("spatial candidate capacity exceeded");pairs.emplace_back(std::min(i,j),std::max(i,j));};
+ auto exhaustive=[&]{for(std::size_t i=0;i<nodes.size();++i)for(std::size_t j=i+1;j<nodes.size();++j)if(owner[i]!=owner[j])append(i,j);};
  if(!grid){exhaustive();return pairs;}
  if(nodes.size()<2)return pairs;
  double width=0;for(const auto& n:nodes)width=std::max(width,n.diameter_m);
@@ -35,7 +37,7 @@ inline std::vector<NodePair> clump_candidates(const std::vector<Particle>& nodes
   std::vector<std::size_t> heads(count,none),links(nodes.size(),none);
   auto index=[&](const Cell& k){return static_cast<std::size_t>(k[0]-lo[0])+nx*(static_cast<std::size_t>(k[1]-lo[1])+ny*static_cast<std::size_t>(k[2]-lo[2]));};
   for(std::size_t i=0;i<nodes.size();++i){auto cell=index(keys[i]);links[i]=heads[cell];heads[cell]=i;}
-  auto emit=[&](std::size_t i,std::size_t j){if(owner[i]!=owner[j])pairs.emplace_back(std::min(i,j),std::max(i,j));};
+  auto emit=[&](std::size_t i,std::size_t j){if(owner[i]!=owner[j])append(i,j);};
   for(std::size_t root=0;root<nodes.size();++root){const auto& c=keys[root];if(heads[index(c)]!=root)continue;
    for(auto i=root;i!=none;i=links[i])for(auto j=links[i];j!=none;j=links[j])emit(i,j);
    for(int x=-1;x<=1;++x)for(int y=-1;y<=1;++y)for(int z=-1;z<=1;++z){if(x<0||(x==0&&y<0)||(x==0&&y==0&&z<=0))continue;
@@ -48,7 +50,7 @@ inline std::vector<NodePair> clump_candidates(const std::vector<Particle>& nodes
  std::unordered_map<Cell,std::vector<std::size_t>,Hash> cells;cells.reserve(nodes.size());
  for(std::size_t i=0;i<nodes.size();++i)cells[keys[i]].push_back(i);
  // Visit each occupied cell and each unordered neighboring cell pair once.
- auto emit=[&](std::size_t i,std::size_t j){if(owner[i]!=owner[j])pairs.emplace_back(std::min(i,j),std::max(i,j));};
+ auto emit=[&](std::size_t i,std::size_t j){if(owner[i]!=owner[j])append(i,j);};
  for(const auto& bucket:cells){const auto& c=bucket.first;const auto& local=bucket.second;
   for(std::size_t a=0;a<local.size();++a)for(std::size_t b=a+1;b<local.size();++b)emit(local[a],local[b]);
   for(int x=-1;x<=1;++x)for(int y=-1;y<=1;++y)for(int z=-1;z<=1;++z){if(x<0||(x==0&&y<0)||(x==0&&y==0&&z<=0))continue;

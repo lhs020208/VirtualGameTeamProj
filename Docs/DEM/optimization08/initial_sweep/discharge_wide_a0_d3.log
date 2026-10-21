@@ -1,0 +1,1 @@
+discharge_wide alpha=1 dt=8e-06 steps=0/20000 overlap=0 arrived=0 error=dt exceeds rigid clump multi-contact limit

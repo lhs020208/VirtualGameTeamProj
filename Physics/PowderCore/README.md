@@ -727,3 +727,39 @@ Certified canonical axis-aligned box faces use direct contacts; edges, seams and
 Unreal uses batched instance updates and display-only `MaxDisplayedPebbles` (0 hides rendering, not physics). `StepsPerFrame` remains the serialized property name but now means worker batch size, independent of FPS. Mixing measurement remains on fixed physical-time samples; UI shows the sample timestamp. Export CPU categories overlap: worker compute includes phase profiling; do not add them together. GPU costs are not measured by NullRHI tests.
 
 Build Release and run `python Scripts/run_optimization06_validation.py` from the project root. Run `Powder.DEM.` engine automation for bridge/LOD tests. See `Docs/DEM/optimization06/` and the completion record for exact state/measurement/history parity, lifecycle tests and measured overhead. Capacity and the unachieved kg-scale 0.1x target are unchanged. Next: Optimization 07.
+
+
+## Optimization 07 — fixed-step convergence and diagnostic limits
+
+`ClumpReport::step_scale` reports the existing rigid-clump bound (unchanged 0.02 safety factor), mass/radius, mobility, stiffness/damping and observed contact degree. `MovingTriangleMesh::step_limit` reports existing angular/travel bounds. Other contact and post-step guards remain active; this report is not a universal stability certificate.
+
+`powder_dt07 CASE DT NEW_DIRECTORY` emits 21 common-time state/metric samples. Run `python Scripts/run_optimization07_validation.py --out Saved/Optimization07_new_run` after Release build. The fixture contract includes eight cases and ten fixed dt values; a safe, converged finer reference is required before selecting a larger dt. Failed references remain failed. Runtime body/pebble limits and editor defaults are unchanged.
+
+Validated candidates are scoped to their exact fixture and short duration: 20mm-radius packing 3.125us; 5RPM mixing 4us; 1mm-radius packing 40ns. The original 30RPM overlap violation and fast Hertz cap rejection are preserved. Do not apply these values to arbitrary scenes or infer kg-scale throughput. See the Optimization 07 Korean completion record and `Docs/DEM/optimization07/` for full evidence (Core 28/28, Unreal 14/14, 31 baseline physics CSVs byte-identical). Next: Optimization 08.
+
+
+## Optimization 08 — experimental linear bulk softening
+
+`soften_linear_bulk` keeps physical and computational MaterialContact values separate. kn/kt scale by alpha, cn/ct by sqrt(alpha); fixed-mass normalized damping is preserved, not guaranteed restitution. The helper rejects softening for clearance/clogging or impact/deformation scope, and for Hertz, rolling or adhesive models. Alpha=1 preserves the original path.
+
+Build `powder_soft08`; run `python Scripts/run_optimization08_validation.py --out Saved/Optimization08_new`, then `python Scripts/benchmark_optimization08.py Saved/Optimization08_new Saved/Optimization08_new_benchmark`. Each output requires a new directory. The 120-case contract separates surrogate error from integration error. Only candidates faster than the best passing unsoftened dt qualify as accelerated.
+
+No common accelerated candidate passed all fixtures, so runtime coefficients/dt are unchanged. The exact 32-body, 20mm-radius, 5RPM, 0.1s fixture admits alpha 0.9/0.8 at 8us. This is not a general scene setting; published profiles are disabled by default and not consumed by Unreal. Core tests 30/30; 45 alpha=1 physics CSVs match Optimization 07 exactly. See `Docs/DEM/optimization08/` and the Korean completion record for detailed limits, rejected models and ~1.92–1.95x scoped speedup. Next: Optimization 09; retain the baseline physical model.
+
+## Optimization 09 — CPU pair/contact evaluation and rigid integration
+
+`ClumpWorld::cpu_threads` defaults to 1; `parallel_min_jobs` defaults to 128. A lazy persistent pool divides candidate pairs and rigid bodies into disjoint ranges. Each pair owns one force/history output; serial ordered reduction preserves addition order. Old histories are read-only. Failure waits for all lanes before rethrowing; physical state only commits after existing guards. Copies get independent lazy pools. One caller per World/executor remains required.
+
+Unreal exposes CPU Threads / Parallel Min Jobs (apply with Reset) and last effective pair/integration lane counts. Export records settings. Walls, spatial search, post guards and reduction remain serial. Small-scene/default settings stay single-threaded; force parallelism only after measuring the exact scene. No dt, softening or capacity changes.
+
+Core 31 and Unreal 15 tests pass, including deterministic history continuation, independent concurrent copies, failure recovery, momentum, worker checkpoints and engine settings. TSan was not run. The Optimization 09 completion record and `Docs/DEM/optimization09/` contain 1/2/4/8-thread speed and memory measurements, including slowdowns, and byte-identical historical physics CSVs. This does not meet the kg-scale 0.1x goal. Next: Optimization 10.
+
+Reproduce with `python -B Scripts/run_optimization09_validation.py --output Saved/Optimization09_new --reference-exe Saved/Optimization09_before/powder_opt01.exe`. The baseline CLI also accepts optional `[cpu_threads] [minimum_jobs]` after its path argument, with existing defaults preserved.
+
+## Optimization 10 — bounded CPU capacity acceptance
+
+ClumpWorld defaults remain 300 bodies/1024 pebbles. Explicit `maximum_bodies` and `maximum_pebbles` permit 1..2M; `maximum_candidates` defaults to 1,048,576 with an explicit range 1..64M. These are resource contracts, not performance guarantees. Candidate overflow (grid, exhaustive fallback or cached list) throws without committing the physical step. No contacts are silently dropped.
+
+Build `powder_capacity10` and `capacity_convergence`. The matrix runner `Scripts/run_optimization10_validation.py --output Saved/Optimization10_new` checks 1k/10k/100k, freefall/dense, 1/8 threads, three repeats, and common-time half-dt accuracy. The Windows supervisor limits each matrix child to 4GiB private memory/180 seconds. Optional `Scripts/run_optimization10_target.py` uses 8GiB/180 seconds for 1,591,550 bodies (~10kg); use `--dense-only --candidate-budget 64000000` for the dense retry. Enough free host RAM is required. All outputs must be new directories.
+
+The actual 10kg dense smoke processed 4,733,669 contacts, ~6.36GiB observed peak private memory and ~8.04e-9 physical seconds/wall second at dt=20ns. Only six physical steps were tested. This is not sustained process or real-powder validation and does not meet 0.1x. Core 33/Unreal 15 tests pass; default physics CSVs remain exact. Large rendering is not enabled. See `Docs/DEM/optimization10/acceptance.json` and the Korean completion record. Next: Optimization 11, validated representative-particle contract; assess GPU feasibility after 13, without promising a speedup.

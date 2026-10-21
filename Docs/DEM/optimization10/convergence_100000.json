@@ -1,0 +1,1 @@
+{"passed":true,"count":100000,"common_time_s":2e-7,"coarse_dt_s":2e-8,"fine_dt_s":1e-8,"max_position_difference_m":3.4180862634650149e-14,"max_velocity_difference_m_s":1.5860961664588676e-11,"reference_max_velocity":6.8363369907870992e-06,"kinetic_relative_difference":4.8238743632592806e-08,"contacts":293501,"histories":293501}
