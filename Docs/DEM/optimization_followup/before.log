@@ -1,0 +1,18 @@
+NVIDIA GeForce RTX 4060 Ti r=0.00754619
+0.005 rate 0.285203 overlap/r 0 mix 0 receiver 0
+0.255 rate 0.260422 overlap/r 0.00157511 mix 0.00145494 receiver 0
+0.505 rate 0.257799 overlap/r 0.00106039 mix 0.00482962 receiver 0
+0.755 rate 0.274817 overlap/r 0.000618099 mix 0.00495755 receiver 0
+1.005 rate 0.272645 overlap/r 0.0316431 mix 0.00521223 receiver 0
+1.255 rate 0.260938 overlap/r 0.0293846 mix 0.0253631 receiver 0
+1.505 rate 0.251633 overlap/r 0.022936 mix 0.0478041 receiver 0
+1.755 rate 0.240671 overlap/r 0.0420112 mix 0.059605 receiver 0
+2.005 rate 0.231611 overlap/r 0.0387945 mix 0.0728062 receiver 0
+2.255 rate 0.224153 overlap/r 0.0452557 mix 0.0818995 receiver 0
+2.505 rate 0.217966 overlap/r 0.0289163 mix 0.079291 receiver 0
+2.755 rate 0.212557 overlap/r 0.0317397 mix 0.0668355 receiver 0
+3.005 rate 0.208358 overlap/r 0.0348038 mix 0.0689098 receiver 0
+3.255 rate 0.205016 overlap/r 0.033812 mix 0.07278 receiver 0
+3.505 rate 0.202057 overlap/r 0.0354048 mix 0.0713985 receiver 0
+3.755 rate 0.199649 overlap/r 0.0414983 mix 0.0754317 receiver 0
+4 rate 0.1977 overlap/r 0.0187272 mix 0.0872215 receiver 0

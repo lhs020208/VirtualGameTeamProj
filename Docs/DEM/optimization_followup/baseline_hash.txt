@@ -1,0 +1,5 @@
+
+Algorithm : SHA256
+Hash      : 633BCA81FA1904B00EA6E24023E18641B1D4EF38F0E18D24520938EDB0D1CCC5
+Path      : D:\GitHub\VirtualGameTeamProj\Docs\DEM\optimization_followup\granular_baseline.exe
+

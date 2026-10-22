@@ -58,7 +58,7 @@ __kernel void solve(__global const float4* pos,__global const float4* old,__glob
  int i=get_global_id(0);if(i>=n)return;float3 p=pos[i].xyz;int3 q=convert_int3(floor((p+GRID_OFFSET)/cell));float3 correction=(float3)(0);
  for(int z=-1;z<=1;z++)for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
   int3 c=q+(int3)(x,y,z);if(any(c<(int3)(0))||c.x>=nx||c.y>=ny||c.z>=nz)continue;
-  int j=head[(c.z*ny+c.y)*nx+c.x];while(j>=0){if(j!=i){float3 delta=p-pos[j].xyz;float dist=length(delta);if(dist<2*r){float3 normal=dist>1.e-9f?delta/dist:(float3)(i>j?1.f:-1.f,0,0);float overlap=2*r-dist;float3 relative=(p-old[i].xyz)-(pos[j].xyz-old[j].xyz);float3 tangent=relative-normal*dot(relative,normal);float l=length(tangent);correction+=normal*(overlap*.25f);if(l>1.e-9f)correction-=tangent*(fmin(.25f,mu*overlap*.25f/l));}}j=link[j];}
+  int j=head[(c.z*ny+c.y)*nx+c.x];while(j>=0){if(j!=i){float3 delta=p-pos[j].xyz;float dist2=dot(delta,delta);if(dist2<4*r*r){float dist=sqrt(dist2);float3 normal=dist>1.e-9f?delta/dist:(float3)(i>j?1.f:-1.f,0,0);float overlap=2*r-dist;float3 relative=(p-old[i].xyz)-(pos[j].xyz-old[j].xyz);float3 tangent=relative-normal*dot(relative,normal);float l=length(tangent);correction+=normal*(overlap*.25f);if(l>1.e-9f)correction-=tangent*(fmin(.25f,mu*overlap*.25f/l));}}j=link[j];}
  }
  float l=length(correction);if(l>r*.35f)correction*=r*.35f/l;
  float3 wn,wv;p=boundaries(p+correction,r,angle,gate,&wn,&wv);next[i]=(float4)(p,pos[i].w);

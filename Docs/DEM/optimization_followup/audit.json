@@ -1,0 +1,107 @@
+{
+  "dedicated_performance_run": false,
+  "physical_accuracy_validated": false,
+  "cases": {
+    "before": {
+      "last": {
+        "time": "4.000000283",
+        "wall": "20.2327005",
+        "rate": "0.1976997724",
+        "max_overlap_radius": "0.01872715663",
+        "mean_overlap_radius": "0.0003185973318",
+        "mean_z": "0.11788771",
+        "max_z": "0.3619630933",
+        "mix_index": "0.08722154639",
+        "receiver_count": "0",
+        "count": "30000"
+      },
+      "max_recorded_overlap_radius": 0.04525567337,
+      "final_overlap_radius": 0.018727174028754234,
+      "final_outer_wall_intrusion_m": 1.0102987289428711e-05,
+      "groups": [
+        15132,
+        14868
+      ],
+      "timing": {
+        "profiling_enabled": true,
+        "advance_wall_s": 19.8891408,
+        "snapshot_wall_s": 0.0023146,
+        "grid_clear_gpu_s": 2.06421657601,
+        "grid_build_gpu_s": 3.89024883201,
+        "predict_gpu_s": 0.127016128,
+        "contact_gpu_s": 12.007307808,
+        "velocity_gpu_s": 0.25653312
+      }
+    },
+    "after": {
+      "last": {
+        "time": "4.000000283",
+        "wall": "19.1708584",
+        "rate": "0.2086500354",
+        "max_overlap_radius": "0.01814873294",
+        "mean_overlap_radius": "0.000270711668",
+        "mean_z": "0.1185990707",
+        "max_z": "0.3649800718",
+        "mix_index": "0.08736455663",
+        "receiver_count": "0",
+        "count": "30000"
+      },
+      "max_recorded_overlap_radius": 0.05086333822,
+      "final_overlap_radius": 0.018148722127079964,
+      "final_outer_wall_intrusion_m": 1.519918441772461e-06,
+      "groups": [
+        15132,
+        14868
+      ],
+      "timing": {
+        "profiling_enabled": true,
+        "advance_wall_s": 18.8630658,
+        "snapshot_wall_s": 0.0021378,
+        "grid_clear_gpu_s": 2.43275238401,
+        "grid_build_gpu_s": 3.61961916801,
+        "predict_gpu_s": 0.146273664,
+        "contact_gpu_s": 10.608210752,
+        "velocity_gpu_s": 0.325943648
+      }
+    },
+    "long50": {
+      "last": {
+        "time": "30.00000212",
+        "wall": "252.0338471",
+        "rate": "0.1190316399",
+        "max_overlap_radius": "0.01148928151",
+        "mean_overlap_radius": "0.0001684072069",
+        "mean_z": "-0.1617668302",
+        "max_z": "0.3702476621",
+        "mix_index": "0.04734397893",
+        "receiver_count": "19547",
+        "count": "50000"
+      },
+      "max_recorded_overlap_radius": 0.08758096662,
+      "final_overlap_radius": 0.011489231139421463,
+      "final_outer_wall_intrusion_m": 0.0,
+      "groups": [
+        25586,
+        24414
+      ],
+      "timing": {
+        "profiling_enabled": false,
+        "advance_wall_s": 250.6628801,
+        "snapshot_wall_s": 0.0263127,
+        "grid_clear_gpu_s": 0,
+        "grid_build_gpu_s": 0,
+        "predict_gpu_s": 0,
+        "contact_gpu_s": 0,
+        "velocity_gpu_s": 0
+      },
+      "independent_mixing_index": 0.04734397892899378,
+      "remaining_mixer_count": 30403,
+      "receiver_mass_kg": 25.332911999999997
+    }
+  },
+  "comparison": {
+    "persistent_group_identity": true,
+    "mean_height_difference_m": 0.0007113590836524963,
+    "mix_difference": 0.00014301024000000495
+  }
+}

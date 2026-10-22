@@ -1,0 +1,66 @@
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" VirtualGameTeamProj Win64 Development -Project=D:/GitHub/VirtualGameTeamProj/VirtualGameTeamProj.uproject -WaitMutex -NoHotReloadFromIDE
+Log file: C:\Users\lpet2\AppData\Local\UnrealBuildTool\Log.txt
+Determining max actions to execute in parallel (20 physical cores, 28 logical cores)
+  Executing up to 20 processes, one per physical core
+Using 'git status' to determine working set for adaptive non-unity build (D:\GitHub\VirtualGameTeamProj).
+Creating makefile for VirtualGameTeamProj (no existing makefile)
+UbaServer - Listening on 0.0.0.0:1345
+UHT compiled-in object format Default
+Building VirtualGameTeamProj...
+===== Toolchain Information =====
+Using ISPC compiler (C:\Program Files\Epic Games\UE_5.8\Engine\Source\ThirdParty\Intel\ISPC\bin\Windows\ispc.exe)
+  Intel(r) Implicit SPMD Program Compiler (Intel(r) ISPC), 1.24.0 (build commit  @ 20250404, LLVM 18.1.2) 
+Using Visual Studio 14.44.35217 toolchain (C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+=================================
+Using Unreal Build Accelerator local executor to run 39 action(s)
+  CPU 20 physical cores, 28 logical cores
+  Memory 31.85 GB physical, 36.58 GB/58.85 GB committed
+  UBA Storage capacity 40 GB
+[1/39] Copy VirtualGameTeamProj-Default.rc2
+[2/39] Compile [x64] DEMCore_elastic.cpp
+[3/39] Copy tbb12.dll
+[4/39] Copy tbbmalloc.dll
+[5/39] Copy d3d12SDKLayers.dll
+[6/39] Copy D3D12Core.dll
+[7/39] Copy DirectML.dll
+[8/39] Compile [x64] DEMCore_friction.cpp
+[9/39] Compile [x64] DEMCore_core.cpp
+[10/39] Compile [x64] DEMCore_motion.cpp
+[11/39] Compile [x64] DEMCore_supply.cpp
+[12/39] Compile [x64] DEMCore_geometry.cpp
+[13/39] Compile [x64] DEMCore_tracking.cpp
+[14/39] Compile [x64] DEMCore_settings.cpp
+[15/39] Compile [x64] DEMCore_results.cpp
+[16/39] Compile [x64] DEMCore_granular.cpp
+[17/39] Compile [x64] DEMCore_mesh.cpp
+[18/39] Compile [x64] DEMCore_gpu_opencl.cpp
+[19/39] Compile Resource [x64] VirtualGameTeamProj-Default.rc2
+[20/39] Compile [x64] DEMCore_worker.cpp
+[21/39] Compile [x64] DEMCore_gpu_clump.cpp
+[22/39] Compile [x64] DEMCore_world.cpp
+[23/39] Compile [x64] DEMCore_clump_worker.cpp
+[24/39] Compile [x64] VirtualGameTeamProj.cpp
+[25/39] Compile [x64] DEMCore_clump.cpp
+[26/39] Compile [x64] Module.VirtualGameTeamProj.gen.cpp
+[27/39] Compile [x64] ProcessTwinTests.cpp
+[28/39] Compile [x64] PowderDropTest.cpp
+[29/39] Compile [x64] PowderMeshGeometry.cpp
+[30/39] Compile [x64] DEMBridgeTests.cpp
+[31/39] Compile [x64] BulkPrototypeTests.cpp
+[32/39] Compile [x64] PowderCameraController.cpp
+[33/39] Compile [x64] PowderBulkPrototype.cpp
+[34/39] Compile [x64] PowderProcessTwin.cpp
+[35/39] Compile [x64] PowderDEMTest.cpp
+[36/39] Compile [x64] PowderGranularMixer.cpp
+[37/39] Compile [x64] PowderClumpTest.cpp
+[38/39] Link [x64] VirtualGameTeamProj.exe
+   D:\GitHub\VirtualGameTeamProj\Binaries\Win64\VirtualGameTeamProj.lib 라이브러리 및 D:\GitHub\VirtualGameTeamProj\Binaries\Win64\VirtualGameTeamProj.exp 개체를 생성하고 있습니다.
+[39/39] WriteMetadata VirtualGameTeamProj.target [NoUba]
+
+Total time in Unreal Build Accelerator local executor: 22.15 seconds
+Output binary: D:\GitHub\VirtualGameTeamProj\Binaries\Win64\VirtualGameTeamProj.exe
+
+Result: Succeeded
+Total execution time: 24.54 seconds
+Trace written to file C:\Users\lpet2\AppData\Local\UnrealBuildTool\Trace.uba with size 15.5kb
