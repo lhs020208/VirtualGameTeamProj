@@ -1,0 +1,21 @@
+repeat 0 setup 0.968099s, full target allocated
+repeat 0 window 0 compute 0.202949s rate 5.52343e-08 contacts 4733669
+repeat 0 window 1 compute 0.208403s rate 5.59488e-08 contacts 4733669
+repeat 0 window 2 compute 0.20554s rate 5.61237e-08 contacts 4733669
+repeat 0 window 3 compute 0.206607s rate 5.53797e-08 contacts 4733669
+repeat 0 window 4 compute 0.207502s rate 5.57184e-08 contacts 4733669
+repeat 0 window 5 compute 0.205389s rate 5.57119e-08 contacts 4733669
+repeat 1 setup 0.893159s, full target allocated
+repeat 1 window 0 compute 0.201931s rate 5.65719e-08 contacts 4733669
+repeat 1 window 1 compute 0.210672s rate 5.46387e-08 contacts 4733669
+repeat 1 window 2 compute 0.204689s rate 5.60328e-08 contacts 4733669
+repeat 1 window 3 compute 0.208001s rate 5.53892e-08 contacts 4733669
+repeat 1 window 4 compute 0.207403s rate 5.49361e-08 contacts 4733669
+repeat 1 window 5 compute 0.207577s rate 5.61997e-08 contacts 4733669
+repeat 2 setup 0.90886s, full target allocated
+repeat 2 window 0 compute 0.203011s rate 5.60052e-08 contacts 4733669
+repeat 2 window 1 compute 0.205638s rate 5.62229e-08 contacts 4733669
+repeat 2 window 2 compute 0.205086s rate 5.67094e-08 contacts 4733669
+repeat 2 window 3 compute 0.213061s rate 5.54626e-08 contacts 4733669
+repeat 2 window 4 compute 0.208498s rate 5.59226e-08 contacts 4733669
+repeat 2 window 5 compute 0.208797s rate 5.48035e-08 contacts 4733669

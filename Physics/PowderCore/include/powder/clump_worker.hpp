@@ -16,6 +16,9 @@ public:
  virtual std::shared_ptr<ClumpBackend> clone()=0;
  virtual void advance(ClumpWorld&,double)=0;
  virtual void synchronize(ClumpWorld&,ClumpReport&)=0;
+ virtual void advance_batch(ClumpWorld& w,double dt,std::uint32_t steps){for(std::uint32_t i=0;i<steps;++i)advance(w,dt);}
+ virtual bool measure(MixingMonitor&,std::uint64_t){return false;}
+
 };
 // All mutable solver/measurement state belongs to one thread. No engine types.
 struct ClumpRunState {
@@ -63,13 +66,14 @@ private:
  using Clock=std::chrono::steady_clock;
  void submit(std::function<void()> command);
  void loop();
- void advance();
+ void advance(std::uint32_t steps=1);
  void publish();
  bool finished()const;
  ClumpRunState state_;
  ClumpWorkerOptions options_;
  bool running_=false;
  std::uint64_t generation_=0,sequence_=0,publications_=0;
+ double last_step_seconds_=0;
  double snapshot_seconds_=0,run_origin_s_=0,rate_origin_s_=0,actual_rate_=0;
  Clock::time_point run_start_,rate_start_,last_publish_;
  mutable std::mutex mutex_;

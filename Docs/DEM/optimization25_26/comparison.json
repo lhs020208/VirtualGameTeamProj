@@ -1,0 +1,97 @@
+{
+  "numerical_comparison_passed": true,
+  "maximum_differences": {
+    "mass_a_kg": 0.0,
+    "mass_b_kg": 0.0,
+    "overlap_m": 0.0,
+    "torque_z_nm": 0.0,
+    "wall_work_j": 0.0,
+    "mix_index": 0.0
+  },
+  "baseline_warm_rate": 1.419164396003633e-07,
+  "final_warm_rate": 1.4872520193164293e-07,
+  "baseline_batch_rate": 1.376698608117912e-07,
+  "final_batch_rate": 1.5962302428939914e-07,
+  "warm_speedup": 1.0479772628911286,
+  "batch_speedup": 1.1594623786801104,
+  "baseline_sort_gpu_s": 0.007124959999998529,
+  "final_sort_gpu_s": 0.0007875840000000009,
+  "required_rate": 0.1,
+  "target_accepted": false,
+  "render_included": false,
+  "physical_time_per_repeat_s": 6.52e-06,
+  "microbench": [
+    {
+      "count": 129,
+      "forced_rebuild": 0,
+      "variant": 0,
+      "median_seconds": 0.0153605
+    },
+    {
+      "count": 129,
+      "forced_rebuild": 0,
+      "variant": 1,
+      "median_seconds": 0.0047814
+    },
+    {
+      "count": 129,
+      "forced_rebuild": 0,
+      "variant": 2,
+      "median_seconds": 0.0036895
+    },
+    {
+      "count": 129,
+      "forced_rebuild": 1,
+      "variant": 0,
+      "median_seconds": 0.0143341
+    },
+    {
+      "count": 129,
+      "forced_rebuild": 1,
+      "variant": 1,
+      "median_seconds": 0.0147602
+    },
+    {
+      "count": 129,
+      "forced_rebuild": 1,
+      "variant": 2,
+      "median_seconds": 0.0037943
+    },
+    {
+      "count": 32769,
+      "forced_rebuild": 0,
+      "variant": 0,
+      "median_seconds": 0.0796118
+    },
+    {
+      "count": 32769,
+      "forced_rebuild": 0,
+      "variant": 1,
+      "median_seconds": 0.0385518
+    },
+    {
+      "count": 32769,
+      "forced_rebuild": 0,
+      "variant": 2,
+      "median_seconds": 0.0390108
+    },
+    {
+      "count": 32769,
+      "forced_rebuild": 1,
+      "variant": 0,
+      "median_seconds": 0.0771107
+    },
+    {
+      "count": 32769,
+      "forced_rebuild": 1,
+      "variant": 1,
+      "median_seconds": 0.0781454
+    },
+    {
+      "count": 32769,
+      "forced_rebuild": 1,
+      "variant": 2,
+      "median_seconds": 0.0523176
+    }
+  ]
+}

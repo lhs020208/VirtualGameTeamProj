@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "baseline_head": "a0f6dc1a369461c5b85100a96b84690876c81716",
+  "count": 1591550,
+  "groups": [
+    795775,
+    795775
+  ],
+  "radius_m": 0.001,
+  "density_kg_m3": 1500,
+  "q": 1,
+  "dt_s": 2e-08,
+  "pitch_m": 0.00199999,
+  "side": 117,
+  "linear": {
+    "kn": 10000,
+    "cn": 0.01,
+    "kt": 2500,
+    "ct": 0.0025,
+    "mu": 0.4
+  },
+  "repeats": 3,
+  "reference_steps": 6,
+  "required_rate": 0.1,
+  "accuracy": {
+    "state_abs": 1e-08,
+    "group_mass_relative": 1e-12,
+    "momentum_abs": 1e-10,
+    "uniformity_abs": 1e-10,
+    "contact_set": "exact",
+    "max_overlap_m": 1e-05
+  },
+  "timing": "cold step separate; solver and measurement separate; same 6-step window plus bounded longer batch; no dt/model/count changes",
+  "source_sha256": {
+    "Physics/PowderCore/src/gpu_opencl.cpp": "b39a50c22e25954b4b784d32cc74e0a4ac813430f614a2b503c3b79aabc8fad8",
+    "Physics/PowderCore/src/gpu_kernels.inc": "751deedfcbde3c6432f22221d194d9d597917320b216bec615842d2c1b0a2950",
+    "Physics/PowderCore/app/gpu_acceptance.cpp": "42f9d2871667dea8666fb4e8bde0adebbfd15bbd767e6f00f8b9e7af7d663e45"
+  }
+}

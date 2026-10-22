@@ -1,0 +1,36 @@
+repeat 0 setup 1.01631s, full target allocated
+repeat 0 window 0 compute 0.143575s rate 1.28062e-07 contacts 4733669
+repeat 0 window 1 compute 0.141334s rate 1.30415e-07 contacts 4733669
+repeat 0 window 2 compute 0.12723s rate 1.42793e-07 contacts 4733669
+repeat 0 window 3 compute 0.128747s rate 1.42687e-07 contacts 4733669
+repeat 0 window 4 compute 0.128692s rate 1.41449e-07 contacts 4733669
+repeat 0 window 5 compute 0.128857s rate 1.41916e-07 contacts 4733669
+repeat 0 window 6 compute 8.96068s rate 1.42635e-07 contacts 4733669
+repeat 0 window 7 compute 9.19946s rate 1.38945e-07 contacts 4733669
+repeat 0 window 8 compute 9.34433s rate 1.36789e-07 contacts 4733669
+repeat 0 window 9 compute 9.30552s rate 1.37359e-07 contacts 4733669
+repeat 0 window 10 compute 9.40326s rate 1.35947e-07 contacts 4733669
+repeat 1 setup 0.923761s, full target allocated
+repeat 1 window 0 compute 0.144567s rate 1.27527e-07 contacts 4733669
+repeat 1 window 1 compute 0.140759s rate 1.30815e-07 contacts 4733669
+repeat 1 window 2 compute 0.127281s rate 1.43916e-07 contacts 4733669
+repeat 1 window 3 compute 0.128965s rate 1.4213e-07 contacts 4733669
+repeat 1 window 4 compute 0.129253s rate 1.41965e-07 contacts 4733669
+repeat 1 window 5 compute 0.129139s rate 1.4156e-07 contacts 4733669
+repeat 1 window 6 compute 9.19547s rate 1.39025e-07 contacts 4733669
+repeat 1 window 7 compute 9.28571s rate 1.3767e-07 contacts 4733669
+repeat 1 window 8 compute 9.16742s rate 1.3943e-07 contacts 4733669
+repeat 1 window 9 compute 9.27312s rate 1.37845e-07 contacts 4733669
+repeat 1 window 10 compute 9.2832s rate 1.37702e-07 contacts 4733669
+repeat 2 setup 0.923987s, full target allocated
+repeat 2 window 0 compute 0.140895s rate 1.30337e-07 contacts 4733669
+repeat 2 window 1 compute 0.140685s rate 1.31255e-07 contacts 4733669
+repeat 2 window 2 compute 0.127135s rate 1.42579e-07 contacts 4733669
+repeat 2 window 3 compute 0.128742s rate 1.41952e-07 contacts 4733669
+repeat 2 window 4 compute 0.132509s rate 1.3802e-07 contacts 4733669
+repeat 2 window 5 compute 0.130559s rate 1.40243e-07 contacts 4733669
+repeat 2 window 6 compute 9.33099s rate 1.36997e-07 contacts 4733669
+repeat 2 window 7 compute 9.28436s rate 1.37687e-07 contacts 4733669
+repeat 2 window 8 compute 9.2947s rate 1.37543e-07 contacts 4733669
+repeat 2 window 9 compute 9.31427s rate 1.37247e-07 contacts 4733669
+repeat 2 window 10 compute 9.41567s rate 1.35768e-07 contacts 4733669

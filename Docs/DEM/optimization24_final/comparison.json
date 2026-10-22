@@ -1,0 +1,41 @@
+{
+  "numerical_comparison_passed": true,
+  "baseline_warm_rate": {
+    "min": 5.463871786970196e-08,
+    "median": 5.5718439125933696e-08,
+    "max": 5.67093867928942e-08
+  },
+  "final_warm_rate": {
+    "min": 1.3041286757681807e-07,
+    "median": 1.4090430976967077e-07,
+    "max": 1.4303634696612758e-07
+  },
+  "matched_warm_median_speedup": 2.5291612036891564,
+  "extended_batch_rate": {
+    "min": 1.3553257381937813e-07,
+    "median": 1.374714945338112e-07,
+    "max": 1.4233149485520573e-07
+  },
+  "all_windows_rate": {
+    "min": 1.281689779805696e-07,
+    "median": 1.3898966695437164e-07,
+    "max": 1.4303634696612758e-07
+  },
+  "baseline_measurement_seconds": {
+    "min": 0.1475423,
+    "median": 0.1514452,
+    "max": 0.1566561
+  },
+  "final_measurement_seconds": {
+    "min": 0.0114568,
+    "median": 0.0122833,
+    "max": 0.0137516
+  },
+  "core_device_buffer_bytes": 8061004948,
+  "observation_additional_bytes": 9947480,
+  "required_rate": 0.1,
+  "throughput_gate": false,
+  "end_to_end_completed": false,
+  "accepted": false,
+  "scope": "3 repeats, each 326 steps / 6.52 microseconds; profiling on; render/setup/final snapshot audit excluded; contact sets tested separately on small scenes; cold windows excluded only from warm comparison"
+}

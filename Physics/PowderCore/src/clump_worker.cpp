@@ -22,7 +22,7 @@ void ClumpWorker::reset(ClumpRunState state,ClumpWorkerOptions options){
   auto probe=state.World;
   if(state.Backend){state.Backend=state.Backend->clone();auto backend=state.Backend->clone();backend->advance(probe,state.Dt);ClumpReport report;backend->synchronize(probe,report);}
   else probe.step(state.Dt);
-  state_=std::move(state);options_=options;running_=false;++generation_;sequence_=publications_=0;snapshot_seconds_=actual_rate_=0;
+  state_=std::move(state);options_=options;running_=false;++generation_;sequence_=publications_=0;snapshot_seconds_=actual_rate_=last_step_seconds_=0;
   run_start_=rate_start_=Clock::now();run_origin_s_=rate_origin_s_=state_.World.physical_time_s;publish();
  });
 }
@@ -33,14 +33,14 @@ void ClumpWorker::pause(){submit([this]{running_=false;publish();});}
 void ClumpWorker::single_step(){submit([this]{running_=false;advance();publish();});}
 ClumpRunState ClumpWorker::checkpoint(){ClumpRunState result;submit([this,&result]{if(running_)throw std::logic_error("pause before checkpoint");if(state_.Backend)state_.Backend->synchronize(state_.World,state_.Report);result=state_;if(result.Backend)result.Backend=result.Backend->clone();});return result;}
 std::shared_ptr<const ClumpSnapshot> ClumpWorker::snapshot()const{std::lock_guard<std::mutex> lock(mutex_);return latest_;}
-void ClumpWorker::advance(){
+void ClumpWorker::advance(std::uint32_t steps){
  if(!state_.Error.empty()||finished()){running_=false;return;}
- const auto start=Clock::now();
- try{const double load_time=state_.World.physical_time_s;if(state_.Backend)state_.Backend->advance(state_.World,state_.Dt);else state_.Report=state_.World.step_profiled(state_.Dt,options_.profile?&state_.Profile:nullptr);state_.LoadTime=load_time;++state_.Steps;
-  if(state_.Mixing){if(state_.Backend&&(finished()||state_.Steps%state_.Mixing->config.steps(state_.Mixing->config.sample_s)==0))state_.Backend->synchronize(state_.World,state_.Report);state_.Mixing->record(state_.World.bodies,state_.Steps);}
+ const auto start=Clock::now();const double before=state_.World.physical_time_s;bool accounted=false;
+ try{if(state_.Backend)state_.Backend->advance_batch(state_.World,state_.Dt,steps);else{steps=1;state_.Report=state_.World.step_profiled(state_.Dt,options_.profile?&state_.Profile:nullptr);}state_.LoadTime=before+(steps-1)*state_.Dt;state_.Steps+=steps;accounted=true;
+  if(state_.Mixing){const bool sample=finished()||state_.Steps%state_.Mixing->config.steps(state_.Mixing->config.sample_s)==0;if(sample&&state_.Backend){if(!state_.Backend->measure(*state_.Mixing,state_.Steps)){state_.Backend->synchronize(state_.World,state_.Report);state_.Mixing->record(state_.World.bodies,state_.Steps);}}else if(!state_.Backend)state_.Mixing->record(state_.World.bodies,state_.Steps);}
   if(finished())running_=false;
- }catch(const std::exception& e){state_.Error=e.what();running_=false;}
- state_.ComputeSeconds+=std::chrono::duration<double>(Clock::now()-start).count();
+ }catch(const std::exception& e){if(state_.Backend&&!accounted){const auto accepted=static_cast<std::uint64_t>(std::llround((state_.World.physical_time_s-before)/state_.Dt));state_.Steps+=accepted;if(accepted)state_.LoadTime=before+(accepted-1)*state_.Dt;}state_.Error=e.what();running_=false;}
+ const double duration=std::chrono::duration<double>(Clock::now()-start).count();state_.ComputeSeconds+=duration;last_step_seconds_=duration/steps;
 }
 void ClumpWorker::publish(){
  const auto start=Clock::now();
@@ -74,7 +74,12 @@ void ClumpWorker::loop(){
      std::unique_lock<std::mutex> lock(mutex_);cv_.wait_for(lock,std::min(delay,std::chrono::duration<double>(.01)),[this]{return stopping_||!commands_.empty();});break;
     }
    }
-   advance();
+   std::uint32_t count=1;
+   if(state_.Backend&&last_step_seconds_>0){double seconds=std::max(0.,options_.batch_budget_ms/1000-std::chrono::duration<double>(now-batch_start).count());seconds=std::min(seconds,std::max(0.,1/options_.snapshot_hz-std::chrono::duration<double>(now-last_publish_).count()));const double affordable=std::min(64.,std::max(1.,seconds/(1.5*last_step_seconds_)));count=static_cast<std::uint32_t>(affordable);count=static_cast<std::uint32_t>(std::min<std::size_t>(count,options_.batch_steps-i));
+    if(options_.paced){const double target=run_origin_s_+std::chrono::duration<double>(now-run_start_).count()*options_.target_rate;count=static_cast<std::uint32_t>(std::min<double>(count,std::max(1.,std::floor((target-state_.World.physical_time_s)/state_.Dt))));}
+    if(state_.Mixing){const auto& config=state_.Mixing->config;auto interval=config.steps(config.sample_s),end=config.steps(config.duration_s);count=static_cast<std::uint32_t>(std::min<std::uint64_t>(count,std::min(interval-state_.Steps%interval,end-state_.Steps)));}
+   }
+   advance(count);i+=count-1;
    if(!running_||std::chrono::duration<double>(Clock::now()-last_publish_).count()>=1/options_.snapshot_hz)publish();
    if(std::chrono::duration<double,std::milli>(Clock::now()-batch_start).count()>=options_.batch_budget_ms)break;
   }
