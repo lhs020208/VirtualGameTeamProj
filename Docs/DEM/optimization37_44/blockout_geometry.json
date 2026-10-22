@@ -1,0 +1,31 @@
+{
+  "source": "D:\\GitHub\\\uac00\uc0c1\ud604\uc2e4\uac8c\uc784\\raw_material_twin_blockout.blend",
+  "unit_scale": 1.0,
+  "objects": [
+    {
+      "name": "MX-301_PaddleShaft",
+      "bounds_m": [
+        [
+          2.3999998569488525,
+          3.6000001430511475
+        ],
+        [
+          -0.05999999865889549,
+          0.05999999865889549
+        ],
+        [
+          0.8399999737739563,
+          0.9599999785423279
+        ]
+      ],
+      "closed": true,
+      "volume_m3": 0.01341717185714301,
+      "vertices": 48,
+      "location": [
+        3.0,
+        0.0,
+        0.8999999761581421
+      ]
+    }
+  ]
+}

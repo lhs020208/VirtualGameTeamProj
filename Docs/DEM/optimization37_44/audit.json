@@ -1,0 +1,518 @@
+{
+  "physical_accuracy_validated": false,
+  "actual_mixer_asset_used": false,
+  "reference_vessel_m": [
+    0.9,
+    0.5,
+    0.4
+  ],
+  "nominal_bulk_litres": 90,
+  "solid_volume_m3": 0.054,
+  "mass_kg": 64.8,
+  "cases": [
+    {
+      "label": "base30",
+      "count": 30000,
+      "duration": 4,
+      "iterations": 16,
+      "dt": 0.00025,
+      "rpm": 30,
+      "radius_override": 0,
+      "exit_code": 0,
+      "status": "completed",
+      "wall": 12.312000000034459,
+      "last": {
+        "time": "4.000000283",
+        "wall": "12.1360319",
+        "rate": "0.3295970475",
+        "max_overlap_radius": "0.02553140747",
+        "mean_overlap_radius": "0.0003156318043",
+        "mean_z": "0.1186979515",
+        "max_z": "0.3637263477",
+        "mix_index": "0.0869954652",
+        "receiver_count": "0",
+        "count": "30000"
+      },
+      "max_observed_overlap_radius": 0.0621886273,
+      "snapshot": {
+        "count": 30000,
+        "radius_m": 0.007546193987406541,
+        "groups": [
+          15132,
+          14868
+        ],
+        "receiver_count": 0,
+        "mean_z": 0.11869794875383377,
+        "observed_outer_wall_intrusion_m": 1.4901161193847656e-08,
+        "finite": true
+      }
+    },
+    {
+      "label": "n100",
+      "count": 100000,
+      "duration": 3,
+      "iterations": 16,
+      "dt": 0.00025,
+      "rpm": 30,
+      "radius_override": 0,
+      "exit_code": 0,
+      "status": "completed",
+      "wall": 21.17199999996228,
+      "last": {
+        "time": "3.000000212",
+        "wall": "20.9754249",
+        "rate": "0.1430245264",
+        "max_overlap_radius": "0.05115870265",
+        "mean_overlap_radius": "0.0007668889021",
+        "mean_z": "0.1143866391",
+        "max_z": "0.3769946992",
+        "mix_index": "0.06716601727",
+        "receiver_count": "0",
+        "count": "100000"
+      },
+      "max_observed_overlap_radius": 0.06953475506,
+      "snapshot": {
+        "count": 100000,
+        "radius_m": 0.005051670902881891,
+        "groups": [
+          50968,
+          49032
+        ],
+        "receiver_count": 0,
+        "mean_z": 0.11438664048910141,
+        "observed_outer_wall_intrusion_m": 2.384185791015625e-06,
+        "finite": true
+      }
+    },
+    {
+      "label": "n300",
+      "count": 300000,
+      "duration": 1.5,
+      "iterations": 16,
+      "dt": 0.00025,
+      "rpm": 30,
+      "radius_override": 0,
+      "exit_code": 0,
+      "status": "completed",
+      "wall": 22.92200000002049,
+      "last": {
+        "time": "1.500000106",
+        "wall": "22.7357205",
+        "rate": "0.06597548145",
+        "max_overlap_radius": "0.05163297624",
+        "mean_overlap_radius": "0.0009453387267",
+        "mean_z": "0.1206875727",
+        "max_z": "0.3942479193",
+        "mix_index": "0.05541177907",
+        "receiver_count": "0",
+        "count": "300000"
+      },
+      "max_observed_overlap_radius": 0.1209580589,
+      "snapshot": {
+        "count": 300000,
+        "radius_m": 0.003502632974822209,
+        "groups": [
+          152181,
+          147819
+        ],
+        "receiver_count": 0,
+        "mean_z": 0.1206875815987587,
+        "observed_outer_wall_intrusion_m": 0.0,
+        "finite": true
+      }
+    },
+    {
+      "label": "n1000",
+      "count": 1000000,
+      "duration": 1.25,
+      "iterations": 16,
+      "dt": 0.00025,
+      "rpm": 30,
+      "radius_override": 0,
+      "exit_code": 0,
+      "status": "completed",
+      "wall": 72.68699999997625,
+      "last": {
+        "time": "1.250000088",
+        "wall": "72.42803",
+        "rate": "0.01725851288",
+        "max_overlap_radius": "0.0683991996",
+        "mean_overlap_radius": "0.001980847089",
+        "mean_z": "0.116068659",
+        "max_z": "0.3452015221",
+        "mix_index": "0.03810592399",
+        "receiver_count": "0",
+        "count": "1000000"
+      },
+      "max_observed_overlap_radius": 0.07623744553,
+      "snapshot": {
+        "count": 1000000,
+        "radius_m": 0.002344777925390317,
+        "groups": [
+          503019,
+          496981
+        ],
+        "receiver_count": 0,
+        "mean_z": 0.11606865376234055,
+        "observed_outer_wall_intrusion_m": 0.0,
+        "finite": true
+      }
+    },
+    {
+      "label": "dt_half",
+      "count": 30000,
+      "duration": 4,
+      "iterations": 16,
+      "dt": 0.000125,
+      "rpm": 30,
+      "radius_override": 0,
+      "exit_code": 0,
+      "status": "completed",
+      "wall": 24.42200000002049,
+      "last": {
+        "time": "4.000000283",
+        "wall": "24.3096078",
+        "rate": "0.1645440073",
+        "max_overlap_radius": "0.009231484815",
+        "mean_overlap_radius": "0.0001125259707",
+        "mean_z": "0.1188914167",
+        "max_z": "0.366364032",
+        "mix_index": "0.09848511805",
+        "receiver_count": "0",
+        "count": "30000"
+      },
+      "max_observed_overlap_radius": 0.04776039628,
+      "snapshot": {
+        "count": 30000,
+        "radius_m": 0.007546193987406541,
+        "groups": [
+          15132,
+          14868
+        ],
+        "receiver_count": 0,
+        "mean_z": 0.11889141798019409,
+        "observed_outer_wall_intrusion_m": 3.039836883544922e-06,
+        "finite": true
+      }
+    },
+    {
+      "label": "iter24",
+      "count": 30000,
+      "duration": 4,
+      "iterations": 24,
+      "dt": 0.00025,
+      "rpm": 30,
+      "radius_override": 0,
+      "exit_code": 0,
+      "status": "completed",
+      "wall": 18.18800000002375,
+      "last": {
+        "time": "4.000000283",
+        "wall": "18.0115464",
+        "rate": "0.2220797812",
+        "max_overlap_radius": "0.02285438077",
+        "mean_overlap_radius": "0.0002368974181",
+        "mean_z": "0.1189752016",
+        "max_z": "0.3583418429",
+        "mix_index": "0.09695156225",
+        "receiver_count": "0",
+        "count": "30000"
+      },
+      "max_observed_overlap_radius": 0.038604356,
+      "snapshot": {
+        "count": 30000,
+        "radius_m": 0.007546193987406541,
+        "groups": [
+          15132,
+          14868
+        ],
+        "receiver_count": 0,
+        "mean_z": 0.1189751997590065,
+        "observed_outer_wall_intrusion_m": 1.4901161193847656e-08,
+        "finite": true
+      }
+    },
+    {
+      "label": "stopped",
+      "count": 30000,
+      "duration": 4,
+      "iterations": 16,
+      "dt": 0.00025,
+      "rpm": 0,
+      "radius_override": 0,
+      "exit_code": 0,
+      "status": "completed",
+      "wall": 8.952999999979511,
+      "last": {
+        "time": "4.000000283",
+        "wall": "8.8149755",
+        "rate": "0.4537732729",
+        "max_overlap_radius": "0.000681254648",
+        "mean_overlap_radius": "0.0001241224182",
+        "mean_z": "0.1239280337",
+        "max_z": "0.2640931606",
+        "mix_index": "0.007229893441",
+        "receiver_count": "0",
+        "count": "30000"
+      },
+      "max_observed_overlap_radius": 0.001627223071,
+      "snapshot": {
+        "count": 30000,
+        "radius_m": 0.007546193987406541,
+        "groups": [
+          15132,
+          14868
+        ],
+        "receiver_count": 0,
+        "mean_z": 0.1239280253648758,
+        "observed_outer_wall_intrusion_m": 3.2782554626464844e-07,
+        "finite": true
+      }
+    },
+    {
+      "label": "fixed_r40",
+      "count": 40000,
+      "duration": 2,
+      "iterations": 16,
+      "dt": 0.00025,
+      "rpm": 30,
+      "radius_override": 0.00754619,
+      "exit_code": 0,
+      "status": "completed",
+      "wall": 6.10899999999674,
+      "last": {
+        "time": "2.000000142",
+        "wall": "5.9792961",
+        "rate": "0.3344875564",
+        "max_overlap_radius": "0.06966093116",
+        "mean_overlap_radius": "0.0005878250586",
+        "mean_z": "0.1590970809",
+        "max_z": "0.3924538195",
+        "mix_index": "0.07844482779",
+        "receiver_count": "0",
+        "count": "40000"
+      },
+      "max_observed_overlap_radius": 0.06966093116,
+      "snapshot": {
+        "count": 40000,
+        "radius_m": 0.00685617224601125,
+        "groups": [
+          20021,
+          19979
+        ],
+        "receiver_count": 0,
+        "mean_z": 0.1590970754623413,
+        "observed_outer_wall_intrusion_m": 0.0,
+        "finite": true,
+        "radius_note": "audit outer-boundary tolerance used fixed-volume radius; fixed-radius case excluded from boundary acceptance"
+      },
+      "mass_kg": 86.3998630388736
+    }
+  ],
+  "renders": [
+    {
+      "count": 100000,
+      "time": 12.00000057,
+      "rate": 0.076993266,
+      "receiver": 15681,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "snapshot": {
+        "count": 100000,
+        "radius_m": 0.005051670902881891,
+        "groups": [
+          50968,
+          49032
+        ],
+        "receiver_count": 14907,
+        "mean_z": -0.00017371520516462624,
+        "observed_outer_wall_intrusion_m": 0.0,
+        "finite": true
+      },
+      "label": "Opt44_fastfinal100_a",
+      "final_snapshot_max_overlap_radius": 0.02235116995871067,
+      "observed_geometry_gate": true,
+      "throughput_gate": false,
+      "test_protocol_completed": true,
+      "full_process_accepted": false,
+      "group_identity_checked": true
+    },
+    {
+      "count": 30000,
+      "time": 12.01000057,
+      "rate": 0.249092905,
+      "receiver": 3914,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "snapshot": {
+        "count": 30000,
+        "radius_m": 0.007546193987406541,
+        "groups": [
+          15132,
+          14868
+        ],
+        "receiver_count": 3697,
+        "mean_z": 0.024674901738762856,
+        "observed_outer_wall_intrusion_m": 5.960464477539063e-08,
+        "finite": true
+      },
+      "label": "Opt44_fastfinal30_a",
+      "final_snapshot_max_overlap_radius": 0.025703398510813713,
+      "observed_geometry_gate": true,
+      "throughput_gate": true,
+      "test_protocol_completed": true,
+      "full_process_accepted": false,
+      "group_identity_checked": true
+    },
+    {
+      "count": 50000,
+      "time": 12.00600057,
+      "rate": 0.151617897,
+      "receiver": 7260,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "snapshot": {
+        "count": 50000,
+        "radius_m": 0.006364706507682334,
+        "groups": [
+          25586,
+          24414
+        ],
+        "receiver_count": 7213,
+        "mean_z": 0.006664395797997713,
+        "observed_outer_wall_intrusion_m": 0.0,
+        "finite": true
+      },
+      "label": "Opt44_fastfinal50_a",
+      "final_snapshot_max_overlap_radius": 0.02658306062221527,
+      "observed_geometry_gate": true,
+      "throughput_gate": true,
+      "test_protocol_completed": true,
+      "full_process_accepted": false,
+      "group_identity_checked": false
+    },
+    {
+      "count": 50000,
+      "time": 12.00400057,
+      "rate": 0.150877509,
+      "receiver": 7134,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "snapshot": {
+        "count": 50000,
+        "radius_m": 0.006364706507682334,
+        "groups": [
+          25586,
+          24414
+        ],
+        "receiver_count": 7088,
+        "mean_z": 0.008508708328008652,
+        "observed_outer_wall_intrusion_m": 0.0,
+        "finite": true
+      },
+      "label": "Opt44_fastfinal50_b",
+      "final_snapshot_max_overlap_radius": 0.014799127355217934,
+      "observed_geometry_gate": true,
+      "throughput_gate": true,
+      "test_protocol_completed": true,
+      "full_process_accepted": false,
+      "group_identity_checked": false
+    },
+    {
+      "count": 100000,
+      "time": 12.00200057,
+      "rate": 0.069548195,
+      "receiver": 15698,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "snapshot": {
+        "count": 100000,
+        "radius_m": 0.005051670902881891,
+        "groups": [
+          50968,
+          49032
+        ],
+        "receiver_count": 14956,
+        "mean_z": -0.00046509949606843293,
+        "observed_outer_wall_intrusion_m": 0.0,
+        "finite": true
+      },
+      "label": "Opt44_final100_a",
+      "final_snapshot_max_overlap_radius": 0.025429969653487206,
+      "observed_geometry_gate": true,
+      "throughput_gate": false,
+      "test_protocol_completed": true,
+      "full_process_accepted": false,
+      "group_identity_checked": true
+    },
+    {
+      "count": 30000,
+      "time": 12.00400057,
+      "rate": 0.229004383,
+      "receiver": 3854,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "snapshot": {
+        "count": 30000,
+        "radius_m": 0.007546193987406541,
+        "groups": [
+          15132,
+          14868
+        ],
+        "receiver_count": 3535,
+        "mean_z": 0.028568468987941742,
+        "observed_outer_wall_intrusion_m": 5.960464477539063e-08,
+        "finite": true
+      },
+      "label": "Opt44_final30_a",
+      "final_snapshot_max_overlap_radius": 0.004724125377833843,
+      "observed_geometry_gate": true,
+      "throughput_gate": true,
+      "test_protocol_completed": true,
+      "full_process_accepted": false,
+      "group_identity_checked": true
+    },
+    {
+      "count": 30000,
+      "time": 12.00600057,
+      "rate": 0.228052755,
+      "receiver": 3861,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "snapshot": {
+        "count": 30000,
+        "radius_m": 0.007546193987406541,
+        "groups": [
+          15132,
+          14868
+        ],
+        "receiver_count": 3825,
+        "mean_z": 0.021882088854908943,
+        "observed_outer_wall_intrusion_m": 5.960464477539063e-08,
+        "finite": true
+      },
+      "label": "Opt44_final30_b",
+      "final_snapshot_max_overlap_radius": 0.016241325065493584,
+      "observed_geometry_gate": true,
+      "throughput_gate": true,
+      "test_protocol_completed": true,
+      "full_process_accepted": false,
+      "group_identity_checked": true
+    }
+  ],
+  "refinement": {
+    "dt_half": {
+      "mean_height_difference_m": 0.00019346520000000644,
+      "mix_difference": 0.011489652850000004
+    },
+    "iter24": {
+      "mean_height_difference_m": 0.00027725010000000105,
+      "mix_difference": 0.009956097050000001
+    }
+  },
+  "source_sha256": {
+    "Physics\\PowderCore\\src\\granular.cpp": "f793d62e1cb9257ae23fb6b88c66beecf52f61ef47a8abb0706843acdc58136e",
+    "Physics\\PowderCore\\src\\granular_kernels.inc": "ea30aec924f033df698367d62301f3650616d24d7037754936ff8174a5e0a097",
+    "Source\\VirtualGameTeamProj\\PowderGranularMixer.cpp": "5190871e5290e3ea340192004939beffbb4dcbe70251e29aa3170f54b39a038c"
+  }
+}

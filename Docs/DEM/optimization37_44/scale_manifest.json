@@ -1,0 +1,98 @@
+[
+  {
+    "label": "base30",
+    "count": 30000,
+    "duration": 4,
+    "iterations": 16,
+    "dt": 0.00025,
+    "rpm": 30,
+    "radius_override": 0,
+    "exit_code": 0,
+    "status": "completed",
+    "wall": 12.312000000034459
+  },
+  {
+    "label": "n100",
+    "count": 100000,
+    "duration": 3,
+    "iterations": 16,
+    "dt": 0.00025,
+    "rpm": 30,
+    "radius_override": 0,
+    "exit_code": 0,
+    "status": "completed",
+    "wall": 21.17199999996228
+  },
+  {
+    "label": "n300",
+    "count": 300000,
+    "duration": 1.5,
+    "iterations": 16,
+    "dt": 0.00025,
+    "rpm": 30,
+    "radius_override": 0,
+    "exit_code": 0,
+    "status": "completed",
+    "wall": 22.92200000002049
+  },
+  {
+    "label": "n1000",
+    "count": 1000000,
+    "duration": 1.25,
+    "iterations": 16,
+    "dt": 0.00025,
+    "rpm": 30,
+    "radius_override": 0,
+    "exit_code": 0,
+    "status": "completed",
+    "wall": 72.68699999997625
+  },
+  {
+    "label": "dt_half",
+    "count": 30000,
+    "duration": 4,
+    "iterations": 16,
+    "dt": 0.000125,
+    "rpm": 30,
+    "radius_override": 0,
+    "exit_code": 0,
+    "status": "completed",
+    "wall": 24.42200000002049
+  },
+  {
+    "label": "iter24",
+    "count": 30000,
+    "duration": 4,
+    "iterations": 24,
+    "dt": 0.00025,
+    "rpm": 30,
+    "radius_override": 0,
+    "exit_code": 0,
+    "status": "completed",
+    "wall": 18.18800000002375
+  },
+  {
+    "label": "stopped",
+    "count": 30000,
+    "duration": 4,
+    "iterations": 16,
+    "dt": 0.00025,
+    "rpm": 0,
+    "radius_override": 0,
+    "exit_code": 0,
+    "status": "completed",
+    "wall": 8.952999999979511
+  },
+  {
+    "label": "fixed_r40",
+    "count": 40000,
+    "duration": 2,
+    "iterations": 16,
+    "dt": 0.00025,
+    "rpm": 30,
+    "radius_override": 0.00754619,
+    "exit_code": 0,
+    "status": "completed",
+    "wall": 6.10899999999674
+  }
+]

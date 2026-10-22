@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "purpose": "continuous GPU representative particles in a specified reference mixer",
+  "actual_machine_asset_used": false,
+  "reference_inside_m": [
+    0.9,
+    0.5,
+    0.4
+  ],
+  "reference_inside_litres": 180,
+  "nominal_bulk_litres": 90,
+  "assumed_solid_fraction": 0.6,
+  "solid_volume_m3": 0.054,
+  "virtual_solid_density_kg_m3": 1200,
+  "mass_kg": 64.8,
+  "actual_radius_assumption_m": 0.001,
+  "actual_grain_equivalent_count": 12891550.390443522,
+  "count_cases": [
+    30000,
+    50000,
+    100000,
+    300000,
+    1000000
+  ],
+  "dt_s": 0.00025,
+  "contact_iterations": 16,
+  "effective_friction": 0.4,
+  "shaft_radius_m": 0.025,
+  "shaft_height_m": 0.21,
+  "paddle_count": 6,
+  "paddle_half_size_m": [
+    0.045,
+    0.07,
+    0.012
+  ],
+  "paddle_radial_centre_m": 0.095,
+  "paddle_alternating_tilt_rad": 0.4,
+  "outlet_size_m": [
+    0.12,
+    0.12
+  ],
+  "outlet_length_m": 0.25,
+  "virtual_trial": {
+    "settle_until_s": 1,
+    "mix_until_s": 9,
+    "observe_discharge_until_s": 12,
+    "rpm": 30
+  },
+  "required_rate": 0.1,
+  "engineering_checks": {
+    "finite_and_count_conserved": true,
+    "observed_outer_wall_intrusion_limit_m": 0.0001,
+    "observed_pair_overlap_limit_relative_radius": 0.1,
+    "refinement_mean_height_difference_limit_m": 0.005,
+    "refinement_mix_index_difference_limit": 0.05
+  },
+  "limitations": [
+    "Engineering tolerances are provisional visual-model gates, not measured pharmaceutical acceptance.",
+    "Nominal half fill uses assumed packing. Actual settled bulk height is an output, not forced to 50 percent.",
+    "Position contact is dissipative and approximate; not calibrated DEM force, spin, cohesion or breakage.",
+    "12 seconds is a complete test protocol, not complete mixer emptying or a complete production line.",
+    "No fluid drag/pressure transport is implemented in this reference gravity discharge test.",
+    "Camera-facing walls and lid are cut away visually but remain physical boundaries."
+  ],
+  "physical_accuracy_validated": false,
+  "scene_default_count": 50000
+}

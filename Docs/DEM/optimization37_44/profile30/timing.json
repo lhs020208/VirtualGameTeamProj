@@ -1,0 +1,1 @@
+{"profiling_enabled":true,"advance_wall_s":3.3526877,"snapshot_wall_s":0.0007192,"grid_clear_gpu_s":0.372905088,"grid_build_gpu_s":0.4308552,"predict_gpu_s":0.028105472,"contact_gpu_s":2.069812448,"velocity_gpu_s":0.049595168}
