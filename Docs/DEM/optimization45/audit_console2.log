@@ -1,0 +1,82 @@
+{
+  "dt375": {
+    "last": {
+      "time": "12.00000048",
+      "wall": "40.1309668",
+      "rate": "0.2990209664",
+      "max_overlap_radius": "0.0332699952",
+      "mean_overlap_radius": "0.0004776433705",
+      "mean_z": "0.006912650338",
+      "max_z": "0.3736265302",
+      "mix_index": "0.07563151274",
+      "receiver_count": "7079",
+      "count": "50000",
+      "angle": "34.5503273"
+    },
+    "max_pair_overlap_radius": 0.0974774307,
+    "max_sampled_vessel_penetration_m": 3.667806720685906e-05,
+    "max_sampled_rotor_penetration_m": 1.5971732093070234e-06,
+    "groups_preserved": true,
+    "pair_gate_pass": true
+  },
+  "dt500_i24": {
+    "last": {
+      "time": "12.00000085",
+      "wall": "44.1674796",
+      "rate": "0.2716931316",
+      "max_overlap_radius": "0.04825144757",
+      "mean_overlap_radius": "0.00061707596",
+      "mean_z": "0.007239353792",
+      "max_z": "0.3664281666",
+      "mix_index": "0.06978623825",
+      "receiver_count": "7095",
+      "count": "50000",
+      "angle": "34.56684494"
+    },
+    "max_pair_overlap_radius": 0.1189701966,
+    "max_sampled_vessel_penetration_m": 9.699796771955437e-05,
+    "max_sampled_rotor_penetration_m": 1.1664911065897843e-06,
+    "groups_preserved": true,
+    "pair_gate_pass": false
+  },
+  "mx301_12": {
+    "last": {
+      "time": "12.00000085",
+      "wall": "69.9453677",
+      "rate": "0.1715624815",
+      "max_overlap_radius": "0.01313921911",
+      "mean_overlap_radius": "0.0002099063781",
+      "mean_z": "-0.2354653994",
+      "max_z": "-0.08905562758",
+      "mix_index": "0.08760407799",
+      "receiver_count": "0",
+      "count": "50000",
+      "angle": "34.57162857"
+    },
+    "max_pair_overlap_radius": 0.04390507419,
+    "max_sampled_vessel_penetration_m": 5.459147816699178e-08,
+    "max_sampled_rotor_penetration_m": 1.0364278309454161e-07,
+    "groups_preserved": true,
+    "pair_gate_pass": true
+  },
+  "candidate_long": {
+    "last": {
+      "time": "30.00000119",
+      "wall": "123.4979172",
+      "rate": "0.2429190862",
+      "max_overlap_radius": "0.01915655942",
+      "mean_overlap_radius": "0.0003627531079",
+      "mean_z": "-0.1755905252",
+      "max_z": "0.3585311472",
+      "mix_index": "0.05300522309",
+      "receiver_count": "20542",
+      "count": "50000",
+      "angle": "91.04211426"
+    },
+    "max_pair_overlap_radius": 0.08713865019,
+    "max_sampled_vessel_penetration_m": 2.186631298017449e-05,
+    "max_sampled_rotor_penetration_m": 7.87622801251553e-06,
+    "groups_preserved": true,
+    "pair_gate_pass": true
+  }
+}

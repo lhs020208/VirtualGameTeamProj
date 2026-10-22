@@ -1,0 +1,4 @@
+freefall z=0.337676 expected=0.337676
+PASS free fall, pair symmetry, identity, closed/open gate, receiver, lip, guard
+freefall z=0.337676 expected=0.337676
+PASS free fall, pair symmetry, identity, closed/open gate, receiver, lip, guard

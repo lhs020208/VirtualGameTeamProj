@@ -1,0 +1,873 @@
+{
+  "renders": {
+    "ref50": {
+      "count": 50000,
+      "time": 12.00350057,
+      "rate": 0.158314229,
+      "receiver": 7106,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "settings": {
+        "count": 50000,
+        "dt": 0.00025,
+        "iterations": 16,
+        "batch": 32,
+        "test_mixer": false,
+        "requested_rate": 2,
+        "seconds": 12,
+        "render_size": [
+          1280,
+          720
+        ],
+        "fps_limit": 30
+      },
+      "final_overlap_radius": 0.02981642819941044,
+      "groups": [
+        25586,
+        24414
+      ]
+    },
+    "fast50": {
+      "count": 50000,
+      "time": 12.010500105,
+      "rate": 0.234560972,
+      "receiver": 7216,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "settings": {
+        "count": 50000,
+        "dt": 0.000375,
+        "iterations": 16,
+        "batch": 32,
+        "test_mixer": false,
+        "requested_rate": 2,
+        "seconds": 12,
+        "render_size": [
+          1280,
+          720
+        ],
+        "fps_limit": 30
+      },
+      "final_overlap_radius": 0.028610261157155037,
+      "groups": [
+        25586,
+        24414
+      ]
+    },
+    "fast100": {
+      "count": 100000,
+      "time": 12.003375104,
+      "rate": 0.118296637,
+      "receiver": 16091,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "settings": {
+        "count": 100000,
+        "dt": 0.000375,
+        "iterations": 16,
+        "batch": 32,
+        "test_mixer": false,
+        "requested_rate": 2,
+        "seconds": 12,
+        "render_size": [
+          1280,
+          720
+        ],
+        "fps_limit": 30
+      },
+      "final_overlap_radius": 0.045961327850818634,
+      "groups": [
+        50968,
+        49032
+      ]
+    },
+    "final50_long": {
+      "count": 50000,
+      "time": 30.010125261,
+      "rate": 0.192973697,
+      "receiver": 20746,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "settings": {
+        "count": 50000,
+        "dt": 0.000375,
+        "iterations": 16,
+        "batch": 32,
+        "test_mixer": false,
+        "requested_rate": 2,
+        "seconds": 30.0,
+        "render_size": [
+          1280,
+          720
+        ],
+        "fps_limit": 30
+      },
+      "final_overlap_radius": 0.014671091921627522,
+      "groups": [
+        25586,
+        24414
+      ]
+    },
+    "final100": {
+      "count": 100000,
+      "time": 12.005699572,
+      "rate": 0.1088916,
+      "receiver": 16011,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "settings": {
+        "count": 100000,
+        "dt": 0.00035,
+        "iterations": 16,
+        "batch": 32,
+        "test_mixer": false,
+        "requested_rate": 2,
+        "seconds": 12,
+        "render_size": [
+          1280,
+          720
+        ],
+        "fps_limit": 30
+      },
+      "final_overlap_radius": 0.042602669447660446,
+      "groups": [
+        50968,
+        49032
+      ]
+    },
+    "final_mx50": {
+      "count": 50000,
+      "time": 12.000000104,
+      "rate": 0.201451157,
+      "receiver": 0,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "settings": {
+        "count": 50000,
+        "dt": 0.000375,
+        "iterations": 16,
+        "batch": 32,
+        "test_mixer": true,
+        "requested_rate": 2,
+        "seconds": 12,
+        "render_size": [
+          1280,
+          720
+        ],
+        "fps_limit": 30
+      },
+      "final_overlap_radius": 0.034500326961278915,
+      "groups": [
+        25023,
+        24977
+      ]
+    }
+  },
+  "geometry": {
+    "physical_accuracy_validated": false,
+    "cases": {
+      "dt375": {
+        "last": {
+          "time": "12.00000048",
+          "wall": "40.1309668",
+          "rate": "0.2990209664",
+          "max_overlap_radius": "0.0332699952",
+          "mean_overlap_radius": "0.0004776433705",
+          "mean_z": "0.006912650338",
+          "max_z": "0.3736265302",
+          "mix_index": "0.07563151274",
+          "receiver_count": "7079",
+          "count": "50000",
+          "angle": "34.5503273"
+        },
+        "max_pair_overlap_radius": 0.0974774307,
+        "max_sampled_vessel_penetration_m": 3.667806720685906e-05,
+        "max_sampled_rotor_penetration_m": 1.5971732093070234e-06,
+        "samples": [
+          {
+            "time": 0.0075,
+            "vessel_penetration_m": 3.329276572310025e-09,
+            "rotor_penetration_m": 1.7512817667396374e-08
+          },
+          {
+            "time": 1.0275,
+            "vessel_penetration_m": 1.7497453684801531e-06,
+            "rotor_penetration_m": 1.6752778984191474e-07
+          },
+          {
+            "time": 10.2075,
+            "vessel_penetration_m": 1.8319836616038747e-05,
+            "rotor_penetration_m": 1.0010489766201086e-07
+          },
+          {
+            "time": 11.2275,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 1.616445509762185e-07
+          },
+          {
+            "time": 2.0475,
+            "vessel_penetration_m": 3.667806720685906e-05,
+            "rotor_penetration_m": 1.5971732093070234e-06
+          },
+          {
+            "time": 3.0675,
+            "vessel_penetration_m": 2.6438150401110125e-06,
+            "rotor_penetration_m": 1.1325222314031297e-07
+          },
+          {
+            "time": 4.0875,
+            "vessel_penetration_m": 3.329276572310025e-09,
+            "rotor_penetration_m": 3.068997543251295e-08
+          },
+          {
+            "time": 5.1075,
+            "vessel_penetration_m": 8.081531476921561e-08,
+            "rotor_penetration_m": 5.683524725765693e-08
+          },
+          {
+            "time": 6.1275,
+            "vessel_penetration_m": 1.2729082102770281e-06,
+            "rotor_penetration_m": 1.0946527769558484e-07
+          },
+          {
+            "time": 7.1475,
+            "vessel_penetration_m": 9.289741027644627e-09,
+            "rotor_penetration_m": 2.6691728727962216e-07
+          },
+          {
+            "time": 8.1675,
+            "vessel_penetration_m": 2.1210669993824982e-08,
+            "rotor_penetration_m": 3.2921917421380176e-07
+          },
+          {
+            "time": 9.1875,
+            "vessel_penetration_m": 4.9385938639635515e-06,
+            "rotor_penetration_m": 1.0078465073268261e-07
+          },
+          {
+            "time": 12.00000048,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 1.17764788843365e-07
+          }
+        ],
+        "groups_preserved": true,
+        "pair_gate_pass": true
+      },
+      "dt500_i24": {
+        "last": {
+          "time": "12.00000085",
+          "wall": "44.1674796",
+          "rate": "0.2716931316",
+          "max_overlap_radius": "0.04825144757",
+          "mean_overlap_radius": "0.00061707596",
+          "mean_z": "0.007239353792",
+          "max_z": "0.3664281666",
+          "mix_index": "0.06978623825",
+          "receiver_count": "7095",
+          "count": "50000",
+          "angle": "34.56684494"
+        },
+        "max_pair_overlap_radius": 0.1189701966,
+        "max_sampled_vessel_penetration_m": 9.699796771955437e-05,
+        "max_sampled_rotor_penetration_m": 1.1664911065897843e-06,
+        "samples": [
+          {
+            "time": 0.01,
+            "vessel_penetration_m": 3.329276572310025e-09,
+            "rotor_penetration_m": 2.1531028528663787e-08
+          },
+          {
+            "time": 1.01,
+            "vessel_penetration_m": 2.894315714830828e-07,
+            "rotor_penetration_m": 3.9691035758071536e-07
+          },
+          {
+            "time": 10.010001,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 1.3491785681631757e-07
+          },
+          {
+            "time": 11.010001,
+            "vessel_penetration_m": 2.0002460431999686e-07,
+            "rotor_penetration_m": 9.71190355835913e-08
+          },
+          {
+            "time": 2.01,
+            "vessel_penetration_m": 9.699796771955437e-05,
+            "rotor_penetration_m": 1.1664911065897843e-06
+          },
+          {
+            "time": 3.01,
+            "vessel_penetration_m": 1.8987569804186297e-06,
+            "rotor_penetration_m": 1.0080372753878963e-07
+          },
+          {
+            "time": 4.01,
+            "vessel_penetration_m": 3.329276572310025e-09,
+            "rotor_penetration_m": 1.299385207200951e-07
+          },
+          {
+            "time": 5.01,
+            "vessel_penetration_m": 3.6868963236803484e-06,
+            "rotor_penetration_m": 1.6020547119379586e-07
+          },
+          {
+            "time": 6.01,
+            "vessel_penetration_m": 3.329276572310025e-09,
+            "rotor_penetration_m": 9.719065643693653e-08
+          },
+          {
+            "time": 7.01,
+            "vessel_penetration_m": 2.196780204295583e-06,
+            "rotor_penetration_m": 9.972893615373124e-07
+          },
+          {
+            "time": 8.010001,
+            "vessel_penetration_m": 2.596292490953875e-07,
+            "rotor_penetration_m": 2.8233892244988734e-07
+          },
+          {
+            "time": 9.010001,
+            "vessel_penetration_m": 8.081531476921561e-08,
+            "rotor_penetration_m": 7.443209384862953e-08
+          },
+          {
+            "time": 12.00000085,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 1.099340246535005e-07
+          }
+        ],
+        "groups_preserved": true,
+        "pair_gate_pass": false
+      },
+      "mx301_12": {
+        "last": {
+          "time": "12.00000085",
+          "wall": "69.9453677",
+          "rate": "0.1715624815",
+          "max_overlap_radius": "0.01313921911",
+          "mean_overlap_radius": "0.0002099063781",
+          "mean_z": "-0.2354653994",
+          "max_z": "-0.08905562758",
+          "mix_index": "0.08760407799",
+          "receiver_count": "0",
+          "count": "50000",
+          "angle": "34.57162857"
+        },
+        "max_pair_overlap_radius": 0.04390507419,
+        "max_sampled_vessel_penetration_m": 5.459147816699178e-08,
+        "max_sampled_rotor_penetration_m": 1.0364278309454161e-07,
+        "samples": [
+          {
+            "time": 0.005,
+            "vessel_penetration_m": 0.0,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 1.005,
+            "vessel_penetration_m": 3.8467076797325805e-08,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 10.005001,
+            "vessel_penetration_m": 5.4301972858376846e-08,
+            "rotor_penetration_m": 3.153463051363409e-08
+          },
+          {
+            "time": 11.005001,
+            "vessel_penetration_m": 5.123713736187446e-08,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 2.005,
+            "vessel_penetration_m": 4.6356223910686e-08,
+            "rotor_penetration_m": 8.264783315625052e-08
+          },
+          {
+            "time": 3.005,
+            "vessel_penetration_m": 4.3041595339070315e-08,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 4.005,
+            "vessel_penetration_m": 4.432816885346219e-08,
+            "rotor_penetration_m": 1.0364278309454161e-07
+          },
+          {
+            "time": 5.005,
+            "vessel_penetration_m": 4.7642272511631834e-08,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 6.005,
+            "vessel_penetration_m": 5.459147816699178e-08,
+            "rotor_penetration_m": 8.86110887400246e-08
+          },
+          {
+            "time": 7.005,
+            "vessel_penetration_m": 4.9798332730881245e-08,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 8.005001,
+            "vessel_penetration_m": 4.576374140318612e-08,
+            "rotor_penetration_m": 6.500182131007753e-08
+          },
+          {
+            "time": 9.005001,
+            "vessel_penetration_m": 5.379927541914603e-08,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 12.00000085,
+            "vessel_penetration_m": 4.473302500206805e-08,
+            "rotor_penetration_m": 2.6206406984578823e-08
+          }
+        ],
+        "groups_preserved": true,
+        "pair_gate_pass": true
+      },
+      "candidate_long": {
+        "last": {
+          "time": "30.00000119",
+          "wall": "123.4979172",
+          "rate": "0.2429190862",
+          "max_overlap_radius": "0.01915655942",
+          "mean_overlap_radius": "0.0003627531079",
+          "mean_z": "-0.1755905252",
+          "max_z": "0.3585311472",
+          "mix_index": "0.05300522309",
+          "receiver_count": "20542",
+          "count": "50000",
+          "angle": "91.04211426"
+        },
+        "max_pair_overlap_radius": 0.08713865019,
+        "max_sampled_vessel_penetration_m": 2.186631298017449e-05,
+        "max_sampled_rotor_penetration_m": 7.87622801251553e-06,
+        "samples": [
+          {
+            "time": 0.0075,
+            "vessel_penetration_m": 3.329276572310025e-09,
+            "rotor_penetration_m": 1.7512817667396374e-08
+          },
+          {
+            "time": 1.0275,
+            "vessel_penetration_m": 1.7497453684801531e-06,
+            "rotor_penetration_m": 1.6752778984191474e-07
+          },
+          {
+            "time": 10.2075,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 1.2039858592050035e-07
+          },
+          {
+            "time": 11.2275,
+            "vessel_penetration_m": 3.7883853864616873e-07,
+            "rotor_penetration_m": 1.5723491673166196e-07
+          },
+          {
+            "time": 12.2475,
+            "vessel_penetration_m": 1.2431058878893328e-06,
+            "rotor_penetration_m": 1.3026287647415619e-07
+          },
+          {
+            "time": 13.267501,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 7.319875796902436e-08
+          },
+          {
+            "time": 14.287501,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 6.184003539539545e-08
+          },
+          {
+            "time": 15.307501,
+            "vessel_penetration_m": 2.2982692670769217e-07,
+            "rotor_penetration_m": 1.580714471096159e-07
+          },
+          {
+            "time": 16.327501,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 1.3057835169302118e-07
+          },
+          {
+            "time": 17.347501,
+            "vessel_penetration_m": 2.5544080729479265e-06,
+            "rotor_penetration_m": 7.63632103514475e-08
+          },
+          {
+            "time": 18.367501,
+            "vessel_penetration_m": 5.278501505846453e-07,
+            "rotor_penetration_m": 5.1101588754813576e-08
+          },
+          {
+            "time": 19.387501,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 1.3834758530364283e-07
+          },
+          {
+            "time": 2.0475,
+            "vessel_penetration_m": 4.9385938639635515e-06,
+            "rotor_penetration_m": 7.87622801251553e-06
+          },
+          {
+            "time": 20.407501,
+            "vessel_penetration_m": 4.6824550580925467e-07,
+            "rotor_penetration_m": 1.2659314992721077e-07
+          },
+          {
+            "time": 21.427501,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 5.867003701883963e-07
+          },
+          {
+            "time": 22.447501,
+            "vessel_penetration_m": 1.0720244407176442e-05,
+            "rotor_penetration_m": 3.113596017479195e-07
+          },
+          {
+            "time": 23.467501,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 4.83629860505673e-07
+          },
+          {
+            "time": 24.487501,
+            "vessel_penetration_m": 3.746500968455739e-06,
+            "rotor_penetration_m": 5.141282901346619e-07
+          },
+          {
+            "time": 25.507501,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 5.652857210094661e-07
+          },
+          {
+            "time": 26.527501,
+            "vessel_penetration_m": 2.186631298017449e-05,
+            "rotor_penetration_m": 3.8631773588339996e-07
+          },
+          {
+            "time": 27.547501,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 4.4963849793380056e-07
+          },
+          {
+            "time": 28.567501,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 4.7587712127730025e-07
+          },
+          {
+            "time": 29.587501,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 5.336078169040567e-07
+          },
+          {
+            "time": 3.0675,
+            "vessel_penetration_m": 8.544674872874684e-06,
+            "rotor_penetration_m": 6.441232291778953e-07
+          },
+          {
+            "time": 4.0875,
+            "vessel_penetration_m": 2.2982692670769217e-07,
+            "rotor_penetration_m": 4.482426857899818e-08
+          },
+          {
+            "time": 5.1075,
+            "vessel_penetration_m": 1.5709314341539812e-06,
+            "rotor_penetration_m": 6.237002003750547e-08
+          },
+          {
+            "time": 6.1275,
+            "vessel_penetration_m": 3.329276572310025e-09,
+            "rotor_penetration_m": 1.1216803491500421e-07
+          },
+          {
+            "time": 7.1475,
+            "vessel_penetration_m": 9.289741027644627e-09,
+            "rotor_penetration_m": 3.984249965435782e-07
+          },
+          {
+            "time": 8.1675,
+            "vessel_penetration_m": 2.0775709147448015e-06,
+            "rotor_penetration_m": 1.920292425341627e-07
+          },
+          {
+            "time": 9.1875,
+            "vessel_penetration_m": 5.1012992381520295e-08,
+            "rotor_penetration_m": 1.4151249921531828e-07
+          },
+          {
+            "time": 30.00000119,
+            "vessel_penetration_m": 2.7171134453496393e-08,
+            "rotor_penetration_m": 3.5477460388812915e-07
+          }
+        ],
+        "groups_preserved": true,
+        "pair_gate_pass": true
+      },
+      "verify100": {
+        "last": {
+          "time": "12.00000048",
+          "wall": "75.6879148",
+          "rate": "0.1585457931",
+          "max_overlap_radius": "0.03931780286",
+          "mean_overlap_radius": "0.0007122490384",
+          "mean_z": "-0.009617805255",
+          "max_z": "0.3635224998",
+          "mix_index": "0.07237570558",
+          "receiver_count": "16088",
+          "count": "100000",
+          "angle": "34.5503273"
+        },
+        "max_pair_overlap_radius": 0.103209627,
+        "max_sampled_vessel_penetration_m": 0.0001222952543833448,
+        "max_sampled_rotor_penetration_m": 1.9714376064784017e-05,
+        "samples": [
+          {
+            "time": 0.0075,
+            "vessel_penetration_m": 0.0,
+            "rotor_penetration_m": 1.6844739923228824e-08
+          },
+          {
+            "time": 1.0275,
+            "vessel_penetration_m": 2.013081226606532e-06,
+            "rotor_penetration_m": 1.8232408609611395e-07
+          },
+          {
+            "time": 10.2075,
+            "vessel_penetration_m": 1.0573259379403205e-07,
+            "rotor_penetration_m": 1.1084587538730956e-07
+          },
+          {
+            "time": 11.2275,
+            "vessel_penetration_m": 2.228609119470093e-08,
+            "rotor_penetration_m": 1.5723492067382105e-07
+          },
+          {
+            "time": 2.0475,
+            "vessel_penetration_m": 0.0001222952543833448,
+            "rotor_penetration_m": 1.9714376064784017e-05
+          },
+          {
+            "time": 3.0675,
+            "vessel_penetration_m": 5.229651072217664e-07,
+            "rotor_penetration_m": 1.0889032273694171e-07
+          },
+          {
+            "time": 4.0875,
+            "vessel_penetration_m": 3.0687835866211044e-10,
+            "rotor_penetration_m": 3.9884231611830856e-08
+          },
+          {
+            "time": 5.1075,
+            "vessel_penetration_m": 7.911860087110242e-07,
+            "rotor_penetration_m": 5.168688981590369e-08
+          },
+          {
+            "time": 6.1275,
+            "vessel_penetration_m": 3.0687835866211044e-10,
+            "rotor_penetration_m": 2.6206173064924343e-07
+          },
+          {
+            "time": 7.1475,
+            "vessel_penetration_m": 1.8640696146680555e-06,
+            "rotor_penetration_m": 1.6311558217671496e-07
+          },
+          {
+            "time": 8.1675,
+            "vessel_penetration_m": 3.0687835866211044e-10,
+            "rotor_penetration_m": 2.0299494270844404e-07
+          },
+          {
+            "time": 9.1875,
+            "vessel_penetration_m": 1.3553491618172736e-07,
+            "rotor_penetration_m": 8.373673695497713e-08
+          },
+          {
+            "time": 12.00000048,
+            "vessel_penetration_m": 2.228609119470093e-08,
+            "rotor_penetration_m": 1.2770644953943172e-07
+          }
+        ],
+        "groups_preserved": true,
+        "pair_gate_pass": false
+      },
+      "verify100_dt350": {
+        "last": {
+          "time": "12.00499957",
+          "wall": "80.449906",
+          "rate": "0.149223289",
+          "max_overlap_radius": "0.04892675713",
+          "mean_overlap_radius": "0.000676785311",
+          "mean_z": "-0.007262383309",
+          "max_z": "0.3551996946",
+          "mix_index": "0.06581322163",
+          "receiver_count": "15775",
+          "count": "100000",
+          "angle": "34.55487823"
+        },
+        "max_pair_overlap_radius": 0.09786860057,
+        "max_sampled_vessel_penetration_m": 5.071007600810067e-05,
+        "max_sampled_rotor_penetration_m": 2.7003808310659128e-06,
+        "samples": [
+          {
+            "time": 0.007,
+            "vessel_penetration_m": 0.0,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 1.015,
+            "vessel_penetration_m": 9.401976206495008e-07,
+            "rotor_penetration_m": 3.645295723348624e-08
+          },
+          {
+            "time": 10.087,
+            "vessel_penetration_m": 2.228609119470093e-08,
+            "rotor_penetration_m": 6.877138697836821e-08
+          },
+          {
+            "time": 11.095,
+            "vessel_penetration_m": 2.668732319135829e-06,
+            "rotor_penetration_m": 1.560676617931231e-07
+          },
+          {
+            "time": 2.023,
+            "vessel_penetration_m": 5.071007600810067e-05,
+            "rotor_penetration_m": 2.7003808310659128e-06
+          },
+          {
+            "time": 3.031,
+            "vessel_penetration_m": 1.0573259379403205e-07,
+            "rotor_penetration_m": 9.770050860610086e-08
+          },
+          {
+            "time": 4.039,
+            "vessel_penetration_m": 3.7395349528328986e-07,
+            "rotor_penetration_m": 3.72608892828738e-08
+          },
+          {
+            "time": 5.047,
+            "vessel_penetration_m": 3.0687835866211044e-10,
+            "rotor_penetration_m": 5.132151588687489e-08
+          },
+          {
+            "time": 6.055,
+            "vessel_penetration_m": 3.0687835866211044e-10,
+            "rotor_penetration_m": 7.148975096887139e-08
+          },
+          {
+            "time": 7.063,
+            "vessel_penetration_m": 7.593027140633674e-08,
+            "rotor_penetration_m": 1.54234540346819e-07
+          },
+          {
+            "time": 8.071,
+            "vessel_penetration_m": 3.0687835866211044e-10,
+            "rotor_penetration_m": 7.641415904289378e-08
+          },
+          {
+            "time": 9.079,
+            "vessel_penetration_m": 4.4046976647657554e-09,
+            "rotor_penetration_m": 1.5299580742502566e-07
+          },
+          {
+            "time": 12.00499957,
+            "vessel_penetration_m": 2.228609119470093e-08,
+            "rotor_penetration_m": 1.1142386827697054e-07
+          }
+        ],
+        "groups_preserved": true,
+        "pair_gate_pass": true
+      },
+      "mx301_dt375": {
+        "last": {
+          "time": "12.00000048",
+          "wall": "46.7665553",
+          "rate": "0.2565936362",
+          "max_overlap_radius": "0.03707339964",
+          "mean_overlap_radius": "0.0004420413701",
+          "mean_z": "-0.2373299894",
+          "max_z": "-0.08939548582",
+          "mix_index": "0.05675341119",
+          "receiver_count": "0",
+          "count": "50000",
+          "angle": "34.5503273"
+        },
+        "max_pair_overlap_radius": 0.08952345572,
+        "max_sampled_vessel_penetration_m": 5.543731978596006e-08,
+        "max_sampled_rotor_penetration_m": 1.4619427047678907e-07,
+        "samples": [
+          {
+            "time": 0.0075,
+            "vessel_penetration_m": 0.0,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 1.0275,
+            "vessel_penetration_m": 3.204216641582852e-08,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 10.2075,
+            "vessel_penetration_m": 4.567276173494256e-08,
+            "rotor_penetration_m": 1.8815609760351737e-08
+          },
+          {
+            "time": 11.2275,
+            "vessel_penetration_m": 4.534100222618881e-08,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 2.0475,
+            "vessel_penetration_m": 4.885905918305261e-08,
+            "rotor_penetration_m": 1.2774052076790915e-07
+          },
+          {
+            "time": 3.0675,
+            "vessel_penetration_m": 5.4376320497533104e-08,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 4.0875,
+            "vessel_penetration_m": 4.60440469597298e-08,
+            "rotor_penetration_m": 2.3368800945548773e-08
+          },
+          {
+            "time": 5.1075,
+            "vessel_penetration_m": 5.078674741431505e-08,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 6.1275,
+            "vessel_penetration_m": 5.1688570030898606e-08,
+            "rotor_penetration_m": 2.0802046053584877e-08
+          },
+          {
+            "time": 7.1475,
+            "vessel_penetration_m": 5.012808406822805e-08,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 8.1675,
+            "vessel_penetration_m": 5.2400745238594115e-08,
+            "rotor_penetration_m": 1.4619427047678907e-07
+          },
+          {
+            "time": 9.1875,
+            "vessel_penetration_m": 5.543731978596006e-08,
+            "rotor_penetration_m": 0.0
+          },
+          {
+            "time": 12.00000048,
+            "vessel_penetration_m": 4.8097323619537835e-08,
+            "rotor_penetration_m": 3.223431782172631e-08
+          }
+        ],
+        "groups_preserved": true,
+        "pair_gate_pass": true
+      }
+    }
+  },
+  "actual_material_calibrated": false,
+  "source_geometry_final": false,
+  "whole_production_line_validated": false
+}

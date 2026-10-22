@@ -1,0 +1,70 @@
+{
+  "status": "candidate_fit_requires_review",
+  "selected_friction": 0.4,
+  "holdout_within_3sigma": true,
+  "physical_accuracy_validated": false,
+  "candidates": [
+    {
+      "friction": 0.2,
+      "fit_mean_square": 212867.8133760001,
+      "errors": [
+        {
+          "split": "fit",
+          "metric": "receiver_kg",
+          "time_s": 12.00000085,
+          "prediction": 13.956624,
+          "normalized_error": 461.3760000000001
+        },
+        {
+          "split": "holdout",
+          "metric": "mean_z_m",
+          "time_s": 0.005000000354,
+          "prediction": 0.1262929436,
+          "normalized_error": -0.0009278999999751125
+        }
+      ]
+    },
+    {
+      "friction": 0.4,
+      "fit_mean_square": 0.0,
+      "errors": [
+        {
+          "split": "fit",
+          "metric": "receiver_kg",
+          "time_s": 12.00000085,
+          "prediction": 9.342863999999999,
+          "normalized_error": 0.0
+        },
+        {
+          "split": "holdout",
+          "metric": "mean_z_m",
+          "time_s": 0.005000000354,
+          "prediction": 0.1262938715,
+          "normalized_error": 0.0
+        }
+      ]
+    },
+    {
+      "friction": 0.6,
+      "fit_mean_square": 129527.43416063992,
+      "errors": [
+        {
+          "split": "fit",
+          "metric": "receiver_kg",
+          "time_s": 12.00000085,
+          "prediction": 5.743872,
+          "normalized_error": -359.8991999999999
+        },
+        {
+          "split": "holdout",
+          "metric": "mean_z_m",
+          "time_s": 0.005000000354,
+          "prediction": 0.1262947995,
+          "normalized_error": 0.0009280000000111421
+        }
+      ]
+    }
+  ],
+  "synthetic_tool_test_only": true,
+  "not_independent_physical_validation": true
+}

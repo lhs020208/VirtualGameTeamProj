@@ -1,0 +1,5 @@
+{
+  "status": "awaiting_measured_data",
+  "physical_accuracy_validated": false,
+  "reason": "No measured reference-rig observations supplied; friction remains virtual."
+}

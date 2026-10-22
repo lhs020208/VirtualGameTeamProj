@@ -18,7 +18,10 @@ using Clock=std::chrono::steady_clock;using V=std::array<double,4>;
 double elapsed(Clock::time_point t){return std::chrono::duration<double>(Clock::now()-t).count();}
 void require(bool b,const char* s){if(!b)throw std::invalid_argument(s);}
 void check(cl_int code,const char* op){if(code)throw std::runtime_error(std::string(op)+" OpenCL error "+std::to_string(code));}
+#include "granular_mx301_cpu.inc"
 const char* source=
+#include "granular_mx301_cl.inc"
+
 #include "granular_kernels.inc"
 ;
 #define GPU_API(X) X(clGetPlatformIDs) X(clGetDeviceIDs) X(clGetDeviceInfo) X(clCreateContext) X(clCreateCommandQueue) X(clCreateProgramWithSource) X(clBuildProgram) X(clGetProgramBuildInfo) X(clCreateKernel) X(clCreateBuffer) X(clSetKernelArg) X(clEnqueueWriteBuffer) X(clEnqueueReadBuffer) X(clEnqueueNDRangeKernel) X(clFinish) X(clGetEventProfilingInfo) X(clReleaseEvent) X(clReleaseMemObject) X(clReleaseKernel) X(clReleaseProgram) X(clReleaseCommandQueue) X(clReleaseContext)
@@ -47,16 +50,21 @@ struct GranularGPU::Impl {
  for(auto platform:platforms){cl_uint n=0;if(api.clGetDeviceIDs(platform,CL_DEVICE_TYPE_GPU,0,nullptr,&n)||!n)continue;std::vector<cl_device_id> ids(n);check(api.clGetDeviceIDs(platform,CL_DEVICE_TYPE_GPU,n,ids.data(),nullptr),"devices");device=ids[0];break;}require(device!=nullptr,"no OpenCL GPU");
  char text[256]{};check(api.clGetDeviceInfo(device,CL_DEVICE_NAME,sizeof(text),text,nullptr),"device name");name=text;
  cl_int err=0;context=api.clCreateContext(nullptr,1,&device,nullptr,nullptr,&err);check(err,"context");queue=api.clCreateCommandQueue(context,device,c.profile?CL_QUEUE_PROFILING_ENABLE:0,&err);check(err,"queue");
- program=api.clCreateProgramWithSource(context,1,&source,nullptr,&err);check(err,"program");err=api.clBuildProgram(program,1,&device,c.fast_bounds?"-cl-std=CL1.2 -DGRANULAR_BOUNDS_FAST=1":"-cl-std=CL1.2 -DGRANULAR_BOUNDS_FAST=0",nullptr,nullptr);if(err){std::size_t size=0;api.clGetProgramBuildInfo(program,device,CL_PROGRAM_BUILD_LOG,0,nullptr,&size);std::string log(size,' ');api.clGetProgramBuildInfo(program,device,CL_PROGRAM_BUILD_LOG,size,log.data(),nullptr);throw std::runtime_error(log);}
+ program=api.clCreateProgramWithSource(context,1,&source,nullptr,&err);check(err,"program");std::string options=std::string("-cl-std=CL1.2 -DGRANULAR_BOUNDS_FAST=")+(c.fast_bounds?"1":"0")+" -DGRANULAR_MX301="+(c.test_mixer?"1":"0");err=api.clBuildProgram(program,1,&device,options.c_str(),nullptr,nullptr);if(err){std::size_t size=0;api.clGetProgramBuildInfo(program,device,CL_PROGRAM_BUILD_LOG,0,nullptr,&size);std::string log(size,' ');api.clGetProgramBuildInfo(program,device,CL_PROGRAM_BUILD_LOG,size,log.data(),nullptr);throw std::runtime_error(log);}
  const char* names[]={"cleargrid","grid","predict","solve","velocity"};for(unsigned k=0;k<5;k++){kernels[k]=api.clCreateKernel(program,names[k],&err);check(err,"kernel");}
- cell=2*c.radius;nx=static_cast<int>(std::ceil((c.fast_bounds?.92:1.2)/cell));ny=static_cast<int>(std::ceil((c.fast_bounds?.52:.8)/cell));nz=static_cast<int>(std::ceil((c.fast_bounds?1.02:1.2)/cell));cells=nx*ny*nz;
+ cell=2*c.radius;nx=static_cast<int>(std::ceil((c.test_mixer?1.6:(c.fast_bounds?.92:1.2))/cell));ny=static_cast<int>(std::ceil((c.test_mixer?1.0:(c.fast_bounds?.52:.8))/cell));nz=static_cast<int>(std::ceil((c.test_mixer?1.0:(c.fast_bounds?1.02:1.2))/cell));cells=nx*ny*nz;
  for(unsigned i=0;i<8;i++){std::size_t bytes=(i<4||i==7)?c.count*sizeof(Grain):i==4?cells*sizeof(int):i==5?c.count*sizeof(int):sizeof(int);buffers[i]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,bytes,nullptr,&err);check(err,"buffer");}
  std::vector<Grain> initial;initial.reserve(c.count);float pitch=2.04f*c.radius;
- for(float z=c.radius;z<.4f-c.radius&&initial.size()<c.count;z+=pitch)for(float y=-.25f+c.radius;y<.25f-c.radius&&initial.size()<c.count;y+=pitch)for(float x=-.45f+c.radius;x<.45f-c.radius&&initial.size()<c.count;x+=pitch){
+ if(!c.test_mixer)for(float z=c.radius;z<.4f-c.radius&&initial.size()<c.count;z+=pitch)for(float y=-.25f+c.radius;y<.25f-c.radius&&initial.size()<c.count;y+=pitch)for(float x=-.45f+c.radius;x<.45f-c.radius&&initial.size()<c.count;x+=pitch){
   bool hit=std::hypot(y,z-.21f)<.025f+c.radius;
   for(unsigned k=0;k<6;k++){float a=k*1.04719755f,co=std::cos(a),si=std::sin(a);float lx=x-(-.375f+k*.15f),ly=co*y+si*(z-.21f)-.095f,lz=-si*y+co*(z-.21f);float beta=k%2?-.4f:.4f;float tx=std::cos(beta)*lx+std::sin(beta)*ly,ty=-std::sin(beta)*lx+std::cos(beta)*ly;float dx=std::max(0.f,std::abs(tx)-.045f),dy=std::max(0.f,std::abs(ty)-.07f),dz=std::max(0.f,std::abs(lz)-.012f);hit=hit||dx*dx+dy*dy+dz*dz<c.radius*c.radius;}
   if(!hit)initial.push_back({x,y,z,x<0?0.f:1.f});
  }
+ if(c.test_mixer){for(float z=-.325f+c.radius;z<.325f-c.radius&&initial.size()<c.count;z+=pitch)for(float y=-.45f+c.radius;y<.45f-c.radius&&initial.size()<c.count;y+=pitch)for(float x=-.75f+c.radius;x<.75f-c.radius&&initial.size()<c.count;x+=pitch){
+  bool hit=false;for(int j=0;j<133;j++){auto a=mxplanes[j];if(a[0]*x+a[1]*y+a[2]*z-a[3]>-c.radius){hit=true;break;}}
+  if(!hit)for(auto& part:mxparts){float distance=-1.e9f;for(int j=int(part[0]);j<int(part[0]+part[1]);j++){auto a=mxplanes[j];distance=std::max(distance,a[0]*x+a[1]*y+a[2]*z-a[3]);}if(distance<c.radius){hit=true;break;}}
+  if(!hit)initial.push_back({x,y,z,x<0?0.f:1.f});
+ }}
  require(initial.size()==c.count,"initial charge does not fit vessel");std::vector<Grain> v(c.count);set(initial,v);
  }catch(...){release();throw;}}
  void release(){for(auto e:events)if(e.first)api.clReleaseEvent(e.first);events.clear();for(auto k:kernels)if(k)api.clReleaseKernel(k);for(auto b:buffers)if(b)api.clReleaseMemObject(b);if(program)api.clReleaseProgram(program);if(queue)api.clReleaseCommandQueue(queue);if(context)api.clReleaseContext(context);}

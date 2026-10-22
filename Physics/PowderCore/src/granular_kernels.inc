@@ -1,5 +1,7 @@
 R"CLC(
-#if GRANULAR_BOUNDS_FAST
+#if GRANULAR_MX301
+#define GRID_OFFSET (float3)(.8f,.5f,.5f)
+#elif GRANULAR_BOUNDS_FAST
 #define GRID_OFFSET (float3)(.46f,.26f,.61f)
 #else
 #define GRID_OFFSET (float3)(.6f,.4f,.65f)
@@ -31,6 +33,18 @@ float3 rotatex(float3 p,float a){float s=sin(a),c=cos(a);return (float3)(p.x,c*p
 float3 rotatez(float3 p,float a){float s=sin(a),c=cos(a);return (float3)(c*p.x-s*p.y,s*p.x+c*p.y,p.z);}
 float3 boundaries(float3 p,float r,float angle,int gate,float3* wallnormal,float3* wallvelocity){
  float3 start=p;*wallnormal=(float3)(0);*wallvelocity=(float3)(0);
+#if GRANULAR_MX301
+ // Closed test-only interior and conservative convex rotor components from source asset.
+ for(int j=0;j<133;j++){float4 a=mxplanes[j];float d=dot(a.xyz,p)-a.w+r;if(d>0)p-=a.xyz*d;}
+ float3 shift=p-start;if(length(shift)>1.e-9f)*wallnormal=normalize(shift);
+ float3 localpoint=rotatex(p,-angle),initial=localpoint;
+ for(int k=0;k<17;k++){float8 b=mxparts[k];if(any(localpoint<(float3)(b.s2,b.s3,b.s4)-r)||any(localpoint>(float3)(b.s5,b.s6,b.s7)+r))continue;
+  float distance=-1.e9f;float3 normal=(float3)(0);for(int j=(int)b.s0;j<(int)(b.s0+b.s1);j++){float4 a=mxplanes[j];float d=dot(a.xyz,localpoint)-a.w;if(d>distance){distance=d;normal=a.xyz;}if(distance>=r)break;}
+  if(distance<r)localpoint+=normal*(r-distance);
+ }
+ float3 push=rotatex(localpoint-initial,angle);if(length(push)>1.e-9f){p+=push;*wallnormal=normalize(push);*wallvelocity=(float3)(0,-p.z,p.y);}return p;
+#else
+
  // Main vessel 0.9 x 0.5 x 0.4 m. A bottom 0.12 x 0.12 m outlet and enclosed receiver.
  if(p.z>=0){p.x=clamp(p.x,-.45f+r,.45f-r);p.y=clamp(p.y,-.25f+r,.25f-r);p.z=fmin(p.z,.4f-r);}
  // Finite floor strips and tube walls resolve corners by nearest solid surface.
@@ -53,6 +67,7 @@ float3 boundaries(float3 p,float r,float angle,int gate,float3* wallnormal,float
  float a=angle+k*1.04719755f;float3 lp=rotatex(p-(float3)(-.375f+k*.15f,0,.21f),-a);lp.y-=.095f;float beta=(k%2?-.4f:.4f);float3 push=rotatez(boxpush(rotatez(lp,-beta),(float3)(.045f,.07f,.012f),r),beta);if(length(push)>0){float3 corr=rotatex(push,a);p+=corr;*wallnormal=normalize(corr);*wallvelocity=(float3)(0,-(p.z-.21f),p.y);}}
  }
  return p;
+#endif
 }
 __kernel void solve(__global const float4* pos,__global const float4* old,__global float4* next,__global const int* head,__global const int* link,int n,float r,float cell,int nx,int ny,int nz,float angle,int gate,float mu){
  int i=get_global_id(0);if(i>=n)return;float3 p=pos[i].xyz;int3 q=convert_int3(floor((p+GRID_OFFSET)/cell));float3 correction=(float3)(0);

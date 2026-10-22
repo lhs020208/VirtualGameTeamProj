@@ -1,0 +1,155 @@
+diff --git a/Physics/PowderCore/app/granular_run.cpp b/Physics/PowderCore/app/granular_run.cpp
+index 8b976dd..3394c9e 100644
+--- a/Physics/PowderCore/app/granular_run.cpp
++++ b/Physics/PowderCore/app/granular_run.cpp
+@@ -11,6 +11,7 @@ int main(int argc,char**argv){try{
+  if(argc<4)throw std::runtime_error("count duration output [iterations dt rpm gate_time radius]");
+  powder::GranularConfig c;c.count=static_cast<unsigned>(std::stoul(argv[1]));double duration=std::stod(argv[2]);if(argc>4)c.iterations=static_cast<unsigned>(std::stoul(argv[4]));if(argc>5)c.dt=std::stof(argv[5]);float rpm=argc>6?std::stof(argv[6]):30.f;double gate_time=argc>7?std::stod(argv[7]):1.e9;if(argc>8)c.radius=std::stof(argv[8]);if(argc>9)c.fast_bounds=std::stoi(argv[9])!=0;if(argc>10)c.profile=std::stoi(argv[10])!=0;
+  std::filesystem::path out(argv[3]);if(!std::filesystem::create_directory(out))throw std::runtime_error("output directory exists");
++ if(argc>11)c.packed_grid=std::stoi(argv[11])!=0;
+  powder::GranularGPU gpu(c);std::cout<<gpu.device()<<" r="<<gpu.radius()<<std::endl;
+  std::ofstream csv(out/"trace.csv");csv<<"time,wall,rate,max_overlap_radius,mean_overlap_radius,mean_z,max_z,mix_index,receiver_count,count\n"<<std::setprecision(10);
+  auto start=Clock::now();double next=0;
+diff --git a/Physics/PowderCore/include/powder/granular.hpp b/Physics/PowderCore/include/powder/granular.hpp
+index 1e03640..b9de0e5 100644
+--- a/Physics/PowderCore/include/powder/granular.hpp
++++ b/Physics/PowderCore/include/powder/granular.hpp
+@@ -7,7 +7,7 @@
+ namespace powder {
+ struct GranularTiming {std::array<double,5> gpu_seconds{};double advance_wall=0,snapshot_wall=0;};
+ struct Grain {float x,y,z,w;};
+-struct GranularConfig {unsigned count=30000,iterations=16;bool fast_bounds=true,profile=false;float radius=0,dt=.00025f,friction=.4f;};
++struct GranularConfig {unsigned count=30000,iterations=16;bool fast_bounds=true,profile=false,packed_grid=false;float radius=0,dt=.00025f,friction=.4f;};
+ // Explicit approximate position-contact solver; persistent IDs = vector indices.
+ // SI units, equal-mass spheres, no spin/adhesion or contact-force certification.
+ class GranularGPU {
+diff --git a/Physics/PowderCore/src/granular.cpp b/Physics/PowderCore/src/granular.cpp
+index aacc54b..b149047 100644
+--- a/Physics/PowderCore/src/granular.cpp
++++ b/Physics/PowderCore/src/granular.cpp
+@@ -37,7 +37,7 @@ struct Api {
+ }
+ struct GranularGPU::Impl {
+  Api api;cl_device_id device=nullptr;cl_context context=nullptr;cl_command_queue queue=nullptr;cl_program program=nullptr;
+- std::array<cl_kernel,6> kernels{};std::array<cl_mem,8> buffers{};
++ std::array<cl_kernel,9> kernels{};std::array<cl_mem,12> buffers{};
+  GranularConfig c;int nx=0,ny=0,nz=0,cells=0;float cell=0,angle=0;double time=0;std::string name;bool poisoned=false;GranularTiming timing;std::vector<std::pair<cl_event,unsigned>> events;
+  Impl(GranularConfig cfg):c(cfg){try{
+  require(c.count>=1&&c.count<=1000000&&c.iterations>=2&&c.iterations<=32,"granular count/iterations outside contract");
+@@ -47,10 +47,11 @@ struct GranularGPU::Impl {
+  for(auto platform:platforms){cl_uint n=0;if(api.clGetDeviceIDs(platform,CL_DEVICE_TYPE_GPU,0,nullptr,&n)||!n)continue;std::vector<cl_device_id> ids(n);check(api.clGetDeviceIDs(platform,CL_DEVICE_TYPE_GPU,n,ids.data(),nullptr),"devices");device=ids[0];break;}require(device!=nullptr,"no OpenCL GPU");
+  char text[256]{};check(api.clGetDeviceInfo(device,CL_DEVICE_NAME,sizeof(text),text,nullptr),"device name");name=text;
+  cl_int err=0;context=api.clCreateContext(nullptr,1,&device,nullptr,nullptr,&err);check(err,"context");queue=api.clCreateCommandQueue(context,device,c.profile?CL_QUEUE_PROFILING_ENABLE:0,&err);check(err,"queue");
+- program=api.clCreateProgramWithSource(context,1,&source,nullptr,&err);check(err,"program");err=api.clBuildProgram(program,1,&device,c.fast_bounds?"-cl-std=CL1.2 -DGRANULAR_BOUNDS_FAST=1":"-cl-std=CL1.2 -DGRANULAR_BOUNDS_FAST=0",nullptr,nullptr);if(err){std::size_t size=0;api.clGetProgramBuildInfo(program,device,CL_PROGRAM_BUILD_LOG,0,nullptr,&size);std::string log(size,' ');api.clGetProgramBuildInfo(program,device,CL_PROGRAM_BUILD_LOG,size,log.data(),nullptr);throw std::runtime_error(log);}
+- const char* names[]={"cleargrid","grid","predict","solve","velocity"};for(unsigned k=0;k<5;k++){kernels[k]=api.clCreateKernel(program,names[k],&err);check(err,"kernel");}
++ program=api.clCreateProgramWithSource(context,1,&source,nullptr,&err);check(err,"program");std::string options=std::string("-cl-std=CL1.2 -DGRANULAR_BOUNDS_FAST=")+(c.fast_bounds?"1":"0")+" -DGRANULAR_PACKED_GRID="+(c.packed_grid?"1":"0");err=api.clBuildProgram(program,1,&device,options.c_str(),nullptr,nullptr);if(err){std::size_t size=0;api.clGetProgramBuildInfo(program,device,CL_PROGRAM_BUILD_LOG,0,nullptr,&size);std::string log(size,' ');api.clGetProgramBuildInfo(program,device,CL_PROGRAM_BUILD_LOG,size,log.data(),nullptr);throw std::runtime_error(log);}
++ const char* names[]={"cleargrid","grid","predict","solve","velocity","prefixcells","prefixblocks","globalstarts","scattergrains"};for(unsigned k=0;k<9;k++){kernels[k]=api.clCreateKernel(program,names[k],&err);check(err,"kernel");}
+  cell=2*c.radius;nx=static_cast<int>(std::ceil((c.fast_bounds?.92:1.2)/cell));ny=static_cast<int>(std::ceil((c.fast_bounds?.52:.8)/cell));nz=static_cast<int>(std::ceil((c.fast_bounds?1.02:1.2)/cell));cells=nx*ny*nz;
+  for(unsigned i=0;i<8;i++){std::size_t bytes=(i<4||i==7)?c.count*sizeof(Grain):i==4?cells*sizeof(int):i==5?c.count*sizeof(int):sizeof(int);buffers[i]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,bytes,nullptr,&err);check(err,"buffer");}
++ for(unsigned i=8;i<12;i++){std::size_t bytes=i==8?(cells+1)*sizeof(int):i==9?((cells+255)/256)*sizeof(int):c.count*sizeof(Grain);buffers[i]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,bytes,nullptr,&err);check(err,"packed buffer");}
+  std::vector<Grain> initial;initial.reserve(c.count);float pitch=2.04f*c.radius;
+  for(float z=c.radius;z<.4f-c.radius&&initial.size()<c.count;z+=pitch)for(float y=-.25f+c.radius;y<.25f-c.radius&&initial.size()<c.count;y+=pitch)for(float x=-.45f+c.radius;x<.45f-c.radius&&initial.size()<c.count;x+=pitch){
+   bool hit=std::hypot(y,z-.21f)<.025f+c.radius;
+@@ -62,7 +63,7 @@ struct GranularGPU::Impl {
+  void release(){for(auto e:events)if(e.first)api.clReleaseEvent(e.first);events.clear();for(auto k:kernels)if(k)api.clReleaseKernel(k);for(auto b:buffers)if(b)api.clReleaseMemObject(b);if(program)api.clReleaseProgram(program);if(queue)api.clReleaseCommandQueue(queue);if(context)api.clReleaseContext(context);}
+  ~Impl(){release();}
+  template<class T>void arg(unsigned k,unsigned i,const T& v){check(api.clSetKernelArg(kernels[k],i,sizeof(v),&v),"arg");}
+- void run(unsigned k,std::size_t n){std::size_t local=128,global=(n+127)/128*128;cl_event event=nullptr;check(api.clEnqueueNDRangeKernel(queue,kernels[k],1,nullptr,&global,&local,0,nullptr,c.profile?&event:nullptr),"dispatch");if(event)events.push_back({event,k});}
++ void run(unsigned k,std::size_t n){std::size_t local=128,global=(n+127)/128*128;cl_event event=nullptr;check(api.clEnqueueNDRangeKernel(queue,kernels[k],1,nullptr,&global,&local,0,nullptr,c.profile?&event:nullptr),"dispatch");if(event)events.push_back({event,k>=5?1:k});}
+  void set(const std::vector<Grain>& state,const std::vector<Grain>& vel){require(state.size()==c.count&&vel.size()==c.count,"state count mismatch");for(unsigned i=0;i<c.count;i++)for(float v:{state[i].x,state[i].y,state[i].z,state[i].w,vel[i].x,vel[i].y,vel[i].z})require(std::isfinite(v),"nonfinite input state");
+  check(api.clEnqueueWriteBuffer(queue,buffers[0],CL_TRUE,0,state.size()*sizeof(Grain),state.data(),0,nullptr,nullptr),"state write");check(api.clEnqueueWriteBuffer(queue,buffers[2],CL_TRUE,0,vel.size()*sizeof(Grain),vel.data(),0,nullptr,nullptr),"velocity write");time=0;angle=0;poisoned=false;for(auto e:events)if(e.first)api.clReleaseEvent(e.first);events.clear();}
+  void advance(unsigned steps,float rpm,bool gate){auto begin=Clock::now();require(!poisoned,"reset required after rejected GPU batch");require(steps>0&&steps<=1000&&std::isfinite(rpm)&&std::abs(rpm)<=60,"invalid granular control");int zero=0;check(api.clEnqueueWriteBuffer(queue,buffers[6],CL_FALSE,0,sizeof(int),&zero,0,nullptr,nullptr),"clear error");int n=static_cast<int>(c.count),g=gate?1:0;float omega=rpm*.104719755f;
+@@ -72,7 +73,13 @@ struct GranularGPU::Impl {
+   for(unsigned it=0;it<c.iterations;it++){
+    arg(0,0,buffers[4]);arg(0,1,cells);run(0,cells);
+    arg(1,0,buffers[0]);arg(1,1,buffers[4]);arg(1,2,buffers[5]);arg(1,3,n);arg(1,4,cell);arg(1,5,nx);arg(1,6,ny);arg(1,7,nz);arg(1,8,buffers[6]);run(1,c.count);
+-   arg(3,0,buffers[0]);arg(3,1,buffers[1]);arg(3,2,buffers[3]);arg(3,3,buffers[4]);arg(3,4,buffers[5]);arg(3,5,n);arg(3,6,c.radius);arg(3,7,cell);arg(3,8,nx);arg(3,9,ny);arg(3,10,nz);arg(3,11,angle);arg(3,12,g);arg(3,13,c.friction);run(3,c.count);std::swap(buffers[0],buffers[3]);
++   if(c.packed_grid){int blocks=(cells+255)/256;
++    arg(5,0,buffers[4]);arg(5,1,buffers[8]);arg(5,2,buffers[9]);arg(5,3,cells);run(5,blocks);
++    arg(6,0,buffers[9]);arg(6,1,blocks);run(6,1);
++    arg(7,0,buffers[8]);arg(7,1,buffers[9]);arg(7,2,cells);arg(7,3,n);run(7,cells+1);
++    arg(8,0,buffers[0]);arg(8,1,buffers[1]);arg(8,2,buffers[4]);arg(8,3,buffers[8]);arg(8,4,buffers[10]);arg(8,5,buffers[11]);arg(8,6,n);arg(8,7,cell);arg(8,8,nx);arg(8,9,ny);arg(8,10,nz);run(8,c.count);
++   }
++   arg(3,0,buffers[0]);arg(3,1,buffers[1]);arg(3,2,buffers[3]);arg(3,3,buffers[4]);arg(3,4,buffers[5]);arg(3,5,n);arg(3,6,c.radius);arg(3,7,cell);arg(3,8,nx);arg(3,9,ny);arg(3,10,nz);arg(3,11,angle);arg(3,12,g);arg(3,13,c.friction);arg(3,14,buffers[8]);arg(3,15,buffers[10]);arg(3,16,buffers[11]);run(3,c.count);std::swap(buffers[0],buffers[3]);
+   }
+   arg(4,0,buffers[0]);arg(4,1,buffers[1]);arg(4,2,buffers[2]);arg(4,3,n);arg(4,4,c.dt);arg(4,5,c.radius);arg(4,6,angle);arg(4,7,omega);arg(4,8,g);arg(4,9,c.friction);arg(4,10,buffers[6]);arg(4,11,buffers[7]);run(4,c.count);
+  }
+diff --git a/Physics/PowderCore/src/granular_kernels.inc b/Physics/PowderCore/src/granular_kernels.inc
+index 0c692d5..830e65e 100644
+--- a/Physics/PowderCore/src/granular_kernels.inc
++++ b/Physics/PowderCore/src/granular_kernels.inc
+@@ -9,9 +9,24 @@ int cellid(float3 p,float cell,int nx,int ny,int nz){
+  if(any(q<(int3)(0))||q.x>=nx||q.y>=ny||q.z>=nz)return -1;
+  return (q.z*ny+q.y)*nx+q.x;
+ }
+-__kernel void cleargrid(__global int* head,int cells){int i=get_global_id(0);if(i<cells)head[i]=-1;}
++__kernel void cleargrid(__global int* head,int cells){int i=get_global_id(0);if(i<cells)head[i]=GRANULAR_PACKED_GRID?0:-1;}
+ __kernel void grid(__global const float4* pos,__global int* head,__global int* link,int n,float cell,int nx,int ny,int nz,__global int* error){
+- int i=get_global_id(0);if(i>=n)return;int c=cellid(pos[i].xyz,cell,nx,ny,nz);if(c<0){atomic_or(error,1);link[i]=-1;return;}link[i]=atomic_xchg(head+c,i);
++ int i=get_global_id(0);if(i>=n)return;int c=cellid(pos[i].xyz,cell,nx,ny,nz);if(c<0){atomic_or(error,1);link[i]=-1;return;}
++#if GRANULAR_PACKED_GRID
++ atomic_inc(head+c);
++#else
++ link[i]=atomic_xchg(head+c,i);
++#endif
++
++}
++// Exact-size counting sort: no per-cell capacity truncation, stable public particle IDs.
++__kernel void prefixcells(__global const int* counts,__global int* starts,__global int* blocks,int cells){
++ int b=get_global_id(0),begin=b*256;if(begin>=cells)return;int sum=0;for(int i=begin;i<min(begin+256,cells);i++){starts[i]=sum;sum+=counts[i];}blocks[b]=sum;
++}
++__kernel void prefixblocks(__global int* blocks,int count){if(get_global_id(0))return;int sum=0;for(int i=0;i<count;i++){int x=blocks[i];blocks[i]=sum;sum+=x;}}
++__kernel void globalstarts(__global int* starts,__global const int* blocks,int cells,int n){int i=get_global_id(0);if(i<cells)starts[i]+=blocks[i/256];else if(i==cells)starts[i]=n;}
++__kernel void scattergrains(__global const float4* p,__global const float4* old,__global int* counts,__global const int* starts,__global float4* packed,__global float4* packedold,int n,float cell,int nx,int ny,int nz){
++ int i=get_global_id(0);if(i>=n)return;int c=cellid(p[i].xyz,cell,nx,ny,nz);if(c<0)return;int slot=starts[c]+atomic_dec(counts+c)-1;packed[slot]=p[i];packedold[slot]=(float4)(old[i].xyz,(float)i);
+ }
+ __kernel void predict(__global float4* pos,__global float4* old,__global float4* vel,int n,float dt,float r,__global int* error,__global float4* predicted){
+  int i=get_global_id(0);if(i>=n)return;float3 v=vel[i].xyz+(float3)(0,0,-9.81f)*dt;old[i]=pos[i];
+@@ -54,11 +69,24 @@ float3 boundaries(float3 p,float r,float angle,int gate,float3* wallnormal,float
+  }
+  return p;
+ }
+-__kernel void solve(__global const float4* pos,__global const float4* old,__global float4* next,__global const int* head,__global const int* link,int n,float r,float cell,int nx,int ny,int nz,float angle,int gate,float mu){
++__kernel void solve(__global const float4* pos,__global const float4* old,__global float4* next,__global const int* head,__global const int* link,int n,float r,float cell,int nx,int ny,int nz,float angle,int gate,float mu,__global const int* starts,__global const float4* packed,__global const float4* packedold){
+  int i=get_global_id(0);if(i>=n)return;float3 p=pos[i].xyz;int3 q=convert_int3(floor((p+GRID_OFFSET)/cell));float3 correction=(float3)(0);
+  for(int z=-1;z<=1;z++)for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+   int3 c=q+(int3)(x,y,z);if(any(c<(int3)(0))||c.x>=nx||c.y>=ny||c.z>=nz)continue;
+-  int j=head[(c.z*ny+c.y)*nx+c.x];while(j>=0){if(j!=i){float3 delta=p-pos[j].xyz;float dist2=dot(delta,delta);if(dist2<4*r*r){float dist=sqrt(dist2);float3 normal=dist>1.e-9f?delta/dist:(float3)(i>j?1.f:-1.f,0,0);float overlap=2*r-dist;float3 relative=(p-old[i].xyz)-(pos[j].xyz-old[j].xyz);float3 tangent=relative-normal*dot(relative,normal);float l=length(tangent);correction+=normal*(overlap*.25f);if(l>1.e-9f)correction-=tangent*(fmin(.25f,mu*overlap*.25f/l));}}j=link[j];}
++  int cid=(c.z*ny+c.y)*nx+c.x;
++#if GRANULAR_PACKED_GRID
++ int cursor=starts[cid],end=starts[cid+1];while(cursor<end){int j=(int)packedold[cursor].w;float3 other=packed[cursor].xyz,otherold=packedold[cursor].xyz;
++#else
++ int j=head[cid];while(j>=0){float3 other=pos[j].xyz,otherold=old[j].xyz;
++#endif
++ if(j!=i){float3 delta=p-other;float dist2=dot(delta,delta);if(dist2<4*r*r){float dist=sqrt(dist2);float3 normal=dist>1.e-9f?delta/dist:(float3)(i>j?1.f:-1.f,0,0);float overlap=2*r-dist;float3 relative=(p-old[i].xyz)-(other-otherold);float3 tangent=relative-normal*dot(relative,normal);float l=length(tangent);correction+=normal*(overlap*.25f);if(l>1.e-9f)correction-=tangent*(fmin(.25f,mu*overlap*.25f/l));}}
++#if GRANULAR_PACKED_GRID
++ cursor++;
++#else
++ j=link[j];
++#endif
++ }
++
+  }
+  float l=length(correction);if(l>r*.35f)correction*=r*.35f/l;
+  float3 wn,wv;p=boundaries(p+correction,r,angle,gate,&wn,&wv);next[i]=(float4)(p,pos[i].w);
+diff --git a/Physics/PowderCore/tests/granular_tests.cpp b/Physics/PowderCore/tests/granular_tests.cpp
+index 2cf801c..ca77fa6 100644
+--- a/Physics/PowderCore/tests/granular_tests.cpp
++++ b/Physics/PowderCore/tests/granular_tests.cpp
+@@ -3,13 +3,13 @@
+ #include <cmath>
+ #include <stdexcept>
+ void check(bool x,const char* s){if(!x)throw std::runtime_error(s);}
+-int main(){try{
+- powder::GranularConfig c;c.count=1;c.radius=.01f;c.dt=.00025f;c.iterations=16;powder::GranularGPU g(c);
++int main(){try{for(bool packed:{false,true}){
++ powder::GranularConfig c;c.packed_grid=packed;c.count=1;c.radius=.01f;c.dt=.00025f;c.iterations=16;powder::GranularGPU g(c);
+  g.set_state({{.3f,.2f,.35f,1}},{{0,0,0,0}});g.advance(200,0,false);auto p=g.snapshot();double t=g.time();std::cout<<"freefall z="<<p[0].z<<" expected="<<(.35-9.81*t*(t+c.dt)/2)<<std::endl;check(std::abs(p[0].z-(.35-9.81*t*(t+c.dt)/2))<2.e-4,"free fall trajectory");check(p[0].w==1,"group identity");
+  g.set_state({{0,0,.05f,0}},{{0,0,0,0}});g.advance(1000,0,false);p=g.snapshot();check(p[0].z>=.0099f&&p[0].z<.0102f,"closed gate leakage/rest");g.advance(1000,0,true);g.advance(1000,0,true);p=g.snapshot();check(p[0].z<-.25f&&p[0].z>=-.5901f,"open gate descent and receiver floor");
+  g.set_state({{.051f,0,.03f,0}},{{-.02f,0,0,0}});g.advance(1000,0,true);g.advance(1000,0,true);p=g.snapshot();check(std::isfinite(p[0].z)&&p[0].z>=-.5901f,"outlet lip stability");
+  g.set_state({{.3f,.2f,.35f,0}},{{100,0,0,0}});bool rejected=false;try{g.advance(1,0,false);}catch(const std::exception&){rejected=true;}check(rejected,"unsafe displacement guard");rejected=false;try{g.advance(1,0,false);}catch(const std::exception&){rejected=true;}check(rejected,"rejected batch must require reset");g.set_state({{.3f,.2f,.35f,0}},{{0,0,0,0}});g.advance(1,0,false);check(std::isfinite(g.snapshot()[0].z),"reset after rejected batch");
+  c.count=2;powder::GranularGPU pair(c);pair.set_state({{-.009f,.2f,.35f,0},{.009f,.2f,.35f,1}},{{0,0,0,0},{0,0,0,0}});pair.advance(1,0,false);auto q=pair.snapshot();check(q[1].x-q[0].x>.0199f,"pair overlap resolution");check(std::abs(q[1].x+q[0].x)<1.e-6,"pair symmetry");check(q[0].w==0&&q[1].w==1,"persistent group ids");
+  std::cout<<"PASS free fall, pair symmetry, identity, closed/open gate, receiver, lip, guard\n";
+- }catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}
++ }}catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}
+ 

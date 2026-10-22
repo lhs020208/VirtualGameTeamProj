@@ -12,6 +12,9 @@ public:
  UPROPERTY(EditAnywhere,Category="Granular|Setup",meta=(ClampMin="30000",ClampMax="1000000")) int32 ParticleCount=30000;
  UPROPERTY(EditAnywhere,Category="Granular|Setup",meta=(ClampMin="2",ClampMax="32")) int32 ContactIterations=16;
  UPROPERTY(EditAnywhere,Category="Granular|Setup") double TimeStep=.00025;
+ UPROPERTY(EditAnywhere,Category="Granular|Setup") bool TestMixerAsset=false;
+ UPROPERTY(EditAnywhere,Category="Granular|Setup",meta=(ClampMin="0",ClampMax="1")) double Friction=.4;
+ UPROPERTY(EditAnywhere,Category="Granular|Setup",meta=(ClampMin="1",ClampMax="128")) int32 SolverBatchSize=32;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Granular|Control") bool Running=true;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Granular|Control",meta=(ClampMin="0",ClampMax="60")) double RPM=30;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Granular|Control",meta=(ClampMin="0.01",ClampMax="2")) double TargetRate=.1;
@@ -35,6 +38,6 @@ private:
  UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> Blades;
  UPROPERTY() TObjectPtr<UStaticMeshComponent> Shaft;
  UPROPERTY() TObjectPtr<UStaticMeshComponent> GateMesh;
- FGranularRuntime* Runtime=nullptr;uint64 Generation=0;bool Benchmark=false,Shot1=false,Shot2=false;double FinishWall=0;FString OutputDir;
+ FGranularRuntime* Runtime=nullptr;uint64 Generation=0;bool Benchmark=false,Shot1=false,Shot2=false;double FinishWall=0;FString OutputDir;double BenchmarkSeconds=12;
  void Stop();void Geometry();void Display();
 };

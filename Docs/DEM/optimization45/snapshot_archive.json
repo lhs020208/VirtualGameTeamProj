@@ -1,0 +1,512 @@
+[
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_0.007500_0.000000.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_0.007500_0.000000.bin",
+    "sha256": "3724964d2a5e088e0f2409314cdf5b3481cbb9752966525f12205c7fd241d1dc"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_1.027500_0.070686.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_1.027500_0.070686.bin",
+    "sha256": "d1c2f94c2d978d4605c8fee2cbcdc57aec1b6a96c6c06ab95656b15aaf86d23e"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_10.207500_28.915945.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_10.207500_28.915945.bin",
+    "sha256": "209eb75fbe59d33ff9e0995d94ff866c9f86f05cf5a95c03dc22d2baf6f19f1d"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_11.227500_32.122120.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_11.227500_32.122120.bin",
+    "sha256": "d7aa0503707b7df2bab5ca66c9a19087c7155f7d3e6b93688fed3a34a335505d"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_12.247500_35.328297.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_12.247500_35.328297.bin",
+    "sha256": "aa7e4cd008128e46f1085bd5f45a886467422661de1eaa9de89fef4d26d1b9e5"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_13.267501_38.534473.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_13.267501_38.534473.bin",
+    "sha256": "474ddc51ff60f541a6ebb17a091e3c99473a63d992f827fbdcaca2da670bff78"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_14.287501_41.740650.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_14.287501_41.740650.bin",
+    "sha256": "c42299e6dbf7785a0f9dc175fdf56da99f1741342b15ae0aec022da9a64ca7be"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_15.307501_44.946827.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_15.307501_44.946827.bin",
+    "sha256": "6d75a38a43a651a04be2870bf44dd7425780d5ccb7d3c028e358253aeac1464b"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_16.327501_48.153004.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_16.327501_48.153004.bin",
+    "sha256": "0552949e194bd891040d56549b8c564c969b3b3aa217232b4f392cdefdf43509"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_17.347501_51.359180.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_17.347501_51.359180.bin",
+    "sha256": "9064716d81f08e7ad72681302213e718cf21131de6721d4420e0ea6f38aeaf75"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_18.367501_54.565357.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_18.367501_54.565357.bin",
+    "sha256": "21354d3b0d9645c81936ebc4c9d44f1ddd36de339edb2b34a7f9620528f825bb"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_19.387501_57.771534.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_19.387501_57.771534.bin",
+    "sha256": "87ab14a19ff3e46beed93d24b8775bada579852ef13dfeb64393af005ea8ece3"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_2.047500_3.275068.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_2.047500_3.275068.bin",
+    "sha256": "840e39e6bc6cb88ed620fbba0e14a31d7130b2252cf19f2639afea9e46002b5a"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_20.407501_60.977711.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_20.407501_60.977711.bin",
+    "sha256": "a5b4fd67492456f47a7286b335e1589359a9c77e837323edfd2edd313825387f"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_21.427501_64.183289.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_21.427501_64.183289.bin",
+    "sha256": "7010a4af8363667e93145afaa2bbc48aacce6a73a725ee1a9bf324c7302e53b8"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_22.447501_67.379089.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_22.447501_67.379089.bin",
+    "sha256": "5561afc9f038d50856baf36620a91344321e476d8cb40bb8177dc89ec3050b67"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_23.467501_70.574890.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_23.467501_70.574890.bin",
+    "sha256": "844e6933c03ef380213f6aca6da68b44c59acf1d4fcd6646a0da32a4a1490baf"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_24.487501_73.770691.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_24.487501_73.770691.bin",
+    "sha256": "fc4506505ea71a8f83aa3002ed41ee6ffa16fd5fff9920873adbbb59087a15ac"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_25.507501_76.966492.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_25.507501_76.966492.bin",
+    "sha256": "d08d5ce431aba9048369168ee3e4223bc36660acc1f3074566c17732a248bc0a"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_26.527501_80.162292.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_26.527501_80.162292.bin",
+    "sha256": "2c9833639fd7bf27e087226520327065fad9e2eeb5471f97a7ddb0abed6fde48"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_27.547501_83.358093.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_27.547501_83.358093.bin",
+    "sha256": "9a3b57683e630640c03841f56e2ea46b40745bab461ee2dcd216c7ff1d613399"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_28.567501_86.553894.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_28.567501_86.553894.bin",
+    "sha256": "7b4f7dad82784677aa0e452215844b6b3b6107e67ce5fe43f1ff4b206cee06a8"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_29.587501_89.749695.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_29.587501_89.749695.bin",
+    "sha256": "c843ec91b58724de5dd3a68606a914352b218d1c855b44c7b713fe56e1dc877d"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_3.067500_6.479801.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_3.067500_6.479801.bin",
+    "sha256": "01f9a989e1a78eddc0b49e249dbb0aa2daa59f9157d632f1342d69f547b5da8f"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_4.087500_9.683999.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_4.087500_9.683999.bin",
+    "sha256": "e52f78773da27bbad0d88b2a48e4ca6dfe130f139cb29304d2ed88685e7b9cd9"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_5.107500_12.887582.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_5.107500_12.887582.bin",
+    "sha256": "447e949fbe36994e9676f713cc5ca23f6739b57fac5415e260b4946deec3319c"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_6.127500_16.091238.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_6.127500_16.091238.bin",
+    "sha256": "7bde083e5f20bf558e40a0168bc407dc7b2ee5df464c00c531f43aa42e1fdc22"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_7.147500_19.297415.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_7.147500_19.297415.bin",
+    "sha256": "e1cecc9d6ec762b4a13ff9131d8536aeaf1d06036ec6f4e5e732a5213631cda3"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_8.167500_22.503592.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_8.167500_22.503592.bin",
+    "sha256": "dac4649136641818cc21bacd566239b762d1502f9018390cb4fd7fe97830e8da"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\candidate_long\\frame_9.187500_25.709768.bin",
+    "archive": "Saved\\Optimization45Snapshots\\candidate_long\\frame_9.187500_25.709768.bin",
+    "sha256": "bd4e60bcf998c34cf9ef787d05f964e041c2113b3b29dfba6ac89b913970d0cf"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt375\\frame_0.007500_0.000000.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt375\\frame_0.007500_0.000000.bin",
+    "sha256": "3724964d2a5e088e0f2409314cdf5b3481cbb9752966525f12205c7fd241d1dc"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt375\\frame_1.027500_0.070686.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt375\\frame_1.027500_0.070686.bin",
+    "sha256": "d1c2f94c2d978d4605c8fee2cbcdc57aec1b6a96c6c06ab95656b15aaf86d23e"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt375\\frame_10.207500_28.915945.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt375\\frame_10.207500_28.915945.bin",
+    "sha256": "9aa432d7449dfb2380c4b71a6bb78dca3a68826850f6d63e33e95855fc819b11"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt375\\frame_11.227500_32.122120.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt375\\frame_11.227500_32.122120.bin",
+    "sha256": "d1a0b6fa82ce5a83a66c33fcb816ba4021cf29387786d67ff88b519ab7e4143b"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt375\\frame_2.047500_3.275068.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt375\\frame_2.047500_3.275068.bin",
+    "sha256": "a81b77b1078438c7dbb4bf55a26feda7b4dc39492c024dfda6a7442a32d7c590"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt375\\frame_3.067500_6.479801.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt375\\frame_3.067500_6.479801.bin",
+    "sha256": "6e6485c2ea1c50ca6049a1f76308807905620a88ce2f1ccda5ae1d892c957680"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt375\\frame_4.087500_9.683999.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt375\\frame_4.087500_9.683999.bin",
+    "sha256": "b56c6e51e294e3acd37ff4e457032d47264aaf6c3a5009339a15e2c2ca57245c"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt375\\frame_5.107500_12.887582.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt375\\frame_5.107500_12.887582.bin",
+    "sha256": "24eb82533d2058dfb8c42cfa189a12706378b9d1da8f154316348f2211bacab2"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt375\\frame_6.127500_16.091238.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt375\\frame_6.127500_16.091238.bin",
+    "sha256": "6a448226f79d4f38796b71efe40f945c7bd6f30f0f7216927e37c48b4062f0c6"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt375\\frame_7.147500_19.297415.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt375\\frame_7.147500_19.297415.bin",
+    "sha256": "e1de8143860d6f4ba14096c2cd5a5b68956094698ff64a06ef5765c95ba5450e"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt375\\frame_8.167500_22.503592.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt375\\frame_8.167500_22.503592.bin",
+    "sha256": "1be6f6ba5731c1dda03ffec904624d70892b117376c54680ee620f3ed33b529d"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt375\\frame_9.187500_25.709768.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt375\\frame_9.187500_25.709768.bin",
+    "sha256": "d8f2832fac087c80ddfc1a4f3c8d7099c606a0f9bfbedff3b00109e574af6b13"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt500_i24\\frame_0.010000_0.000000.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt500_i24\\frame_0.010000_0.000000.bin",
+    "sha256": "4c7d8e4f2c5058c3a137c0f0f72fa9c93c1f25347748920aba8b9652295a8bd1"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt500_i24\\frame_1.010000_0.031416.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt500_i24\\frame_1.010000_0.031416.bin",
+    "sha256": "85456f158ba25a73fbe7b14cf4e041eb35f6c420a4d23ed08b2b12598f232a9d"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt500_i24\\frame_10.010001_28.311657.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt500_i24\\frame_10.010001_28.311657.bin",
+    "sha256": "a68b882d7bbbb88f8b78d1f8fddb4cd7f6604747737a93e9d1cb1fa64d87d6eb"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt500_i24\\frame_11.010001_31.454967.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt500_i24\\frame_11.010001_31.454967.bin",
+    "sha256": "8319884abf73e74dc38edde90987243bced7b13bbe3641f787124d4c86f3591b"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt500_i24\\frame_2.010000_3.172960.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt500_i24\\frame_2.010000_3.172960.bin",
+    "sha256": "04d68b69271e94579465a264f6271836bc078f97e5c9e83ce605fc8137f3b797"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt500_i24\\frame_3.010000_6.314363.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt500_i24\\frame_3.010000_6.314363.bin",
+    "sha256": "966500eb8e631fbfb21eca149438d35fc774bac348177f79a00c978fe54e30d6"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt500_i24\\frame_4.010000_9.455767.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt500_i24\\frame_4.010000_9.455767.bin",
+    "sha256": "e0ee2533b0ff4cdd77e410b87a72096c47497bb99ba25e0f0c1f725e36241168"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt500_i24\\frame_5.010000_12.597170.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt500_i24\\frame_5.010000_12.597170.bin",
+    "sha256": "29d0510da6d0efb5f542446fd63af95934cd5a8ba6adbe2300cc8c28205e589c"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt500_i24\\frame_6.010000_15.738573.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt500_i24\\frame_6.010000_15.738573.bin",
+    "sha256": "97bb56774645c613503871b8d53730d430276a4e59e2d3334c8afe858dbfdd56"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt500_i24\\frame_7.010000_18.881725.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt500_i24\\frame_7.010000_18.881725.bin",
+    "sha256": "b277a42358ea9040cc76a448c75bb473e9628000e9d976ee585689de1239bb52"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt500_i24\\frame_8.010001_22.025036.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt500_i24\\frame_8.010001_22.025036.bin",
+    "sha256": "9f5c152156fca8d0139d8821bda92a8bae03c9574f66ce5f94e1dd714e44ab4d"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\dt500_i24\\frame_9.010001_25.168346.bin",
+    "archive": "Saved\\Optimization45Snapshots\\dt500_i24\\frame_9.010001_25.168346.bin",
+    "sha256": "1453be30e8a503f833138bb6c25f48d2e2bd08eb4ed57556fa280cd102824bcb"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_12\\frame_0.005000_0.000000.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_12\\frame_0.005000_0.000000.bin",
+    "sha256": "ca608d0e5af90cc7672ccca074cfae49fb1493f7c95bc8195042b4c152d3468c"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_12\\frame_1.005000_0.015708.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_12\\frame_1.005000_0.015708.bin",
+    "sha256": "8dc3bd8e19568e6c1623a067a45ace3df5e3a2063640060e30113f818660cb1d"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_12\\frame_10.005001_28.300726.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_12\\frame_10.005001_28.300726.bin",
+    "sha256": "4171c8d244eeded9c5c5a1ff550cd382aa423a355bd02c23adbff56c327a29e0"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_12\\frame_11.005001_31.444036.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_12\\frame_11.005001_31.444036.bin",
+    "sha256": "e5ce2b871165c60e0957d567decd0d060cc16409de78b9caab4ab5ac474b6c47"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_12\\frame_2.005000_3.157182.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_12\\frame_2.005000_3.157182.bin",
+    "sha256": "aca25f38256bcae71c1dd4a65e5ab88709da014b4a41bfe31ac09fdc8de114b3"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_12\\frame_3.005000_6.298585.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_12\\frame_3.005000_6.298585.bin",
+    "sha256": "bc42696d2fee181570f0c95ce9e77af8a5617b38c6f2198054c95837d9a8fff0"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_12\\frame_4.005000_9.440863.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_12\\frame_4.005000_9.440863.bin",
+    "sha256": "bf2175a13cac8d70e6b0f3de22b0229370f9119f17e6ab953a8c4abd819a09bc"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_12\\frame_5.005000_12.584173.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_12\\frame_5.005000_12.584173.bin",
+    "sha256": "c9cbf499022d9f53f0088c930ec8b5f672602369d80a4e2b0862352d0bcb03ca"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_12\\frame_6.005000_15.727484.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_12\\frame_6.005000_15.727484.bin",
+    "sha256": "bb5c3a51e2641ef9a8e8f9db7846818cf20246a54b395779cb37003991a8efd9"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_12\\frame_7.005000_18.870794.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_12\\frame_7.005000_18.870794.bin",
+    "sha256": "2d00cde3891634bd34685a5d648f4c49bf11c208c91a292777af6f0940f60c92"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_12\\frame_8.005001_22.014105.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_12\\frame_8.005001_22.014105.bin",
+    "sha256": "5344397a084bc8a06b7809542dffbff4cd79710bbbb56b6ebac1576d9df03cf2"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_12\\frame_9.005001_25.157415.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_12\\frame_9.005001_25.157415.bin",
+    "sha256": "da6bce177779d5b6d54728383fa7228ceab687ae1a89fe8e5480eda86e406ccc"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_dt375\\frame_0.007500_0.000000.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_dt375\\frame_0.007500_0.000000.bin",
+    "sha256": "a9b322b1bfb7f297b70c6828299b6fda4ed161ed9de9bbe0bc55314ee77e3441"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_dt375\\frame_1.027500_0.070686.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_dt375\\frame_1.027500_0.070686.bin",
+    "sha256": "7059d416780dff5ba3033c9b016d922b3f69526d71ccb9237a987659f12c508e"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_dt375\\frame_10.207500_28.915945.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_dt375\\frame_10.207500_28.915945.bin",
+    "sha256": "ef4d7cb5c0c465d43595fa7bb8d5ff41767a7a33fd0c7a63ee0ca89ceef7bc94"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_dt375\\frame_11.227500_32.122120.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_dt375\\frame_11.227500_32.122120.bin",
+    "sha256": "f2b41b78c8e146143271054fae4ebf5ada848aae602df373b2a80c60427cd0f2"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_dt375\\frame_2.047500_3.275068.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_dt375\\frame_2.047500_3.275068.bin",
+    "sha256": "0bc23d94ab7d7191512eab1f622cfb12c3d27aa58a23827e5293729c3c083410"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_dt375\\frame_3.067500_6.479801.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_dt375\\frame_3.067500_6.479801.bin",
+    "sha256": "95475073ac7ac4d702037b872784feb51a3f55c39e894a492f396c2e32b96daa"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_dt375\\frame_4.087500_9.683999.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_dt375\\frame_4.087500_9.683999.bin",
+    "sha256": "4b4587d8e4cc4ba16fe80bb4f4f8aa832a514f17efdd1cc69d27905b5a4d72e8"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_dt375\\frame_5.107500_12.887582.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_dt375\\frame_5.107500_12.887582.bin",
+    "sha256": "d2f37b1422a26b7f60ca8cac894cbaa84e93115c87678f7e924828df4cf60c62"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_dt375\\frame_6.127500_16.091238.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_dt375\\frame_6.127500_16.091238.bin",
+    "sha256": "1c3660a2d994a3527243b173669e0c794943fe7526bce4b2ce01d97b4611a392"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_dt375\\frame_7.147500_19.297415.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_dt375\\frame_7.147500_19.297415.bin",
+    "sha256": "c95a3379703a95d05c37404a95e713b72f3be099f4bfeb3a0d52212285a7f8ee"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_dt375\\frame_8.167500_22.503592.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_dt375\\frame_8.167500_22.503592.bin",
+    "sha256": "b7065eff2664e8925a4bb19ed593b9f77f64e030c5d505cf24920e63b6a94e07"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\mx301_dt375\\frame_9.187500_25.709768.bin",
+    "archive": "Saved\\Optimization45Snapshots\\mx301_dt375\\frame_9.187500_25.709768.bin",
+    "sha256": "374c4e6b41cee6c7902333483d2dd6d57cef92b16d477f38fc0b414303fe3a90"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100\\frame_0.007500_0.000000.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100\\frame_0.007500_0.000000.bin",
+    "sha256": "efa365fdcec334c838a1586ffcda92fd4465a31beefb3c98189f7f29f858a9b9"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100\\frame_1.027500_0.070686.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100\\frame_1.027500_0.070686.bin",
+    "sha256": "af1dc0d36a19c3884926f8b4d9840c0e3874695f6543e56ddb6e4c0a4bf8cc41"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100\\frame_10.207500_28.915945.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100\\frame_10.207500_28.915945.bin",
+    "sha256": "79b459aed5164d647dd5791575d97fedad8ec443da8282397f637c9b4712917a"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100\\frame_11.227500_32.122120.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100\\frame_11.227500_32.122120.bin",
+    "sha256": "7149bb9dfe78078d9fa50ca38f879da53904bcee7b909446705c15d4a790c2fa"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100\\frame_2.047500_3.275068.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100\\frame_2.047500_3.275068.bin",
+    "sha256": "692ac48f17e05da5cdaa1614c6baee46a84563749dfafb6c471460d5c998d419"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100\\frame_3.067500_6.479801.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100\\frame_3.067500_6.479801.bin",
+    "sha256": "f5cfae2fa201c26ef25aed49b450fbf697ba7251dfe626ec2251976a5d3083cc"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100\\frame_4.087500_9.683999.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100\\frame_4.087500_9.683999.bin",
+    "sha256": "fade3d8b64d48ab49ce8efc77dc1630cb9006f2109e3eaef5b4c0a4185c232f2"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100\\frame_5.107500_12.887582.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100\\frame_5.107500_12.887582.bin",
+    "sha256": "63971d5c12ce1a9a52c81133d611c38f51a6b71be22f6946d387d59ed5d3b6c4"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100\\frame_6.127500_16.091238.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100\\frame_6.127500_16.091238.bin",
+    "sha256": "4558e223527089cd74993890ba725d4cf78ad205317c108cbd6dcd78d25de0ca"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100\\frame_7.147500_19.297415.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100\\frame_7.147500_19.297415.bin",
+    "sha256": "a5a6f872539b68f6e3c497bd4d0b972a170174be986f40e680ad61bb3c90b24a"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100\\frame_8.167500_22.503592.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100\\frame_8.167500_22.503592.bin",
+    "sha256": "91acf31831255da338fc5734e7c06d54dcfaddca54bf396dd85fffc1cbd1ba6f"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100\\frame_9.187500_25.709768.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100\\frame_9.187500_25.709768.bin",
+    "sha256": "3db45a2335a29c3dd265526884b8fea5f68b5378d42c2a61da1e2c7e2719f215"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100_dt350\\frame_0.007000_0.000000.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100_dt350\\frame_0.007000_0.000000.bin",
+    "sha256": "e1bc0e6ddfe3e06dc28fbc09528e7288a764cb73cb6b1e8c9362b6f749e2b767"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100_dt350\\frame_1.015000_0.043982.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100_dt350\\frame_1.015000_0.043982.bin",
+    "sha256": "264b8e37433cf61e58a01fab577bb43e650414db39f9e9ebfc834598ba82e16c"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100_dt350\\frame_10.087000_28.534370.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100_dt350\\frame_10.087000_28.534370.bin",
+    "sha256": "eaba2cb81f2b73e2addfe839e26a685bbee8bf4cd6a963b36aff6c9c6fe7e86a"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100_dt350\\frame_11.095000_31.698433.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100_dt350\\frame_11.095000_31.698433.bin",
+    "sha256": "4efbe844285f6ec6bdb210945fe054e471cdd2ed0eb844a36736ec66bcbea954"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100_dt350\\frame_2.023000_3.210779.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100_dt350\\frame_2.023000_3.210779.bin",
+    "sha256": "6ab6145a8c42548f9d88eec21cc6235c2c0f0c805db58105d351dd093f1fdc2e"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100_dt350\\frame_3.031000_6.377588.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100_dt350\\frame_3.031000_6.377588.bin",
+    "sha256": "58dea1efc181698818096df7afadf744f7869dfec4c49093958124f65fcbebb0"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100_dt350\\frame_4.039000_9.544396.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100_dt350\\frame_4.039000_9.544396.bin",
+    "sha256": "656613e26280aaee991dcbf43fb8882a1705354d47ed9a7676d6dcc26c640b80"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100_dt350\\frame_5.047000_12.711205.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100_dt350\\frame_5.047000_12.711205.bin",
+    "sha256": "2bac79cca0f42aac29809e5b9f7ddd78b351f67d7eb7c6eae984864ba6a2073d"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100_dt350\\frame_6.055000_15.878015.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100_dt350\\frame_6.055000_15.878015.bin",
+    "sha256": "1a64a55d3cbd05323823227696f219c1b836ecf6aa05e7e3d24b7cb1f7074c4d"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100_dt350\\frame_7.063000_19.042183.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100_dt350\\frame_7.063000_19.042183.bin",
+    "sha256": "5fa504deeab8bf03c28fe98b6e0cd5cc3de99bf3652c447bb5dd0eee4d44178e"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100_dt350\\frame_8.071000_22.206245.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100_dt350\\frame_8.071000_22.206245.bin",
+    "sha256": "9fe5c33f71ed58fec4ef7abd601a0f115f18e118b7f6e80c01e73ad025ddb589"
+  },
+  {
+    "source": "Docs\\DEM\\optimization45\\verify100_dt350\\frame_9.079000_25.370308.bin",
+    "archive": "Saved\\Optimization45Snapshots\\verify100_dt350\\frame_9.079000_25.370308.bin",
+    "sha256": "059fb058ec930b57b694025a14df7f2275fab63073ef4ae716d3f6703c9c48a1"
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "count": 50000,
+  "dt": 0.000375,
+  "iterations": 16,
+  "batch": 32,
+  "test_mixer": true,
+  "requested_rate": 2,
+  "seconds": 12,
+  "render_size": [
+    1280,
+    720
+  ],
+  "fps_limit": 30
+}

@@ -7,7 +7,7 @@
 namespace powder {
 struct GranularTiming {std::array<double,5> gpu_seconds{};double advance_wall=0,snapshot_wall=0;};
 struct Grain {float x,y,z,w;};
-struct GranularConfig {unsigned count=30000,iterations=16;bool fast_bounds=true,profile=false;float radius=0,dt=.00025f,friction=.4f;};
+struct GranularConfig {unsigned count=30000,iterations=16;bool fast_bounds=true,profile=false,test_mixer=false;float radius=0,dt=.00025f,friction=.4f;};
 // Explicit approximate position-contact solver; persistent IDs = vector indices.
 // SI units, equal-mass spheres, no spin/adhesion or contact-force certification.
 class GranularGPU {
