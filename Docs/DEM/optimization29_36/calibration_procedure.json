@@ -1,0 +1,8 @@
+{
+  "exchange_s_inverse": 0.07999999999999999,
+  "holdout_max_absolute_error": 1.1102230246251565e-16,
+  "procedure_passed": true,
+  "physical_accuracy_validated": false,
+  "scope": "two equal-volume well-mixed compartments only; applying to a spatial process requires separate validation",
+  "data_source": "D:\\GitHub\\VirtualGameTeamProj\\Physics\\PowderCore\\fixtures\\optimization34_synthetic_exchange.csv"
+}

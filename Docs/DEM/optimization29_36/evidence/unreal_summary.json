@@ -1,0 +1,24 @@
+{
+  "devices": [
+    {
+      "deviceName": "PC",
+      "instance": "B9D506594D8B67B7B4E13DBBF3E7C4FA",
+      "instanceName": "PC-57692",
+      "platform": "WindowsEditor",
+      "oSVersion": "Windows 11 (26H2) [10.0.26300.9711] ",
+      "model": "Default",
+      "gPU": "NVIDIA GeForce RTX 4060 Ti",
+      "cPUModel": "Intel(R) Core(TM) i7-14700KF",
+      "rAMInGB": 32,
+      "renderMode": "D3D12_SM6",
+      "rHI": "D3D12 (SM6)",
+      "appInstanceLog": ""
+    }
+  ],
+  "reportCreatedOn": "2026.10.22-03.45.08",
+  "succeeded": 18,
+  "succeededWithWarnings": 0,
+  "failed": 0,
+  "notRun": 0,
+  "totalDuration": 13.507552146911621
+}

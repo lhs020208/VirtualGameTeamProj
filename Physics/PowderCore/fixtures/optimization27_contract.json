@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "goal": "30kg full process at >=0.1 physical seconds per wall second",
+  "masses_kg": [
+    10,
+    30,
+    50
+  ],
+  "device": "existing PC RTX4060Ti",
+  "scope28": "straight enclosed lateral channel, 3 species finite-volume advection, projected gravity + linear drag, capacity limiter, valve, passive display tracers",
+  "not_implemented28": [
+    "vacuum pressure solution",
+    "real weighing logic",
+    "mixing law",
+    "arbitrary geometry",
+    "individual contacts",
+    "natural arching",
+    "validated powder rheology"
+  ],
+  "prototype": {
+    "length_m": 5,
+    "area_m2": 0.16,
+    "bulk_density_kg_m3": 800,
+    "drag_tau_s": 0.1,
+    "dt_s": 0.005,
+    "cells": [
+      64,
+      128,
+      512
+    ],
+    "display_tracers": 1500,
+    "duration_s": 60,
+    "repeats": 3
+  },
+  "numerics": {
+    "mass_relative_error_max": 0.0001,
+    "negative_mass_allowed": false,
+    "closed_valve_transfer_allowed": false,
+    "display_changes_mass_solution": false,
+    "drag": "acceleration opposes particle-air relative velocity; transient reverse motion due to inertia/gravity is allowed",
+    "visual": "markers stay in supported channel and do not cross closed gate"
+  },
+  "accuracy_provisional": {
+    "arrival_mass_relative": 0.05,
+    "arrival_time_relative": 0.1,
+    "mix_index_absolute": 0.05,
+    "physical_validation": "NOT_YET_VALIDATED"
+  },
+  "performance": "core benchmark includes passive tracer updates; real viewport/render and final process acceptance separately required"
+}

@@ -1,0 +1,6 @@
+{
+  "provenance": "SYNTHETIC_ANALYTIC_NOT_EXPERIMENT",
+  "equation": "I(t)=1-exp(-4*k*t)",
+  "known_k": 0.08,
+  "use": "calibration procedure test only; not medication manufacturing data"
+}
