@@ -1,0 +1,18 @@
+{
+  "q": 1,
+  "opening_m": 0.012,
+  "bridge_diameters_m": [
+    0.01,
+    0.01
+  ],
+  "psd_diameters_m": [
+    0.01,
+    0.014
+  ],
+  "density_kg_m3": 2500,
+  "duration_s": 0.3,
+  "dt_s": 5e-07,
+  "scope": "symmetric two-grain bridge and two isolated size streams, not a calibrated arching probability",
+  "coarse_scopes_allowed": false,
+  "maximum_overlap_radius_ratio": 0.05
+}

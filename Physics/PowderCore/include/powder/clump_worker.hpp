@@ -10,9 +10,17 @@
 #include <thread>
 
 namespace powder {
+class ClumpBackend {
+public:
+ virtual ~ClumpBackend()=default;
+ virtual std::shared_ptr<ClumpBackend> clone()=0;
+ virtual void advance(ClumpWorld&,double)=0;
+ virtual void synchronize(ClumpWorld&,ClumpReport&)=0;
+};
 // All mutable solver/measurement state belongs to one thread. No engine types.
 struct ClumpRunState {
  ClumpWorld World;
+ std::shared_ptr<ClumpBackend> Backend;
  ClumpProfile Profile;
  double Dt=2e-6, LoadTime=0, ComputeSeconds=0;
  std::uint64_t Steps=0;

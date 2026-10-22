@@ -1,0 +1,2 @@
+q,length_scale,physical_count,computational_count,total_mass_kg,dt_s,duration_s,physical_kn,computed_kn,physical_cn,computed_cn,matched_observation_samples,minimum_samples_per_cell
+8,2,256,32,0.33510321638291124,0.000002,0.25,1000,2000,0.1,0.40000000000000002,32,4

@@ -2,6 +2,7 @@
 #include "PowderCameraController.h"
 #include "powder/clump.hpp"
 #include "powder/clump_worker.hpp"
+#include "powder/gpu_clump.hpp"
 #include <memory>
 #include "PowderMeshGeometry.h"
 #include "Components/InstancedStaticMeshComponent.h"
@@ -60,7 +61,7 @@ void APowderClumpTest::ResetSimulation(){Runtime.Reset();LastPairThreads=LastInt
  }
  if(bMixingRig){powder::MixingConfig C;C.count_a=GroupACount;C.count_b=GroupBCount;C.density_a=PowderDensity;C.density_b=GroupBDensity;C.premixed=bStartPremixed;C.dt=FixedDt;C.duration_s=MixingDurationSeconds;C.sample_s=MixingSampleSeconds;C.rpm=PaddleRPM;C.grid={{MixingGrid.X,MixingGrid.Y,MixingGrid.Z}};C.minimum_bodies=MinimumBodiesPerCell;Next->World.bodies=powder::mixing_charge(C);Next->Mixing.emplace(C,Next->World.bodies);}
  GroupBPebbles->SetStaticMesh(Pebbles->GetStaticMesh());if(bMixingRig){if(GroupAMaterial)Pebbles->SetMaterial(0,GroupAMaterial);if(GroupBMaterial)GroupBPebbles->SetMaterial(0,GroupBMaterial);}else Pebbles->SetMaterial(0,nullptr);
- auto Configure=[&](powder::MaterialContact& M,uint32 A,uint32 B,bool Wall){M.law=bHertz?powder::ContactLaw::HertzMindlin:powder::ContactLaw::Linear;M.linear.kn=Wall?(A?InclusionStiffness:PowderStiffness):(A==B?(A?InclusionStiffness:PowderStiffness):MixedStiffness);M.linear.kt=M.linear.kn/4;M.a={A?InclusionYoungPa:PowderYoungPa,.25};M.b={Wall?2e11:(B?InclusionYoungPa:PowderYoungPa),.25};M.cn=M.linear.cn;M.ct=M.linear.ct;M.mu=M.linear.mu;M.rolling.mu=RollingFriction;M.adhesion_gamma_j_m2=Wall?WallAdhesionGamma:PairAdhesionGamma;powder::validate_contact_model(M);};
+ auto Configure=[&](powder::MaterialContact& M,uint32 A,uint32 B,bool Wall){M.law=bHertz?powder::ContactLaw::HertzMindlin:powder::ContactLaw::Linear;M.linear.kn=Wall?(A?InclusionStiffness:PowderStiffness):(A==B?(A?InclusionStiffness:PowderStiffness):MixedStiffness);M.linear.kt=M.linear.kn/4;if(bUniformDampingFriction){M.linear.cn=UniformNormalDamping;M.linear.ct=UniformTangentDamping;M.linear.mu=UniformFriction;}M.a={A?InclusionYoungPa:PowderYoungPa,.25};M.b={Wall?2e11:(B?InclusionYoungPa:PowderYoungPa),.25};M.cn=M.linear.cn;M.ct=M.linear.ct;M.mu=M.linear.mu;M.rolling.mu=RollingFriction;M.adhesion_gamma_j_m2=Wall?WallAdhesionGamma:PairAdhesionGamma;powder::validate_contact_model(M);};
  for(auto& Entry:Next->World.pair_models)Configure(Entry.second,Entry.first.first,Entry.first.second,false);for(auto& Entry:Next->World.wall_models)Configure(Entry.second,Entry.first,Entry.first,true);
  if(CPUThreads<1||CPUThreads>32||ParallelMinJobs<1)throw std::invalid_argument("CPU threads must be 1..32 and minimum jobs >= 1");
  Next->World.cpu_threads=static_cast<unsigned>(CPUThreads);Next->World.parallel_min_jobs=static_cast<std::size_t>(ParallelMinJobs);
@@ -69,14 +70,18 @@ void APowderClumpTest::ResetSimulation(){Runtime.Reset();LastPairThreads=LastInt
  Next->Configuration+=FString::Printf(TEXT("triangle_mesh_rig %d\n"),bTriangleMeshRig?1:0);
  Next->Configuration+=FString::Printf(TEXT("paddle_rig %d\npaddle_applied_rpm %.17g\npaddle_pivot_m 0 0 0.04\npaddle_axis 0 0 1\npaddle_linear_velocity_m_s 0 0 0\npaddle_phase_rad 0\n"),UsePaddle?1:0,UsePaddle?PaddleRPM:0);
  Next->Configuration+=FString::Printf(TEXT("cpu_threads %d\nparallel_min_jobs %d\n"),CPUThreads,ParallelMinJobs);
- Next->Worker=std::make_unique<powder::ClumpWorker>(static_cast<const powder::ClumpRunState&>(*Next),WorkerOptions(*this));Runtime=MoveTemp(Next);Sync();}catch(const std::exception& E){Runtime.Reset();Pebbles->ClearInstances();GroupBPebbles->ClearInstances();Error=UTF8_TO_TCHAR(E.what());}}
+ BackendStatus=TEXT("CPU (default)");
+ if(bPreferGPU){try{Next->Backend=powder::make_gpu_backend(Next->World);Next->Worker=std::make_unique<powder::ClumpWorker>(static_cast<const powder::ClumpRunState&>(*Next),WorkerOptions(*this));BackendStatus=TEXT("GPU OpenCL FP64: dry linear spheres / boxes");}catch(const std::exception& E){Next->Backend.reset();BackendStatus=FString(TEXT("CPU fallback: "))+UTF8_TO_TCHAR(E.what());}}
+ if(!Next->Worker)Next->Worker=std::make_unique<powder::ClumpWorker>(static_cast<const powder::ClumpRunState&>(*Next),WorkerOptions(*this));
+ Next->Configuration+=FString::Printf(TEXT("uniform_damping_friction %d\nnormal_damping %.17g\ntangent_damping %.17g\nfriction %.17g\n"),bUniformDampingFriction?1:0,UniformNormalDamping,UniformTangentDamping,UniformFriction);
+ Next->Configuration+=FString(TEXT("backend "))+BackendStatus+TEXT("\n");Runtime=MoveTemp(Next);Sync();}catch(const std::exception& E){Runtime.Reset();Pebbles->ClearInstances();GroupBPebbles->ClearInstances();Error=UTF8_TO_TCHAR(E.what());}}
 void APowderClumpTest::ToggleSimulation(){
  if(!Runtime||!Error.IsEmpty())return;
  try{if(bRunning)Runtime->Worker->pause();else{Runtime->Worker->set_options(WorkerOptions(*this));Runtime->Worker->run();}Sync();}
  catch(const std::exception& E){Error=UTF8_TO_TCHAR(E.what());bRunning=false;}
 }
 void APowderClumpTest::StepSimulation(){if(!Runtime||!Error.IsEmpty())return;Runtime->Worker->single_step();Sync();}
-void APowderClumpTest::Tick(float DeltaSeconds){Super::Tick(DeltaSeconds);if(GEngine&&GetWorld()->GetFirstPlayerController()&&Runtime&&Runtime->Mixing)GEngine->AddOnScreenDebugMessage(2121,0,FColor::Green,FString::Printf(TEXT("Mixing: mass-weighted cell uniformity %s (not product quality)\n%s"),bMixingIndexValid?*FString::Printf(TEXT("%.6f"),MixingIndex):TEXT("N/A"),*MixingStatus));if(GEngine&&GetWorld()->GetFirstPlayerController()&&Runtime&&!Runtime->World.moving_meshes.empty())GEngine->AddOnScreenDebugMessage(2020,0,FColor::Yellow,FString::Printf(TEXT("Applied RPM %.2f | wall work %.6g J | last reaction Tz %.6g Nm"),AppliedPaddleRPM(),WallWorkJ,WallReactionTorqueNm.Z));Sync();
+void APowderClumpTest::Tick(float DeltaSeconds){Super::Tick(DeltaSeconds);if(GEngine&&GetWorld()->GetFirstPlayerController())GEngine->AddOnScreenDebugMessage(1616,0,FColor::Cyan,BackendStatus);if(GEngine&&GetWorld()->GetFirstPlayerController()&&Runtime&&Runtime->Mixing)GEngine->AddOnScreenDebugMessage(2121,0,FColor::Green,FString::Printf(TEXT("Mixing: mass-weighted cell uniformity %s (not product quality)\n%s"),bMixingIndexValid?*FString::Printf(TEXT("%.6f"),MixingIndex):TEXT("N/A"),*MixingStatus));if(GEngine&&GetWorld()->GetFirstPlayerController()&&Runtime&&!Runtime->World.moving_meshes.empty())GEngine->AddOnScreenDebugMessage(2020,0,FColor::Yellow,FString::Printf(TEXT("Applied RPM %.2f | wall work %.6g J | last reaction Tz %.6g Nm"),AppliedPaddleRPM(),WallWorkJ,WallReactionTorqueNm.Z));Sync();
 if(GEngine&&GetWorld()->GetFirstPlayerController())GEngine->AddOnScreenDebugMessage(2626,0,FColor::Cyan,FString::Printf(TEXT("Speed target %.2fx | actual %.4fx | lag %.3f s | worker batch %.0f ms | %s"),TargetSimulationRate,ActualSimulationRate,SimulationLagSeconds,ComputeBudgetMs,bRealtimePacing?TEXT("fixed-step real-time target"):TEXT("unpaced worker")));
 if(GEngine&&GetWorld()->GetFirstPlayerController())GEngine->AddOnScreenDebugMessage(1818,0,FColor::Cyan,FString::Printf(TEXT("%s | %d bodies / %d shown of %d pebbles | %d triangles | t=%.6f s | Space run/pause, N step, R reset, O export\n%s"),Runtime&&!Runtime->World.moving_meshes.empty()?TEXT("Paddle test"):Runtime&&!Runtime->World.meshes.empty()?TEXT("Mesh test"):TEXT("Clump test"),BodyCount(),RenderedPebbles(),TotalPebbles,MeshTriangleCount(),PhysicalSeconds,*Error));}
 void APowderClumpTest::Sync(){

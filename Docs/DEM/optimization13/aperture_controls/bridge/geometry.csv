@@ -1,0 +1,5 @@
+q,physical_diameter_m,computed_diameter_m,opening_m,physical_fits,computed_fits,changes_passability,scope_rejected
+1,0.01,0.01,0.012,1,1,0,0
+2,0.01,0.012599210498948729,0.012,1,0,1,1
+4,0.01,0.015874010519681993,0.012,1,0,1,1
+8,0.01,0.02,0.012,1,0,1,1

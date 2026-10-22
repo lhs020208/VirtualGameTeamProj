@@ -312,4 +312,22 @@ bool FDEMCPUParallel::RunTest(const FString& Parameters){
  A->Destroy();B->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
 }
 
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDEMGpuBridge,"Powder.DEM.GpuBridge",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FDEMGpuBridge::RunTest(const FString& Parameters){
+ UWorld::InitializationValues IV;IV.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false);
+ UWorld* W=UWorld::CreateWorld(EWorldType::Game,false,NAME_None,nullptr,true,ERHIFeatureLevel::Num,&IV);if(!TestNotNull(TEXT("GPU bridge world"),W))return false;
+ GEngine->CreateNewWorldContext(EWorldType::Game).SetCurrentWorld(W);W->InitializeActorsForPlay(FURL());auto* A=W->SpawnActor<APowderClumpTest>();A->DispatchBeginPlay();
+ A->bMixingRig=true;A->bPreferGPU=true;A->bUniformDampingFriction=true;A->PowderStiffness=A->MixedStiffness=A->InclusionStiffness=10000;A->FixedDt=2e-6;A->MixingDurationSeconds=.0002;A->MixingSampleSeconds=.00002;A->bProfilePerformance=true;A->bRealtimePacing=false;A->ResetSimulation();
+ AddInfo(A->BackendStatus);TestTrue(TEXT("GPU enabled for supported scene"),A->BackendStatus.StartsWith(TEXT("GPU")));TestTrue(TEXT("GPU reset valid"),A->Error.IsEmpty());
+ for(int I=0;I<10;++I)A->StepSimulation();TestTrue(TEXT("GPU physical time advances"),FMath::Abs(A->PhysicalSeconds-.00002)<1e-12);TestEqual(TEXT("GPU renders all spheres"),A->RenderedPebbles(),32);TestEqual(TEXT("physical mixing sample"),A->MixingSampleCount(),2);
+ A->ToggleSimulation();const double End=FPlatformTime::Seconds()+15;while(!A->bMixingFinished&&A->Error.IsEmpty()&&FPlatformTime::Seconds()<End){A->Tick(1.f/60);FPlatformProcess::Sleep(.001f);}TestTrue(TEXT("GPU mixing finishes"),A->bMixingFinished);TestTrue(TEXT("GPU runtime valid"),A->Error.IsEmpty());
+ AddInfo(FString::Printf(TEXT("GPU bridge worker %.9fs snapshot %.9fs ISM update %.9fs (%d updates); physical %.9fs"),A->WorkerComputeSeconds,A->SnapshotCopySeconds,A->ProfiledDisplaySeconds,A->ProfiledDisplayUpdates,A->PhysicalSeconds));
+ TArray<FVector> GpuPositions;for(int32 I=0;I<32;++I)GpuPositions.Add(A->BodyPositionCm(I));const double GpuMass=A->ChargeMassKg,GpuMix=A->MixingIndex;
+ A->bPreferGPU=false;A->ResetSimulation();for(int I=0;I<10;++I)A->StepSimulation();A->ToggleSimulation();const double CpuEnd=FPlatformTime::Seconds()+15;while(!A->bMixingFinished&&A->Error.IsEmpty()&&FPlatformTime::Seconds()<CpuEnd){A->Tick(1.f/60);FPlatformProcess::Sleep(.001f);}TestTrue(TEXT("CPU comparison finishes"),A->bMixingFinished);for(int32 I=0;I<32;++I)TestTrue(TEXT("CPU/GPU rendered trajectories"),GpuPositions[I].Equals(A->BodyPositionCm(I),1e-5));TestEqual(TEXT("CPU/GPU mass"),A->ChargeMassKg,GpuMass);TestEqual(TEXT("CPU/GPU mixing"),A->MixingIndex,GpuMix);
+ AddInfo(FString::Printf(TEXT("CPU bridge worker %.9fs snapshot %.9fs ISM update %.9fs (%d updates); physical %.9fs"),A->WorkerComputeSeconds,A->SnapshotCopySeconds,A->ProfiledDisplaySeconds,A->ProfiledDisplayUpdates,A->PhysicalSeconds));
+ A->bPreferGPU=true;
+ A->MixedStiffness=14000;A->ResetSimulation();TestTrue(TEXT("unsupported coefficients explicit CPU fallback"),A->BackendStatus.StartsWith(TEXT("CPU fallback:")));TestTrue(TEXT("fallback preserves runnable scene"),A->Error.IsEmpty());A->StepSimulation();TestTrue(TEXT("CPU fallback advances"),A->PhysicalSeconds>0);
+ A->Destroy();W->DestroyWorld(false);GEngine->DestroyWorldContext(W);return true;
+}
 #endif

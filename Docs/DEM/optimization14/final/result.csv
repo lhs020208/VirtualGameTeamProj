@@ -1,0 +1,2 @@
+device,global_bytes,max_allocation_bytes,fp64_config,max_error,upload_wall_s,upload_gpu_s,compute_wall_s,compute_gpu_s,download_wall_s,download_gpu_s,target_1591550_slots32_bytes
+NVIDIA GeForce RTX 4060 Ti,17175150592,4293787648,63,0,0.0011527,6.8800000000000002e-06,0.016973100000000001,0.016831488000000002,0.00018249999999999999,1.3056000000000002e-05,8042238128

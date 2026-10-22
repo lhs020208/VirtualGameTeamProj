@@ -1,0 +1,85 @@
+{
+  "ratios": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "a_quarters": [
+    1,
+    2,
+    3
+  ],
+  "seeds": [
+    11,
+    22,
+    33
+  ],
+  "half_dt_seed": 11,
+  "physical_count": 128,
+  "physical_diameter_m": 0.01,
+  "density_kg_m3": 2500,
+  "dt_s": 5e-07,
+  "duration_s": 0.12,
+  "physical_kn": 10000,
+  "physical_cn": 0.2,
+  "physical_kt": 2500,
+  "physical_ct": 0.05,
+  "mu": 0.1,
+  "speed_m_s": 0.5,
+  "cohorts": 16,
+  "samples": 21,
+  "grids": [
+    [
+      2,
+      1,
+      1
+    ],
+    [
+      4,
+      1,
+      1
+    ]
+  ],
+  "bounds": [
+    [
+      -0.22,
+      -0.5,
+      -1
+    ],
+    [
+      0.22,
+      0.5,
+      0.5
+    ]
+  ],
+  "minimum_cohorts": [
+    4,
+    2
+  ],
+  "weight": "equal physical mass per fixed eight-grain cohort COM; not independent grains",
+  "comparison_limits": {
+    "mixing2": 0.1,
+    "mixing4": 0.1,
+    "com_relative": 0.1
+  },
+  "numerical_limits": {
+    "mixing2": 0.02,
+    "mixing4": 0.02,
+    "com_relative": 0.02
+  },
+  "maximum_overlap_radius_ratio": 0.05,
+  "initial_conditions": "shared deterministic cohort jitter +/-1mm; seed parity swaps internal x/y; q1/2/4/8 use 8/4/2/1 nonoverlapping spheres centered on each cohort",
+  "aperture_m": 0.012,
+  "aperture_physical_diameters_m": [
+    0.01,
+    0.014
+  ],
+  "aperture_duration_s": 0.3,
+  "forbidden_scopes": [
+    "clearance_or_clogging",
+    "size_segregation"
+  ],
+  "field_validation": false,
+  "speed_timings": "single serial runs; not kg-scale acceptance"
+}

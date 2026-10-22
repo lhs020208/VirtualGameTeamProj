@@ -9,6 +9,7 @@ public class VirtualGameTeamProj : ModuleRules
 		PCHUsage = PCHUsageMode.NoPCHs;
         bUseUnity = false; // Core translation units contain private helper namespaces.
         bEnableExceptions = true; // Solver rejects invalid steps without committing state.
+        PrivateIncludePaths.Add(System.IO.Path.Combine(ModuleDirectory, "../../Physics/PowderCore/third_party/OpenCL"));
         PublicIncludePaths.Add(System.IO.Path.Combine(ModuleDirectory, "../../Physics/PowderCore/include"));
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "PhysicsCore", "RenderCore" });

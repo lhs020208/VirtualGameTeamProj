@@ -1,0 +1,168 @@
+{
+  "controls_passed": true,
+  "cases": {
+    "bridge": {
+      "summary": {
+        "case": "bridge",
+        "passed_count": "0",
+        "passed_mass_a_kg": "0",
+        "passed_mass_b_kg": "0",
+        "max_overlap_radius_ratio": "0.03067141528503483",
+        "contacts": "19722",
+        "physical_count": "2",
+        "computed_count": "2",
+        "q": "1",
+        "duration_s": "0.3"
+      },
+      "final_energy_j": 8.928651445301231e-05,
+      "geometry": [
+        {
+          "q": "1",
+          "physical_diameter_m": "0.01",
+          "computed_diameter_m": "0.01",
+          "opening_m": "0.012",
+          "physical_fits": "1",
+          "computed_fits": "1",
+          "changes_passability": "0",
+          "scope_rejected": "0"
+        },
+        {
+          "q": "2",
+          "physical_diameter_m": "0.01",
+          "computed_diameter_m": "0.012599210498948729",
+          "opening_m": "0.012",
+          "physical_fits": "1",
+          "computed_fits": "0",
+          "changes_passability": "1",
+          "scope_rejected": "1"
+        },
+        {
+          "q": "4",
+          "physical_diameter_m": "0.01",
+          "computed_diameter_m": "0.015874010519681993",
+          "opening_m": "0.012",
+          "physical_fits": "1",
+          "computed_fits": "0",
+          "changes_passability": "1",
+          "scope_rejected": "1"
+        },
+        {
+          "q": "8",
+          "physical_diameter_m": "0.01",
+          "computed_diameter_m": "0.02",
+          "opening_m": "0.012",
+          "physical_fits": "1",
+          "computed_fits": "0",
+          "changes_passability": "1",
+          "scope_rejected": "1"
+        }
+      ],
+      "checks_passed": true
+    },
+    "psd": {
+      "summary": {
+        "case": "psd",
+        "passed_count": "1",
+        "passed_mass_a_kg": "0.001308996938995747",
+        "passed_mass_b_kg": "0",
+        "max_overlap_radius_ratio": "0.04395960447722471",
+        "contacts": "31212",
+        "physical_count": "2",
+        "computed_count": "2",
+        "q": "1",
+        "duration_s": "0.3"
+      },
+      "final_energy_j": 0.005676853920181045,
+      "geometry": [
+        {
+          "q": "1",
+          "physical_diameter_m": "0.01",
+          "computed_diameter_m": "0.01",
+          "opening_m": "0.012",
+          "physical_fits": "1",
+          "computed_fits": "1",
+          "changes_passability": "0",
+          "scope_rejected": "0"
+        },
+        {
+          "q": "1",
+          "physical_diameter_m": "0.014",
+          "computed_diameter_m": "0.014",
+          "opening_m": "0.012",
+          "physical_fits": "0",
+          "computed_fits": "0",
+          "changes_passability": "0",
+          "scope_rejected": "0"
+        },
+        {
+          "q": "2",
+          "physical_diameter_m": "0.01",
+          "computed_diameter_m": "0.012599210498948729",
+          "opening_m": "0.012",
+          "physical_fits": "1",
+          "computed_fits": "0",
+          "changes_passability": "1",
+          "scope_rejected": "1"
+        },
+        {
+          "q": "2",
+          "physical_diameter_m": "0.014",
+          "computed_diameter_m": "0.017638894698528224",
+          "opening_m": "0.012",
+          "physical_fits": "0",
+          "computed_fits": "0",
+          "changes_passability": "0",
+          "scope_rejected": "1"
+        },
+        {
+          "q": "4",
+          "physical_diameter_m": "0.01",
+          "computed_diameter_m": "0.015874010519681993",
+          "opening_m": "0.012",
+          "physical_fits": "1",
+          "computed_fits": "0",
+          "changes_passability": "1",
+          "scope_rejected": "1"
+        },
+        {
+          "q": "4",
+          "physical_diameter_m": "0.014",
+          "computed_diameter_m": "0.02222361472755479",
+          "opening_m": "0.012",
+          "physical_fits": "0",
+          "computed_fits": "0",
+          "changes_passability": "0",
+          "scope_rejected": "1"
+        },
+        {
+          "q": "8",
+          "physical_diameter_m": "0.01",
+          "computed_diameter_m": "0.02",
+          "opening_m": "0.012",
+          "physical_fits": "1",
+          "computed_fits": "0",
+          "changes_passability": "1",
+          "scope_rejected": "1"
+        },
+        {
+          "q": "8",
+          "physical_diameter_m": "0.014",
+          "computed_diameter_m": "0.028000000000000001",
+          "opening_m": "0.012",
+          "physical_fits": "0",
+          "computed_fits": "0",
+          "changes_passability": "0",
+          "scope_rejected": "1"
+        }
+      ],
+      "checks_passed": true
+    }
+  },
+  "maximum_allowed_ratio_in_clearance_or_segregation": 1,
+  "multi_grain_bulk_arching_validated": false,
+  "sha256": {
+    "Intermediate\\PowderCore\\Release\\powder_aperture13.exe": "082002043079947d5ba1a975c0c7be1a8b0c96e1f876a321d33ddad01dc830dd",
+    "Physics\\PowderCore\\app\\representative_aperture.cpp": "9c6e347879bedc2b715026b663f9aa6f8192415211700cc42cc7bb42123e5dc7",
+    "Scripts\\run_optimization13_aperture_validation.py": "2c468344848e801b77ac49d825f3d9eb6427bf4b4718bfdff81542ed41cbb924"
+  }
+}

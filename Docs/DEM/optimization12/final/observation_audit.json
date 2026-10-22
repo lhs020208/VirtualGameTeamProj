@@ -1,0 +1,24 @@
+{
+  "matched_cells_sample_counts_mass_passed": true,
+  "overlap_diagnostics": {
+    "packing_q1": {
+      "max_overlap_radius_ratio": 0.22412861097646222
+    },
+    "packing_q8": {
+      "max_overlap_radius_ratio": 0.21676235289405793
+    },
+    "discharge_q1": {
+      "max_overlap_radius_ratio": 0.0
+    },
+    "discharge_q8": {
+      "max_overlap_radius_ratio": 0.0
+    },
+    "mixing_q1": {
+      "max_overlap_radius_ratio": 0.3446259387552428
+    },
+    "mixing_q8": {
+      "max_overlap_radius_ratio": 0.31331726952254396
+    }
+  },
+  "warning": "large linear overlap is permitted by the solver; execution success is not material fidelity"
+}

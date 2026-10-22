@@ -1,0 +1,2 @@
+step,time_s,com_z,energy_j,arrived_physical_count,arrived_mass_kg,mass_a_kg,mass_b_kg,mixing_valid,mixing_index,sample_count,contacts
+0,0,0.059999999999999984,0,0,0,0.16755160819145579,0.16755160819145579,1,0,32,0

@@ -1,0 +1,35 @@
+{
+  "execution_and_mass_checks_passed": true,
+  "adopt_for_process": false,
+  "comparisons": {
+    "packing": {
+      "error": 0.024031359048499477,
+      "limit": 0.1,
+      "within_screening_limit": true,
+      "speedup": 8.413471755482895,
+      "reference_rate": 0.009616092100868452,
+      "coarse_rate": 0.0809047192887789
+    },
+    "discharge": {
+      "error": 0.4999999999999995,
+      "limit": 0.1,
+      "within_screening_limit": false,
+      "speedup": 8.381500711165884,
+      "reference_rate": 0.008167398449777463,
+      "coarse_rate": 0.06845505591518496
+    },
+    "mixing": {
+      "error": 0.0,
+      "limit": 0.1,
+      "within_screening_limit": true,
+      "speedup": 8.602002368694118,
+      "reference_rate": 0.009040705821356044,
+      "coarse_rate": 0.07776817288997138
+    }
+  },
+  "source_sha256": {
+    "Physics\\PowderCore\\include\\powder\\representative_runtime.hpp": "7c74a8fd15d59b437727ac52874746756b3fe1246502d6f8805cfebb77e660b0",
+    "Physics\\PowderCore\\app\\representative_run.cpp": "319ecc2ad6724623b57366e2cc1eebd36d0783d37113b7bd1497274f65fbba72",
+    "Scripts\\run_optimization12_validation.py": "c182b841750b0f62f0b903f161f930f99eb6c3e5505b980268491b8bd9fff272"
+  }
+}

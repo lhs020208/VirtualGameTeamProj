@@ -1,0 +1,28 @@
+[
+  {
+    "title": "Comparison of Coarse Graining DEM Models Based on Exact Scaling Laws",
+    "authors": "Zhang, Huang, Zhao",
+    "year": 2021,
+    "url": "https://www.techscience.com/CMES/v127n3/42603/html",
+    "doi": "10.32604/cmes.2021.016018",
+    "used_for": "length/time/density scale framework; limits of partial scaling",
+    "not_claimed": "same-gravity process equivalence"
+  },
+  {
+    "title": "Scaling of discrete element model parameters for cohesionless and cohesive solid",
+    "authors": "Thakur, Ooi, Ahmadian",
+    "year": 2015,
+    "url": "https://arxiv.org/abs/1506.00439",
+    "used_for": "primary quasi-static stiffness scaling evidence",
+    "not_claimed": "validation of this solver or its constant-attraction adhesion"
+  },
+  {
+    "title": "On the scaling law of JKR contact model for coarse-grained cohesive particles",
+    "authors": "Chen, Elliott",
+    "year": 2020,
+    "url": "https://www.repository.cam.ac.uk/items/691f150d-168f-4d43-913c-e0382a6d9376",
+    "doi": "10.1016/j.ces.2020.115906",
+    "used_for": "adhesion requires model-specific scaling; exclusion here",
+    "not_claimed": "JKR implementation in this solver"
+  }
+]

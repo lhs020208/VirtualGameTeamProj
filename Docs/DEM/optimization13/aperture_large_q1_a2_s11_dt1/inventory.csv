@@ -1,0 +1,2 @@
+group,bin,physical_diameter_m,density_kg_m3,physical_count,represented_count_per_particle,computational_count,length_scale,computational_diameter_m,physical_particle_mass_kg,computational_particle_mass_kg,computational_inertia_kg_m2,total_mass_kg
+0,0,0.014,2500,1,1,1,1,0.014,0.0035918876006043304,0.0035918876006043304,7.0400996971844888e-08,0.0035918876006043304

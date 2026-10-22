@@ -19,7 +19,9 @@ void ClumpWorker::reset(ClumpRunState state,ClumpWorkerOptions options){
  submit([this,state=std::move(state),options]()mutable{
   if(!std::isfinite(state.Dt)||state.Dt<=0)throw std::invalid_argument("invalid worker fixed dt");
   // Probe before adopting the reset; failure leaves the previous generation intact.
-  auto probe=state.World;probe.step(state.Dt);
+  auto probe=state.World;
+  if(state.Backend){state.Backend=state.Backend->clone();auto backend=state.Backend->clone();backend->advance(probe,state.Dt);ClumpReport report;backend->synchronize(probe,report);}
+  else probe.step(state.Dt);
   state_=std::move(state);options_=options;running_=false;++generation_;sequence_=publications_=0;snapshot_seconds_=actual_rate_=0;
   run_start_=rate_start_=Clock::now();run_origin_s_=rate_origin_s_=state_.World.physical_time_s;publish();
  });
@@ -29,19 +31,21 @@ void ClumpWorker::set_options(ClumpWorkerOptions options){options.validate();sub
 void ClumpWorker::run(){submit([this]{if(!state_.Error.empty()||finished())return;if(!running_){running_=true;run_start_=rate_start_=Clock::now();run_origin_s_=rate_origin_s_=state_.World.physical_time_s;actual_rate_=0;}publish();});}
 void ClumpWorker::pause(){submit([this]{running_=false;publish();});}
 void ClumpWorker::single_step(){submit([this]{running_=false;advance();publish();});}
-ClumpRunState ClumpWorker::checkpoint(){ClumpRunState result;submit([this,&result]{if(running_)throw std::logic_error("pause before checkpoint");result=state_;});return result;}
+ClumpRunState ClumpWorker::checkpoint(){ClumpRunState result;submit([this,&result]{if(running_)throw std::logic_error("pause before checkpoint");if(state_.Backend)state_.Backend->synchronize(state_.World,state_.Report);result=state_;if(result.Backend)result.Backend=result.Backend->clone();});return result;}
 std::shared_ptr<const ClumpSnapshot> ClumpWorker::snapshot()const{std::lock_guard<std::mutex> lock(mutex_);return latest_;}
 void ClumpWorker::advance(){
  if(!state_.Error.empty()||finished()){running_=false;return;}
  const auto start=Clock::now();
- try{const double load_time=state_.World.physical_time_s;state_.Report=state_.World.step_profiled(state_.Dt,options_.profile?&state_.Profile:nullptr);state_.LoadTime=load_time;++state_.Steps;
-  if(state_.Mixing)state_.Mixing->record(state_.World.bodies,state_.Steps);
+ try{const double load_time=state_.World.physical_time_s;if(state_.Backend)state_.Backend->advance(state_.World,state_.Dt);else state_.Report=state_.World.step_profiled(state_.Dt,options_.profile?&state_.Profile:nullptr);state_.LoadTime=load_time;++state_.Steps;
+  if(state_.Mixing){if(state_.Backend&&(finished()||state_.Steps%state_.Mixing->config.steps(state_.Mixing->config.sample_s)==0))state_.Backend->synchronize(state_.World,state_.Report);state_.Mixing->record(state_.World.bodies,state_.Steps);}
   if(finished())running_=false;
  }catch(const std::exception& e){state_.Error=e.what();running_=false;}
  state_.ComputeSeconds+=std::chrono::duration<double>(Clock::now()-start).count();
 }
 void ClumpWorker::publish(){
- const auto start=Clock::now();auto s=std::make_shared<ClumpSnapshot>();
+ const auto start=Clock::now();
+ if(state_.Backend)try{state_.Backend->synchronize(state_.World,state_.Report);}catch(const std::exception& e){if(state_.Error.empty())state_.Error=e.what();running_=false;}
+ auto s=std::make_shared<ClumpSnapshot>();
  s->generation=generation_;s->sequence=++sequence_;s->steps=state_.Steps;s->publications=++publications_;s->running=running_;s->finished=finished();
  s->time_s=state_.World.physical_time_s;s->load_time_s=state_.LoadTime;s->wall_work_j=state_.World.moving_wall_work_j;
  s->compute_s=state_.ComputeSeconds;s->bodies=state_.World.bodies;s->report=state_.Report;s->profile=state_.Profile;s->error=state_.Error;

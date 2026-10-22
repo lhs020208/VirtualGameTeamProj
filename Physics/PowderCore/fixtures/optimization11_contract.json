@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "work": 11,
+  "runtime_enabled": false,
+  "q_definition": "integer physical particle count represented by one computational sphere",
+  "length_scale": "cbrt(q)",
+  "density_scale": 1,
+  "mass_scale": "q",
+  "inertia_scale": "q*length_scale^2",
+  "linear_stiffness_scale": "length_scale",
+  "linear_damping_scale": "length_scale^2",
+  "friction_scale": 1,
+  "supported_candidate": "dry nonrolling nonadhesive linear sphere pair/wall, one common q",
+  "q1": "identity for all existing validated contact laws; no new drag support",
+  "forbidden_q_gt_1": [
+    "Hertz",
+    "rolling",
+    "adhesion",
+    "drag",
+    "clearance/clogging",
+    "size segregation",
+    "impact/deformation",
+    "mixed weights/remainder rounding",
+    "nonspherical shape substitution"
+  ],
+  "fixed_gravity_bulk_similarity": false,
+  "physical_psd": "explicit number-count bins; one density per group; no implicit mean diameter",
+  "real_material_validation": false,
+  "mass_consistency_relative": 1e-12,
+  "test_relative": 1e-10,
+  "test_absolute": 1e-24
+}

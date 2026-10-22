@@ -1,0 +1,81 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "PC",
+			"instance": "E821E9BF4EF6959B0F269F855739ACE8",
+			"instanceName": "PC-60324",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 11 (26H2) [10.0.26300.9711] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 4060 Ti",
+			"cPUModel": "Intel(R) Core(TM) i7-14700KF",
+			"rAMInGB": 32,
+			"renderMode": "D3D12_SM6",
+			"rHI": "D3D12 (SM6)",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.21-20.46.54",
+	"succeeded": 1,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 0.45487681031227112,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "GpuBridge",
+			"fullTestPath": "Powder.DEM.GpuBridge",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"E821E9BF4EF6959B0F269F855739ACE8"
+			],
+			"duration": 0.45487681031227112,
+			"dateTime": "2026.10.21-20.46.54",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "GPU OpenCL FP64: dry linear spheres / boxes",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.21-20.46.54"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "GPU bridge worker 0.049821900s snapshot 0.001530900s ISM update 0.000476401s (14 updates); physical 0.000200000s",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.21-20.46.54"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "CPU bridge worker 0.008102700s snapshot 0.000018700s ISM update 0.000664096s (13 updates); physical 0.000200000s",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.21-20.46.54"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

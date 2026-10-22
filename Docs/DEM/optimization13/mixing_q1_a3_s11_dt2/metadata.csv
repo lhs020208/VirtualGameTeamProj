@@ -1,0 +1,2 @@
+case,q,a_quarters,seed,dt_s,duration_s,physical_count,computed_count,total_mass_kg,physical_kn,computed_kn,physical_cn,computed_cn,cohorts
+mixing,1,3,11,2.4999999999999999e-07,0.12,128,128,0.16755160819145562,10000,10000,0.2,0.20000000000000001,16

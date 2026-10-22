@@ -1,0 +1,28 @@
+{
+  "ratios": [
+    1,
+    8
+  ],
+  "physical_count": 256,
+  "physical_diameter_m": 0.01,
+  "density_kg_m3": 2500,
+  "duration_s": 0.25,
+  "dt_s": 2e-05,
+  "sample_count": 21,
+  "observation_samples": 32,
+  "grid": [
+    2,
+    2,
+    1
+  ],
+  "minimum_samples_per_occupied_cell": 4,
+  "weight": "mass",
+  "observation": "32 fixed initial eight-physical-particle cohort COMs; not independent physical grains",
+  "adoption": false,
+  "comparison_limits": {
+    "packing_final_com_relative": 0.1,
+    "discharge_max_mass_fraction_error": 0.1,
+    "mixing_max_absolute_index_error": 0.1
+  },
+  "scope": "small dry linear fixtures only; no mm/kg throughput claim"
+}

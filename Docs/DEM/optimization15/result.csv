@@ -1,0 +1,2 @@
+bodies,steps,dt_s,max_state_error,momentum_error,test_wall_s
+64,10000,9.9999999999999995e-08,2.2204460492503131e-14,0,3.3672259000000002

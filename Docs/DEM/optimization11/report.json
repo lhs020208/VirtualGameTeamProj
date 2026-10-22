@@ -1,0 +1,89 @@
+{
+  "passed": true,
+  "contract": {
+    "schema": 1,
+    "work": 11,
+    "runtime_enabled": false,
+    "q_definition": "integer physical particle count represented by one computational sphere",
+    "length_scale": "cbrt(q)",
+    "density_scale": 1,
+    "mass_scale": "q",
+    "inertia_scale": "q*length_scale^2",
+    "linear_stiffness_scale": "length_scale",
+    "linear_damping_scale": "length_scale^2",
+    "friction_scale": 1,
+    "supported_candidate": "dry nonrolling nonadhesive linear sphere pair/wall, one common q",
+    "q1": "identity for all existing validated contact laws; no new drag support",
+    "forbidden_q_gt_1": [
+      "Hertz",
+      "rolling",
+      "adhesion",
+      "drag",
+      "clearance/clogging",
+      "size segregation",
+      "impact/deformation",
+      "mixed weights/remainder rounding",
+      "nonspherical shape substitution"
+    ],
+    "fixed_gravity_bulk_similarity": false,
+    "physical_psd": "explicit number-count bins; one density per group; no implicit mean diameter",
+    "real_material_validation": false,
+    "mass_consistency_relative": 1e-12,
+    "test_relative": 1e-10,
+    "test_absolute": 1e-24
+  },
+  "inventories": [
+    {
+      "q": 1,
+      "groups": {
+        "0": {
+          "physical_count": 72,
+          "computational_count": 72,
+          "mass_kg": 0.0001884955592153876
+        },
+        "1": {
+          "physical_count": 48,
+          "computational_count": 48,
+          "mass_kg": 0.0007068583470577034
+        }
+      }
+    },
+    {
+      "q": 2,
+      "groups": {
+        "0": {
+          "physical_count": 72,
+          "computational_count": 36,
+          "mass_kg": 0.0001884955592153876
+        },
+        "1": {
+          "physical_count": 48,
+          "computational_count": 24,
+          "mass_kg": 0.0007068583470577034
+        }
+      }
+    },
+    {
+      "q": 8,
+      "groups": {
+        "0": {
+          "physical_count": 72,
+          "computational_count": 9,
+          "mass_kg": 0.0001884955592153876
+        },
+        "1": {
+          "physical_count": 48,
+          "computational_count": 6,
+          "mass_kg": 0.0007068583470577034
+        }
+      }
+    }
+  ],
+  "executable_sha256": "bcf271fd114837a30cad62aa7bfb56eae15f83ae371773bb7314b66071d68060",
+  "source_sha256": {
+    "Physics/PowderCore/include/powder/representative.hpp": "7ae7ca359ab8d7991e7f8331674f205f44e81876e874ff2d4138a7c3a9edee6f",
+    "Physics/PowderCore/tests/representative_tests.cpp": "25bd3e8f189549b790906b92d160ada06b7ab0c66f4ffff16a8e0a8c31d3241e",
+    "Physics/PowderCore/CMakeLists.txt": "4139469110276e5c2fe5fe3fb2397f1b738aa0d80e2d874ba26675a1a63f150c",
+    "Scripts/run_optimization11_validation.py": "91776860055141b56dcf086b458337cc83e64a11f0b25416e5f3f8f27a48a6c2"
+  }
+}

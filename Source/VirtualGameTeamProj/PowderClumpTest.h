@@ -13,6 +13,12 @@ UCLASS()
 class VIRTUALGAMETEAMPROJ_API APowderClumpTest:public AActor {
  GENERATED_BODY()
 public:
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Simulation") bool bPreferGPU=false;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clump|Simulation") FString BackendStatus;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Materials") bool bUniformDampingFriction=false;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Materials") double UniformNormalDamping=8;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Materials") double UniformTangentDamping=2;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Clump|Materials") double UniformFriction=.4;
  APowderClumpTest();virtual ~APowderClumpTest()override;
  virtual void OnConstruction(const FTransform& Transform)override;
  virtual void BeginPlay()override;virtual void EndPlay(const EEndPlayReason::Type Reason)override;virtual void Tick(float DeltaSeconds)override;

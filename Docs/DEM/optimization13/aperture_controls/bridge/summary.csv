@@ -1,0 +1,2 @@
+case,passed_count,passed_mass_a_kg,passed_mass_b_kg,max_overlap_radius_ratio,contacts,physical_count,computed_count,q,duration_s
+bridge,0,0,0,0.03067141528503483,19722,2,2,1,0.3
