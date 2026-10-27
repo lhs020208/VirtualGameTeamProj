@@ -1,0 +1,14 @@
+{
+  "count": 50000,
+  "dt": 0.000375,
+  "batch": 32,
+  "iterations": 16,
+  "seconds": 12.0,
+  "level": "/Game/L_MX301_Test",
+  "requested_rate": 2,
+  "resolution": [
+    1280,
+    720
+  ],
+  "fps_cap": 30
+}

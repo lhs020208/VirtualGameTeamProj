@@ -1,15 +1,24 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "powder/granular.hpp"
 #include "PowderGranularMixer.generated.h"
-class UInstancedStaticMeshComponent;class UStaticMeshComponent;struct FGranularRuntime;
+class ADEMEmitter;class UDEMParticleSettings;class UInstancedStaticMeshComponent;class UStaticMeshComponent;struct FGranularRuntime;
 UCLASS()
 class VIRTUALGAMETEAMPROJ_API APowderGranularMixer:public AActor {
  GENERATED_BODY()
 public:
  APowderGranularMixer();~APowderGranularMixer();
  virtual void OnConstruction(const FTransform&)override;virtual void BeginPlay()override;virtual void EndPlay(const EEndPlayReason::Type)override;virtual void Tick(float)override;
- UPROPERTY(EditAnywhere,Category="Granular|Setup",meta=(ClampMin="30000",ClampMax="1000000")) int32 ParticleCount=30000;
+ UPROPERTY(EditAnywhere,Category="Granular|Setup",meta=(EditCondition="!UseEmitters",ClampMin="1",ClampMax="1000000")) int32 ParticleCount=30000;
+ UPROPERTY(EditAnywhere,Category="Granular|Emitters") bool UseEmitters=false;
+ UPROPERTY(EditAnywhere,Category="Granular|Emitters",meta=(ToolTip="Explicit source order defines stable particle IDs. All sources must share GPU radius/density/friction.")) TArray<TObjectPtr<ADEMEmitter>> Emitters;
+ std::vector<powder::Grain> CopyParticleState();
+ bool BuildEmitterInitialState(std::vector<powder::Grain>& Positions,std::vector<powder::Grain>& Velocities);
+ UPROPERTY(EditAnywhere,Category="Granular|Setup",meta=(ToolTip="Optional explicit GPU approximation settings. Read on Reset. Null preserves legacy settings.")) TObjectPtr<UDEMParticleSettings> ParticleSettings;
+ UPROPERTY(EditAnywhere,Category="Granular|Setup",meta=(ToolTip="Legacy mode mass accounting only, kg/m3. Does not calibrate dynamics.")) double DensityKgPerCubicMeter=1200;
+ UPROPERTY(VisibleAnywhere,Category="Granular|Status") FString SettingsStatus;
+ UFUNCTION(CallInEditor,BlueprintCallable,Category="Granular") bool ValidateSimulationSettings();
  UPROPERTY(EditAnywhere,Category="Granular|Setup",meta=(ClampMin="2",ClampMax="32")) int32 ContactIterations=16;
  UPROPERTY(EditAnywhere,Category="Granular|Setup") double TimeStep=.00025;
  UPROPERTY(EditAnywhere,Category="Granular|Setup") bool TestMixerAsset=false;
@@ -25,7 +34,7 @@ public:
  UPROPERTY(VisibleAnywhere,Category="Granular|Status") double ActualRate=0;
  UPROPERTY(VisibleAnywhere,Category="Granular|Status") double RadiusMm=0;
  UPROPERTY(VisibleAnywhere,Category="Granular|Status") double MixingIndex=0;
- UPROPERTY(VisibleAnywhere,Category="Granular|Status") double ChargeMassKg=64.8;
+ UPROPERTY(VisibleAnywhere,Category="Granular|Status") double ChargeMassKg=0;
  UPROPERTY(VisibleAnywhere,Category="Granular|Status") double ReceiverMassKg=0;
  UPROPERTY(VisibleAnywhere,Category="Granular|Status") int32 ReceiverCount=0;
  UPROPERTY(VisibleAnywhere,Category="Granular|Status") FString Error;
@@ -39,5 +48,10 @@ private:
  UPROPERTY() TObjectPtr<UStaticMeshComponent> Shaft;
  UPROPERTY() TObjectPtr<UStaticMeshComponent> GateMesh;
  FGranularRuntime* Runtime=nullptr;uint64 Generation=0;bool Benchmark=false,Shot1=false,Shot2=false;double FinishWall=0;FString OutputDir;double BenchmarkSeconds=12;
+ bool PendingEmitterStart=false,SourceResetRequired=false;
+ TArray<TWeakObjectPtr<ADEMEmitter>> ActiveEmitters;
+ TArray<int32> ActiveSourceCounts;
+ FTransform ActiveMixerFrame;
+ double ActiveParticleMassKg=0;
  void Stop();void Geometry();void Display();
 };

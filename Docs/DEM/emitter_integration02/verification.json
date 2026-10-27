@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "custom_mass_kg": 67.85840308708528,
+  "checks": [
+    "legacy 64.8kg",
+    "CPU asset rejected",
+    "GPU custom mass",
+    "unequal friction rejected",
+    "radius limit",
+    "NaN density",
+    "zero count",
+    "GPU spin rejected",
+    "GPU static generation"
+  ]
+}

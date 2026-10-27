@@ -1,0 +1,17 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "0.1-integration",
+  "FriendlyName": "DEM Particle Authoring",
+  "Description": "Particle settings and static emitter; GPU adapter pending.",
+  "Category": "Physics",
+  "CanContainContent": true,
+  "EnabledByDefault": true,
+  "Modules": [
+    {
+      "Name": "DEMPrototype",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}

@@ -38,11 +38,30 @@ struct Api {
  ~Api(){if(module)FreeLibrary(module);}
 };
 }
+void validate_granular_initial(GranularConfig c,const std::vector<Grain>& p){
+ require(c.count==p.size()&&c.count>0&&c.count<=1000000,"external initial count mismatch");
+ const float r=c.radius;require(std::isfinite(r)&&r>.001f&&r<.03f,"external radius outside GPU range");
+ std::map<std::array<int,3>,std::vector<std::size_t>> grid;const double pitch=2*double(r),tol=1.e-6;
+ for(std::size_t i=0;i<p.size();++i){auto a=p[i];float x=a.x,y=a.y,z=a.z;
+  require(std::isfinite(x)&&std::isfinite(y)&&std::isfinite(z)&&(a.w==0||a.w==1),"invalid external position or group");
+  if(c.test_mixer){
+   for(int j=0;j<133;++j){auto plane=mxplanes[j];require(plane[0]*x+plane[1]*y+plane[2]*z-plane[3]<=-r+tol,"initial particle outside MX301 vessel");}
+   for(auto& part:mxparts){double d=-1.e9;for(int j=int(part[0]);j<int(part[0]+part[1]);++j){auto plane=mxplanes[j];d=std::max(d,double(plane[0]*x+plane[1]*y+plane[2]*z-plane[3]));}require(d>=r-tol,"initial particle overlaps MX301 rotor");}
+  }else{
+   require(std::abs(x)<=.45-r+tol&&std::abs(y)<=.25-r+tol&&z>=r-tol&&z<=.4-r+tol,"initial particle outside reference vessel");
+   require(std::hypot(y,z-.21f)>=.025f+r-tol,"initial particle overlaps shaft");
+   for(unsigned k=0;k<6;k++){float angle=k*1.04719755f,co=std::cos(angle),si=std::sin(angle);float lx=x-(-.375f+k*.15f),ly=co*y+si*(z-.21f)-.095f,lz=-si*y+co*(z-.21f);float beta=k%2?-.4f:.4f;float tx=std::cos(beta)*lx+std::sin(beta)*ly,ty=-std::sin(beta)*lx+std::cos(beta)*ly;float dx=std::max(0.f,std::abs(tx)-.045f),dy=std::max(0.f,std::abs(ty)-.07f),dz=std::max(0.f,std::abs(lz)-.012f);require(dx*dx+dy*dy+dz*dz>=(r-tol)*(r-tol),"initial particle overlaps paddle");}
+  }
+  std::array<int,3> key{int(std::floor(x/pitch)),int(std::floor(y/pitch)),int(std::floor(z/pitch))};
+  for(int dz=-1;dz<=1;dz++)for(int dy=-1;dy<=1;dy++)for(int dx=-1;dx<=1;dx++){auto it=grid.find({key[0]+dx,key[1]+dy,key[2]+dz});if(it==grid.end())continue;for(auto j:it->second){double ax=x-p[j].x,ay=y-p[j].y,az=z-p[j].z;require(ax*ax+ay*ay+az*az>=(pitch-tol)*(pitch-tol),"initial particles overlap (including between emitters)");}}
+  grid[key].push_back(i);
+ }
+}
 struct GranularGPU::Impl {
  Api api;cl_device_id device=nullptr;cl_context context=nullptr;cl_command_queue queue=nullptr;cl_program program=nullptr;
  std::array<cl_kernel,6> kernels{};std::array<cl_mem,8> buffers{};
  GranularConfig c;int nx=0,ny=0,nz=0,cells=0;float cell=0,angle=0;double time=0;std::string name;bool poisoned=false;GranularTiming timing;std::vector<std::pair<cl_event,unsigned>> events;
- Impl(GranularConfig cfg):c(cfg){try{
+ Impl(GranularConfig cfg,const std::vector<Grain>* external=nullptr,const std::vector<Grain>* velocity=nullptr):c(cfg){try{
  require(c.count>=1&&c.count<=1000000&&c.iterations>=2&&c.iterations<=32,"granular count/iterations outside contract");
  if(c.radius==0)c.radius=static_cast<float>(std::cbrt(.054/(c.count*4.188790204786391)));
  require(std::isfinite(c.radius)&&c.radius>.001f&&c.radius<.03f&&std::isfinite(c.dt)&&c.dt>0&&c.dt<=.001f&&std::isfinite(c.friction)&&c.friction>=0&&c.friction<=1,"invalid granular configuration");
@@ -54,6 +73,7 @@ struct GranularGPU::Impl {
  const char* names[]={"cleargrid","grid","predict","solve","velocity"};for(unsigned k=0;k<5;k++){kernels[k]=api.clCreateKernel(program,names[k],&err);check(err,"kernel");}
  cell=2*c.radius;nx=static_cast<int>(std::ceil((c.test_mixer?1.6:(c.fast_bounds?.92:1.2))/cell));ny=static_cast<int>(std::ceil((c.test_mixer?1.0:(c.fast_bounds?.52:.8))/cell));nz=static_cast<int>(std::ceil((c.test_mixer?1.0:(c.fast_bounds?1.02:1.2))/cell));cells=nx*ny*nz;
  for(unsigned i=0;i<8;i++){std::size_t bytes=(i<4||i==7)?c.count*sizeof(Grain):i==4?cells*sizeof(int):i==5?c.count*sizeof(int):sizeof(int);buffers[i]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,bytes,nullptr,&err);check(err,"buffer");}
+ if(external){validate_granular_initial(c,*external);require(velocity!=nullptr,"missing external velocities");set(*external,*velocity);return;}
  std::vector<Grain> initial;initial.reserve(c.count);float pitch=2.04f*c.radius;
  if(!c.test_mixer)for(float z=c.radius;z<.4f-c.radius&&initial.size()<c.count;z+=pitch)for(float y=-.25f+c.radius;y<.25f-c.radius&&initial.size()<c.count;y+=pitch)for(float x=-.45f+c.radius;x<.45f-c.radius&&initial.size()<c.count;x+=pitch){
   bool hit=std::hypot(y,z-.21f)<.025f+c.radius;
@@ -92,6 +112,7 @@ struct GranularGPU::Impl {
  }
 };
 GranularGPU::GranularGPU(GranularConfig c):p(std::make_unique<Impl>(c)){}
+GranularGPU::GranularGPU(GranularConfig c,const std::vector<Grain>& a,const std::vector<Grain>& b):p(std::make_unique<Impl>(c,&a,&b)){}
 GranularGPU::~GranularGPU()=default;
 void GranularGPU::advance(unsigned s,float rpm,bool gate){try{p->advance(s,rpm,gate);}catch(...){p->poisoned=true;throw;}}
 std::vector<Grain> GranularGPU::snapshot(){auto begin=Clock::now();std::vector<Grain> result(p->c.count);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[0],CL_TRUE,0,result.size()*sizeof(Grain),result.data(),0,nullptr,nullptr),"snapshot");p->timing.snapshot_wall+=elapsed(begin);return result;}

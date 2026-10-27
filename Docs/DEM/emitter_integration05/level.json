@@ -1,0 +1,11 @@
+{
+  "level": "L_MX301_Test",
+  "baseline": "/Game/DEM/Tests/L_MX301_LegacyBaseline",
+  "groups": [
+    25000,
+    25000
+  ],
+  "layout": "exact legacy initial positions, bottom red/top blue",
+  "mass_kg": 64.79999787272435,
+  "preview_per_emitter": 2048
+}

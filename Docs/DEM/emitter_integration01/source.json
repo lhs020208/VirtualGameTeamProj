@@ -1,0 +1,14 @@
+{
+  "source_commit": "32b83103c0f4c4def202a5b97bdee4fa62c892a4",
+  "files": [
+    "Plugins/DEMPrototype/Source/DEMPrototype/DEMPrototype.Build.cs",
+    "Plugins/DEMPrototype/Source/DEMPrototype/Private/DEMPrototype.cpp",
+    "Plugins/DEMPrototype/Source/DEMPrototype/Private/DEMEmitter.cpp",
+    "Plugins/DEMPrototype/Source/DEMPrototype/Private/DEMParticleSettings.cpp",
+    "Plugins/DEMPrototype/Source/DEMPrototype/Public/DEMEmitter.h",
+    "Plugins/DEMPrototype/Source/DEMPrototype/Public/DEMParticleSettings.h",
+    "Content/DEM/Emitters/BP_DEMEmitter.uasset",
+    "Content/DEM/Settings/DA_DEMParticle_Default.uasset",
+    "Content/DEM/SM_DEMSphere.uasset"
+  ]
+}

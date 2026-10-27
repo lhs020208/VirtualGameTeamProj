@@ -1,4 +1,8 @@
 #include "PowderGranularMixer.h"
+#include "DEMParticleSettings.h"
+#include "DEMEmitter.h"
+#include <cmath>
+#include <iomanip>
 #include "powder/granular.hpp"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -22,9 +26,11 @@
 struct FGranularRuntime {
  std::atomic<bool> Quit{false},Run{true},Gate{false},Auto{true};std::atomic<double> Rpm{30},Rate{.1},MixEnd{9};
  std::thread Worker;std::mutex Lock;std::vector<powder::Grain> Positions;std::string Error;double Time=0,Wall=0,Mix=0,Angle=0,Radius=0;int Receiver=0;uint64 Generation=0;
- FGranularRuntime(powder::GranularConfig C,const FString& Folder,int Batch){std::filesystem::path Dir(*Folder);
- Worker=std::thread([this,C,Dir,Batch]{try{
-  powder::GranularGPU Solver(C);Radius=Solver.radius();std::ofstream Csv(Dir/"trace.csv");if(!Csv)throw std::runtime_error("cannot open trace");Csv<<"time_s,active_wall_s,rate,mix_index,receiver_count,total_count,mass_kg,gate\n";
+ FGranularRuntime(powder::GranularConfig C,const FString& Folder,int Batch,double MassKg,std::vector<powder::Grain> Initial,std::vector<powder::Grain> Velocity,bool FromEmitters,bool StartRunning){std::filesystem::path Dir(*Folder);
+ Run=StartRunning;Worker=std::thread([this,C,Dir,Batch,MassKg,Initial=std::move(Initial),Velocity=std::move(Velocity),FromEmitters]{try{
+  std::unique_ptr<powder::GranularGPU> Owned=FromEmitters?std::make_unique<powder::GranularGPU>(C,Initial,Velocity):std::make_unique<powder::GranularGPU>(C);
+  auto& Solver=*Owned;{std::lock_guard<std::mutex> Guard(Lock);Radius=Solver.radius();Positions=Solver.snapshot();++Generation;}std::ofstream Csv(Dir/"trace.csv");if(!Csv)throw std::runtime_error("cannot open trace");Csv<<std::setprecision(17);Csv<<"time_s,active_wall_s,rate,mix_index,receiver_count,total_count,mass_kg,gate,angle_rad\n";
+  {auto State=Solver.snapshot();std::ofstream Bin(Dir/"initial.bin",std::ios::binary);Bin.write(reinterpret_cast<const char*>(State.data()),State.size()*sizeof(powder::Grain));if(!Bin)throw std::runtime_error("initial snapshot write failed");}
   auto Last=std::chrono::steady_clock::now(),Start=Last,LastDisplay=Last;double Debt=0,Active=0,NextRecord=0,Theta=0;
   while(!Quit){auto Now=std::chrono::steady_clock::now();double Delta=std::chrono::duration<double>(Now-Last).count();Last=Now;
    if(!Run){std::this_thread::sleep_for(std::chrono::milliseconds(3));continue;}
@@ -34,7 +40,7 @@ struct FGranularRuntime {
    Now=std::chrono::steady_clock::now();if(std::chrono::duration<double>(Now-LastDisplay).count()<.05)continue;LastDisplay=Now;
    auto Data=Solver.snapshot();std::array<std::array<unsigned,2>,64> Bins{};unsigned A=0,Received=0,InMixer=0;for(const auto& P:Data){int X=FMath::Clamp(int((P.x+(C.test_mixer?.75f:.45f))/(C.test_mixer?1.5f:.9f)*4),0,3),Y=FMath::Clamp(int((P.y+(C.test_mixer?.45f:.25f))/(C.test_mixer?.9f:.5f)*4),0,3),Z=FMath::Clamp(int((P.z+(C.test_mixer?.325f:0))/(C.test_mixer?.65f:.4f)*4),0,3);if(C.test_mixer||P.z>=0){++InMixer;Bins[(Z*4+Y)*4+X][P.w==0?0:1]++;if(P.w==0)++A;}if(!C.test_mixer&&P.z<-.25f)++Received;}
    double F=double(A)/FMath::Max(1u,InMixer),Variance=0;for(auto B:Bins){double N=B[0]+B[1];if(N)Variance+=N/FMath::Max(1u,InMixer)*std::pow(B[0]/N-F,2);}double I=(InMixer>1&&A>0&&A<InMixer)?1-Variance/FMath::Max(1.e-9,F*(1-F)):-1;
-   T=Solver.time();if(T>=NextRecord){Csv<<T<<','<<Active<<','<<T/Active<<','<<I<<','<<Received<<','<<Data.size()<<",64.8,"<<Open<<'\n';Csv.flush();if(!Csv)throw std::runtime_error("trace write failed");std::ofstream Bin(Dir/"final.bin",std::ios::binary);Bin.write(reinterpret_cast<const char*>(Data.data()),Data.size()*sizeof(powder::Grain));if(!Bin)throw std::runtime_error("snapshot write failed");NextRecord=T+.25;}
+   T=Solver.time();if(T>=NextRecord){Csv<<T<<','<<Active<<','<<T/Active<<','<<I<<','<<Received<<','<<Data.size()<<','<<MassKg<<','<<Open<<','<<Solver.angle()<<'\n';Csv.flush();if(!Csv)throw std::runtime_error("trace write failed");std::ofstream Bin(Dir/"final.bin",std::ios::binary);Bin.write(reinterpret_cast<const char*>(Data.data()),Data.size()*sizeof(powder::Grain));if(!Bin)throw std::runtime_error("snapshot write failed");NextRecord=T+.25;}
    {std::lock_guard<std::mutex> Guard(Lock);Positions=std::move(Data);Time=T;Wall=Active;Mix=I;Angle=Theta;Receiver=static_cast<int>(Received);++Generation;}
   }
  }catch(const std::exception& E){std::lock_guard<std::mutex> Guard(Lock);Error=E.what();}});
@@ -47,7 +53,7 @@ APowderGranularMixer::APowderGranularMixer(){PrimaryActorTick.bCanEverTick=true;
  GroupA=CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("RedGrains"));GroupB=CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("BlueGrains"));Walls=CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("CutawayVessel"));Blades=CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("RotatingPaddles"));
  for(auto* C:{GroupA.Get(),GroupB.Get(),Walls.Get(),Blades.Get()}){C->SetupAttachment(Root);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetMobility(EComponentMobility::Movable);C->SetCastShadow(false);C->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,C==GroupA||C==GroupB?TEXT("/Engine/BasicShapes/Sphere.Sphere"):TEXT("/Engine/BasicShapes/Cube.Cube")));}}
 APowderGranularMixer::~APowderGranularMixer(){Stop();}
-void APowderGranularMixer::Stop(){delete Runtime;Runtime=nullptr;}
+void APowderGranularMixer::Stop(){delete Runtime;Runtime=nullptr;for(auto E:ActiveEmitters)if(E.IsValid())E->ReleaseGPU(this);ActiveEmitters.Empty();ActiveSourceCounts.Empty();}
 void APowderGranularMixer::Geometry(){
  if(TestMixerAsset){Walls->ClearInstances();Blades->ClearInstances();Shaft->SetVisibility(false);GateMesh->SetVisibility(false);
   Walls->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,TEXT("/Game/DEM/SM_MX301_TestVessel.SM_MX301_TestVessel")));Blades->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,TEXT("/Game/DEM/SM_MX301_TestRotor.SM_MX301_TestRotor")));Walls->AddInstance(FTransform::Identity);Blades->AddInstance(FTransform::Identity);
@@ -62,18 +68,93 @@ auto* GrainMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/DEM/SM_GrainSphere.S
  for(int K=0;K<6;K++)Blades->AddInstance(FTransform());
  UInstancedStaticMeshComponent* Components[]={GroupA,GroupB,Walls,Blades};FLinearColor Colors[]={FLinearColor(.8f,.04f,.02f),FLinearColor(.02f,.3f,.9f),FLinearColor(.12f,.15f,.19f),FLinearColor(.7f,.72f,.75f)};auto* Material=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/M_BulkFlow.M_BulkFlow"));for(int I=0;I<4;I++){if(Material)Components[I]->SetMaterial(0,Material);if(auto* M=Components[I]->CreateDynamicMaterialInstance(0))M->SetVectorParameterValue(TEXT("Tint"),Colors[I]);}}
 void APowderGranularMixer::OnConstruction(const FTransform& T){Super::OnConstruction(T);Geometry();}
-void APowderGranularMixer::ResetSimulation(){Stop();GroupA->ClearInstances();GroupB->ClearInstances();Generation=0;Error.Empty();PhysicalSeconds=0;FinishWall=0;Shot1=false;Shot2=false;if(!HasActorBegunPlay())return;
+bool APowderGranularMixer::ValidateSimulationSettings(){
+ if(Runtime){SettingsStatus=TEXT("Simulation active; use Reset to apply settings.");return false;}
+ TArray<FText> Errors;
+ if(ParticleCount<1||ParticleCount>1000000) Errors.Add(FText::FromString(TEXT("ParticleCount must be 1..1000000.")));
+ if(ContactIterations<2||ContactIterations>32||!std::isfinite(TimeStep)||TimeStep<=0||TimeStep>.001||static_cast<float>(TimeStep)<=0) Errors.Add(FText::FromString(TEXT("Iterations must be 2..32 and dt in (0,0.001].")));
+ double Density=DensityKgPerCubicMeter;
+ float Radius=ParticleCount>0?static_cast<float>(std::cbrt(.054/(ParticleCount*4.188790204786391))):0;
+ double Mu=Friction;
+ if(ParticleSettings){TArray<FText> AssetErrors;ParticleSettings->ValidateGPU(AssetErrors);Errors.Append(AssetErrors);Radius=static_cast<float>(ParticleSettings->RadiusMeters);Density=ParticleSettings->DensityKgPerCubicMeter;Mu=ParticleSettings->ParticleFriction;}
+ if(!std::isfinite(Radius)||Radius<=.001f||Radius>=.03f||!std::isfinite(Density)||Density<=0||!std::isfinite(Mu)||Mu<0||Mu>1) Errors.Add(FText::FromString(TEXT("Invalid GPU radius, density or friction.")));
+ const double Mass=Density*4.188790204786391*double(Radius)*Radius*Radius;
+ if(!std::isnormal(Mass)||!std::isnormal(Mass*ParticleCount)) Errors.Add(FText::FromString(TEXT("Mass calculation overflow/underflow.")));
+ SettingsStatus.Empty();for(const auto& E:Errors)SettingsStatus+=E.ToString()+TEXT("; ");
+ if(!Errors.IsEmpty()){ChargeMassKg=0;RadiusMm=0;return false;}
+ ChargeMassKg=Mass*ParticleCount;RadiusMm=Radius*1000.;
+ SettingsStatus=TEXT("GPU approximate spheres: density is accounting only; stiffness/damping/spin unsupported. Changes require Reset.");return true;
+}
+bool APowderGranularMixer::BuildEmitterInitialState(std::vector<powder::Grain>& Positions,std::vector<powder::Grain>& Velocities){
+ Positions.clear();Velocities.clear();Error.Empty();
+ auto Fail=[&](const FString& Why){Positions.clear();Velocities.clear();Error=Why;return false;};
+ if(Runtime)return Fail(TEXT("Stop/reset before collecting emitter data."));
+ const FTransform Frame=GetActorTransform();
+ if(Frame.ContainsNaN()||!Frame.GetScale3D().Equals(FVector::OneVector,1.e-8)||!Frame.GetRotation().RotateVector(FVector::UpVector).Equals(FVector::UpVector,1.e-6))
+  return Fail(TEXT("Mixer requires unit scale and upright local Z (translation/yaw supported)."));
+ if(Emitters.IsEmpty())return Fail(TEXT("Use Emitters requires an explicit nonempty source list."));
+ TSet<ADEMEmitter*> Seen;UDEMParticleSettings* Common=nullptr;int64 Total=0;
+ for(auto E:Emitters){
+  if(!IsValid(E)||E->GetWorld()!=GetWorld()||Seen.Contains(E))return Fail(TEXT("Invalid, foreign-world or duplicate emitter."));Seen.Add(E);if(E->GetGPUOwner())return Fail(TEXT("Emitter is already owned by a running mixer."));
+  if(E->GPUGroup<0||E->GPUGroup>1)return Fail(TEXT("GPUGroup must be 0 (red) or 1 (blue)."));
+  if(!E->ParticleSettings)return Fail(TEXT("Emitter has no particle settings."));
+  TArray<FText> Errors;if(!E->ParticleSettings->ValidateGPU(Errors)){FString Message;for(auto& X:Errors)Message+=X.ToString()+TEXT("; ");return Fail(Message);}
+  auto Matches=[](const UDEMParticleSettings* A,const UDEMParticleSettings* B){return A->RadiusMeters==B->RadiusMeters&&A->DensityKgPerCubicMeter==B->DensityKgPerCubicMeter&&A->ParticleFriction==B->ParticleFriction&&A->WallFriction==B->WallFriction;};
+  if(!Common)Common=E->ParticleSettings;else if(!Matches(Common,E->ParticleSettings))return Fail(TEXT("All emitters require identical GPU radius, density and friction."));
+  if(ParticleSettings&&(!ParticleSettings->bGPUApproximation||!Matches(Common,ParticleSettings)))return Fail(TEXT("Mixer settings disagree with emitter settings; clear or match the mixer asset."));
+  if(E->ParticleCount<0||E->ParticleCount>ADEMEmitter::MaxParticleCount)return Fail(TEXT("Emitter particle count out of range."));
+  Total+=E->ParticleCount;if(Total>1000000)return Fail(TEXT("Total emitter count exceeds 1000000."));
+ }
+ if(Total==0)return Fail(TEXT("At least one emitted particle is required."));
+ Positions.reserve(Total);Velocities.reserve(Total);
+ for(auto E:Emitters){
+  if(!E->TryGenerate())return Fail(E->GenerationStatus);
+  FDEMEmitterBurst Burst;if(!E->CopyGeneratedBurst(Burst))return Fail(TEXT("Emitter did not produce a valid burst."));
+  for(const auto& P:Burst.Particles){
+   // Source data is reflected right-handed SI world space; GPU uses UE local axes in meters.
+   const FVector WorldCM=FVector(P.PositionMeters.X,-P.PositionMeters.Y,P.PositionMeters.Z)*100.;
+   const FVector Local=Frame.InverseTransformPosition(WorldCM)*.01;
+   const FVector V=Frame.InverseTransformVectorNoScale(FVector(P.LinearVelocityMetersPerSecond.X,-P.LinearVelocityMetersPerSecond.Y,P.LinearVelocityMetersPerSecond.Z));
+   if(Local.ContainsNaN()||V.ContainsNaN()||!P.AngularVelocityRadiansPerSecond.IsZero())return Fail(TEXT("Invalid position/velocity or unsupported spin."));
+   // Conservative initial domain check; detailed vessel/rotor/particle overlap checks are step 05.
+   if(FMath::Abs(Local.X)>=(TestMixerAsset?.8:.46)||FMath::Abs(Local.Y)>=(TestMixerAsset?.5:.26)||Local.Z< (TestMixerAsset?-.5:0.)||Local.Z> (TestMixerAsset?.5:.4))return Fail(TEXT("Emitter lies outside the supported initial GPU domain."));
+   powder::Grain A{float(Local.X),float(Local.Y),float(Local.Z),float(E->GPUGroup)},B{float(V.X),float(V.Y),float(V.Z),0};
+   if(!std::isfinite(B.x)||!std::isfinite(B.y)||!std::isfinite(B.z))return Fail(TEXT("Initial velocity cannot be represented as GPU float."));
+   Positions.push_back(A);Velocities.push_back(B);
+  }
+ }
+ powder::GranularConfig Check;Check.count=static_cast<unsigned>(Total);Check.radius=float(Common->RadiusMeters);Check.test_mixer=TestMixerAsset;
+ try{powder::validate_granular_initial(Check,Positions);}catch(const std::exception& E){return Fail(UTF8_TO_TCHAR(E.what()));}
+ ParticleCount=static_cast<int32>(Total);ParticleSettings=Common;return true;
+}
+std::vector<powder::Grain> APowderGranularMixer::CopyParticleState(){if(!Runtime)return {};std::lock_guard<std::mutex> Guard(Runtime->Lock);return Runtime->Positions;}
+void APowderGranularMixer::ResetSimulation(){Stop();GroupA->ClearInstances();GroupB->ClearInstances();Generation=0;Error.Empty();PhysicalSeconds=0;FinishWall=0;Shot1=false;Shot2=false;ReceiverCount=0;ReceiverMassKg=0;ActualRate=0;MixingIndex=0;ActiveParticleMassKg=0;PendingEmitterStart=false;SourceResetRequired=false;std::vector<powder::Grain> Initial,Velocity;if(UseEmitters&&!BuildEmitterInitialState(Initial,Velocity)){ChargeMassKg=0;return;}if(!ValidateSimulationSettings()){Error=SettingsStatus;return;}if(!HasActorBegunPlay())return;
  OutputDir=FPaths::ProjectSavedDir()/(TEXT("Granular_")+FDateTime::Now().ToString(TEXT("%Y%m%d_%H%M%S"))+TEXT("_")+FGuid::NewGuid().ToString(EGuidFormats::Digits).Left(8));FString Override;if(FParse::Value(FCommandLine::Get(),TEXT("GrainOutput="),Override))OutputDir=Override;IFileManager::Get().MakeDirectory(*OutputDir,true);
- powder::GranularConfig C;C.count=ParticleCount;C.iterations=ContactIterations;C.dt=static_cast<float>(TimeStep);C.test_mixer=TestMixerAsset;C.friction=static_cast<float>(Friction);Runtime=new FGranularRuntime(C,OutputDir,FMath::Clamp(SolverBatchSize,1,128));Runtime->Run=Running;Runtime->Rate=TargetRate;Runtime->Rpm=RPM;Runtime->Auto=AutomaticSequence;Runtime->MixEnd=MixUntilSeconds;}
-void APowderGranularMixer::BeginPlay(){Super::BeginPlay();Geometry();Benchmark=FParse::Param(FCommandLine::Get(),TEXT("GrainBenchmark"));if(Benchmark){FParse::Value(FCommandLine::Get(),TEXT("GrainCount="),ParticleCount);TargetRate=2;FParse::Value(FCommandLine::Get(),TEXT("GrainDt="),TimeStep);FParse::Value(FCommandLine::Get(),TEXT("GrainIterations="),ContactIterations);FParse::Value(FCommandLine::Get(),TEXT("GrainBatch="),SolverBatchSize);FParse::Value(FCommandLine::Get(),TEXT("GrainSeconds="),BenchmarkSeconds);if(FParse::Param(FCommandLine::Get(),TEXT("GrainTestMixer")))TestMixerAsset=true;}Geometry();ResetSimulation();auto* Camera=GetWorld()->SpawnActor<ACameraActor>();Camera->SetActorLocation(GetActorTransform().TransformPosition((TestMixerAsset?FVector(170,-210,115):FVector(115,-160,95))));Camera->SetActorRotation((GetActorTransform().TransformPosition(FVector(0,0,-5))-Camera->GetActorLocation()).Rotation());if(auto* PC=UGameplayStatics::GetPlayerController(this,0))PC->SetViewTarget(Camera);}
+ powder::GranularConfig C;C.count=ParticleCount;C.iterations=ContactIterations;C.dt=static_cast<float>(TimeStep);C.test_mixer=TestMixerAsset;C.friction=static_cast<float>(ParticleSettings?ParticleSettings->ParticleFriction:Friction);C.radius=static_cast<float>(RadiusMm/1000.);ActiveParticleMassKg=ChargeMassKg/ParticleCount;Runtime=new FGranularRuntime(C,OutputDir,FMath::Clamp(SolverBatchSize,1,128),ChargeMassKg,std::move(Initial),std::move(Velocity),UseEmitters,Running);if(UseEmitters)for(auto E:Emitters){if(!E->BindGPU(this)){Error=TEXT("Emitter ownership failed; Reset required.");Stop();return;}ActiveEmitters.Add(E);ActiveSourceCounts.Add(E->ParticleCount);}ActiveMixerFrame=GetActorTransform();Runtime->Run=Running;Runtime->Rate=TargetRate;Runtime->Rpm=RPM;Runtime->Auto=AutomaticSequence;Runtime->MixEnd=MixUntilSeconds;}
+void APowderGranularMixer::BeginPlay(){Super::BeginPlay();Geometry();Benchmark=FParse::Param(FCommandLine::Get(),TEXT("GrainBenchmark"));if(Benchmark){FParse::Value(FCommandLine::Get(),TEXT("GrainCount="),ParticleCount);TargetRate=2;FParse::Value(FCommandLine::Get(),TEXT("GrainDt="),TimeStep);FParse::Value(FCommandLine::Get(),TEXT("GrainIterations="),ContactIterations);FParse::Value(FCommandLine::Get(),TEXT("GrainBatch="),SolverBatchSize);FParse::Value(FCommandLine::Get(),TEXT("GrainSeconds="),BenchmarkSeconds);if(FParse::Param(FCommandLine::Get(),TEXT("GrainTestMixer")))TestMixerAsset=true;}Geometry();if(UseEmitters)PendingEmitterStart=true;else ResetSimulation();auto* Camera=GetWorld()->SpawnActor<ACameraActor>();Camera->SetActorLocation(GetActorTransform().TransformPosition((TestMixerAsset?FVector(170,-210,115):FVector(115,-160,95))));Camera->SetActorRotation((GetActorTransform().TransformPosition(FVector(0,0,-5))-Camera->GetActorLocation()).Rotation());if(auto* PC=UGameplayStatics::GetPlayerController(this,0))PC->SetViewTarget(Camera);}
 void APowderGranularMixer::EndPlay(const EEndPlayReason::Type Reason){Stop();Super::EndPlay(Reason);}
-void APowderGranularMixer::Display(){if(!Runtime)return;std::unique_lock<std::mutex> Guard(Runtime->Lock);Error=UTF8_TO_TCHAR(Runtime->Error.c_str());if(Generation==Runtime->Generation)return;Generation=Runtime->Generation;PhysicalSeconds=Runtime->Time;ActualRate=Runtime->Wall>0?PhysicalSeconds/Runtime->Wall:0;RadiusMm=Runtime->Radius*1000;MixingIndex=Runtime->Mix;ReceiverCount=Runtime->Receiver;ReceiverMassKg=64.8*ReceiverCount/ParticleCount;auto Points=Runtime->Positions;double DisplayAngle=Runtime->Angle,DisplayRadius=Runtime->Radius;Guard.unlock();
+void APowderGranularMixer::Display(){if(!Runtime)return;std::unique_lock<std::mutex> Guard(Runtime->Lock);Error=UTF8_TO_TCHAR(Runtime->Error.c_str());if(Generation==Runtime->Generation)return;Generation=Runtime->Generation;PhysicalSeconds=Runtime->Time;ActualRate=Runtime->Wall>0?PhysicalSeconds/Runtime->Wall:0;RadiusMm=Runtime->Radius*1000;MixingIndex=Runtime->Mix;ReceiverCount=Runtime->Receiver;ReceiverMassKg=ActiveParticleMassKg*ReceiverCount;auto Points=Runtime->Positions;double DisplayAngle=Runtime->Angle,DisplayRadius=Runtime->Radius;Guard.unlock();
+ if(!ActiveEmitters.IsEmpty()){
+  int32 Offset=0;for(int32 K=0;K<ActiveEmitters.Num();++K){TArray<FTransform> Data;Data.Reserve(ActiveSourceCounts[K]);for(int32 I=0;I<ActiveSourceCounts[K];++I){auto& P=Points[Offset++];Data.Emplace(FQuat::Identity,ActiveMixerFrame.TransformPosition(FVector(P.x,P.y,P.z)*100.));}if(ActiveEmitters[K].IsValid())ActiveEmitters[K]->DisplayGPU(Data);}
+ }else{
  TArray<FTransform> Data[2];for(const auto& P:Points)Data[P.w==0?0:1].Add(FTransform(FQuat::Identity,FVector(P.x,P.y,P.z)*100,FVector(DisplayRadius*2)));UInstancedStaticMeshComponent* Groups[]={GroupA,GroupB};for(int K=0;K<2;K++){if(Groups[K]->GetInstanceCount()!=Data[K].Num()){Groups[K]->ClearInstances();Groups[K]->AddInstances(Data[K],false,false);}else Groups[K]->BatchUpdateInstancesTransforms(0,Data[K],false,true,true);}
+ }
  if(TestMixerAsset){Blades->UpdateInstanceTransform(0,FTransform(FQuat(FVector::ForwardVector,DisplayAngle)),false,true,true);return;}
  for(int K=0;K<6;K++){double A=DisplayAngle+K*PI/3;FQuat Q(FVector::ForwardVector,A);Blades->UpdateInstanceTransform(K,FTransform(Q*FQuat(FVector::UpVector,K%2?-.4:.4),FVector(-37.5+K*15,0,21)+Q.RotateVector(FVector(0,9.5,0)),FVector(.09,.14,.024)),false,K==5,true);}
 }
-void APowderGranularMixer::Tick(float Delta){Super::Tick(Delta);if(!Runtime)return;Runtime->Run=Running;Runtime->Rate=FMath::Clamp(TargetRate,.01,2.);Runtime->Rpm=FMath::Clamp(RPM,0.,60.);Runtime->Gate=GateOpen;Runtime->Auto=AutomaticSequence;Runtime->MixEnd=MixUntilSeconds;Display();GateMesh->SetVisibility(!TestMixerAsset&&!(AutomaticSequence?PhysicalSeconds>=MixUntilSeconds:GateOpen));Phase=AutomaticSequence?(PhysicalSeconds<1?TEXT("settle"):PhysicalSeconds<MixUntilSeconds?TEXT("mix"):TEXT("discharge")):(GateOpen?TEXT("gate open"):TEXT("gate closed"));
- if(TestMixerAsset)Phase=TEXT("MX301 TEST ONLY | closed mixing | 64.8kg");
+void APowderGranularMixer::Tick(float Delta){Super::Tick(Delta);if(PendingEmitterStart)ResetSimulation();if(!Runtime){
+ if(!Error.IsEmpty()&&GEngine)GEngine->AddOnScreenDebugMessage(reinterpret_cast<uint64>(this),0,FColor::Red,Error);
+ if(Benchmark&&!Error.IsEmpty()){FString Dir;FParse::Value(FCommandLine::Get(),TEXT("GrainOutput="),Dir);if(!Dir.IsEmpty()){IFileManager::Get().MakeDirectory(*Dir,true);FString Safe=Error.Replace(TEXT("\""),TEXT("'"));FFileHelper::SaveStringToFile(FString::Printf(TEXT("{\"count\":%d,\"time\":0,\"rate\":0,\"error\":\"%s\"}"),ParticleCount,*Safe),*(Dir/TEXT("result.json")));}FPlatformMisc::RequestExit(false);}
+ return;}
+
+ if(!ActiveEmitters.IsEmpty()){
+  bool Valid=UseEmitters&&ActiveEmitters.Num()==Emitters.Num()&&GetActorTransform().Equals(ActiveMixerFrame);
+  for(int32 I=0;I<ActiveEmitters.Num()&&Valid;++I)Valid=ActiveEmitters[I].IsValid()&&Emitters[I]==ActiveEmitters[I].Get()&&ActiveEmitters[I]->IsGPUValid(this);
+  if(!Valid)SourceResetRequired=true;
+  if(SourceResetRequired){Running=false;Runtime->Run=false;Error=TEXT("Emitter or mixer changed/removed; Reset required.");if(GEngine)GEngine->AddOnScreenDebugMessage(reinterpret_cast<uint64>(this),0,FColor::Red,Error);return;}
+ }
+ Runtime->Run=Running;Runtime->Rate=FMath::Clamp(TargetRate,.01,2.);Runtime->Rpm=FMath::Clamp(RPM,0.,60.);Runtime->Gate=GateOpen;Runtime->Auto=AutomaticSequence;Runtime->MixEnd=MixUntilSeconds;Display();GateMesh->SetVisibility(!TestMixerAsset&&!(AutomaticSequence?PhysicalSeconds>=MixUntilSeconds:GateOpen));Phase=AutomaticSequence?(PhysicalSeconds<1?TEXT("settle"):PhysicalSeconds<MixUntilSeconds?TEXT("mix"):TEXT("discharge")):(GateOpen?TEXT("gate open"):TEXT("gate closed"));
+ if(TestMixerAsset)Phase=FString::Printf(TEXT("MX301 TEST ONLY | closed mixing | %.3fkg"),ChargeMassKg);
  if(GEngine)GEngine->AddOnScreenDebugMessage(reinterpret_cast<uint64>(this),0,FColor::Cyan,FString::Printf(TEXT("GPU granular APPROX | %s | N %d r %.2fmm | t %.2fs %.3fx | I %.3f receiver %d | %s"),*Phase,ParticleCount,RadiusMm,PhysicalSeconds,ActualRate,MixingIndex,ReceiverCount,*Error));
  if(Benchmark){if(PhysicalSeconds>3&&!Shot1){FScreenshotRequest::RequestScreenshot(OutputDir/TEXT("mix.png"),true,false);Shot1=true;}if(PhysicalSeconds>10&&!Shot2){FScreenshotRequest::RequestScreenshot(OutputDir/TEXT("discharge.png"),true,false);Shot2=true;}if((PhysicalSeconds>=BenchmarkSeconds||!Error.IsEmpty())&&FinishWall==0){Running=false;FinishWall=FPlatformTime::Seconds();FString J=FString::Printf(TEXT("{\"count\":%d,\"time\":%.9f,\"rate\":%.9f,\"receiver\":%d,\"error\":\"%s\",\"physical_accuracy_validated\":false}"),ParticleCount,PhysicalSeconds,ActualRate,ReceiverCount,*Error);FFileHelper::SaveStringToFile(J,*(OutputDir/TEXT("result.json")));}if(FinishWall>0&&FPlatformTime::Seconds()-FinishWall>1)FPlatformMisc::RequestExit(false);}
 }

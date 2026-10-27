@@ -1,0 +1,11 @@
+msbuild 버전 17.14.23+b0019275e(.NET Framework용)
+
+  granular.cpp
+  powder_granular.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_granular.lib
+  granular_run.cpp
+  granular_run.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\granular_run.exe
+msbuild 버전 17.14.23+b0019275e(.NET Framework용)
+
+  powder_granular.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_granular.lib
+  granular_tests.cpp
+  granular_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\granular_tests.exe

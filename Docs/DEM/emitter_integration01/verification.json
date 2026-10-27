@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "checks": [
+    "asset/class load",
+    "preview cap 2048 without exported particles",
+    "3000 full burst",
+    "clear",
+    "non-unit scale rejected",
+    "50000 full burst"
+  ]
+}

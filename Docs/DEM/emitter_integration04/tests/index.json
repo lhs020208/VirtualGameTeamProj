@@ -1,0 +1,44 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "PC",
+			"instance": "EAB6EF31490BE550D101ACBF064964AA",
+			"instanceName": "PC-21840",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 11 (26H2) [10.0.26300.9711] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 4060 Ti",
+			"cPUModel": "Intel(R) Core(TM) i7-14700KF",
+			"rAMInGB": 32,
+			"renderMode": "D3D12_SM6",
+			"rHI": "D3D12 (SM6)",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.27-05.13.55",
+	"succeeded": 1,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 1.4896081686019897,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "GPUBridge",
+			"fullTestPath": "Powder.EmitterIntegration.GPUBridge",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"EAB6EF31490BE550D101ACBF064964AA"
+			],
+			"duration": 1.4896081686019897,
+			"dateTime": "2026.10.27-05.13.54",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

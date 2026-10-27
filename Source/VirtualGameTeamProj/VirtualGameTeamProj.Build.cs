@@ -12,7 +12,7 @@ public class VirtualGameTeamProj : ModuleRules
         PrivateIncludePaths.Add(System.IO.Path.Combine(ModuleDirectory, "../../Physics/PowderCore/third_party/OpenCL"));
         PublicIncludePaths.Add(System.IO.Path.Combine(ModuleDirectory, "../../Physics/PowderCore/include"));
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "PhysicsCore", "RenderCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "PhysicsCore", "RenderCore", "DEMPrototype" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

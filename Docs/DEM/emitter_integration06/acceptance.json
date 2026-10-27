@@ -1,0 +1,68 @@
+{
+  "physical_accuracy_validated": false,
+  "results": {
+    "baseline12": {
+      "count": 50000,
+      "time": 12.009375104,
+      "rate": 0.195389915,
+      "receiver": 0,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "snapshot_time": 11.997375104110688,
+      "final_overlap_radius": 0.03615454211831093,
+      "final_vessel_penetration_m": 4.6909049977728046e-08,
+      "final_rotor_penetration_m": 4.2930821286812915e-08,
+      "initial_byte_identical": true,
+      "mass_kg": 64.79999787272435,
+      "groups": [
+        25000,
+        25000
+      ],
+      "final_mean_z": -0.23795078694820404,
+      "final_mixing_index": 0.941998932573201,
+      "target_rate_pass": true
+    },
+    "integrated12": {
+      "count": 50000,
+      "time": 12.009375104,
+      "rate": 0.195636929,
+      "receiver": 0,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "snapshot_time": 11.973375103902072,
+      "final_overlap_radius": 0.07078450918197632,
+      "final_vessel_penetration_m": 4.3069805499840186e-08,
+      "final_rotor_penetration_m": 3.011692573107183e-08,
+      "initial_byte_identical": true,
+      "mass_kg": 64.79999787272435,
+      "groups": [
+        25000,
+        25000
+      ],
+      "final_mean_z": -0.23897621035575867,
+      "final_mixing_index": 0.9497373915929599,
+      "target_rate_pass": true
+    },
+    "integrated30": {
+      "count": 50000,
+      "time": 30.008250261,
+      "rate": 0.160793821,
+      "receiver": 0,
+      "error": "",
+      "physical_accuracy_validated": false,
+      "snapshot_time": 29.876250259578228,
+      "final_overlap_radius": 0.061814870685338974,
+      "final_vessel_penetration_m": 5.192495144967779e-08,
+      "final_rotor_penetration_m": 3.569166784345157e-08,
+      "initial_byte_identical": true,
+      "mass_kg": 64.79999787272435,
+      "groups": [
+        25000,
+        25000
+      ],
+      "final_mean_z": -0.24010775983333588,
+      "final_mixing_index": 0.9469961128573573,
+      "target_rate_pass": true
+    }
+  }
+}

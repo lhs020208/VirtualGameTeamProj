@@ -14,6 +14,7 @@ int main(int argc,char**argv){try{
  if(argc>11)c.test_mixer=std::stoi(argv[11])!=0;if(argc>12)c.friction=std::stof(argv[12]);
  powder::GranularGPU gpu(c);std::cout<<gpu.device()<<" r="<<gpu.radius()<<std::endl;
  std::ofstream csv(out/"trace.csv");csv<<"time,wall,rate,max_overlap_radius,mean_overlap_radius,mean_z,max_z,mix_index,receiver_count,count,angle\n"<<std::setprecision(10);
+ {auto initial=gpu.snapshot();std::ofstream bin(out/"initial.bin",std::ios::binary);bin.write(reinterpret_cast<const char*>(initial.data()),initial.size()*sizeof(powder::Grain));if(!bin)throw std::runtime_error("initial snapshot write failed");}
  auto start=Clock::now();double next=0,nextHistory=0;bool history=argc>13&&std::stoi(argv[13])!=0;
  while(gpu.time()<duration){gpu.advance(20,gpu.time()<1?0:rpm,gpu.time()>=gate_time);if(gpu.time()<next&&gpu.time()<duration)continue;next=gpu.time()+.25;
  auto p=gpu.snapshot();float r=gpu.radius(),cell=2*r;int nx=static_cast<int>(std::ceil((c.test_mixer?1.6:1.2)/cell)),ny=static_cast<int>(std::ceil((c.test_mixer?1.:.8)/cell)),nz=static_cast<int>(std::ceil((c.test_mixer?1.6:1.2)/cell));std::vector<int> heads(nx*ny*nz,-1),links(p.size());

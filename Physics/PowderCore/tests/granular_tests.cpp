@@ -19,6 +19,14 @@ int main(){try{
  c.test_mixer=true;powder::GranularGPU asset(c);
  asset.set_state({{.72f,0,-.28f,1}},{{1,0,0,0}});asset.advance(1000,0,false);auto ap=asset.snapshot()[0];
  check(ap.x<=.7401f&&ap.x>=-.7401f&&ap.z>=-.3151f,"test asset end wall and floor");check(ap.w==1,"test asset group identity");
+ // External initialization bypasses legacy packing and retains supplied velocity/group.
+ c.count=1;c.test_mixer=false;c.radius=.01f;
+ powder::GranularGPU supplied(c,{{.3f,.2f,.35f,1}},{{.1f,0,0,0}});
+ check(supplied.time()==0&&supplied.snapshot()[0].w==1,"external initial snapshot");supplied.advance(200,0,false);auto ep=supplied.snapshot()[0];
+ check(std::abs(ep.x-(.3+.1*supplied.time()))<2.e-5,"external initial velocity");
+ bool invalid=false;try{powder::validate_granular_initial(c,{{.449f,.2f,.35f,0}});}catch(const std::exception&){invalid=true;}check(invalid,"external wall penetration rejected");
+ c.count=2;invalid=false;try{powder::validate_granular_initial(c,{{.3f,.2f,.35f,0},{.3f,.2f,.35f,1}});}catch(const std::exception&){invalid=true;}check(invalid,"cross-emitter overlap rejected");
+ c.count=1;c.test_mixer=true;invalid=false;try{powder::validate_granular_initial(c,{{0,0,0,0}});}catch(const std::exception&){invalid=true;}check(invalid,"external rotor penetration rejected");
  bool bad=false;c.friction=2;try{powder::GranularGPU invalid(c);}catch(const std::exception&){bad=true;}check(bad,"invalid friction rejected");
  std::cout<<"PASS free fall, pair symmetry, identity, closed/open gate, receiver, lip, guard\n";
  }catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}
