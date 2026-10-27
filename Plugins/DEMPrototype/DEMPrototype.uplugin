@@ -1,0 +1,9 @@
+{
+  "FileVersion": 3, "Version": 1, "VersionName": "0.1", "FriendlyName": "DEM Prototype",
+  "Description": "Independent double precision CPU sphere DEM validation sandbox",
+  "Category": "Physics", "CanContainContent": true, "EnabledByDefault": true,
+  "Modules": [
+    {"Name": "DEMPrototype", "Type": "Runtime", "LoadingPhase": "Default"},
+    {"Name": "DEMPrototypeEditor", "Type": "Editor", "LoadingPhase": "Default"}
+  ]
+}

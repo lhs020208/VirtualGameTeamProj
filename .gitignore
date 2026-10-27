@@ -42,3 +42,9 @@ Thumbs.db
 
 # Keep source-controlled Unreal project assets and configuration:
 # Config/, Content/, Source/, Plugins/, Build/, and *.uproject
+
+# Local DEM validation outputs, logs, screenshots and backups
+/Plugins/DEMPrototype/Results/
+/Plugins/DEMPrototype/CommonValidation/
+/Plugins/DEMPrototype/EmitterValidation/
+/Plugins/DEMPrototype/ParticleSettingsValidation/
