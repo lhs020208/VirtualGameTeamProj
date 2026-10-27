@@ -65,7 +65,11 @@ struct GranularGPU::Impl {
   if(!hit)for(auto& part:mxparts){float distance=-1.e9f;for(int j=int(part[0]);j<int(part[0]+part[1]);j++){auto a=mxplanes[j];distance=std::max(distance,a[0]*x+a[1]*y+a[2]*z-a[3]);}if(distance<c.radius){hit=true;break;}}
   if(!hit)initial.push_back({x,y,z,x<0?0.f:1.f});
  }}
- require(initial.size()==c.count,"initial charge does not fit vessel");std::vector<Grain> v(c.count);set(initial,v);
+ require(initial.size()==c.count,"initial charge does not fit vessel");
+ // MX301 charge is generated bottom-to-top: red lower half, blue upper half.
+ // Keep positions and equal material counts; only the interface layer may share both groups.
+ if(c.test_mixer)for(std::size_t i=0;i<initial.size();++i)initial[i].w=i<initial.size()/2?0.f:1.f;
+ std::vector<Grain> v(c.count);set(initial,v);
  }catch(...){release();throw;}}
  void release(){for(auto e:events)if(e.first)api.clReleaseEvent(e.first);events.clear();for(auto k:kernels)if(k)api.clReleaseKernel(k);for(auto b:buffers)if(b)api.clReleaseMemObject(b);if(program)api.clReleaseProgram(program);if(queue)api.clReleaseCommandQueue(queue);if(context)api.clReleaseContext(context);}
  ~Impl(){release();}
