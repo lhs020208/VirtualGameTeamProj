@@ -1,0 +1,17 @@
+{
+  "core_tests_passed": 6,
+  "unreal_succeeded": 19,
+  "unreal_failed": 0,
+  "unreal_flags": [
+    "-GrainKernelOptimize"
+  ],
+  "benchmark_runs": 5,
+  "default_kernel_optimize_enabled": false,
+  "extra_sha256": {
+    "Physics/PowderCore/CMakeLists.txt": "cb7b2781cd550d5d60a1de56ccd9a5225d19354a80591aaca50dd6f7fab7a02b",
+    "Physics/PowderCore/tests/granular_kernel_tests.cpp": "b3b8bcea771d1adcaa094121926236eb06376f50350e0333fbd59b2036b2a7a0",
+    "Physics/PowderCore/tests/granular_test_reference.hpp": "8c305692befa8397ccbf79943ce91ab83e6193d848011bad20f3c076520c8f56",
+    "Scripts/run_additional_optimization07.py": "0b94875daad58882194569ee207b4b22b2013d9465a0c4679af844ffded01879"
+  },
+  "scope": "Current 50k test mixer; coupled changes, no separate attribution or physical accuracy certification."
+}

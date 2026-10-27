@@ -1,0 +1,20 @@
+Start testing: Oct 27 15:59 대한민국 표준시
+----------------------------------------------------------
+48/48 Testing: optimization_granular_gpu
+48/48 Test: optimization_granular_gpu
+Command: "D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore/Release/granular_tests.exe"
+Directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+"optimization_granular_gpu" start time: Oct 27 15:59 대한민국 표준시
+Output:
+----------------------------------------------------------
+freefall z=0.337676 expected=0.337676
+PASS free fall, pair symmetry, identity, closed/open gate, receiver, lip, guard
+<end of output>
+Test time =   3.77 sec
+----------------------------------------------------------
+Test Passed.
+"optimization_granular_gpu" end time: Oct 27 15:59 대한민국 표준시
+"optimization_granular_gpu" time elapsed: 00:00:03
+----------------------------------------------------------
+
+End testing: Oct 27 15:59 대한민국 표준시

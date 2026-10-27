@@ -1,0 +1,442 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "PC",
+			"instance": "655513FF4B4B663CE20B81A6617E5FC1",
+			"instanceName": "PC-32320",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 11 (26H2) [10.0.26300.9711] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 4060 Ti",
+			"cPUModel": "Intel(R) Core(TM) i7-14700KF",
+			"rAMInGB": 32,
+			"renderMode": "D3D12_SM6",
+			"rHI": "D3D12 (SM6)",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.27-07.18.03",
+	"succeeded": 19,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 25.762479782104492,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "AdhesionSettings",
+			"fullTestPath": "Powder.DEM.AdhesionSettings",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 0.075386300683021545,
+			"dateTime": "2026.10.27-07.17.37",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "BackgroundBridge",
+			"fullTestPath": "Powder.DEM.BackgroundBridge",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 2.1768066883087158,
+			"dateTime": "2026.10.27-07.17.37",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "300-particle max polling/render tick 0.002979301s, fresh snapshots 91",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.27-07.17.39"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "BulkProcess",
+			"fullTestPath": "Powder.DEM.BulkProcess",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 5.3162899017333984,
+			"dateTime": "2026.10.27-07.17.39",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "BulkPrototype",
+			"fullTestPath": "Powder.DEM.BulkPrototype",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 0.88584738969802856,
+			"dateTime": "2026.10.27-07.17.45",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Bulk bridge 30 physical seconds with instance updates: wall 0.503853 s; no GPU frame timing claim",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.27-07.17.46"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "ClumpBridge",
+			"fullTestPath": "Powder.DEM.ClumpBridge",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 0.10539880394935608,
+			"dateTime": "2026.10.27-07.17.46",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "CPUParallel",
+			"fullTestPath": "Powder.DEM.CPUParallel",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 0.17077790200710297,
+			"dateTime": "2026.10.27-07.17.46",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "GpuBridge",
+			"fullTestPath": "Powder.DEM.GpuBridge",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 0.81847929954528809,
+			"dateTime": "2026.10.27-07.17.46",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "GPU OpenCL FP64: dry linear spheres / boxes",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.27-07.17.46"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "GPU bridge worker 0.042303500s snapshot 0.001912900s ISM update 0.000989594s (13 updates); physical 0.000200000s",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.27-07.17.46"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "CPU bridge worker 0.025847600s snapshot 0.000023900s ISM update 0.000711497s (13 updates); physical 0.000200000s",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.27-07.17.47"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "MeshBridge",
+			"fullTestPath": "Powder.DEM.MeshBridge",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 5.962397575378418,
+			"dateTime": "2026.10.27-07.17.47",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Mesh fixture 0.3 s: contacts=31370, mass=1.819610464959208 kg",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.27-07.17.53"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "MixingBridge",
+			"fullTestPath": "Powder.DEM.MixingBridge",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 0.06190900132060051,
+			"dateTime": "2026.10.27-07.17.53",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "OptimizationProfile",
+			"fullTestPath": "Powder.DEM.OptimizationProfile",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 0.1927751898765564,
+			"dateTime": "2026.10.27-07.17.53",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "OPT01_UNREAL_CPU: 500 fixed steps, physics 0.0438956 s, display_sync 0.0151175112 s, paired_loop 0.138151303 s; display_sync excludes GPU drawing",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.27-07.17.53"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "PaddleBridge",
+			"fullTestPath": "Powder.DEM.PaddleBridge",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 5.9993877410888672,
+			"dateTime": "2026.10.27-07.17.53",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Paddle 30 RPM / 0.3 s: work=0.25211203778347624 J, peak |Tz|=5.1087349459511504 Nm, wall contact observations=706412",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.27-07.17.59"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "RealtimePacing",
+			"fullTestPath": "Powder.DEM.RealtimePacing",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 1.2174495458602905,
+			"dateTime": "2026.10.27-07.17.59",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "PACING_BENCHMARK: 32 bodies, physical 0.023298 s, wall 1.1000001 s, rate 0.0211799981 x, fixed dt 2e-06 s, lag 1.044853 s",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.27-07.18.00"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "ResultsBridge",
+			"fullTestPath": "Powder.DEM.ResultsBridge",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 0.16594600677490234,
+			"dateTime": "2026.10.27-07.18.00",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "RollingSettings",
+			"fullTestPath": "Powder.DEM.RollingSettings",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 0.044210102409124374,
+			"dateTime": "2026.10.27-07.18.00",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "SettingsBridge",
+			"fullTestPath": "Powder.DEM.SettingsBridge",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 0.1280210018157959,
+			"dateTime": "2026.10.27-07.18.00",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "SupplyBridge",
+			"fullTestPath": "Powder.DEM.SupplyBridge",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 0.14623379707336426,
+			"dateTime": "2026.10.27-07.18.01",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "TrackingBridge",
+			"fullTestPath": "Powder.DEM.TrackingBridge",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 0.11269190162420273,
+			"dateTime": "2026.10.27-07.18.01",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "WorkerDisplay",
+			"fullTestPath": "Powder.DEM.WorkerDisplay",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 0.27016589045524597,
+			"dateTime": "2026.10.27-07.18.01",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "OPT06_UNREAL_CPU: 2000 steps / 32 bodies; LOD8 worker 0.1637487 s snapshot 1.21e-05 s display 0.000450704247 s (7 updates); hidden worker 0.1611249 s snapshot 1.06e-05 s display 5.08986413e-05 s (7 updates). NullRHI excludes GPU drawing; concurrent workers are not speedup evidence.",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.27-07.18.01"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "GPUBridge",
+			"fullTestPath": "Powder.EmitterIntegration.GPUBridge",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"655513FF4B4B663CE20B81A6617E5FC1"
+			],
+			"duration": 1.9123020172119141,
+			"dateTime": "2026.10.27-07.18.01",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

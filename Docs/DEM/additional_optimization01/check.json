@@ -1,0 +1,29 @@
+{
+  "check_pass": true,
+  "baseline_commit": "6f2edc23e6ccd775b79c946f83cfee5f36baaba6",
+  "candidate": false,
+  "source_changes": [],
+  "binary_changes": [],
+  "seconds": 12,
+  "repeats": 3,
+  "command": [
+    "C:/Program Files/Epic Games/UE_5.8/Engine/Binaries/Win64/UnrealEditor.exe",
+    "D:\\GitHub\\VirtualGameTeamProj\\VirtualGameTeamProj.uproject",
+    "/Game/L_MX301_Test",
+    "-game",
+    "-windowed",
+    "-ResX=1280",
+    "-ResY=720",
+    "-nosound",
+    "-unattended",
+    "-ddc=InstalledNoZenLocalFallback",
+    "-ExecCmds=t.MaxFPS 30",
+    "-GrainBenchmark",
+    "-GrainCount=50000",
+    "-GrainDt=0.000375",
+    "-GrainIterations=16",
+    "-GrainBatch=32",
+    "-GrainSeconds=12"
+  ],
+  "new_measurement": false
+}

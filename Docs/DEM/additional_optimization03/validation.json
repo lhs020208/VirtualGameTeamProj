@@ -1,0 +1,19 @@
+{
+  "core_tests_passed": [
+    "optimization_granular_gpu",
+    "optimization_granular_candidates"
+  ],
+  "cpu_directed_contacts_checked": 8690,
+  "missing_contacts": 0,
+  "unreal_succeeded": 19,
+  "unreal_failed": 0,
+  "benchmark_runs": 4,
+  "candidate_build_count_matches_steps_times_iterations": true,
+  "default_enabled": false,
+  "extra_sha256": {
+    "Physics/PowderCore/CMakeLists.txt": "ced930d001b2689b54ad297b176f394c605b21c5bc50c53f337c06cc7969f3ea",
+    "Physics/PowderCore/app/granular_run.cpp": "ce01de32a936cd71db46f6baa67d78d3a558d576bafcdc652709de39e4abc4c8",
+    "Physics/PowderCore/tests/granular_candidate_tests.cpp": "237c8d376b4b0b214c5635723d7fdc4a423e71e7e75585fd513b94646fc75b10",
+    "Scripts/run_additional_optimization03.py": "5bbca2bb5e1c95dd4f6c6505693e27394f8f2c13b23101f45eeacc3aae382c7f"
+  }
+}

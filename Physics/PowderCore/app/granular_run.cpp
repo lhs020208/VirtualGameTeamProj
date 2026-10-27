@@ -8,10 +8,14 @@
 #include <filesystem>
 using Clock=std::chrono::steady_clock;
 int main(int argc,char**argv){try{
- if(argc<4)throw std::runtime_error("count duration output [iterations dt rpm gate_time radius]");
+ if(argc<4)throw std::runtime_error("count duration output [iterations dt rpm gate_time radius fast_bounds profile test_mixer friction history profile_split candidates candidate_capacity candidate_reuse skin_ratio boundary_candidates]");
  powder::GranularConfig c;c.count=static_cast<unsigned>(std::stoul(argv[1]));double duration=std::stod(argv[2]);if(argc>4)c.iterations=static_cast<unsigned>(std::stoul(argv[4]));if(argc>5)c.dt=std::stof(argv[5]);float rpm=argc>6?std::stof(argv[6]):30.f;double gate_time=argc>7?std::stod(argv[7]):1.e9;if(argc>8)c.radius=std::stof(argv[8]);if(argc>9)c.fast_bounds=std::stoi(argv[9])!=0;if(argc>10)c.profile=std::stoi(argv[10])!=0;
  std::filesystem::path out(argv[3]);if(!std::filesystem::create_directory(out))throw std::runtime_error("output directory exists");
  if(argc>11)c.test_mixer=std::stoi(argv[11])!=0;if(argc>12)c.friction=std::stof(argv[12]);
+ if(argc>14)c.profile_split=std::stoi(argv[14])!=0;
+ if(argc>15)c.candidates=std::stoi(argv[15])!=0;if(argc>16)c.candidate_capacity=static_cast<unsigned>(std::stoul(argv[16]));
+ if(argc>17)c.candidate_reuse=std::stoi(argv[17])!=0;if(argc>18)c.candidate_skin_ratio=std::stof(argv[18]);
+ if(argc>19)c.boundary_candidates=std::stoi(argv[19])!=0;
  powder::GranularGPU gpu(c);std::cout<<gpu.device()<<" r="<<gpu.radius()<<std::endl;
  std::ofstream csv(out/"trace.csv");csv<<"time,wall,rate,max_overlap_radius,mean_overlap_radius,mean_z,max_z,mix_index,receiver_count,count,angle\n"<<std::setprecision(10);
  {auto initial=gpu.snapshot();std::ofstream bin(out/"initial.bin",std::ios::binary);bin.write(reinterpret_cast<const char*>(initial.data()),initial.size()*sizeof(powder::Grain));if(!bin)throw std::runtime_error("initial snapshot write failed");}
@@ -31,6 +35,6 @@ int main(int argc,char**argv){try{
  if(history&&gpu.time()>=nextHistory){std::ofstream h(out/("frame_"+std::to_string(gpu.time())+"_"+std::to_string(gpu.angle())+".bin"),std::ios::binary);h.write(reinterpret_cast<const char*>(p.data()),p.size()*sizeof(powder::Grain));nextHistory=gpu.time()+1;}
 
  }
- auto timing=gpu.timing();std::ofstream profile(out/"timing.json");profile<<std::setprecision(12)<<"{\"profiling_enabled\":"<<(c.profile?"true":"false")<<",\"advance_wall_s\":"<<timing.advance_wall<<",\"snapshot_wall_s\":"<<timing.snapshot_wall<<",\"grid_clear_gpu_s\":"<<timing.gpu_seconds[0]<<",\"grid_build_gpu_s\":"<<timing.gpu_seconds[1]<<",\"predict_gpu_s\":"<<timing.gpu_seconds[2]<<",\"contact_gpu_s\":"<<timing.gpu_seconds[3]<<",\"velocity_gpu_s\":"<<timing.gpu_seconds[4]<<"}";
+ std::ofstream profile(out/"timing.json");powder::write_granular_timing(profile,gpu.timing());
  return 0;
  }catch(const std::exception&e){std::cerr<<e.what()<<std::endl;return 1;}}

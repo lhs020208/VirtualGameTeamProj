@@ -1,0 +1,16 @@
+{
+  "core_tests_passed": 4,
+  "unreal_succeeded": 19,
+  "unreal_failed": 0,
+  "benchmark_runs": 5,
+  "default_boundary_candidates_enabled": false,
+  "performance_adopted": false,
+  "extra_sha256": {
+    "Physics/PowderCore/CMakeLists.txt": "6a187128008cf3d0317ff72bcc8ec151f4c9ce31f27bc58f98c4fd06019d23ec",
+    "Physics/PowderCore/app/granular_run.cpp": "5b9b87285b8bc4622dbef979c3880d29ee1099d937750c5d43dfc1cc004ee608",
+    "Physics/PowderCore/tests/granular_boundary_tests.cpp": "5282f055a2d5e6594985909b06a604297a8509ee06cc9fc1be64cc86a52f7142",
+    "Physics/PowderCore/tests/granular_test_reference.hpp": "8c305692befa8397ccbf79943ce91ab83e6193d848011bad20f3c076520c8f56",
+    "Scripts/run_additional_optimization05.py": "197ac3b68f422768d05b11fdb9e1377dd27e06d61676b21bf6612e9fefb9fd70"
+  },
+  "limitation": "Boundary output equivalence on sampled inputs; large runs audit initial invariants and last recorded snapshot geometry, not every intermediate state or physical accuracy."
+}

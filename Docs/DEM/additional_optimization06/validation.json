@@ -1,0 +1,17 @@
+{
+  "core_tests_passed": 5,
+  "unreal_succeeded": 19,
+  "unreal_failed": 0,
+  "unreal_flags": [
+    "-GrainStream"
+  ],
+  "benchmark_runs": 5,
+  "default_stream_enabled": false,
+  "performance_gain_established": false,
+  "extra_sha256": {
+    "Physics/PowderCore/CMakeLists.txt": "07706994a7b815a80d980f3a430b5124ce5133b4b00c276ccc5c056f52783e5c",
+    "Physics/PowderCore/tests/granular_stream_tests.cpp": "8ae94eaea2c71e8d7d2b25bc6117649b9af3d4802675345bda6498723f17aec1",
+    "Physics/PowderCore/tests/granular_test_reference.hpp": "8c305692befa8397ccbf79943ce91ab83e6193d848011bad20f3c076520c8f56",
+    "Scripts/run_additional_optimization06.py": "9af9f10b7f00ccf62734f54d090a31f3123a50f1991585fa61db09da5b8dba54"
+  }
+}

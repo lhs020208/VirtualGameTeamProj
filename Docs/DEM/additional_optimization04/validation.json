@@ -1,0 +1,20 @@
+{
+  "core_tests_passed": [
+    "optimization_granular_gpu",
+    "optimization_granular_candidates",
+    "optimization_granular_safe_reuse"
+  ],
+  "unreal_succeeded": 19,
+  "unreal_failed": 0,
+  "benchmark_runs": 5,
+  "large_scene_audit": "Initial invariants and last recorded snapshot geometry only; small tests audit every contact iteration",
+  "default_reuse_enabled": false,
+  "extra_sha256": {
+    "Physics/PowderCore/CMakeLists.txt": "6999705e3f1462c10f077bec929e406cabeea905fff6df4dea3c99c65997f068",
+    "Physics/PowderCore/app/granular_run.cpp": "fc4dc2219d9fa3959b237d6c6d11c5e1a83c1773c75868c1231ff1dcecb34cd0",
+    "Physics/PowderCore/tests/granular_test_reference.hpp": "8c305692befa8397ccbf79943ce91ab83e6193d848011bad20f3c076520c8f56",
+    "Physics/PowderCore/tests/granular_reuse_tests.cpp": "2bad439db8da87cbc9c5e23a4e6c657efd57fb5e5553ca1ce9ba5727d6de62e4",
+    "Physics/PowderCore/tests/granular_candidate_tests.cpp": "759fc72e18b3e16f7349cab190cf21805ee286cb095b5142a84a7a6d9087addd",
+    "Scripts/run_additional_optimization04.py": "ca23e146adf9b1af465015bb15cd9f19e3337b1aaec0a5c0eb34c4ec180b2de6"
+  }
+}

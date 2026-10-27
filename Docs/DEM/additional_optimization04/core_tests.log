@@ -1,0 +1,52 @@
+Start testing: Oct 27 16:28 대한민국 표준시
+----------------------------------------------------------
+48/50 Testing: optimization_granular_gpu
+48/50 Test: optimization_granular_gpu
+Command: "D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore/Release/granular_tests.exe"
+Directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+"optimization_granular_gpu" start time: Oct 27 16:28 대한민국 표준시
+Output:
+----------------------------------------------------------
+freefall z=0.337676 expected=0.337676
+PASS free fall, pair symmetry, identity, closed/open gate, receiver, lip, guard
+<end of output>
+Test time =   5.77 sec
+----------------------------------------------------------
+Test Passed.
+"optimization_granular_gpu" end time: Oct 27 16:28 대한민국 표준시
+"optimization_granular_gpu" time elapsed: 00:00:05
+----------------------------------------------------------
+
+49/50 Testing: optimization_granular_candidates
+49/50 Test: optimization_granular_candidates
+Command: "D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore/Release/granular_candidate_tests.exe"
+Directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+"optimization_granular_candidates" start time: Oct 27 16:28 대한민국 표준시
+Output:
+----------------------------------------------------------
+PASS candidates: 8690 directed CPU all-pairs contacts, random scenes, cell edges, dense overflow, full-traversal fallback, CPU Jacobi reference, wall trajectory, split profile, reset and capacity guards
+<end of output>
+Test time =   4.51 sec
+----------------------------------------------------------
+Test Passed.
+"optimization_granular_candidates" end time: Oct 27 16:28 대한민국 표준시
+"optimization_granular_candidates" time elapsed: 00:00:04
+----------------------------------------------------------
+
+50/50 Testing: optimization_granular_safe_reuse
+50/50 Test: optimization_granular_safe_reuse
+Command: "D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore/Release/granular_reuse_tests.exe"
+Directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+"optimization_granular_safe_reuse" start time: Oct 27 16:28 대한민국 표준시
+Output:
+----------------------------------------------------------
+PASS safe reuse: approaching unseen pair, correction-created contact, shaft/rotor projection, overflow fallback, batch persistence, reset, skin/grid variants, CPU reference, every-iteration all-pairs oracle, domain and configuration guards
+<end of output>
+Test time =   5.95 sec
+----------------------------------------------------------
+Test Passed.
+"optimization_granular_safe_reuse" end time: Oct 27 16:28 대한민국 표준시
+"optimization_granular_safe_reuse" time elapsed: 00:00:05
+----------------------------------------------------------
+
+End testing: Oct 27 16:28 대한민국 표준시

@@ -6,13 +6,36 @@ R"CLC(
 #else
 #define GRID_OFFSET (float3)(.6f,.4f,.65f)
 #endif
+int candidate_index(int i,int k,int n,int capacity){
+#if GRANULAR_KERNEL_OPTIMIZE
+ return k*n+i;
+#else
+ return i*capacity+k;
+#endif
+}
 int cellid(float3 p,float cell,int nx,int ny,int nz){
  int3 q=convert_int3(floor((p+GRID_OFFSET)/cell));
  if(any(q<(int3)(0))||q.x>=nx||q.y>=ny||q.z>=nz)return -1;
  return (q.z*ny+q.y)*nx+q.x;
 }
-__kernel void cleargrid(__global int* head,int cells){int i=get_global_id(0);if(i<cells)head[i]=-1;}
-__kernel void grid(__global const float4* pos,__global int* head,__global int* link,int n,float cell,int nx,int ny,int nz,__global int* error){
+__kernel void cleargrid(__global int* head,int cells
+#if GRANULAR_REUSE
+ ,__global const unsigned* control
+#endif
+ ){
+#if GRANULAR_REUSE
+ if(!control[0])return;
+#endif
+ int i=get_global_id(0);if(i<cells)head[i]=-1;
+}
+__kernel void grid(__global const float4* pos,__global int* head,__global int* link,int n,float cell,int nx,int ny,int nz,__global int* error
+#if GRANULAR_REUSE
+ ,__global const unsigned* control
+#endif
+ ){
+#if GRANULAR_REUSE
+ if(!control[0])return;
+#endif
  int i=get_global_id(0);if(i>=n)return;int c=cellid(pos[i].xyz,cell,nx,ny,nz);if(c<0){atomic_or(error,1);link[i]=-1;return;}link[i]=atomic_xchg(head+c,i);
 }
 __kernel void predict(__global float4* pos,__global float4* old,__global float4* vel,int n,float dt,float r,__global int* error,__global float4* predicted){
@@ -31,14 +54,37 @@ float3 boxpush(float3 p,float3 h,float r){
 }
 float3 rotatex(float3 p,float a){float s=sin(a),c=cos(a);return (float3)(p.x,c*p.y-s*p.z,s*p.y+c*p.z);}
 float3 rotatez(float3 p,float a){float s=sin(a),c=cos(a);return (float3)(c*p.x-s*p.y,s*p.x+c*p.y,p.z);}
-float3 boundaries(float3 p,float r,float angle,int gate,float3* wallnormal,float3* wallvelocity){
+// Derived on-device from the exact plane/part constants used by narrow phase.
+__kernel void init_boundary_groups(__global float4* bounds){
+ int g=get_global_id(0);if(g>=22)return;float3 lo=(float3)(INFINITY),hi=(float3)(-INFINITY);float minw=INFINITY;
+ if(g<17){for(int j=g*8;j<min(133,g*8+8);++j){float4 a=mxplanes[j];lo=fmin(lo,a.xyz);hi=fmax(hi,a.xyz);minw=fmin(minw,a.w);}}
+ else{int start=(g-17)*4;for(int k=start;k<min(17,start+4);++k){float8 b=mxparts[k];lo=fmin(lo,(float3)(b.s2,b.s3,b.s4));hi=fmax(hi,(float3)(b.s5,b.s6,b.s7));}minw=0;}
+ bounds[2*g]=(float4)(lo,minw);bounds[2*g+1]=(float4)(hi,0);
+}
+float3 boundary_eval(float3 p,float r,float angle,int gate,float3* wallnormal,float3* wallvelocity,__global const float4* bounds,int* work){
  float3 start=p;*wallnormal=(float3)(0);*wallvelocity=(float3)(0);
 #if GRANULAR_MX301
  // Closed test-only interior and conservative convex rotor components from source asset.
- for(int j=0;j<133;j++){float4 a=mxplanes[j];float d=dot(a.xyz,p)-a.w+r;if(d>0)p-=a.xyz*d;}
+ for(int group=0;group<17;++group){
+#if GRANULAR_BOUNDARY_CANDIDATES
+  float4 lo=bounds[2*group],hi=bounds[2*group+1];
+  // max_j(dot(n_j,p)-w_j+r) <= dot(extremeNormal,p)-min(w_j)+r.
+  // With no active plane in this group, p cannot change within the group.
+  float3 extreme=select(lo.xyz,hi.xyz,p>=(float3)(0));
+  float upper=dot(extreme,p)-lo.w+r;
+  if(upper < -1.e-5f*(1.f+length(p)))continue;
+#endif
+  for(int j=group*8;j<min(133,group*8+8);++j){++work[0];float4 a=mxplanes[j];float d=dot(a.xyz,p)-a.w+r;if(d>0)p-=a.xyz*d;}
+ }
  float3 shift=p-start;if(length(shift)>1.e-9f)*wallnormal=normalize(shift);
  float3 localpoint=rotatex(p,-angle),initial=localpoint;
- for(int k=0;k<17;k++){float8 b=mxparts[k];if(any(localpoint<(float3)(b.s2,b.s3,b.s4)-r)||any(localpoint>(float3)(b.s5,b.s6,b.s7)+r))continue;
+ for(int k=0;k<17;k++){
+#if GRANULAR_BOUNDARY_CANDIDATES
+  if(k%4==0){int group=17+k/4;float3 lo=bounds[2*group].xyz,hi=bounds[2*group+1].xyz;float margin=1.e-5f*(1.f+length(localpoint));
+   if(any(localpoint<lo-r-margin)||any(localpoint>hi+r+margin)){k=min(k+3,16);continue;}
+  }
+#endif
+  ++work[1];float8 b=mxparts[k];if(any(localpoint<(float3)(b.s2,b.s3,b.s4)-r)||any(localpoint>(float3)(b.s5,b.s6,b.s7)+r))continue;
   float distance=-1.e9f;float3 normal=(float3)(0);for(int j=(int)b.s0;j<(int)(b.s0+b.s1);j++){float4 a=mxplanes[j];float d=dot(a.xyz,localpoint)-a.w;if(d>distance){distance=d;normal=a.xyz;}if(distance>=r)break;}
   if(distance<r)localpoint+=normal*(r-distance);
  }
@@ -69,22 +115,119 @@ float3 boundaries(float3 p,float r,float angle,int gate,float3* wallnormal,float
  return p;
 #endif
 }
-__kernel void solve(__global const float4* pos,__global const float4* old,__global float4* next,__global const int* head,__global const int* link,int n,float r,float cell,int nx,int ny,int nz,float angle,int gate,float mu){
+float3 boundaries(float3 p,float r,float angle,int gate,float3* wn,float3* wv,__global const float4* bounds){int work[2]={0,0};return boundary_eval(p,r,angle,gate,wn,wv,bounds,work);}
+__kernel void inspect_boundaries(__global const float4* points,int n,float r,float angle,int gate,__global const float4* bounds,
+ __global float4* projected,__global float4* normals,__global float4* velocities){
+ int i=get_global_id(0);if(i>=n)return;float3 wn,wv;int work[2]={0,0};float3 p=boundary_eval(points[i].xyz,r,angle,gate,&wn,&wv,bounds,work);
+ projected[i]=(float4)(p,points[i].w);normals[i]=(float4)(wn,(float)work[0]);velocities[i]=(float4)(wv,(float)work[1]);
+}
+// Build on current positions when required by the cache-validity check (or every iteration without reuse).
+__kernel void build_candidates(__global const float4* pos,__global const int* head,__global const int* link,
+ int n,float r,float cell,int nx,int ny,int nz,__global int* candidates,__global int* counts,int capacity,__global unsigned* overflow
+#if GRANULAR_REUSE
+ ,__global float4* reference,__global unsigned* control,float skin
+#endif
+ ){
+#if GRANULAR_REUSE
+ if(!control[0])return;
+#endif
+ int i=get_global_id(0);if(i>=n)return;float3 p=pos[i].xyz;int3 q=convert_int3(floor((p+GRID_OFFSET)/cell));int count=0;
+ float reach=2*r;
+#if GRANULAR_REUSE
+ reach+=skin;reference[i]=pos[i];if(i==0)++control[3];
+#endif
+ for(int z=-1;z<=1;z++)for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+  int3 c=q+(int3)(x,y,z);if(any(c<(int3)(0))||c.x>=nx||c.y>=ny||c.z>=nz)continue;
+  for(int j=head[(c.z*ny+c.y)*nx+c.x];j>=0;j=link[j])if(j!=i){float3 d=p-pos[j].xyz;
+   // Small outward tolerance avoids rounding false negatives; solve rechecks exact contact.
+   if(dot(d,d)<=reach*reach*1.00001f){if(count<capacity)candidates[candidate_index(i,count,n,capacity)]=j;++count;}
+  }
+ }
+ counts[i]=count<=capacity?count:-1;if(count>capacity){if(atomic_inc(overflow)==0xffffffffu)atomic_inc(overflow+1);
+#if GRANULAR_REUSE
+ atomic_or(control+2,1u); // Force a fresh grid next iteration for overflow fallback.
+#endif
+ }
+}
+// In-order queue boundaries provide global synchronization between these kernels.
+// control: rebuild-now, valid, prior-overflow, build-count, check-count, immutable-forced-rebuild.
+__kernel void reuse_begin(__global unsigned* control){if(get_global_id(0)==0){control[0]=!control[1]||control[2];control[5]=control[0];control[1]=1;control[2]=0;++control[4];}}
+__kernel void reuse_check(__global const float4* pos,__global const float4* reference,int n,float skin,
+ __global unsigned* control,float cell,int nx,int ny,int nz,__global int* error){
+ // This flag is immutable for this dispatch, avoiding N contended atomic reads.
+ if(control[5])return;
+ int i=get_global_id(0),lid=get_local_id(0);int need=0;
+ if(i<n){float3 p=pos[i].xyz;
+  if(!all(isfinite(p))){atomic_or(error,4);need=1;}
+  else if(cellid(p,cell,nx,ny,nz)<0){atomic_or(error,1);need=1;}
+  else{float3 d=p-reference[i].xyz;float limit=skin*.49f;need=dot(d,d)>=limit*limit;}
+ }
+ // run() uses exactly 128 lanes; padded lanes participate with zero.
+ __local int changed[128];changed[lid]=need;barrier(CLK_LOCAL_MEM_FENCE);
+ for(int stride=64;stride>0;stride/=2){if(lid<stride)changed[lid]|=changed[lid+stride];barrier(CLK_LOCAL_MEM_FENCE);}
+ if(lid==0&&changed[0])atomic_or(control,1u);
+}
+// Optional small-scene all-pairs oracle, immediately before EVERY contact solve.
+__kernel void audit_candidates(__global const float4* pos,int n,float r,__global const int* candidates,
+ __global const int* counts,int capacity,__global const int* head,__global const int* link,
+ float cell,int nx,int ny,int nz,__global int* error){
+ int i=get_global_id(0);if(i>=n)return;
+ for(int j=0;j<n;++j)if(j!=i){float3 d=pos[i].xyz-pos[j].xyz;if(dot(d,d)>=4*r*r)continue;int found=0;
+  if(counts[i]>=0){for(int k=0;k<counts[i];++k)if(candidates[candidate_index(i,k,n,capacity)]==j){found=1;break;}}
+  else{int3 q=convert_int3(floor((pos[i].xyz+GRID_OFFSET)/cell));for(int z=-1;z<=1;z++)for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+   int3 c=q+(int3)(x,y,z);if(any(c<(int3)(0))||c.x>=nx||c.y>=ny||c.z>=nz)continue;
+   for(int k=head[(c.z*ny+c.y)*nx+c.x];k>=0;k=link[k])if(k==j)found=1;
+  }}
+  if(!found)atomic_or(error,8);
+ }
+}
+__kernel void solve(__global const float4* pos,__global const float4* old,__global float4* next,__global const int* head,__global const int* link,int n,float r,float cell,int nx,int ny,int nz,float angle,int gate,float mu
+#if GRANULAR_CANDIDATES
+ ,__global const int* candidates,__global const int* counts,int capacity
+#endif
+ ,__global const float4* bounds){
  int i=get_global_id(0);if(i>=n)return;float3 p=pos[i].xyz;int3 q=convert_int3(floor((p+GRID_OFFSET)/cell));float3 correction=(float3)(0);
+#if GRANULAR_CANDIDATES
+ if(counts[i]>=0){for(int k=0;k<counts[i];++k){int j=candidates[candidate_index(i,k,n,capacity)];if(j!=i){float3 delta=p-pos[j].xyz;float dist2=dot(delta,delta);if(dist2<4*r*r){float dist=sqrt(dist2);float3 normal=dist>1.e-9f?delta/dist:(float3)(i>j?1.f:-1.f,0,0);float overlap=2*r-dist;float3 relative=(p-old[i].xyz)-(pos[j].xyz-old[j].xyz);float3 tangent=relative-normal*dot(relative,normal);float l=length(tangent);correction+=normal*(overlap*.25f);if(l>1.e-9f)correction-=tangent*(fmin(.25f,mu*overlap*.25f/l));}}}}
+ else
+#endif
+ { // On overflow traverse the entire original grid; never consume a truncated list.
  for(int z=-1;z<=1;z++)for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
   int3 c=q+(int3)(x,y,z);if(any(c<(int3)(0))||c.x>=nx||c.y>=ny||c.z>=nz)continue;
   int j=head[(c.z*ny+c.y)*nx+c.x];while(j>=0){if(j!=i){float3 delta=p-pos[j].xyz;float dist2=dot(delta,delta);if(dist2<4*r*r){float dist=sqrt(dist2);float3 normal=dist>1.e-9f?delta/dist:(float3)(i>j?1.f:-1.f,0,0);float overlap=2*r-dist;float3 relative=(p-old[i].xyz)-(pos[j].xyz-old[j].xyz);float3 tangent=relative-normal*dot(relative,normal);float l=length(tangent);correction+=normal*(overlap*.25f);if(l>1.e-9f)correction-=tangent*(fmin(.25f,mu*overlap*.25f/l));}}j=link[j];}
  }
+ }
  float l=length(correction);if(l>r*.35f)correction*=r*.35f/l;
- float3 wn,wv;p=boundaries(p+correction,r,angle,gate,&wn,&wv);next[i]=(float4)(p,pos[i].w);
+#if GRANULAR_PROFILE_SPLIT
+ p+=correction;
+#else
+ float3 wn,wv;p=boundaries(p+correction,r,angle,gate,&wn,&wv,bounds);
+#endif
+ next[i]=(float4)(p,pos[i].w);
 }
-__kernel void velocity(__global float4* pos,__global const float4* old,__global float4* vel,int n,float dt,float r,float angle,float omega,int gate,float mu,__global int* error,__global const float4* predicted){
+__kernel void velocity(__global float4* pos,__global const float4* old,__global float4* vel,int n,float dt,float r,float angle,float omega,int gate,float mu,__global int* error,__global const float4* predicted
+#if GRANULAR_PROFILE_SPLIT
+ ,__global const float4* normals,__global const float4* wallvelocities
+#endif
+ ,__global const float4* bounds){
  int i=get_global_id(0);if(i>=n)return;float3 p=pos[i].xyz;float3 v=vel[i].xyz+(p-predicted[i].xyz)/dt,wn,wv;
  // Slightly inflated shell only identifies contact for dissipative wall friction.
- boundaries(p,r*1.002f,angle,gate,&wn,&wv);wv*=omega;
+#if GRANULAR_PROFILE_SPLIT
+ wn=normals[i].xyz;wv=wallvelocities[i].xyz;
+#else
+ boundaries(p,r*1.002f,angle,gate,&wn,&wv,bounds);
+#endif
+ wv*=omega;
  if(length(wn)>0){float3 relative=v-wv;float vn=dot(relative,wn);float3 tangent=relative-vn*wn;float tl=length(tangent);float normalImpulse=fmax(0.f,-dot((p-old[i].xyz)/dt,wn))+9.81f*dt;
   if(tl>1.e-9f)v-=tangent*fmin(1.f,mu*normalImpulse/tl);if(vn<0)v-=vn*wn;}
  if(!all(isfinite(v))||!all(isfinite(p))){atomic_or(error,4);return;}vel[i]=(float4)(v,0);
+}
+// Diagnostic split only: preserve projection order, expose the cost of boundary work.
+__kernel void project_boundary(__global float4* pos,int n,float r,float angle,int gate,__global const float4* bounds){
+ int i=get_global_id(0);if(i>=n)return;float3 wn,wv;pos[i].xyz=boundaries(pos[i].xyz,r,angle,gate,&wn,&wv,bounds);
+}
+__kernel void probe_boundary(__global const float4* pos,int n,float r,float angle,int gate,__global float4* normals,__global float4* velocities,__global const float4* bounds){
+ int i=get_global_id(0);if(i>=n)return;float3 wn,wv;boundaries(pos[i].xyz,r*1.002f,angle,gate,&wn,&wv,bounds);normals[i]=(float4)(wn,0);velocities[i]=(float4)(wv,0);
 }
 )CLC"
 

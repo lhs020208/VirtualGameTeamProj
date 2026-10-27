@@ -1,0 +1,55 @@
+Internal ctest changing into directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+UpdateCTestConfiguration  from :D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore/DartConfiguration.tcl
+Parse Config file:D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore/DartConfiguration.tcl
+UpdateCTestConfiguration  from :D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore/DartConfiguration.tcl
+Parse Config file:D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore/DartConfiguration.tcl
+Test project D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 48
+    Start 48: optimization_granular_gpu
+
+48: Test command: D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\granular_tests.exe
+48: Working Directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+48: Test timeout computed to be: 120
+48: freefall z=0.337676 expected=0.337676
+48: PASS free fall, pair symmetry, identity, closed/open gate, receiver, lip, guard
+1/4 Test #48: optimization_granular_gpu ..........   Passed    3.60 sec
+test 49
+    Start 49: optimization_granular_candidates
+
+49: Test command: D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\granular_candidate_tests.exe
+49: Working Directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+49: Test timeout computed to be: 120
+49: PASS candidates: 8690 directed CPU all-pairs contacts, random scenes, cell edges, dense overflow, full-traversal fallback, CPU Jacobi reference, wall trajectory, split profile, reset and capacity guards
+2/4 Test #49: optimization_granular_candidates ...   Passed    1.60 sec
+test 50
+    Start 50: optimization_granular_safe_reuse
+
+50: Test command: D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\granular_reuse_tests.exe
+50: Working Directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+50: Test timeout computed to be: 120
+50: PASS safe reuse: approaching unseen pair, correction-created contact, shaft/rotor projection, overflow fallback, batch persistence, reset, skin/grid variants, CPU reference, every-iteration all-pairs oracle, domain and configuration guards
+3/4 Test #50: optimization_granular_safe_reuse ...   Passed    3.21 sec
+test 51
+    Start 51: optimization_granular_boundaries
+
+51: Test command: D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\granular_boundary_tests.exe
+51: Working Directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+51: Test timeout computed to be: 120
+51: PASS boundary samples=571860 plane visits=21014395/76057380 rotor visits=1291162/9721620; rotating trajectories fused/split and configuration guard
+4/4 Test #51: optimization_granular_boundaries ...   Passed    1.42 sec
+
+The following tests passed:
+	optimization_granular_gpu
+	optimization_granular_candidates
+	optimization_granular_safe_reuse
+	optimization_granular_boundaries
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   9.83 sec

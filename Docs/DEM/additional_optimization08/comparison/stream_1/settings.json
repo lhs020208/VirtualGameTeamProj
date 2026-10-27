@@ -1,0 +1,27 @@
+{
+  "command": [
+    "C:/Program Files/Epic Games/UE_5.8/Engine/Binaries/Win64/UnrealEditor.exe",
+    "D:\\GitHub\\VirtualGameTeamProj\\VirtualGameTeamProj.uproject",
+    "/Game/L_MX301_Test",
+    "-game",
+    "-windowed",
+    "-ResX=1280",
+    "-ResY=720",
+    "-nosound",
+    "-unattended",
+    "-ddc=InstalledNoZenLocalFallback",
+    "-ExecCmds=t.MaxFPS 30",
+    "-GrainBenchmark",
+    "-GrainCount=50000",
+    "-GrainDt=0.000375",
+    "-GrainIterations=16",
+    "-GrainBatch=32",
+    "-GrainSeconds=12",
+    "-GrainOutput=D:\\GitHub\\VirtualGameTeamProj\\Saved\\AdditionalOpt08_20261027T082753Z\\stream_1",
+    "-abslog=D:\\GitHub\\VirtualGameTeamProj\\Saved\\AdditionalOpt08_20261027T082753Z\\stream_1/engine.log",
+    "-GrainCandidateReuse",
+    "-GrainKernelOptimize",
+    "-GrainStream"
+  ],
+  "mode": "stream"
+}

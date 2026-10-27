@@ -1,0 +1,12 @@
+{
+  "core_test": "optimization_granular_gpu passed",
+  "unreal_succeeded": 19,
+  "unreal_failed": 0,
+  "benchmark_runs": 6,
+  "all_geometry_checks_pass": true,
+  "extra_sha256": {
+    "Physics/PowderCore/app/granular_run.cpp": "8e186b3e281644d2d9d2e51c74d81390ab5b895c072d6e2fca2a30580b8a6d93",
+    "Physics/PowderCore/tests/granular_tests.cpp": "a8491038433e2f8cc56e9d31f6bb3ca9ce18b5806691d74e2e0cb8b20d5e8ba2",
+    "Scripts/run_additional_optimization02.py": "1dab021438bd77377e106e89dd244f45aad5d01ad8410f212bac3ff9eec7f917"
+  }
+}
