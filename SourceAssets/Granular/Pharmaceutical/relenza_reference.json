@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "status": "reference_only_not_applied",
+  "product": "Relenza (zanamivir inhalation powder)",
+  "research_date": "2026-10-27",
+  "purpose": "Candidate binary pharmaceutical powder for future heterogeneous-material simulation; not a validated commercial-process model.",
+  "composition_source": "https://au.gsk.com/media/ho3f444e/relenza_rotadisk_pi_006_approved.pdf",
+  "corroborating_source": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=d7c3bcc3-0c0d-4068-fd80-88cf54a376ef",
+  "components": [
+    {
+      "group": 0,
+      "display_color": "red",
+      "substance": "zanamivir",
+      "role": "active ingredient",
+      "label_mass_mg_per_blister": 5,
+      "target_mass_fraction": 0.2,
+      "commercial_grade": null,
+      "diameter_d10_m": null,
+      "diameter_d50_m": null,
+      "diameter_d90_m": null,
+      "true_density_kg_m3": null,
+      "particle_friction": null,
+      "wall_friction": null,
+      "cohesion_model_parameters": null
+    },
+    {
+      "group": 1,
+      "display_color": "blue",
+      "substance": "lactose monohydrate",
+      "role": "carrier excipient",
+      "label_mass_mg_per_blister": 20,
+      "target_mass_fraction": 0.8,
+      "commercial_grade": null,
+      "diameter_d10_m": null,
+      "diameter_d50_m": null,
+      "diameter_d90_m": null,
+      "true_density_kg_m3": null,
+      "particle_friction": null,
+      "wall_friction": null,
+      "cohesion_model_parameters": null
+    }
+  ],
+  "separate_grade_reference_not_confirmed_in_product": {
+    "name": "DFE Pharma Lactohale 100",
+    "source": "https://dfepharma.com/excipients/lactohale-100/",
+    "typical_diameter_x10_m": 5.5e-05,
+    "typical_diameter_x50_m": 0.00013,
+    "typical_diameter_x90_m": 0.00022,
+    "bulk_density_kg_m3": 700,
+    "tapped_density_kg_m3": 810,
+    "true_density_kg_m3": null,
+    "warning": "Not established as the grade used in Relenza. Bulk/tapped density must not be assigned to DEM intrinsic particle density."
+  },
+  "application": {
+    "enabled": false,
+    "modified_runtime_assets": false,
+    "target_rate_retained": 0.2,
+    "unknown_values_policy": "null; do not invent material-specific values or silently substitute a generic supplier grade"
+  },
+  "next_steps": [
+    "Select heterogeneous representative-particle solver scope versus reference-data-only scope.",
+    "Obtain or explicitly classify uncertain grade-specific PSD, true density and calibrated contact/cohesion parameters.",
+    "Define representative-particle size/mass scaling and mass ratio, then update contact rules, candidate reach, rendering and mass-weighted mixing statistics together.",
+    "Regenerate non-overlapping initial positions and revalidate geometry, stability and performance; previous speed evidence does not transfer automatically."
+  ],
+  "historical_solver_blockers_at_research": [
+    "Emitter compatibility requires identical radius, density and friction for all groups.",
+    "GPU radius must be strictly between 0.001 and 0.03 m; actual micron-scale feed is outside this contract.",
+    "GPU position solver uses equal-mass spheres; density is currently mass accounting only.",
+    "Stiffness/damping/spin/cohesive adhesive mixing are not represented by this GPU solver.",
+    "The 20:80 mass ratio is not a 20:80 particle count ratio unless per-particle represented mass is identical."
+  ],
+  "extension_2026_10_28": {
+    "binary_radius_mass_friction": "implemented opt-in",
+    "rotation": "implemented opt-in approximate spheres",
+    "cohesion": "not implemented in position solver",
+    "commercial_material_application": false,
+    "reason": "grade-specific properties and calibration data not established"
+  }
+}

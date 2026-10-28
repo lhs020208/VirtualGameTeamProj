@@ -1,4 +1,51 @@
 R"CLC(
+float grain_radius(float group,float legacy){
+#if GRANULAR_BINARY
+ return group==0?MAT_R0:MAT_R1;
+#else
+ return legacy;
+#endif
+}
+float grain_wall_mu(float group,float legacy){
+#if GRANULAR_BINARY
+ return group==0?MAT_W0:MAT_W1;
+#else
+ return legacy;
+#endif
+}
+float3 pair_correction(float4 a,float4 b,float3 olda,float3 oldb,int i,int j,float r,float mu
+#if GRANULAR_ROTATION
+ ,float3 ai,float3 aj,float3* angular
+#endif
+ ){
+ float reach=grain_radius(a.w,r)+grain_radius(b.w,r);float3 delta=a.xyz-b.xyz;float dist2=dot(delta,delta);
+ if(dist2>=reach*reach)return (float3)(0);
+ float dist=sqrt(dist2);float3 normal=dist>1.e-9f?delta/dist:(float3)(i>j?1.f:-1.f,0,0);float overlap=reach-dist;
+ float weight=.25f;
+#if GRANULAR_BINARY
+ float mi=a.w==0?MAT_M0:MAT_M1,mj=b.w==0?MAT_M0:MAT_M1;
+ weight=.5f*mj/(mi+mj);mu=a.w!=b.w?MAT_CROSS:(a.w==0?MAT_MU0:MAT_MU1);
+#endif
+ float3 relative=(a.xyz-olda)-(b.xyz-oldb);
+#if GRANULAR_ROTATION
+ float ri=grain_radius(a.w,r),rj=grain_radius(b.w,r);
+ relative-=cross(ai*ri+aj*rj,normal);
+#endif
+ float3 tangent=relative-normal*dot(relative,normal);float l=length(tangent);
+#if GRANULAR_ROTATION
+ float3 tc=l>1.e-9f?-tangent*fmin(weight/3.5f,mu*overlap*weight/l):(float3)(0);
+ *angular-=2.5f/ri*cross(normal,tc);
+ // Rolling resistance dissipates relative tangent angular motion, equal/opposite torque.
+ float3 wr=ai-aj;wr-=normal*dot(wr,normal);float wl=length(wr);
+ float ii=.4f*mi*ri*ri,ij=.4f*mj*rj*rj;
+ float rolling_limit=MAT_ROLL*overlap*.5f*(mi*mj/(mi+mj))*(ri*rj/(ri+rj))/ii;
+ if(wl>1.e-9f)*angular-=wr*fmin(.5f*ij/(ii+ij),rolling_limit/wl);
+ return normal*(overlap*weight)+tc;
+#else
+ return normal*(overlap*weight)-(l>1.e-9f?tangent*fmin(weight,mu*overlap*weight/l):(float3)(0));
+#endif
+}
+
 #if GRANULAR_MX301
 #define GRID_OFFSET (float3)(.8f,.5f,.5f)
 #elif GRANULAR_BOUNDS_FAST
@@ -38,9 +85,17 @@ __kernel void grid(__global const float4* pos,__global int* head,__global int* l
 #endif
  int i=get_global_id(0);if(i>=n)return;int c=cellid(pos[i].xyz,cell,nx,ny,nz);if(c<0){atomic_or(error,1);link[i]=-1;return;}link[i]=atomic_xchg(head+c,i);
 }
-__kernel void predict(__global float4* pos,__global float4* old,__global float4* vel,int n,float dt,float r,__global int* error,__global float4* predicted){
- int i=get_global_id(0);if(i>=n)return;float3 v=vel[i].xyz+(float3)(0,0,-9.81f)*dt;old[i]=pos[i];
+__kernel void predict(__global float4* pos,__global float4* old,__global float4* vel,int n,float dt,float r,__global int* error,__global float4* predicted
+#if GRANULAR_ROTATION
+ ,__global float4* angular,__global const float4* spin
+#endif
+ ){
+ int i=get_global_id(0);if(i>=n)return;r=grain_radius(pos[i].w,r);float3 v=vel[i].xyz+(float3)(0,0,-9.81f)*dt;old[i]=pos[i];
  if(!all(isfinite(v))||length(v)*dt>r*.5f){atomic_or(error,2);return;}
+
+#if GRANULAR_ROTATION
+ angular[i]=(float4)(spin[i].xyz*dt,0);
+#endif
  pos[i].xyz+=v*dt;predicted[i]=pos[i];vel[i]=(float4)(v,0);
 }
 // Solid oriented box projection, including a well-defined nearest face inside.
@@ -118,9 +173,15 @@ float3 boundary_eval(float3 p,float r,float angle,int gate,float3* wallnormal,fl
 float3 boundaries(float3 p,float r,float angle,int gate,float3* wn,float3* wv,__global const float4* bounds){int work[2]={0,0};return boundary_eval(p,r,angle,gate,wn,wv,bounds,work);}
 __kernel void inspect_boundaries(__global const float4* points,int n,float r,float angle,int gate,__global const float4* bounds,
  __global float4* projected,__global float4* normals,__global float4* velocities){
- int i=get_global_id(0);if(i>=n)return;float3 wn,wv;int work[2]={0,0};float3 p=boundary_eval(points[i].xyz,r,angle,gate,&wn,&wv,bounds,work);
+ int i=get_global_id(0);if(i>=n)return;
+#if GRANULAR_BINARY
+ r=grain_radius(points[i].w,r)*(r/fmax(MAT_R0,MAT_R1));
+#endif
+ float3 wn,wv;int work[2]={0,0};float3 p=boundary_eval(points[i].xyz,r,angle,gate,&wn,&wv,bounds,work);
  projected[i]=(float4)(p,points[i].w);normals[i]=(float4)(wn,(float)work[0]);velocities[i]=(float4)(wv,(float)work[1]);
 }
+)CLC"
+R"CLC(
 // Build on current positions when required by the cache-validity check (or every iteration without reuse).
 __kernel void build_candidates(__global const float4* pos,__global const int* head,__global const int* link,
  int n,float r,float cell,int nx,int ny,int nz,__global int* candidates,__global int* counts,int capacity,__global unsigned* overflow
@@ -172,7 +233,7 @@ __kernel void audit_candidates(__global const float4* pos,int n,float r,__global
  __global const int* counts,int capacity,__global const int* head,__global const int* link,
  float cell,int nx,int ny,int nz,__global int* error){
  int i=get_global_id(0);if(i>=n)return;
- for(int j=0;j<n;++j)if(j!=i){float3 d=pos[i].xyz-pos[j].xyz;if(dot(d,d)>=4*r*r)continue;int found=0;
+ for(int j=0;j<n;++j)if(j!=i){float3 d=pos[i].xyz-pos[j].xyz;float reach=grain_radius(pos[i].w,r)+grain_radius(pos[j].w,r);if(dot(d,d)>=reach*reach)continue;int found=0;
   if(counts[i]>=0){for(int k=0;k<counts[i];++k)if(candidates[candidate_index(i,k,n,capacity)]==j){found=1;break;}}
   else{int3 q=convert_int3(floor((pos[i].xyz+GRID_OFFSET)/cell));for(int z=-1;z<=1;z++)for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
    int3 c=q+(int3)(x,y,z);if(any(c<(int3)(0))||c.x>=nx||c.y>=ny||c.z>=nz)continue;
@@ -185,32 +246,58 @@ __kernel void solve(__global const float4* pos,__global const float4* old,__glob
 #if GRANULAR_CANDIDATES
  ,__global const int* candidates,__global const int* counts,int capacity
 #endif
- ,__global const float4* bounds){
- int i=get_global_id(0);if(i>=n)return;float3 p=pos[i].xyz;int3 q=convert_int3(floor((p+GRID_OFFSET)/cell));float3 correction=(float3)(0);
+ ,__global const float4* bounds,__global int* error
+#if GRANULAR_ROTATION
+ ,__global const float4* angular,__global float4* nextangular
+#endif
+ ){
+ int i=get_global_id(0);if(i>=n)return;float3 ac=(float3)(0);float3 p=pos[i].xyz;int3 q=convert_int3(floor((p+GRID_OFFSET)/cell));float3 correction=(float3)(0);
 #if GRANULAR_CANDIDATES
- if(counts[i]>=0){for(int k=0;k<counts[i];++k){int j=candidates[candidate_index(i,k,n,capacity)];if(j!=i){float3 delta=p-pos[j].xyz;float dist2=dot(delta,delta);if(dist2<4*r*r){float dist=sqrt(dist2);float3 normal=dist>1.e-9f?delta/dist:(float3)(i>j?1.f:-1.f,0,0);float overlap=2*r-dist;float3 relative=(p-old[i].xyz)-(pos[j].xyz-old[j].xyz);float3 tangent=relative-normal*dot(relative,normal);float l=length(tangent);correction+=normal*(overlap*.25f);if(l>1.e-9f)correction-=tangent*(fmin(.25f,mu*overlap*.25f/l));}}}}
+ if(counts[i]>=0){for(int k=0;k<counts[i];++k){int j=candidates[candidate_index(i,k,n,capacity)];if(j!=i){correction+=pair_correction(pos[i],pos[j],old[i].xyz,old[j].xyz,i,j,r,mu
+#if GRANULAR_ROTATION
+ ,angular[i].xyz,angular[j].xyz,&ac
+#endif
+ );}}}
  else
 #endif
  { // On overflow traverse the entire original grid; never consume a truncated list.
  for(int z=-1;z<=1;z++)for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
   int3 c=q+(int3)(x,y,z);if(any(c<(int3)(0))||c.x>=nx||c.y>=ny||c.z>=nz)continue;
-  int j=head[(c.z*ny+c.y)*nx+c.x];while(j>=0){if(j!=i){float3 delta=p-pos[j].xyz;float dist2=dot(delta,delta);if(dist2<4*r*r){float dist=sqrt(dist2);float3 normal=dist>1.e-9f?delta/dist:(float3)(i>j?1.f:-1.f,0,0);float overlap=2*r-dist;float3 relative=(p-old[i].xyz)-(pos[j].xyz-old[j].xyz);float3 tangent=relative-normal*dot(relative,normal);float l=length(tangent);correction+=normal*(overlap*.25f);if(l>1.e-9f)correction-=tangent*(fmin(.25f,mu*overlap*.25f/l));}}j=link[j];}
+  int j=head[(c.z*ny+c.y)*nx+c.x];while(j>=0){if(j!=i){correction+=pair_correction(pos[i],pos[j],old[i].xyz,old[j].xyz,i,j,r,mu
+#if GRANULAR_ROTATION
+ ,angular[i].xyz,angular[j].xyz,&ac
+#endif
+ );}j=link[j];}
  }
  }
- float l=length(correction);if(l>r*.35f)correction*=r*.35f/l;
+ r=grain_radius(pos[i].w,r);float l=length(correction);
+#if GRANULAR_BINARY
+ // Independent per-particle clipping would destroy mass-weighted momentum and
+ // angular consistency. Reject through the finite-state guard instead.
+ if(l>r*.35f){atomic_or(error,16);correction=(float3)(0);ac=(float3)(0);}
+#else
+ if(l>r*.35f)correction*=r*.35f/l;
+#endif
 #if GRANULAR_PROFILE_SPLIT
  p+=correction;
 #else
  float3 wn,wv;p=boundaries(p+correction,r,angle,gate,&wn,&wv,bounds);
 #endif
  next[i]=(float4)(p,pos[i].w);
+#if GRANULAR_ROTATION
+ nextangular[i]=(float4)(angular[i].xyz+ac,0);
+#endif
 }
 __kernel void velocity(__global float4* pos,__global const float4* old,__global float4* vel,int n,float dt,float r,float angle,float omega,int gate,float mu,__global int* error,__global const float4* predicted
 #if GRANULAR_PROFILE_SPLIT
  ,__global const float4* normals,__global const float4* wallvelocities
 #endif
- ,__global const float4* bounds){
- int i=get_global_id(0);if(i>=n)return;float3 p=pos[i].xyz;float3 v=vel[i].xyz+(p-predicted[i].xyz)/dt,wn,wv;
+ ,__global const float4* bounds
+#if GRANULAR_ROTATION
+ ,__global const float4* angular,__global float4* spin
+#endif
+ ){
+ int i=get_global_id(0);if(i>=n)return;r=grain_radius(pos[i].w,r);mu=grain_wall_mu(pos[i].w,mu);float3 p=pos[i].xyz;float3 v=vel[i].xyz+(p-predicted[i].xyz)/dt,wn,wv;
  // Slightly inflated shell only identifies contact for dissipative wall friction.
 #if GRANULAR_PROFILE_SPLIT
  wn=normals[i].xyz;wv=wallvelocities[i].xyz;
@@ -218,16 +305,31 @@ __kernel void velocity(__global float4* pos,__global const float4* old,__global 
  boundaries(p,r*1.002f,angle,gate,&wn,&wv,bounds);
 #endif
  wv*=omega;
+#if GRANULAR_ROTATION
+ float3 w=angular[i].xyz/dt;
+#endif
  if(length(wn)>0){float3 relative=v-wv;float vn=dot(relative,wn);float3 tangent=relative-vn*wn;float tl=length(tangent);float normalImpulse=fmax(0.f,-dot((p-old[i].xyz)/dt,wn))+9.81f*dt;
-  if(tl>1.e-9f)v-=tangent*fmin(1.f,mu*normalImpulse/tl);if(vn<0)v-=vn*wn;}
+
+#if GRANULAR_ROTATION
+ tangent-=cross(w*r,wn);tl=length(tangent);
+ if(tl>1.e-9f){float3 dv=-tangent*fmin(1.f/3.5f,mu*normalImpulse/tl);v+=dv;w-=2.5f/r*cross(wn,dv);}
+ float3 roll=w-wn*dot(w,wn);float rl=length(roll);if(rl>1.e-9f)w-=roll*fmin(1.f,2.5f*MAT_ROLL*normalImpulse/(r*rl));
+#else
+ if(tl>1.e-9f)v-=tangent*fmin(1.f,mu*normalImpulse/tl);
+#endif
+ if(vn<0)v-=vn*wn;}
+
+#if GRANULAR_ROTATION
+ if(!all(isfinite(w))){atomic_or(error,4);return;}spin[i]=(float4)(w,0);
+#endif
  if(!all(isfinite(v))||!all(isfinite(p))){atomic_or(error,4);return;}vel[i]=(float4)(v,0);
 }
 // Diagnostic split only: preserve projection order, expose the cost of boundary work.
 __kernel void project_boundary(__global float4* pos,int n,float r,float angle,int gate,__global const float4* bounds){
- int i=get_global_id(0);if(i>=n)return;float3 wn,wv;pos[i].xyz=boundaries(pos[i].xyz,r,angle,gate,&wn,&wv,bounds);
+ int i=get_global_id(0);if(i>=n)return;r=grain_radius(pos[i].w,r);float3 wn,wv;pos[i].xyz=boundaries(pos[i].xyz,r,angle,gate,&wn,&wv,bounds);
 }
 __kernel void probe_boundary(__global const float4* pos,int n,float r,float angle,int gate,__global float4* normals,__global float4* velocities,__global const float4* bounds){
- int i=get_global_id(0);if(i>=n)return;float3 wn,wv;boundaries(pos[i].xyz,r*1.002f,angle,gate,&wn,&wv,bounds);normals[i]=(float4)(wn,0);velocities[i]=(float4)(wv,0);
+ int i=get_global_id(0);if(i>=n)return;r=grain_radius(pos[i].w,r);float3 wn,wv;boundaries(pos[i].xyz,r*1.002f,angle,gate,&wn,&wv,bounds);normals[i]=(float4)(wn,0);velocities[i]=(float4)(wv,0);
 }
 )CLC"
 

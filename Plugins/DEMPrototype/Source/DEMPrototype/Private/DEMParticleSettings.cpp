@@ -197,11 +197,12 @@ EDataValidationResult UDEMParticleSettings::IsDataValid(FDataValidationContext& 
 bool UDEMParticleSettings::ValidateGPU(TArray<FText>& Errors) const
 {
     ValidatePhysics(Errors);
+    if (!std::isfinite(SourceDiameterMeters)||SourceDiameterMeters<0) AddSettingsError(Errors,TEXT("SourceDiameterMeters"),TEXT("must be finite and nonnegative; zero means unknown."));
     if (!bGPUApproximation) AddSettingsError(Errors, TEXT("GPU mode"), TEXT("explicitly enable GPU Approximation; CPU stiffness/damping are not supported."));
     const float R = static_cast<float>(RadiusMeters);
     if (!std::isfinite(R) || R <= .001f || R >= .03f)
         AddSettingsError(Errors, TEXT("RadiusMeters"), TEXT("GPU float radius must be strictly between 0.001 and 0.03 m."));
-    if (ParticleFriction > 1 || WallFriction > 1 || ParticleFriction != WallFriction)
-        AddSettingsError(Errors, TEXT("Friction"), TEXT("GPU requires equal particle/wall friction in [0,1]."));
+    if (ParticleFriction > 1 || WallFriction > 1)
+        AddSettingsError(Errors, TEXT("Friction"), TEXT("GPU friction must be in [0,1]. Distinct wall friction requires binary mixer mode."));
     return Errors.IsEmpty();
 }

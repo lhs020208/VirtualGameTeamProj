@@ -1,0 +1,32 @@
+[
+  {
+    "level": "/Game/L_MX301_Test",
+    "previous_target": 0.2,
+    "target": 0.1,
+    "unchanged_physics": {
+      "particle_count": 50000,
+      "time_step": 0.000375,
+      "contact_iterations": 16,
+      "rpm": 30.0,
+      "friction": 0.4,
+      "binary_materials": false,
+      "enable_particle_rotation": false,
+      "rolling_friction": 0.0
+    }
+  },
+  {
+    "level": "/Game/DEM/Tests/L_MX301_BinaryMaterials",
+    "previous_target": 0.1,
+    "target": 0.1,
+    "unchanged_physics": {
+      "particle_count": 50000,
+      "time_step": 0.000375,
+      "contact_iterations": 16,
+      "rpm": 30.0,
+      "friction": 0.4,
+      "binary_materials": true,
+      "enable_particle_rotation": true,
+      "rolling_friction": 0.02
+    }
+  }
+]

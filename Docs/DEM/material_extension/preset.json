@@ -1,0 +1,29 @@
+{
+  "level": "/Game/DEM/Tests/L_MX301_BinaryMaterials",
+  "calibrated": false,
+  "cohesion": false,
+  "counts": [
+    8403,
+    41597
+  ],
+  "materials": [
+    {
+      "radius": 0.0063647064,
+      "density": 900,
+      "mu": 0.3,
+      "wall": 0.25
+    },
+    {
+      "radius": 0.005,
+      "density": 1500,
+      "mu": 0.5,
+      "wall": 0.45
+    }
+  ],
+  "mass_kg": 40.83792298828314,
+  "actual_mass_fraction_a": 0.20000320750354722,
+  "rotation": true,
+  "rolling_friction": 0.02,
+  "target_rate": 0.1,
+  "baseline_unchanged": true
+}

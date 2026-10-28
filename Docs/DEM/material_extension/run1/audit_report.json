@@ -1,0 +1,78 @@
+{
+  "result": {
+    "count": 50000,
+    "time": 12.005625104,
+    "rate": 0.13545735,
+    "receiver": 0,
+    "error": "",
+    "physical_accuracy_validated": false
+  },
+  "samples": [
+    {
+      "time_s": 11.86162510298891,
+      "overlap_min_radius": 0.033901984756224204,
+      "wall_m": 4.2788254852460517e-08,
+      "rotor_m": 3.661483993343956e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9648130014387408,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 0.01762500003678724,
+      "overlap_min_radius": 2.057994649865516e-05,
+      "wall_m": 0.0,
+      "rotor_m": 0.0,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.933035004983628,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 2.033625017560553,
+      "overlap_min_radius": 0.022354864485096826,
+      "wall_m": 4.4487468038416356e-08,
+      "rotor_m": 4.0327071595264163e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9516251553395573,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 4.049625035084318,
+      "overlap_min_radius": 0.015550524063313864,
+      "wall_m": 4.658254148647706e-08,
+      "rotor_m": 4.279354883993114e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9602685230765035,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 6.065625052608084,
+      "overlap_min_radius": 0.019063326502483102,
+      "wall_m": 4.3918881999921444e-08,
+      "rotor_m": 3.736877393287208e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9653629720738575,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 8.08162507013185,
+      "overlap_min_radius": 0.02548245289091776,
+      "wall_m": 4.5498210639143e-08,
+      "rotor_m": 4.136350983518361e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.97245342504734,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 10.097625087655615,
+      "overlap_min_radius": 0.024855736545613752,
+      "wall_m": 4.7070687898657926e-08,
+      "rotor_m": 3.581785931391912e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9732408690146139,
+      "pass_geometry": true
+    }
+  ],
+  "passed": true,
+  "calibrated": false,
+  "scope": "sampled geometry and mass; not empirical validation or guaranteed speed"
+}

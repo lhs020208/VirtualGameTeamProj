@@ -12,7 +12,14 @@ public:
  virtual void OnConstruction(const FTransform&)override;virtual void BeginPlay()override;virtual void EndPlay(const EEndPlayReason::Type)override;virtual void Tick(float)override;
  UPROPERTY(EditAnywhere,Category="Granular|Setup",meta=(EditCondition="!UseEmitters",ClampMin="1",ClampMax="1000000")) int32 ParticleCount=30000;
  UPROPERTY(EditAnywhere,Category="Granular|Emitters") bool UseEmitters=false;
- UPROPERTY(EditAnywhere,Category="Granular|Emitters",meta=(ToolTip="Explicit source order defines stable particle IDs. All sources must share GPU radius/density/friction.")) TArray<TObjectPtr<ADEMEmitter>> Emitters;
+ UPROPERTY(EditAnywhere,Category="Granular|Materials",meta=(ToolTip="Opt-in experimental two-material position solver. Not calibrated pharmaceutical DEM.")) bool BinaryMaterials=false;
+ UPROPERTY(EditAnywhere,Category="Granular|Materials",meta=(ClampMin="0",ClampMax="1")) double CrossMaterialFriction=.4;
+ UPROPERTY(EditAnywhere,Category="Granular|Materials",meta=(EditCondition="BinaryMaterials")) bool EnableParticleRotation=false;
+ UPROPERTY(EditAnywhere,Category="Granular|Materials",meta=(EditCondition="EnableParticleRotation",ClampMin="0",ClampMax="1")) double RollingFriction=0;
+ UPROPERTY(EditAnywhere,Category="Granular|Materials",meta=(EditCondition="BinaryMaterials",ToolTip="Explicit opt-in to conservative max-radius candidate reuse and kernel argument caching.")) bool MaterialOptimizations=false;
+ UFUNCTION(BlueprintPure,Category="Granular|Materials") int32 ParticleCountForMass(UDEMParticleSettings* Settings,double MassKg) const;
+ powder::GranularConfig EmitterConfig;
+ UPROPERTY(EditAnywhere,Category="Granular|Emitters",meta=(ToolTip="Explicit source order defines stable particle IDs. Legacy mode requires matching properties; binary mode allows one material per group.")) TArray<TObjectPtr<ADEMEmitter>> Emitters;
  std::vector<powder::Grain> CopyParticleState();
  bool BuildEmitterInitialState(std::vector<powder::Grain>& Positions,std::vector<powder::Grain>& Velocities);
  UPROPERTY(EditAnywhere,Category="Granular|Setup",meta=(ToolTip="Optional explicit GPU approximation settings. Read on Reset. Null preserves legacy settings.")) TObjectPtr<UDEMParticleSettings> ParticleSettings;

@@ -1,0 +1,24 @@
+{
+  "target_rate": 0.1,
+  "saved_rate_used_in_benchmark": true,
+  "average_rate": 0.099999168,
+  "active_wall_s_last_snapshot": 118.74879919999998,
+  "physical_time": 12.001499999,
+  "five_second_window_min": 0.09993993156457243,
+  "five_second_window_max": 0.10006587976860547,
+  "initial_state_identical": true,
+  "initial_sha256": "9547042760b376c83d3820068abe4e52b4093235062f4476a97c3fbb1cb8e29d",
+  "core_tests_passed": 7,
+  "sampled_geometry_passed": true,
+  "samples": 7,
+  "max_overlap_min_radius": 0.06819897761671037,
+  "max_wall_m": 4.808432684921121e-08,
+  "max_rotor_m": 4.7381719599053074e-08,
+  "physical_accuracy_guaranteed": false,
+  "limits": [
+    "No empirical pharmaceutical calibration",
+    "No dense-scene time-step convergence study in this recheck",
+    "Geometry checked at sampled instants, not a proof for every time step",
+    "Runtime remains approximate spheres without cohesion/air drag"
+  ]
+}

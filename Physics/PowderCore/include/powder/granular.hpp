@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include "material.hpp"
 #include <memory>
 #include <string>
 #include <vector>
@@ -22,12 +23,13 @@ struct GranularTiming {
 };
 void write_granular_timing(std::ostream& out,const GranularTiming& timing);
 struct Grain {float x,y,z,w;};
-struct GranularConfig {unsigned count=30000,iterations=16;bool fast_bounds=true,profile=false,test_mixer=false,profile_split=false,candidates=false,candidate_reuse=false,candidate_audit=false,boundary_candidates=false,kernel_optimize=false;float candidate_skin_ratio=.5f;unsigned candidate_capacity=64;float radius=0,dt=.00025f,friction=.4f;};
+struct GranularConfig {bool rotation=false;float rolling_friction=0;bool binary_materials=false;std::array<GranularMaterial,2> materials{};float cross_friction=.4f;unsigned count=30000,iterations=16;bool fast_bounds=true,profile=false,test_mixer=false,profile_split=false,candidates=false,candidate_reuse=false,candidate_audit=false,boundary_candidates=false,kernel_optimize=false;float candidate_skin_ratio=.5f;unsigned candidate_capacity=64;float radius=0,dt=.00025f,friction=.4f;};
 struct GranularBoundarySample {Grain position,normal,velocity;unsigned plane_tests=0,rotor_tests=0;};
 struct GranularCandidates {std::vector<std::vector<unsigned>> neighbors;unsigned overflow_particles=0;};
 void validate_granular_initial(GranularConfig config,const std::vector<Grain>& positions);
 // Explicit approximate position-contact solver; persistent IDs = vector indices.
-// SI units, equal-mass spheres, no spin/adhesion or contact-force certification.
+// SI units; legacy equal spheres or opt-in binary mass-weighted spheres and rotation.
+// No adhesion or contact-force certification.
 class GranularGPU {
 public:
  explicit GranularGPU(GranularConfig config);
@@ -35,6 +37,8 @@ public:
  GranularGPU(const GranularGPU&)=delete;GranularGPU& operator=(const GranularGPU&)=delete;
  void advance(unsigned steps,float rpm,bool gate_open);
  std::vector<Grain> snapshot();
+ std::vector<Grain> velocity_snapshot();
+ std::vector<Grain> angular_velocity_snapshot();
  // Single-threaded owner API. One pending transfer; reset/destruction drain it safely.
  void request_snapshot();
  bool receive_snapshot(std::vector<Grain>& destination,bool wait=false);

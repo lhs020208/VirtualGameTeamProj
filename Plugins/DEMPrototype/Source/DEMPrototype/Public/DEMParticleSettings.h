@@ -58,8 +58,11 @@ class DEMPROTOTYPE_API UDEMParticleSettings : public UDataAsset
 {
     GENERATED_BODY()
 public:
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Provenance") FString SubstanceName = TEXT("Virtual powder");
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Provenance") FString PropertySource = TEXT("Uncalibrated test assumptions");
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Provenance", meta=(ToolTip="Metadata only; zero means unknown. This does not change computational radius.")) double SourceDiameterMeters = 0;
     // Explicit opt-in: stiffness/damping are not interpreted by the GPU position solver.
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GPU", meta=(ToolTip="GPU approximate equal-mass spheres. Density is mass accounting only; stiffness/damping/spin are unsupported."))
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GPU", meta=(ToolTip="GPU position approximation. Binary mixer mode supports unequal mass and optional rotation. Stiffness/damping/cohesion are unsupported."))
     bool bGPUApproximation = false;
     bool ValidateGPU(TArray<FText>& Errors) const;
 
@@ -81,10 +84,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Contact", meta=(EditCondition="!bGPUApproximation", ClampMin="0.0", ToolTip="Dimensionless tangential damping ratio, finite and >= 0. No upper clamp; test assumption."))
     double TangentialDampingRatio = 0.2;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Contact", meta=(EditCondition="!bGPUApproximation", ClampMin="0.0", ToolTip="Dimensionless particle-particle friction coefficient, finite and >= 0. Mixed-material combination rules are not defined."))
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Contact", meta=(ClampMin="0.0", ToolTip="Dimensionless particle-particle friction coefficient, finite and >= 0. Binary cross friction is set explicitly on the mixer."))
     double ParticleFriction = 0.4;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Contact", meta=(EditCondition="!bGPUApproximation", ClampMin="0.0", ToolTip="Dimensionless particle-wall friction coefficient, finite and >= 0. Test assumption."))
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Contact", meta=(ClampMin="0.0", ToolTip="Dimensionless particle-wall friction coefficient, finite and >= 0. Test assumption."))
     double WallFriction = 0.4;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Display", meta=(ToolTip="Shared origin-centered sphere mesh, source dimensions in cm. Uniform scale follows the physical radius; no visual multiplier. Bounds validation cannot prove spherical geometry. Changing mesh does not change the analytical sphere."))
