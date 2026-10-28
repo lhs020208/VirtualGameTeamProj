@@ -1,0 +1,34 @@
+{
+  "physics_unchanged": true,
+  "physics": {
+    "particle_count": 50000,
+    "time_step": 0.000375,
+    "contact_iterations": 16,
+    "rpm": 30.0,
+    "target_rate": 0.1,
+    "binary_materials": true,
+    "enable_particle_rotation": true,
+    "rolling_friction": 0.02
+  },
+  "protected_asset_sha256": {
+    "Content/DEM/Settings/DA_VirtualPowder_A.uasset": "16c6e6cf5f30555c26f5b1b026fa4a5c8593e6ce1b404c2a2745f3018524aea3",
+    "Content/DEM/Settings/DA_VirtualPowder_B.uasset": "5c3c95241654d9905ac8afebdd5d7634aa4b72bc0dedfb09b013dad33470182f",
+    "Content/DEM/SM_MX301_TestVessel.uasset": "735ec8c21cba4f36ad08a02209dc487df07f87611928cdf2bfca643bb5697816",
+    "Content/DEM/SM_MX301_TestRotor.uasset": "b9f7d653fb241f1c9efac65680582a8c311c43579b46d8c2900a4fcfe5811c10"
+  },
+  "material": "/Game/M_BulkFlow",
+  "shading": "unlit opaque, Tint * (0.45 + 0.55 * saturate(dot(normal, fixed direction)))",
+  "effects": {
+    "dynamic_global_illumination_method": "<DynamicGlobalIlluminationMethod.NONE: 0>",
+    "reflection_method": "<ReflectionMethod.NONE: 0>",
+    "ambient_occlusion_intensity": "0.0",
+    "bloom_intensity": "0.0",
+    "motion_blur_amount": "0.0",
+    "auto_exposure_method": "<AutoExposureMethod.AEM_MANUAL: 2>",
+    "auto_exposure_apply_physical_camera_exposure": "False",
+    "auto_exposure_bias": "0.0",
+    "local_exposure_highlight_contrast_scale": "1.0",
+    "local_exposure_shadow_contrast_scale": "1.0"
+  },
+  "scope": "shared simulation material and BinaryMaterials postprocess; geometry and solver untouched"
+}
