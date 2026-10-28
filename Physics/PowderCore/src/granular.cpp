@@ -20,6 +20,7 @@ namespace powder {
 namespace {
 using Clock=std::chrono::steady_clock;using V=std::array<double,4>;
 double elapsed(Clock::time_point t){return std::chrono::duration<double>(Clock::now()-t).count();}
+double thread_cpu_seconds(){FILETIME created,exited,kernel,user;if(!GetThreadTimes(GetCurrentThread(),&created,&exited,&kernel,&user))throw std::runtime_error("thread CPU timer unavailable");ULARGE_INTEGER k,u;k.LowPart=kernel.dwLowDateTime;k.HighPart=kernel.dwHighDateTime;u.LowPart=user.dwLowDateTime;u.HighPart=user.dwHighDateTime;return double(k.QuadPart+u.QuadPart)*1.e-7;}
 void require(bool b,const char* s){if(!b)throw std::invalid_argument(s);}
 void check(cl_int code,const char* op){if(code)throw std::runtime_error(std::string(op)+" OpenCL error "+std::to_string(code));}
 #include "granular_mx301_cpu.inc"
@@ -71,6 +72,7 @@ struct GranularGPU::Impl {
  std::array<cl_kernel,14> kernels{};std::array<cl_mem,19> buffers{};
  GranularConfig c;int nx=0,ny=0,nz=0,cells=0;float cell=0,angle=0;double time=0;std::string name;bool poisoned=false;GranularTiming timing;std::vector<std::pair<cl_event,unsigned>> events;
  Impl(GranularConfig cfg,const std::vector<Grain>* external=nullptr,const std::vector<Grain>* velocity=nullptr):c(cfg){try{
+ require(c.diagnostic_local_size==64||c.diagnostic_local_size==128||c.diagnostic_local_size==256,"diagnostic workgroup must be 64, 128 or 256");
  require(!c.rotation||c.binary_materials,"rotation requires binary materials");require(std::isfinite(c.rolling_friction)&&c.rolling_friction>=0&&c.rolling_friction<=1,"invalid rolling friction");
  require(!c.boundary_candidates||c.test_mixer,"boundary candidates currently require MX301 test geometry");
  require(!c.candidate_reuse||c.candidates,"reuse requires candidates");
@@ -130,13 +132,13 @@ struct GranularGPU::Impl {
  check(api.clSetKernelArg(kernels[k],i,sizeof(v),&v),"arg");++timing.argument_calls;
  if(c.kernel_optimize){cached.resize(sizeof(v));std::memcpy(cached.data(),&v,sizeof(v));}
  }
- void run(unsigned k,std::size_t n){std::size_t local=128,global=(n+127)/128*128;cl_event event=nullptr;check(api.clEnqueueNDRangeKernel(queue,kernels[k],1,nullptr,&global,&local,0,nullptr,c.profile?&event:nullptr),"dispatch");if(event)events.push_back({event,k});}
+ void run(unsigned k,std::size_t n){std::size_t local=c.diagnostic_local_size,global=(n+local-1)/local*local;cl_event event=nullptr;check(api.clEnqueueNDRangeKernel(queue,kernels[k],1,nullptr,&global,&local,0,nullptr,c.profile?&event:nullptr),"dispatch");if(event)events.push_back({event,k});}
  void set(const std::vector<Grain>& state,const std::vector<Grain>& vel){require(state.size()==c.count&&vel.size()==c.count,"state count mismatch");for(unsigned i=0;i<c.count;i++)for(float v:{state[i].x,state[i].y,state[i].z,state[i].w,vel[i].x,vel[i].y,vel[i].z})require(std::isfinite(v),"nonfinite input state");
  for(const auto& a:state)require(a.w==0||a.w==1,"invalid group ID");
  drain_read();check(api.clEnqueueWriteBuffer(queue,buffers[0],CL_TRUE,0,state.size()*sizeof(Grain),state.data(),0,nullptr,nullptr),"state write");check(api.clEnqueueWriteBuffer(queue,buffers[2],CL_TRUE,0,vel.size()*sizeof(Grain),vel.data(),0,nullptr,nullptr),"velocity write");time=0;angle=0;poisoned=false;for(auto e:events)if(e.first)api.clReleaseEvent(e.first);events.clear();timing={};timing.profiling_enabled=c.profile;timing.split_boundaries=c.profile_split;timing.candidates_enabled=c.candidates;timing.candidate_capacity=c.candidates?c.candidate_capacity:0;timing.boundary_candidates_enabled=c.boundary_candidates;timing.kernel_optimize_enabled=c.kernel_optimize;timing.candidate_reuse_enabled=c.candidate_reuse;timing.candidate_audit_enabled=c.candidate_audit;timing.candidate_skin_m=c.candidate_reuse?c.radius*c.candidate_skin_ratio:0;
  if(c.rotation){std::vector<Grain> zeros(c.count);for(unsigned b=16;b<19;++b)check(api.clEnqueueWriteBuffer(queue,buffers[b],CL_TRUE,0,zeros.size()*sizeof(Grain),zeros.data(),0,nullptr,nullptr),"reset angular state");}
  if(c.candidate_reuse){cl_uint control[6]{};check(api.clEnqueueWriteBuffer(queue,buffers[14],CL_TRUE,0,sizeof(control),control,0,nullptr,nullptr),"reset reuse state");}}
- void collect(){auto begin=Clock::now();for(auto& e:events){cl_ulong start=0,end=0;check(api.clGetEventProfilingInfo(e.first,CL_PROFILING_COMMAND_START,sizeof(start),&start,nullptr),"profile start");check(api.clGetEventProfilingInfo(e.first,CL_PROFILING_COMMAND_END,sizeof(end),&end,nullptr),"profile end");require(end>=start,"invalid GPU timestamps");timing.gpu_seconds[e.second]+=(end-start)*1.e-9;++timing.calls[e.second];api.clReleaseEvent(e.first);e.first=nullptr;}events.clear();if(c.profile)timing.profile_collect_wall+=elapsed(begin);}
+ void collect(){auto begin=Clock::now();cl_ulong first=0,last=0;for(auto& e:events){cl_ulong start=0,end=0;check(api.clGetEventProfilingInfo(e.first,CL_PROFILING_COMMAND_START,sizeof(start),&start,nullptr),"profile start");check(api.clGetEventProfilingInfo(e.first,CL_PROFILING_COMMAND_END,sizeof(end),&end,nullptr),"profile end");require(end>=start,"invalid GPU timestamps");if(!first)first=start;if(last&&start>last)timing.gpu_intercommand_gap+=(start-last)*1.e-9;last=end;timing.gpu_seconds[e.second]+=(end-start)*1.e-9;++timing.calls[e.second];api.clReleaseEvent(e.first);e.first=nullptr;}events.clear();if(first)timing.gpu_batch_span+=(last-first)*1.e-9;if(c.profile)timing.profile_collect_wall+=elapsed(begin);}
  void build_candidates(){int n=static_cast<int>(c.count),capacity=static_cast<int>(c.candidate_capacity);
   arg(8,0,buffers[0]);arg(8,1,buffers[4]);arg(8,2,buffers[5]);arg(8,3,n);arg(8,4,c.radius);arg(8,5,cell);arg(8,6,nx);arg(8,7,ny);arg(8,8,nz);arg(8,9,buffers[10]);arg(8,10,buffers[11]);arg(8,11,capacity);arg(8,12,buffers[12]);if(c.candidate_reuse){float skin=c.radius*c.candidate_skin_ratio;arg(8,13,buffers[13]);arg(8,14,buffers[14]);arg(8,15,skin);}run(8,c.count);if(!c.candidate_reuse)++timing.candidate_builds;
  }
@@ -146,7 +148,7 @@ struct GranularGPU::Impl {
  void audit_candidates(){int n=static_cast<int>(c.count),capacity=static_cast<int>(c.candidate_capacity);
  arg(11,0,buffers[0]);arg(11,1,n);arg(11,2,c.radius);arg(11,3,buffers[10]);arg(11,4,buffers[11]);arg(11,5,capacity);arg(11,6,buffers[4]);arg(11,7,buffers[5]);arg(11,8,cell);arg(11,9,nx);arg(11,10,ny);arg(11,11,nz);arg(11,12,buffers[6]);run(11,c.count);
  }
- void advance(unsigned steps,float rpm,bool gate){auto begin=Clock::now();require(!poisoned,"reset required after rejected GPU batch");require(steps>0&&steps<=1000&&std::isfinite(rpm)&&std::abs(rpm)<=60,"invalid granular control");int zero=0;check(api.clEnqueueWriteBuffer(queue,buffers[6],CL_FALSE,0,sizeof(int),&zero,0,nullptr,nullptr),"clear error");cl_ulong zeroOverflow=0;if(c.candidates)check(api.clEnqueueWriteBuffer(queue,buffers[12],CL_FALSE,0,sizeof(zeroOverflow),&zeroOverflow,0,nullptr,nullptr),"clear candidate overflow");if(c.candidate_reuse)check(api.clEnqueueWriteBuffer(queue,buffers[14],CL_FALSE,3*sizeof(cl_uint),2*sizeof(cl_uint),&zeroOverflow,0,nullptr,nullptr),"clear reuse counters");int n=static_cast<int>(c.count),g=gate?1:0;float omega=rpm*.104719755f;
+ void advance(unsigned steps,float rpm,bool gate){auto begin=Clock::now();const double cpuBegin=thread_cpu_seconds();require(!poisoned,"reset required after rejected GPU batch");require(steps>0&&steps<=1000&&std::isfinite(rpm)&&std::abs(rpm)<=60,"invalid granular control");int zero=0;check(api.clEnqueueWriteBuffer(queue,buffers[6],CL_FALSE,0,sizeof(int),&zero,0,nullptr,nullptr),"clear error");cl_ulong zeroOverflow=0;if(c.candidates)check(api.clEnqueueWriteBuffer(queue,buffers[12],CL_FALSE,0,sizeof(zeroOverflow),&zeroOverflow,0,nullptr,nullptr),"clear candidate overflow");if(c.candidate_reuse)check(api.clEnqueueWriteBuffer(queue,buffers[14],CL_FALSE,3*sizeof(cl_uint),2*sizeof(cl_uint),&zeroOverflow,0,nullptr,nullptr),"clear reuse counters");int n=static_cast<int>(c.count),g=gate?1:0;float omega=rpm*.104719755f;
  for(unsigned s=0;s<steps;s++){
   angle+=omega*c.dt;
   arg(2,0,buffers[0]);arg(2,1,buffers[1]);arg(2,2,buffers[2]);arg(2,3,n);arg(2,4,c.dt);arg(2,5,c.radius);arg(2,6,buffers[6]);arg(2,7,buffers[7]);if(c.rotation){arg(2,8,buffers[16]);arg(2,9,buffers[18]);}run(2,c.count);
@@ -163,11 +165,11 @@ struct GranularGPU::Impl {
   if(c.profile_split){arg(6,0,buffers[0]);arg(6,1,n);arg(6,2,c.radius);arg(6,3,angle);arg(6,4,g);arg(6,5,buffers[8]);arg(6,6,buffers[9]);run(6,c.count);arg(4,12,buffers[8]);arg(4,13,buffers[9]);}
   arg(4,0,buffers[0]);arg(4,1,buffers[1]);arg(4,2,buffers[2]);arg(4,3,n);arg(4,4,c.dt);arg(4,5,c.radius);arg(4,6,angle);arg(4,7,omega);arg(4,8,g);arg(4,9,c.friction);arg(4,10,buffers[6]);arg(4,11,buffers[7]);if(c.rotation){unsigned a=c.profile_split?15:13;arg(4,a,buffers[16]);arg(4,a+1,buffers[18]);}run(4,c.count);
  }
- timing.submit_wall+=elapsed(begin);auto guardBegin=Clock::now();
+ timing.submit_wall+=elapsed(begin);timing.submit_thread_cpu+=thread_cpu_seconds()-cpuBegin;auto guardBegin=Clock::now();
  int error=0;check(api.clEnqueueReadBuffer(queue,buffers[6],CL_TRUE,0,sizeof(int),&error,0,nullptr,nullptr),"guard");timing.guard_wait_wall+=elapsed(guardBegin);
  if(c.candidates){cl_ulong overflow=0;check(api.clEnqueueReadBuffer(queue,buffers[12],CL_TRUE,0,sizeof(overflow),&overflow,0,nullptr,nullptr),"candidate fallback count");timing.candidate_fallback_particle_iterations+=overflow;}
  if(c.candidate_reuse){cl_uint counts[2]{};check(api.clEnqueueReadBuffer(queue,buffers[14],CL_TRUE,3*sizeof(cl_uint),sizeof(counts),counts,0,nullptr,nullptr),"reuse counters");timing.candidate_builds+=counts[0];timing.reuse_checks+=counts[1];timing.candidate_reuses+=counts[1]-counts[0];}
- collect();timing.advance_wall+=elapsed(begin);
+ collect();timing.advance_wall+=elapsed(begin);timing.advance_thread_cpu+=thread_cpu_seconds()-cpuBegin;
  if(error)throw std::runtime_error("granular safety rejection bits="+std::to_string(error)+" (1=domain,2=step displacement,4=nonfinite,8=missing candidate,16=excessive mass-weighted correction); reset required");time+=steps*c.dt;
  }
 };
@@ -227,8 +229,9 @@ float GranularGPU::radius()const{return p->c.radius;}
 float GranularGPU::angle()const{return p->angle;}
 std::string GranularGPU::device()const{return p->name;}
 void write_granular_timing(std::ostream& out,const GranularTiming& t){
- out<<std::setprecision(12)<<"{\"schema\":5,\"profiling_enabled\":"<<(t.profiling_enabled?"true":"false")<<",\"split_boundaries\":"<<(t.split_boundaries?"true":"false")
+ out<<std::setprecision(12)<<"{\"schema\":6,\"profiling_enabled\":"<<(t.profiling_enabled?"true":"false")<<",\"split_boundaries\":"<<(t.split_boundaries?"true":"false")
  <<",\"advance_wall_s\":"<<t.advance_wall<<",\"snapshot_wall_s\":"<<t.snapshot_wall<<",\"submit_wall_s\":"<<t.submit_wall<<",\"guard_wait_wall_s\":"<<t.guard_wait_wall<<",\"profile_collect_wall_s\":"<<t.profile_collect_wall;
+ out<<",\"advance_thread_cpu_s\":"<<t.advance_thread_cpu<<",\"submit_thread_cpu_s\":"<<t.submit_thread_cpu<<",\"gpu_batch_span_s\":"<<t.gpu_batch_span<<",\"gpu_intercommand_gap_s\":"<<t.gpu_intercommand_gap;
  out<<",\"candidates_enabled\":"<<(t.candidates_enabled?"true":"false")<<",\"candidate_capacity\":"<<t.candidate_capacity<<",\"candidate_builds\":"<<t.candidate_builds<<",\"candidate_fallback_particle_iterations\":"<<t.candidate_fallback_particle_iterations;
  out<<",\"candidate_reuse_enabled\":"<<(t.candidate_reuse_enabled?"true":"false")<<",\"candidate_audit_enabled\":"<<(t.candidate_audit_enabled?"true":"false")<<",\"candidate_skin_m\":"<<t.candidate_skin_m<<",\"reuse_checks\":"<<t.reuse_checks<<",\"candidate_reuses\":"<<t.candidate_reuses;
  out<<",\"kernel_optimize_enabled\":"<<(t.kernel_optimize_enabled?"true":"false")<<",\"argument_calls\":"<<t.argument_calls<<",\"argument_cache_hits\":"<<t.argument_cache_hits;

@@ -1,0 +1,9 @@
+{
+  "initial_sha256": "9547042760b376c83d3820068abe4e52b4093235062f4476a97c3fbb1cb8e29d",
+  "steps": 32000,
+  "dt": 0.000375,
+  "contact_iterations": 16,
+  "rpm": 30,
+  "rotation_start_step": 2672,
+  "scope": "same saved initial positions and virtual materials; fixed control boundary, not a frame-exact UE replay; editor remains open"
+}

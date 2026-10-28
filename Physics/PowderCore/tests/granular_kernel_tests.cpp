@@ -35,5 +35,11 @@ int main(){try{
  p={{.3f,.18f,.35f,0},{.31f,.18f,.35f,1}};v.assign(2,{});GranularGPU baseline(c);baseline.set_state(p,v);c.kernel_optimize=true;GranularGPU optimized(c);optimized.set_state(p,v);
  for(float rpm:{0.f,30.f,-10.f,0.f}){bool gate=rpm!=0;baseline.advance(7,rpm,gate);optimized.advance(7,rpm,gate);compare(optimized.snapshot(),baseline.snapshot(),2.e-6f);}
  c.test_mixer=true;GranularGPU diagnostic(c);for(int i=0;i<3;++i){auto result=diagnostic.inspect_boundaries({{0,.3f,-.2f,0}},float(i),false,i%2);check(result.size()==1,"temporary diagnostic buffer rebinding");}
+ // Diagnostic launch sizes retain the same contact law; timing span decomposes
+ // into event execution plus within-collection gaps on the in-order queue.
+ c={};c.count=2;c.radius=.004f;c.profile=true;
+ p={{.3f,.18f,.35f,0},{.307f,.18f,.35f,1}};v.assign(2,{});
+ for(unsigned local:{64u,128u,256u}){c.diagnostic_local_size=local;GranularGPU measured(c);measured.set_state(p,v);measured.advance(1,0,false);compare(measured.snapshot(),reference(c,p,v),2.e-6f);auto mt=measured.timing();double busy=0;for(auto seconds:mt.gpu_seconds)busy+=seconds;check(mt.gpu_batch_span>0&&std::abs(mt.gpu_batch_span-busy-mt.gpu_intercommand_gap)<1.e-6,"GPU timing decomposition");check(mt.advance_thread_cpu>=0&&mt.submit_thread_cpu<=mt.advance_thread_cpu,"thread CPU accounting");}
+ c.diagnostic_local_size=17;bool badLocal=false;try{GranularGPU bad(c);}catch(const std::exception&){badLocal=true;}check(badLocal,"invalid local size rejected");
  std::cout<<"PASS optimized layout/argument cache: approaching unseen pair, correction-created contact, shaft/rotor projection, overflow fallback, batch persistence, reset, skin/grid variants, CPU reference, every-iteration all-pairs oracle, domain and configuration guards\n";
  }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

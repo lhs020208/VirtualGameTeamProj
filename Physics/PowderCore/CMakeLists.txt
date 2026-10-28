@@ -466,3 +466,8 @@ if(WIN32 AND BUILD_TESTING)
  add_test(NAME material_granular COMMAND granular_material_tests)
  set_tests_properties(material_granular PROPERTIES TIMEOUT 120)
 endif()
+
+if(WIN32)
+ add_executable(granular_diagnose app/granular_diagnose.cpp)
+ target_link_libraries(granular_diagnose PRIVATE powder_granular)
+endif()

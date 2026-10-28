@@ -1,0 +1,78 @@
+{
+  "result": {
+    "count": 50000,
+    "time": 12.000375104,
+    "rate": 0.135743159,
+    "receiver": 0,
+    "error": "",
+    "physical_accuracy_validated": false
+  },
+  "samples": [
+    {
+      "time_s": 11.85637510305969,
+      "overlap_min_radius": 0.02839859173086809,
+      "wall_m": 4.7424600353555835e-08,
+      "rotor_m": 3.666648542774431e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.967989459930061,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 0.012375000107567757,
+      "overlap_min_radius": 0.0,
+      "wall_m": 0.0,
+      "rotor_m": 0.0,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.933035004983628,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 2.0283750176313333,
+      "overlap_min_radius": 0.015955993185591544,
+      "wall_m": 4.6733693466298465e-08,
+      "rotor_m": 3.0370836008423996e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9478951799085386,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 4.044375035155099,
+      "overlap_min_radius": 0.015333578030352596,
+      "wall_m": 4.647594941797201e-08,
+      "rotor_m": 4.2247445399684613e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9557856005750581,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 6.0603750526788644,
+      "overlap_min_radius": 0.01754960121550138,
+      "wall_m": 4.825244836591941e-08,
+      "rotor_m": 3.186575147761522e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9593965533098701,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 8.07637507020263,
+      "overlap_min_radius": 0.018722229194558307,
+      "wall_m": 4.704670708132602e-08,
+      "rotor_m": 4.612217210583913e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9697228424843692,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 10.092375087726396,
+      "overlap_min_radius": 0.01893320998820351,
+      "wall_m": 4.8773949430473695e-08,
+      "rotor_m": 2.5658977827018592e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9720584907774894,
+      "pass_geometry": true
+    }
+  ],
+  "passed": true,
+  "calibrated": false,
+  "scope": "sampled geometry and mass; not empirical validation or guaranteed speed"
+}

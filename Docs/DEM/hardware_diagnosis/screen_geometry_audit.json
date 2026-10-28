@@ -1,0 +1,110 @@
+{
+  "base": {
+    "count": 50000,
+    "group_counts": [
+      8403,
+      41597
+    ],
+    "max_overlap_min_radius": 0.028297528658101485,
+    "wall_m": 4.461149593747854e-08,
+    "rotor_m": 3.336746181789585e-08,
+    "passed": true,
+    "scope": "final sample only; not trajectory equality or real-material validation"
+  },
+  "base_repeat": {
+    "count": 50000,
+    "group_counts": [
+      8403,
+      41597
+    ],
+    "max_overlap_min_radius": 0.015763136858532107,
+    "wall_m": 4.591425117449893e-08,
+    "rotor_m": 2.828187134051169e-08,
+    "passed": true,
+    "scope": "final sample only; not trajectory equality or real-material validation"
+  },
+  "batch128": {
+    "count": 50000,
+    "group_counts": [
+      8403,
+      41597
+    ],
+    "max_overlap_min_radius": 0.018493825995325713,
+    "wall_m": 4.5317991716892214e-08,
+    "rotor_m": 3.120176117043377e-08,
+    "passed": true,
+    "scope": "final sample only; not trajectory equality or real-material validation"
+  },
+  "local256": {
+    "count": 50000,
+    "group_counts": [
+      8403,
+      41597
+    ],
+    "max_overlap_min_radius": 0.04521028329974645,
+    "wall_m": 4.343115344706411e-08,
+    "rotor_m": 2.7813478987830098e-08,
+    "passed": true,
+    "scope": "final sample only; not trajectory equality or real-material validation"
+  },
+  "local64": {
+    "count": 50000,
+    "group_counts": [
+      8403,
+      41597
+    ],
+    "max_overlap_min_radius": 0.02624349560180914,
+    "wall_m": 4.299166278098204e-08,
+    "rotor_m": 2.5870914572949377e-08,
+    "passed": true,
+    "scope": "final sample only; not trajectory equality or real-material validation"
+  },
+  "no_reads": {
+    "count": 50000,
+    "group_counts": [
+      8403,
+      41597
+    ],
+    "max_overlap_min_radius": 0.03742925072521751,
+    "wall_m": 4.522545992823729e-08,
+    "rotor_m": 3.330198721906291e-08,
+    "passed": true,
+    "scope": "final sample only; not trajectory equality or real-material validation"
+  },
+  "profile": {
+    "count": 50000,
+    "group_counts": [
+      8403,
+      41597
+    ],
+    "max_overlap_min_radius": 0.021704906560932394,
+    "wall_m": 4.69102882051306e-08,
+    "rotor_m": 3.9205512305379164e-08,
+    "passed": true,
+    "scope": "final sample only; not trajectory equality or real-material validation"
+  },
+  "rate01": {
+    "count": 50000,
+    "group_counts": [
+      8403,
+      41597
+    ],
+    "max_overlap_min_radius": 0.014588567952613103,
+    "wall_m": 4.416527154670752e-08,
+    "rotor_m": 3.7367603673670036e-08,
+    "passed": true,
+    "scope": "final sample only; not trajectory equality or real-material validation"
+  },
+  "split": {
+    "count": 50000,
+    "group_counts": [
+      8403,
+      41597
+    ],
+    "max_overlap_min_radius": 0.03381014187733636,
+    "wall_m": 4.433731081842501e-08,
+    "rotor_m": 3.973944306522731e-08,
+    "passed": true,
+    "scope": "final sample only; not trajectory equality or real-material validation"
+  }
+}

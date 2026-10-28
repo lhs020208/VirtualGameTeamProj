@@ -13,6 +13,7 @@ struct GranularTiming {
  std::array<double,14> gpu_seconds{};
  std::array<std::uint64_t,14> calls{};
  double advance_wall=0,snapshot_wall=0,submit_wall=0,guard_wait_wall=0,profile_collect_wall=0;
+ double advance_thread_cpu=0,submit_thread_cpu=0,gpu_batch_span=0,gpu_intercommand_gap=0;
  bool profiling_enabled=false,split_boundaries=false,candidates_enabled=false;
  std::uint64_t candidate_builds=0,candidate_fallback_particle_iterations=0;
  unsigned candidate_capacity=0;
@@ -23,7 +24,7 @@ struct GranularTiming {
 };
 void write_granular_timing(std::ostream& out,const GranularTiming& timing);
 struct Grain {float x,y,z,w;};
-struct GranularConfig {bool rotation=false;float rolling_friction=0;bool binary_materials=false;std::array<GranularMaterial,2> materials{};float cross_friction=.4f;unsigned count=30000,iterations=16;bool fast_bounds=true,profile=false,test_mixer=false,profile_split=false,candidates=false,candidate_reuse=false,candidate_audit=false,boundary_candidates=false,kernel_optimize=false;float candidate_skin_ratio=.5f;unsigned candidate_capacity=64;float radius=0,dt=.00025f,friction=.4f;};
+struct GranularConfig {unsigned diagnostic_local_size=128;bool rotation=false;float rolling_friction=0;bool binary_materials=false;std::array<GranularMaterial,2> materials{};float cross_friction=.4f;unsigned count=30000,iterations=16;bool fast_bounds=true,profile=false,test_mixer=false,profile_split=false,candidates=false,candidate_reuse=false,candidate_audit=false,boundary_candidates=false,kernel_optimize=false;float candidate_skin_ratio=.5f;unsigned candidate_capacity=64;float radius=0,dt=.00025f,friction=.4f;};
 struct GranularBoundarySample {Grain position,normal,velocity;unsigned plane_tests=0,rotor_tests=0;};
 struct GranularCandidates {std::vector<std::vector<unsigned>> neighbors;unsigned overflow_particles=0;};
 void validate_granular_initial(GranularConfig config,const std::vector<Grain>& positions);

@@ -1,0 +1,18 @@
+[
+  "C:/Program Files/Epic Games/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe",
+  "D:\\GitHub\\VirtualGameTeamProj\\VirtualGameTeamProj.uproject",
+  "/Game/DEM/Tests/L_MX301_BinaryMaterials",
+  "-game",
+  "-windowed",
+  "-ResX=1280",
+  "-ResY=720",
+  "-unattended",
+  "-nosound",
+  "-nop4",
+  "-ddc=InstalledNoZenLocalFallback",
+  "-GrainBenchmark",
+  "-GrainSeconds=12",
+  "-GrainAuditSnapshots",
+  "-GrainOutput=D:\\GitHub\\VirtualGameTeamProj\\Saved\\HardwareDiagnosis\\unreal\\render_default",
+  "-abslog=D:\\GitHub\\VirtualGameTeamProj\\Saved\\HardwareDiagnosis\\unreal\\render_default/engine.log"
+]

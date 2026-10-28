@@ -1,0 +1,50 @@
+{
+  "base": {
+    "count": 50000,
+    "group_counts": [
+      8403,
+      41597
+    ],
+    "max_overlap_min_radius": 0.028180903413014408,
+    "wall_m": 4.445421375020436e-08,
+    "rotor_m": 2.7742696941807088e-08,
+    "passed": true,
+    "scope": "final sample only; not trajectory equality or real-material validation"
+  },
+  "base_repeat": {
+    "count": 50000,
+    "group_counts": [
+      8403,
+      41597
+    ],
+    "max_overlap_min_radius": 0.01773903092976356,
+    "wall_m": 4.556198051740984e-08,
+    "rotor_m": 3.141228599023299e-08,
+    "passed": true,
+    "scope": "final sample only; not trajectory equality or real-material validation"
+  },
+  "batch128": {
+    "count": 50000,
+    "group_counts": [
+      8403,
+      41597
+    ],
+    "max_overlap_min_radius": 0.019521527229034857,
+    "wall_m": 4.3630838188896126e-08,
+    "rotor_m": 3.007617585190636e-08,
+    "passed": true,
+    "scope": "final sample only; not trajectory equality or real-material validation"
+  },
+  "local256": {
+    "count": 50000,
+    "group_counts": [
+      8403,
+      41597
+    ],
+    "max_overlap_min_radius": 0.0592162574368605,
+    "wall_m": 4.2865389122785647e-08,
+    "rotor_m": 5.5330496346976676e-08,
+    "passed": true,
+    "scope": "final sample only; not trajectory equality or real-material validation"
+  }
+}
