@@ -1,0 +1,51 @@
+{
+  "source_nodes": 1855,
+  "source_meshes": 1717,
+  "missing": [],
+  "parent_mismatches": [],
+  "max_pivot_error_cm": 3.576278687944523e-05,
+  "max_basis_error": 3.33778137076024e-07,
+  "max_bounds_error_cm": 4.76837158203125e-05,
+  "material_slot_count_mismatches": [],
+  "unused_material_slots_compacted": [
+    "AV25_110_Flow_body",
+    "HLCM_01_CAD_Main",
+    "HLCM_02_CAD_Main",
+    "HLCM_03_CAD_Main"
+  ],
+  "rotated_bounds_verified_by_world_vertices": [
+    {
+      "name": "H-101A_ClampLever",
+      "box_error_cm": 2.506372332572937,
+      "vertex_error_cm": 1.9371509552001953e-05,
+      "source_vertex_count": 915,
+      "imported_vertex_count": 915
+    },
+    {
+      "name": "H-101B_ClampLever",
+      "box_error_cm": 2.5063842535018637,
+      "vertex_error_cm": 6.664001900046205e-06,
+      "source_vertex_count": 915,
+      "imported_vertex_count": 915
+    },
+    {
+      "name": "H-101C_ClampLever",
+      "box_error_cm": 2.506396174430847,
+      "vertex_error_cm": 1.666000468656264e-05,
+      "source_vertex_count": 915,
+      "imported_vertex_count": 915
+    }
+  ],
+  "source_images": [],
+  "asset_classes": {
+    "MaterialInstanceConstant": 30,
+    "InterchangeSceneImportAsset": 1,
+    "StaticMesh": 1717,
+    "InterchangeGenericAssetsPipeline": 1,
+    "InterchangeGenericLevelPipeline": 1,
+    "World": 1,
+    "Material": 1
+  },
+  "note": "FBX meters converted to UE centimeters with Y handedness reflection; scene root scale 100 retained.",
+  "passed": true
+}

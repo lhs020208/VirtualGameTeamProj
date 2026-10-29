@@ -1,0 +1,350 @@
+{
+  "master": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple",
+  "instances": [
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/AIR___Equalization_identifier.AIR___Equalization_identifier",
+      "original_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple",
+      "tint": [
+        0.039546236395835876,
+        0.2746773064136505,
+        0.19120168685913086,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/BV122___CLOSED_lamp.BV122___CLOSED_lamp",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.18000000715255737,
+        0.06300000101327896,
+        0.0027000000700354576,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/BV122___OPEN_lamp.BV122___OPEN_lamp",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.003599999938160181,
+        0.12600000202655792,
+        0.027000000700354576,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/BV272___CLOSED_lamp.BV272___CLOSED_lamp",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.18000000715255737,
+        0.06300000101327896,
+        0.0027000000700354576,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/BV272___OPEN_lamp.BV272___OPEN_lamp",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.003599999938160181,
+        0.12600000202655792,
+        0.027000000700354576,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/DP___High_pressure_marker.DP___High_pressure_marker",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.577580451965332,
+        0.07618538290262222,
+        0.05448027700185776,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/DP___LCD_background.DP___LCD_background",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.30000001192092896,
+        0.36000001430511475,
+        0.33000001311302185,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/FLOW___Amber_status_lens.FLOW___Amber_status_lens",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.6795424818992615,
+        0.32314321398735046,
+        0.03071344457566738,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/FLOW___Green_status_lens.FLOW___Green_status_lens",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.04666508734226227,
+        0.3277781009674072,
+        0.13013647496700287,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HLCM_Ground_Strap_Visual.HLCM_Ground_Strap_Visual",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.3799999952316284,
+        0.3199999928474426,
+        0.18000000715255737,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___01_Satin_stainless.HOPER___01_Satin_stainless",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.5028864741325378,
+        0.5520114302635193,
+        0.5906188488006592,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___02_Machined_stainless.HOPER___02_Machined_stainless",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.6104955673217773,
+        0.6514056324958801,
+        0.68668532371521,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___03_Blue-grey_coated_frame.HOPER___03_Blue-grey_coated_frame",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.03560131415724754,
+        0.07421357184648514,
+        0.10461648553609848,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___04_Graphite_equipment_housings.HOPER___04_Graphite_equipment_housings",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.02518685907125473,
+        0.040915198624134064,
+        0.05612849071621895,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___05_Pneumatic_blue.HOPER___05_Pneumatic_blue",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.016807375475764275,
+        0.20507873594760895,
+        0.4564110338687897,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___06_Black_elastomer.HOPER___06_Black_elastomer",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.017641954123973846,
+        0.024157632142305374,
+        0.02955683507025242,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___07_Instrument_light_grey.HOPER___07_Instrument_light_grey",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.68668532371521,
+        0.7379103899002075,
+        0.7681511640548706,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___08_Equipment_ID_plate.HOPER___08_Equipment_ID_plate",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.019382361322641373,
+        0.04373503103852272,
+        0.06480326503515244,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___09_Light_lettering.HOPER___09_Light_lettering",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.7835378050804138,
+        0.8468732237815857,
+        0.8796223998069763,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___10_Dark_lettering.HOPER___10_Dark_lettering",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.009134058840572834,
+        0.020288562402129173,
+        0.03071344457566738,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___11_Safety_amber.HOPER___11_Safety_amber",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.7835378050804138,
+        0.41788506507873535,
+        0.04666508734226227,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___12_Filter_media.HOPER___12_Filter_media",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.41788506507873535,
+        0.46207699179649353,
+        0.4125426113605499,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___13_Hose_inner_liner.HOPER___13_Hose_inner_liner",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.5647115111351013,
+        0.5972017645835876,
+        0.533276379108429,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___14_Sampling_tube_grey.HOPER___14_Sampling_tube_grey",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.18447498977184296,
+        0.26635560393333435,
+        0.32314321398735046,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/HOPER___15_Dark_display_glass.HOPER___15_Dark_display_glass",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.005181516520678997,
+        0.024157632142305374,
+        0.02955683507025242,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/PS___Green_display_segments.PS___Green_display_segments",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.47999998927116394,
+        0.8500000238418579,
+        0.04500000178813934,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/SENSOR___Cam_adjustment_marker.SENSOR___Cam_adjustment_marker",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.5906188488006592,
+        0.1441284716129303,
+        0.0382043719291687,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/SENSOR___Clear_polycarbonate_window.SENSOR___Clear_polycarbonate_window",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.75,
+        0.8500000238418579,
+        0.8999999761581421,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/Sensor_indicator_lens.Sensor_indicator_lens",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.04666508734226227,
+        0.3277781009674072,
+        0.13013647496700287,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    },
+    {
+      "material": "/Game/ProcessPlant_20261029/Assets/Materials/VG___Porous_bronze_silencer.VG___Porous_bronze_silencer",
+      "original_parent": "/InterchangeAssets/Materials/FBXLegacyPhongSurfaceMaterial.FBXLegacyPhongSurfaceMaterial",
+      "tint": [
+        0.4000000059604645,
+        0.2800000011920929,
+        0.11999999731779099,
+        1.0
+      ],
+      "new_parent": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple.M_PlantSimple"
+    }
+  ],
+  "shading": "Unlit opaque; Tint*(0.45+0.55*saturate(dot(PixelNormalWS,fixed direction)))",
+  "texture_samples": 0,
+  "simulation_executed": false,
+  "postprocess": {
+    "dynamic_global_illumination_method": "<DynamicGlobalIlluminationMethod.NONE: 0>",
+    "reflection_method": "<ReflectionMethod.NONE: 0>",
+    "ambient_occlusion_intensity": "0.0",
+    "bloom_intensity": "0.0",
+    "motion_blur_amount": "0.0",
+    "auto_exposure_method": "<AutoExposureMethod.AEM_MANUAL: 2>",
+    "auto_exposure_apply_physical_camera_exposure": "False",
+    "auto_exposure_bias": "0.0",
+    "local_exposure_highlight_contrast_scale": "1.0",
+    "local_exposure_shadow_contrast_scale": "1.0"
+  }
+}

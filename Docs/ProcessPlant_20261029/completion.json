@@ -1,0 +1,34 @@
+{
+  "level": "/Game/ProcessPlant_20261029/L_ProcessPlant_Assembly",
+  "assets": "/Game/ProcessPlant_20261029/Assets",
+  "master_material": "/Game/ProcessPlant_20261029/Materials/M_PlantSimple",
+  "mesh_actors": 1717,
+  "source_parent_nodes": 138,
+  "simple_material_instances": 30,
+  "bounds_m": [
+    6.3773912,
+    3.14999998,
+    4.02900017
+  ],
+  "source_geometry_and_parent_comparison": "source_comparison.json; passed",
+  "saved_collision_and_material_validation": "reload_validation.json; passed",
+  "material_design": "Unlit opaque, original diffuse colors, fixed normal-based shading; no texture, reflection, bloom or motion blur",
+  "collision": "NoCollision profile, no simple collision shapes, simulate_physics=False",
+  "source_preserved": true,
+  "existing_tracked_files_modified": false,
+  "simulation_executed": false,
+  "benchmark_executed": false,
+  "source_fbx_contains_textures": false,
+  "limits": [
+    "Visual model only: no supplied hidden collision/internal volume meshes.",
+    "No animation, skeletal rig, machine logic or powder solver added.",
+    "4 meshes had unused source material slots compacted; all used materials retained.",
+    "3 rotated lever bounds differed, but all 915 vertices per lever matched in world space.",
+    "Static import and presentation validation only; no physical collision accuracy or performance claim."
+  ],
+  "verification_corrections": [
+    "Set NoCollision profile after disabling physics to persist collision state.",
+    "UE5.8 material vector setter always returns false in installed source; verify actual parameter readback instead."
+  ],
+  "commit_created": false
+}
