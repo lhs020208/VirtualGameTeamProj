@@ -1,0 +1,59 @@
+{
+  "passed": true,
+  "combinations": [
+    {
+      "mode": "<PlantViewMode.FULL: 0>",
+      "frames": true,
+      "visible_including_fixture": 1718,
+      "physics_unchanged": true,
+      "unlisted_visual_unchanged": true,
+      "cut_mask_correct": true
+    },
+    {
+      "mode": "<PlantViewMode.FULL: 0>",
+      "frames": false,
+      "visible_including_fixture": 1367,
+      "physics_unchanged": true,
+      "unlisted_visual_unchanged": true,
+      "cut_mask_correct": true
+    },
+    {
+      "mode": "<PlantViewMode.CUTAWAY: 1>",
+      "frames": true,
+      "visible_including_fixture": 1718,
+      "physics_unchanged": true,
+      "unlisted_visual_unchanged": true,
+      "cut_mask_correct": true
+    },
+    {
+      "mode": "<PlantViewMode.CUTAWAY: 1>",
+      "frames": false,
+      "visible_including_fixture": 1367,
+      "physics_unchanged": true,
+      "unlisted_visual_unchanged": true,
+      "cut_mask_correct": true
+    },
+    {
+      "mode": "<PlantViewMode.HIDDEN: 2>",
+      "frames": true,
+      "visible_including_fixture": 351,
+      "physics_unchanged": true,
+      "unlisted_visual_unchanged": true,
+      "cut_mask_correct": true
+    },
+    {
+      "mode": "<PlantViewMode.HIDDEN: 2>",
+      "frames": false,
+      "visible_including_fixture": 0,
+      "physics_unchanged": true,
+      "unlisted_visual_unchanged": true,
+      "cut_mask_correct": true
+    }
+  ],
+  "parts": 1717,
+  "frame_count": 351,
+  "cutaway_count": 357,
+  "collision_enabled_fixture": true,
+  "simulation_executed": false,
+  "note": "State invariance and shader parameters only; no dynamic particle/contact test was run."
+}
