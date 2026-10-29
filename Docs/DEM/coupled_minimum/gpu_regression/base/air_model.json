@@ -1,0 +1,1 @@
+{"enabled":false,"model":"prescribed_uniform_sphere_SN","two_way":false,"dense_flow_validated":false,"buoyancy":true,"density_kg_m3":1.2250000000000001,"viscosity_pa_s":1.8099999999999999e-05,"velocity_local_m_s":[0,0,0],"diameter_basis":"computational_sphere","max_beta_dt":0.25,"max_Re":200000}

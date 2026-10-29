@@ -21,6 +21,13 @@ bool FEmitterGPUBridge::RunTest(const FString&){
  std::vector<powder::Grain> P,V;
  TestTrue(TEXT("collect"),M->BuildEmitterInitialState(P,V));TestEqual(TEXT("count"),int(P.size()),2);
  if(P.size()==2){TestTrue(TEXT("translated/yawed local position"),FMath::Abs(P[0].x-.3)<1e-6&&FMath::Abs(P[0].y-.2)<1e-6&&FMath::Abs(P[0].z-.306)<1e-6);TestTrue(TEXT("rotated velocity"),FMath::Abs(V[0].x)<1e-6&&FMath::Abs(V[0].y-.2)<1e-6);TestEqual(TEXT("red group"),P[0].w,0.f);TestEqual(TEXT("blue group"),P[1].w,1.f);}
+ TestFalse(TEXT("air default off"),M->GetAirSettings().enabled);
+ M->EnablePrescribedAir=true;TestFalse(TEXT("air requires explicit binary density"),M->BuildEmitterInitialState(P,V));
+ M->BinaryMaterials=true;M->AirVelocityMetersPerSecond=FVector(2,0,0);
+ TestTrue(TEXT("air emitter configuration"),M->BuildEmitterInitialState(P,V));TestTrue(TEXT("air snapshot enabled"),M->EmitterConfig.air.enabled);TestEqual(TEXT("air local SI velocity"),M->EmitterConfig.air.velocity_m_s[0],2.);
+ M->AirViscosityPaS=0;TestFalse(TEXT("invalid air viscosity rejected"),M->BuildEmitterInitialState(P,V));M->AirViscosityPaS=1.81e-5;
+ S->SourceDiameterMeters=.0001;TestFalse(TEXT("unsupported air coarse grain rejected"),M->BuildEmitterInitialState(P,V));S->SourceDiameterMeters=0;
+ M->EnablePrescribedAir=false;M->BinaryMaterials=false;
  auto Duplicate=M->Emitters[0];M->Emitters.Add(Duplicate);TestFalse(TEXT("duplicate rejected"),M->BuildEmitterInitialState(P,V));M->Emitters.Pop();
  auto SavedPosition=M->Emitters[1]->GetActorLocation();M->Emitters[1]->SetActorLocation(M->Emitters[0]->GetActorLocation());TestFalse(TEXT("cross-source overlap rejected"),M->BuildEmitterInitialState(P,V));M->Emitters[1]->SetActorLocation(SavedPosition);
  auto* Other=DuplicateObject<UDEMParticleSettings>(S,M);Other->DensityKgPerCubicMeter=1000;M->Emitters[1]->ParticleSettings=Other;TestFalse(TEXT("mixed density rejected"),M->BuildEmitterInitialState(P,V));M->BinaryMaterials=true;Other->RadiusMeters=.005;Other->WallFriction=.2;TestTrue(TEXT("binary material bridge"),M->BuildEmitterInitialState(P,V));TestEqual(TEXT("binary density snapshot"),M->EmitterConfig.materials[1].density_kg_m3,1000.);TestEqual(TEXT("binary wall friction"),M->EmitterConfig.materials[1].wall_friction,.2);M->BinaryMaterials=false;M->Emitters[1]->ParticleSettings=S;

@@ -1,0 +1,42 @@
+Internal ctest changing into directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+Test project D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+      Start 14: rolling_resistance
+ 1/18 Test #14: rolling_resistance .................   Passed   11.80 sec
+      Start 15: contact_adhesion
+ 2/18 Test #15: contact_adhesion ...................   Passed    0.50 sec
+      Start 16: rigid_clumps
+ 3/18 Test #16: rigid_clumps .......................   Passed    0.13 sec
+      Start 18: prescribed_moving_walls
+ 4/18 Test #18: prescribed_moving_walls ............   Passed    0.06 sec
+      Start 19: mixing_experiment
+ 5/18 Test #19: mixing_experiment ..................   Passed   15.93 sec
+      Start 26: optimization_clump_worker
+ 6/18 Test #26: optimization_clump_worker ..........   Passed    4.69 sec
+      Start 27: optimization_timestep_scale
+ 7/18 Test #27: optimization_timestep_scale ........   Passed    0.01 sec
+      Start 48: optimization_granular_gpu
+ 8/18 Test #48: optimization_granular_gpu ..........   Passed   10.78 sec
+      Start 49: optimization_granular_candidates
+ 9/18 Test #49: optimization_granular_candidates ...   Passed    4.16 sec
+      Start 50: optimization_granular_safe_reuse
+10/18 Test #50: optimization_granular_safe_reuse ...   Passed    6.33 sec
+      Start 51: optimization_granular_boundaries
+11/18 Test #51: optimization_granular_boundaries ...   Passed    3.08 sec
+      Start 52: optimization_granular_stream
+12/18 Test #52: optimization_granular_stream .......   Passed    0.98 sec
+      Start 53: optimization_granular_kernel
+13/18 Test #53: optimization_granular_kernel .......   Passed    6.78 sec
+      Start 54: material_granular
+14/18 Test #54: material_granular ..................   Passed    5.28 sec
+      Start 55: physics_air_contract
+15/18 Test #55: physics_air_contract ...............   Passed    0.01 sec
+      Start 56: physics_granular_air
+16/18 Test #56: physics_granular_air ...............   Passed    7.58 sec
+      Start 57: physics_coupled_minimum
+17/18 Test #57: physics_coupled_minimum ............   Passed    0.57 sec
+      Start 58: physics_granular_coupled
+18/18 Test #58: physics_granular_coupled ...........   Passed    2.75 sec
+
+100% tests passed, 0 tests failed out of 18
+
+Total Test time (real) =  81.41 sec

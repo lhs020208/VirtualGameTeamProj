@@ -85,12 +85,61 @@ __kernel void grid(__global const float4* pos,__global int* head,__global int* l
 #endif
  int i=get_global_id(0);if(i>=n)return;int c=cellid(pos[i].xyz,cell,nx,ny,nz);if(c<0){atomic_or(error,1);link[i]=-1;return;}link[i]=atomic_xchg(head+c,i);
 }
+#if GRANULAR_COUPLED_AIR
+__kernel void clear_gas(__global int* head,int n){int i=get_global_id(0);if(i<n)head[i]=-1;}
+__kernel void reduce_gas(__global const int* head,__global const int* link,__global const float4* old,__global const float4* impulse,__global float4* exchange,__global const float4* gradient,float4 origin,int4 dims,float h,__global int* error,int particles){
+ int i=get_global_id(0);if(i>=dims.x*dims.y*dims.z||error[0])return;if(gradient[i].w==0)return;int3 target=(int3)(i%dims.x,(i/dims.x)%dims.y,i/(dims.x*dims.y));float4 sum=(float4)(0);float rate=0;
+ for(int z=0;z<2;++z)for(int y=0;y<2;++y)for(int x=0;x<2;++x){int3 cell=target-(int3)(x,y,z);if(any(cell<(int3)(0)))continue;int id=(cell.z*dims.y+cell.y)*dims.x+cell.x;
+  for(int p=head[id];p>=0;p=link[p]){float3 q=(old[p].xyz-origin.xyz)/h-.5f;int3 base=convert_int3(floor(q));float3 f=q-floor(q),weight=(float3)(0);for(int k=0;k<3;++k){if(clamp(base[k],0,dims[k]-1)==target[k])weight[k]+=1-f[k];if(clamp(base[k]+1,0,dims[k]-1)==target[k])weight[k]+=f[k];}float w=weight.x*weight.y*weight.z;sum+=w*impulse[p];rate+=w*impulse[p+particles].x;}
+ }
+ exchange[i]+=sum;exchange[i+dims.x*dims.y*dims.z].x+=rate;
+}
+#endif
 __kernel void predict(__global float4* pos,__global float4* old,__global float4* vel,int n,float dt,float r,__global int* error,__global float4* predicted
 #if GRANULAR_ROTATION
  ,__global float4* angular,__global const float4* spin
 #endif
+#if GRANULAR_COUPLED_AIR
+ ,__global const float4* gas_velocity,__global const float4* gas_gradient,__global float4* gas_exchange,float4 gas_origin,int4 gas_size,float gas_h,float gas_mu,__global float4* particle_impulse,__global int* gas_head,__global int* gas_link
+#endif
+#if GRANULAR_COHESION
+ ,__global const float4* adhesive_acceleration,__global float4* contact_correction
+#endif
  ){
- int i=get_global_id(0);if(i>=n)return;r=grain_radius(pos[i].w,r);float3 v=vel[i].xyz+(float3)(0,0,-9.81f)*dt;old[i]=pos[i];
+ int i=get_global_id(0);if(i>=n)return;r=grain_radius(pos[i].w,r);float3 v;float3 external=(float3)(0,0,-9.81f);
+#if GRANULAR_COHESION
+ external+=adhesive_acceleration[i].xyz;contact_correction[i]=(float4)(0);
+#endif
+#if GRANULAR_COUPLED_AIR
+ float3 p=(pos[i].xyz-gas_origin.xyz)/gas_h;
+ if(any(p<(float3)(0))||any(p>convert_float3(gas_size.xyz))){atomic_or(error,64);return;}
+ int3 cell=min(convert_int3(floor(p)),gas_size.xyz-1);int ci=(cell.z*gas_size.y+cell.y)*gas_size.x+cell.x;
+ if(gas_gradient[ci].w==0){atomic_or(error,64);return;}
+ float3 q=p-.5f,fract=q-floor(q);int3 base=convert_int3(floor(q));int ids[8];float ws[8];float sum=0;int j=0;
+ for(int z=0;z<2;++z)for(int y=0;y<2;++y)for(int x=0;x<2;++x){int3 a=clamp(base+(int3)(x,y,z),(int3)(0),gas_size.xyz-1);ids[j]=(a.z*gas_size.y+a.y)*gas_size.x+a.x;ws[j]=gas_gradient[ids[j]].w>0?(x?fract.x:1-fract.x)*(y?fract.y:1-fract.y)*(z?fract.z:1-fract.z):0;sum+=ws[j];++j;}
+ if(sum<=0){atomic_or(error,64);return;}
+ float4 a=(float4)(0),b=(float4)(0);for(int j=0;j<8;++j){ws[j]/=sum;a+=ws[j]*gas_velocity[ids[j]];b+=ws[j]*gas_gradient[ids[j]];}
+ float rho=pos[i].w==0?AIR_SOLID_RHO0:AIR_SOLID_RHO1,d=2*r,slip=length(a.xyz-vel[i].xyz),re=a.w*d*slip/gas_mu,eps=b.w,er=eps*re;
+ float cdre=er<=1000?24*(1+.15f*pow(er,.687f)):.44f*er;
+ float beta=eps<.8f?gas_mu/(rho*eps*d*d)*(150*(1-eps)/eps+1.75f*re):.75f*gas_mu*cdre*pow(eps,-2.65f)/(rho*eps*d*d);
+ if(!isfinite(beta)||slip>100||re>200000||beta*dt>.1f||eps<.35f||eps>1.000001f){atomic_or(error,32);return;}
+ float3 gravity=external;v=(vel[i].xyz+dt*(gravity+beta*a.xyz-b.xyz/rho))/(1+beta*dt);
+ float volume=4.188790204786391f*r*r*r,mass=volume*rho;
+ float3 impulse=mass*(v-vel[i].xyz-dt*gravity);
+ particle_impulse[i]=(float4)(-impulse,volume)/sum;particle_impulse[i+n]=(float4)(mass*beta/(1+beta*dt)/sum,0,0,0);
+ int3 bucket=clamp(base,(int3)(0),gas_size.xyz-1);int bin=(bucket.z*gas_size.y+bucket.y)*gas_size.x+bucket.x;gas_link[i]=atomic_xchg(gas_head+bin,i);
+#elif GRANULAR_AIR
+ float rho=pos[i].w==0?AIR_SOLID_RHO0:AIR_SOLID_RHO1;
+ float3 air=(float3)(AIR_U0,AIR_U1,AIR_U2);
+ float slip=length(vel[i].xyz-air),re=AIR_RHO*(2*r)*slip/AIR_MU;
+ float cdre=re<=1000.f?24.f*(1.f+.15f*pow(re,.687f)):.44f*re;
+ float beta=3.f*AIR_MU*cdre/(16.f*rho*r*r);
+ if(!isfinite(beta)||!isfinite(re)||slip>100.f||re>200000.f||beta*dt>.25f){atomic_or(error,32);return;}
+ v=(vel[i].xyz+dt*(external+(float3)(0,0,9.81f)*AIR_RHO/rho+beta*air))/(1.f+dt*beta);
+#else
+ v=vel[i].xyz+external*dt;
+#endif
+ old[i]=pos[i];
  if(!all(isfinite(v))||length(v)*dt>r*.5f){atomic_or(error,2);return;}
 
 #if GRANULAR_ROTATION
@@ -118,7 +167,9 @@ __kernel void init_boundary_groups(__global float4* bounds){
 }
 float3 boundary_eval(float3 p,float r,float angle,int gate,float3* wallnormal,float3* wallvelocity,__global const float4* bounds,int* work){
  float3 start=p;*wallnormal=(float3)(0);*wallvelocity=(float3)(0);
-#if GRANULAR_MX301
+#if GRANULAR_SIMPLE_BOX
+ float3 original=p;p=clamp(p,(float3)(-.8f+r,-.5f+r,-.5f+r),(float3)(.8f-r,.5f-r,.5f-r));float3 delta=p-original;if(length(delta)>0)*wallnormal=normalize(delta);return p;
+#elif GRANULAR_MX301
  // Closed test-only interior and conservative convex rotor components from source asset.
  for(int group=0;group<17;++group){
 #if GRANULAR_BOUNDARY_CANDIDATES
@@ -171,6 +222,24 @@ float3 boundary_eval(float3 p,float r,float angle,int gate,float3* wallnormal,fl
 #endif
 }
 float3 boundaries(float3 p,float r,float angle,int gate,float3* wn,float3* wv,__global const float4* bounds){int work[2]={0,0};return boundary_eval(p,r,angle,gate,wn,wv,bounds,work);}
+#if GRANULAR_COHESION
+// Contact-only attraction combined with rigid positional repulsion: NOT full Hertz-DMT.
+float3 cohesive_force(float4 a,float4 b,float r){float ri=grain_radius(a.w,r),rj=grain_radius(b.w,r);float3 d=b.xyz-a.xyz;float distance=length(d);return distance>1e-9f&&distance<=ri+rj+1e-5f*fmin(ri,rj)?d/distance*(12.56637061435917f*COHESION_GAMMA*ri*rj/(ri+rj)):(float3)(0);}
+__kernel void adhesive_loads(__global const float4* pos,__global const int* head,__global const int* link,int n,float r,float cell,int nx,int ny,int nz,__global float4* acceleration,__global int* error
+#if GRANULAR_CANDIDATES
+ ,__global const int* candidates,__global const int* counts,int capacity
+#endif
+ ){
+ int i=get_global_id(0);if(i>=n)return;float ri=grain_radius(pos[i].w,r),mi=pos[i].w==0?MAT_M0:MAT_M1;float3 p=pos[i].xyz,force=(float3)(0);int3 q=convert_int3(floor((p+GRID_OFFSET)/cell));
+ if(COHESION_GAMMA>0){
+#if GRANULAR_CANDIDATES
+ if(counts[i]>=0){for(int k=0;k<counts[i];++k){int j=candidates[candidate_index(i,k,n,capacity)];if(i!=j)force+=cohesive_force(pos[i],pos[j],r);}}else
+#endif
+ for(int z=-1;z<=1;++z)for(int y=-1;y<=1;++y)for(int x=-1;x<=1;++x){int3 a=q+(int3)(x,y,z);if(any(a<(int3)(0))||a.x>=nx||a.y>=ny||a.z>=nz)continue;for(int j=head[(a.z*ny+a.y)*nx+a.x];j>=0;j=link[j])if(i!=j)force+=cohesive_force(pos[i],pos[j],r);}}
+ if(WALL_GAMMA>0){float3 lo=(float3)(-.8f,-.5f,-.5f),hi=-lo;float magnitude=12.56637061435917f*WALL_GAMMA*ri;for(int k=0;k<3;++k){if(p[k]-lo[k]-ri<=ri*1e-5f)force[k]-=magnitude;if(hi[k]-p[k]-ri<=ri*1e-5f)force[k]+=magnitude;}}
+ float3 result=force/mi;if(!all(isfinite(result))){atomic_or(error,4);return;}acceleration[i]=(float4)(result,0);
+}
+#endif
 __kernel void inspect_boundaries(__global const float4* points,int n,float r,float angle,int gate,__global const float4* bounds,
  __global float4* projected,__global float4* normals,__global float4* velocities){
  int i=get_global_id(0);if(i>=n)return;
@@ -250,6 +319,9 @@ __kernel void solve(__global const float4* pos,__global const float4* old,__glob
 #if GRANULAR_ROTATION
  ,__global const float4* angular,__global float4* nextangular
 #endif
+#if GRANULAR_COHESION
+ ,__global float4* contact_correction
+#endif
  ){
  int i=get_global_id(0);if(i>=n)return;float3 ac=(float3)(0);float3 p=pos[i].xyz;int3 q=convert_int3(floor((p+GRID_OFFSET)/cell));float3 correction=(float3)(0);
 #if GRANULAR_CANDIDATES
@@ -281,7 +353,10 @@ __kernel void solve(__global const float4* pos,__global const float4* old,__glob
 #if GRANULAR_PROFILE_SPLIT
  p+=correction;
 #else
- float3 wn,wv;p=boundaries(p+correction,r,angle,gate,&wn,&wv,bounds);
+ float3 wn,wv;float3 unbounded=p+correction;p=boundaries(unbounded,r,angle,gate,&wn,&wv,bounds);
+#if GRANULAR_COHESION
+ contact_correction[i].xyz+=correction+(p-unbounded);
+#endif
 #endif
  next[i]=(float4)(p,pos[i].w);
 #if GRANULAR_ROTATION
@@ -296,8 +371,14 @@ __kernel void velocity(__global float4* pos,__global const float4* old,__global 
 #if GRANULAR_ROTATION
  ,__global const float4* angular,__global float4* spin
 #endif
+#if GRANULAR_COHESION
+ ,__global const float4* contact_correction
+#endif
  ){
  int i=get_global_id(0);if(i>=n)return;r=grain_radius(pos[i].w,r);mu=grain_wall_mu(pos[i].w,mu);float3 p=pos[i].xyz;float3 v=vel[i].xyz+(p-predicted[i].xyz)/dt,wn,wv;
+ #if GRANULAR_COHESION
+ v=vel[i].xyz+contact_correction[i].xyz/dt;
+#endif
  // Slightly inflated shell only identifies contact for dissipative wall friction.
 #if GRANULAR_PROFILE_SPLIT
  wn=normals[i].xyz;wv=wallvelocities[i].xyz;
@@ -308,7 +389,14 @@ __kernel void velocity(__global float4* pos,__global const float4* old,__global 
 #if GRANULAR_ROTATION
  float3 w=angular[i].xyz/dt;
 #endif
- if(length(wn)>0){float3 relative=v-wv;float vn=dot(relative,wn);float3 tangent=relative-vn*wn;float tl=length(tangent);float normalImpulse=fmax(0.f,-dot((p-old[i].xyz)/dt,wn))+9.81f*dt;
+ if(length(wn)>0){float3 relative=v-wv;float vn=dot(relative,wn);float3 tangent=relative-vn*wn;float tl=length(tangent);float normalImpulse;
+#if GRANULAR_AIR || GRANULAR_COUPLED_AIR || GRANULAR_COHESION
+ // Free predicted velocity includes drag and buoyancy; no extra dry gravity impulse.
+ normalImpulse=fmax(0.f,-dot(vel[i].xyz-wv,wn));
+#else
+ normalImpulse=fmax(0.f,-dot((p-old[i].xyz)/dt,wn))+9.81f*dt;
+#endif
+
 
 #if GRANULAR_ROTATION
  tangent-=cross(w*r,wn);tl=length(tangent);

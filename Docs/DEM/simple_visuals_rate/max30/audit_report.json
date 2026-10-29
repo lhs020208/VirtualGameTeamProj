@@ -1,0 +1,159 @@
+{
+  "result": {
+    "count": 50000,
+    "time": 30.001125261,
+    "rate": 0.249984622,
+    "receiver": 0,
+    "error": "",
+    "physical_accuracy_validated": false
+  },
+  "samples": [
+    {
+      "time_s": 29.929125260270666,
+      "overlap_min_radius": 0.03378955774777301,
+      "wall_m": 4.420649856850395e-08,
+      "rotor_m": 2.8671372328398226e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9788711632989937,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 0.025125000334810466,
+      "overlap_min_radius": 4.0741406044571225e-05,
+      "wall_m": 1.1748266050964906e-08,
+      "rotor_m": 0.0,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.933035004983628,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 2.137125018693041,
+      "overlap_min_radius": 0.015155844877121419,
+      "wall_m": 4.3597405792288046e-08,
+      "rotor_m": 3.161436823006375e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9573418282916906,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 20.689125179953407,
+      "overlap_min_radius": 0.010910925137947239,
+      "wall_m": 4.6543339067388334e-08,
+      "rotor_m": 0.0,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9708727646591253,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 22.765125197998714,
+      "overlap_min_radius": 0.007926591109006648,
+      "wall_m": 4.591135660102913e-08,
+      "rotor_m": 0.0,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9735929070878642,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 24.805125215731096,
+      "overlap_min_radius": 0.009290626641504998,
+      "wall_m": 4.4119729754148185e-08,
+      "rotor_m": 0.0,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.975505416865275,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 26.845125233463477,
+      "overlap_min_radius": 0.009563107643769525,
+      "wall_m": 4.591094093352871e-08,
+      "rotor_m": 0.0,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.977034238718461,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 28.897125251300167,
+      "overlap_min_radius": 0.010225153217238714,
+      "wall_m": 5.371351954538972e-08,
+      "rotor_m": 0.0,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9782969266152574,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 4.201125036634039,
+      "overlap_min_radius": 0.014424927208037463,
+      "wall_m": 4.569603639491965e-08,
+      "rotor_m": 2.5594941106647784e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9669136314024783,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 6.2891250547836535,
+      "overlap_min_radius": 0.007804944509339287,
+      "wall_m": 4.814603570945514e-08,
+      "rotor_m": 2.0554102249208117e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9754953149739763,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 8.341125072620343,
+      "overlap_min_radius": 0.011321640738869848,
+      "wall_m": 4.598222346895858e-08,
+      "rotor_m": 2.931440739716712e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9809040913899808,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 10.405125090561341,
+      "overlap_min_radius": 0.009903507088920502,
+      "wall_m": 4.480230197511509e-08,
+      "rotor_m": 1.5406934015908813e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9803779399957023,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 12.457125108398031,
+      "overlap_min_radius": 0.008827589721376039,
+      "wall_m": 4.573596534395569e-08,
+      "rotor_m": 2.2456951668907432e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9766563498560187,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 14.485125126026105,
+      "overlap_min_radius": 0.00851365731777895,
+      "wall_m": 4.395328070602722e-08,
+      "rotor_m": 1.3664067539768954e-08,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9720830186602121,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 16.549125143967103,
+      "overlap_min_radius": 0.00892519110663112,
+      "wall_m": 4.459908453224165e-08,
+      "rotor_m": 0.0,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9690890073170255,
+      "pass_geometry": true
+    },
+    {
+      "time_s": 18.62512516201241,
+      "overlap_min_radius": 0.013053662720115614,
+      "wall_m": 4.758934856862601e-08,
+      "rotor_m": 0.0,
+      "mass_kg": 40.837922988283125,
+      "mix_index": 0.9699691283367653,
+      "pass_geometry": true
+    }
+  ],
+  "passed": true,
+  "calibrated": false,
+  "scope": "sampled geometry and mass; not empirical validation or guaranteed speed"
+}

@@ -1,0 +1,4 @@
+adaptive=0 acoustic RMS errors 0.000132786 6.34904e-05 3.08716e-05
+adaptive=1 acoustic RMS errors 0.000117263 5.6448e-05 2.75923e-05
+coupled timestep velocities 0.99986237366755648 0.99986215380143306 0.99986204396465328
+PASS external wrench, 3D porosity equilibrium, pressure/reversal, open mass, two-way impulse, volume, rollback, injection/outlet, slab, temperature

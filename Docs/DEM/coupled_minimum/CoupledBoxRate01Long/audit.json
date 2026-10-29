@@ -1,0 +1,12 @@
+{
+  "count": 50000,
+  "finite": true,
+  "group_counts": [
+    8403,
+    41597
+  ],
+  "minimum_wall_clearance_m": -1.6689300492804537e-08,
+  "sample_frames": 7500,
+  "fps_from_mean_frame_time": 29.953781554691368,
+  "p95_frame_ms": 38.030105
+}

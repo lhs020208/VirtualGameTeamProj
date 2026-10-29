@@ -18,6 +18,17 @@ public:
  UPROPERTY(EditAnywhere,Category="Granular|Materials",meta=(EditCondition="EnableParticleRotation",ClampMin="0",ClampMax="1")) double RollingFriction=0;
  UPROPERTY(EditAnywhere,Category="Granular|Materials",meta=(EditCondition="BinaryMaterials",ToolTip="Explicit opt-in to conservative max-radius candidate reuse and kernel argument caching.")) bool MaterialOptimizations=false;
  UFUNCTION(BlueprintPure,Category="Granular|Materials") int32 ParticleCountForMass(UDEMParticleSettings* Settings,double MassKg) const;
+ // Read on Reset. Uniform external gas does not solve pressure, walls or dense shielding.
+ UPROPERTY(EditAnywhere,Category="Granular|Contact Attraction",meta=(ClampMin="0",ClampMax="10",ToolTip="Virtual contact-only attraction 4*pi*gamma*effective_radius with rigid PBD repulsion. Simple box only; not full Hertz-DMT or calibrated separation energy. Read on Reset.")) double GPUCohesionGamma=0;
+ UPROPERTY(EditAnywhere,Category="Granular|Contact Attraction",meta=(ClampMin="0",ClampMax="10",ToolTip="Wall contact attraction gamma J/m2. Simple box only. Read on Reset.")) double GPUWallAdhesionGamma=0;
+ UPROPERTY(EditAnywhere,Category="Granular|Air",meta=(ToolTip="Simple closed 1.6 x 1 x 1 m box. Gas and particle outer boundaries match; no machine geometry. Requires Test Mixer coordinate domain. Reset required.")) bool CoupledSimpleBox=false;
+ UPROPERTY(EditAnywhere,Category="Granular|Air",meta=(ClampMin="-5000",ClampMax="5000",ToolTip="Bottom-to-top gas pressure drop Pa in simple box only. Particle top remains closed: ideal gas-permeable capture boundary, not a calibrated filter.")) double CoupledPressureDropPa=0;
+ UPROPERTY(EditAnywhere,Category="Granular|Air",meta=(ToolTip="EXPERIMENTAL rectangular gas box + two-way exchange. Requires Binary Materials. Gas boundaries do NOT yet match mixer geometry; no cohesion/clumps. Read on Reset.")) bool EnableCoupledGridAir=false;
+ UPROPERTY(EditAnywhere,Category="Granular|Air",meta=(ToolTip="Experimental isolated-sphere drag + buoyancy. Requires Binary Materials. No CFD or dense-flow correction. Read on Reset.")) bool EnablePrescribedAir=false;
+ UPROPERTY(EditAnywhere,Category="Granular|Air",meta=(EditCondition="EnablePrescribedAir",ClampMin="0.01",ClampMax="100")) double AirDensityKgM3=1.225;
+ UPROPERTY(EditAnywhere,Category="Granular|Air",meta=(EditCondition="EnablePrescribedAir",ClampMin="0.0000001",ClampMax="0.001")) double AirViscosityPaS=1.81e-5;
+ UPROPERTY(EditAnywhere,Category="Granular|Air",meta=(EditCondition="EnablePrescribedAir",ToolTip="m/s in mixer-local axes, NOT cm/s. Uniform prescribed flow ignores gas boundary conditions.")) FVector AirVelocityMetersPerSecond=FVector::ZeroVector;
+ powder::GranularAir GetAirSettings() const;
  powder::GranularConfig EmitterConfig;
  UPROPERTY(EditAnywhere,Category="Granular|Emitters",meta=(ToolTip="Explicit source order defines stable particle IDs. Legacy mode requires matching properties; binary mode allows one material per group.")) TArray<TObjectPtr<ADEMEmitter>> Emitters;
  std::vector<powder::Grain> CopyParticleState();

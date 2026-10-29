@@ -1,0 +1,231 @@
+{
+  "initial_sha256": "9547042760b376c83d3820068abe4e52b4093235062f4476a97c3fbb1cb8e29d",
+  "runs": [
+    {
+      "wall_s": 11.1749477,
+      "time_s": 4.008000034838915,
+      "rate": 0.3586593997964675,
+      "angle_rad": 9.443730354309082,
+      "steps": 10688,
+      "batch": 32,
+      "local": 128,
+      "profile": 0,
+      "readbacks": 157,
+      "target_rate": 0,
+      "error": "",
+      "label": "off1",
+      "mode": "off",
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\PowderCore\\Release\\granular_diagnose.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Rate01Recheck\\current12\\initial.bin",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\PrescribedAirValidation\\off1",
+        "10688",
+        "32",
+        "128",
+        "0",
+        "50",
+        "0",
+        "off"
+      ],
+      "audit": {
+        "overlap_min_radius": 0.03752018091645258,
+        "wall_m": 4.217488816168902e-08,
+        "rotor_m": 2.865953318761938e-08,
+        "mass_kg": 40.837922988283125,
+        "passed": true
+      },
+      "max_temperature_c": 54.0,
+      "max_power_w": 125.57
+    },
+    {
+      "wall_s": 10.9723471,
+      "time_s": 4.008000034838915,
+      "rate": 0.36528192175390756,
+      "angle_rad": 9.443730354309082,
+      "steps": 10688,
+      "batch": 32,
+      "local": 128,
+      "profile": 0,
+      "readbacks": 156,
+      "target_rate": 0,
+      "error": "",
+      "label": "still1",
+      "mode": "still",
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\PowderCore\\Release\\granular_diagnose.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Rate01Recheck\\current12\\initial.bin",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\PrescribedAirValidation\\still1",
+        "10688",
+        "32",
+        "128",
+        "0",
+        "50",
+        "0",
+        "still"
+      ],
+      "audit": {
+        "overlap_min_radius": 0.015245098467400742,
+        "wall_m": 4.233973848865452e-08,
+        "rotor_m": 2.9715655154409493e-08,
+        "mass_kg": 40.837922988283125,
+        "passed": true
+      },
+      "max_temperature_c": 57.0,
+      "max_power_w": 129.16
+    },
+    {
+      "wall_s": 11.7158462,
+      "time_s": 4.008000034838915,
+      "rate": 0.3421007724426184,
+      "angle_rad": 9.443730354309082,
+      "steps": 10688,
+      "batch": 32,
+      "local": 128,
+      "profile": 0,
+      "readbacks": 165,
+      "target_rate": 0,
+      "error": "",
+      "label": "wind1",
+      "mode": "wind",
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\PowderCore\\Release\\granular_diagnose.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Rate01Recheck\\current12\\initial.bin",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\PrescribedAirValidation\\wind1",
+        "10688",
+        "32",
+        "128",
+        "0",
+        "50",
+        "0",
+        "wind"
+      ],
+      "audit": {
+        "overlap_min_radius": 0.03522309896020849,
+        "wall_m": 4.2958867681013035e-08,
+        "rotor_m": 2.7625416339910336e-08,
+        "mass_kg": 40.837922988283125,
+        "passed": true
+      },
+      "max_temperature_c": 58.0,
+      "max_power_w": 128.65
+    },
+    {
+      "wall_s": 11.6806879,
+      "time_s": 4.008000034838915,
+      "rate": 0.3431304790567099,
+      "angle_rad": 9.443730354309082,
+      "steps": 10688,
+      "batch": 32,
+      "local": 128,
+      "profile": 0,
+      "readbacks": 165,
+      "target_rate": 0,
+      "error": "",
+      "label": "wind2",
+      "mode": "wind",
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\PowderCore\\Release\\granular_diagnose.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Rate01Recheck\\current12\\initial.bin",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\PrescribedAirValidation\\wind2",
+        "10688",
+        "32",
+        "128",
+        "0",
+        "50",
+        "0",
+        "wind"
+      ],
+      "audit": {
+        "overlap_min_radius": 0.015290801940457212,
+        "wall_m": 4.727806157244635e-08,
+        "rotor_m": 3.428915589919618e-08,
+        "mass_kg": 40.837922988283125,
+        "passed": true
+      },
+      "max_temperature_c": 59.0,
+      "max_power_w": 130.11
+    },
+    {
+      "wall_s": 11.1663682,
+      "time_s": 4.008000034838915,
+      "rate": 0.35893496999668295,
+      "angle_rad": 9.443730354309082,
+      "steps": 10688,
+      "batch": 32,
+      "local": 128,
+      "profile": 0,
+      "readbacks": 158,
+      "target_rate": 0,
+      "error": "",
+      "label": "still2",
+      "mode": "still",
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\PowderCore\\Release\\granular_diagnose.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Rate01Recheck\\current12\\initial.bin",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\PrescribedAirValidation\\still2",
+        "10688",
+        "32",
+        "128",
+        "0",
+        "50",
+        "0",
+        "still"
+      ],
+      "audit": {
+        "overlap_min_radius": 0.036890366164021166,
+        "wall_m": 4.612187531460171e-08,
+        "rotor_m": 2.6488390394291406e-08,
+        "mass_kg": 40.837922988283125,
+        "passed": true
+      },
+      "max_temperature_c": 59.0,
+      "max_power_w": 129.92
+    },
+    {
+      "wall_s": 11.1347162,
+      "time_s": 4.008000034838915,
+      "rate": 0.35995529323315084,
+      "angle_rad": 9.443730354309082,
+      "steps": 10688,
+      "batch": 32,
+      "local": 128,
+      "profile": 0,
+      "readbacks": 156,
+      "target_rate": 0,
+      "error": "",
+      "label": "off2",
+      "mode": "off",
+      "command": [
+        "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\PowderCore\\Release\\granular_diagnose.exe",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\Rate01Recheck\\current12\\initial.bin",
+        "D:\\GitHub\\VirtualGameTeamProj\\Saved\\PrescribedAirValidation\\off2",
+        "10688",
+        "32",
+        "128",
+        "0",
+        "50",
+        "0",
+        "off"
+      ],
+      "audit": {
+        "overlap_min_radius": 0.010258292883285822,
+        "wall_m": 4.6909568780610644e-08,
+        "rotor_m": 2.3619074247631378e-08,
+        "mass_kg": 40.837922988283125,
+        "passed": true
+      },
+      "max_temperature_c": 59.0,
+      "max_power_w": 128.28
+    }
+  ],
+  "median_rate": {
+    "off": 0.35930734651480917,
+    "still": 0.3621084458752952,
+    "wind": 0.34261562574966414
+  },
+  "cost_ratio": {
+    "still": 0.9922644738271288,
+    "wind": 1.0487185040922244
+  },
+  "scope": "4.008s per run, current 50k virtual spheres, solver only with editor open; final geometry samples; not 30FPS or physical dense-flow certification"
+}

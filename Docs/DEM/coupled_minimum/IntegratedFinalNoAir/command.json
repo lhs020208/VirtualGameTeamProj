@@ -1,0 +1,16 @@
+[
+  "C:/Program Files/Epic Games/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe",
+  "D:\\GitHub\\VirtualGameTeamProj\\VirtualGameTeamProj.uproject",
+  "/Game/DEM/Tests/L_CoupledPowder_Transport",
+  "-game",
+  "-unattended",
+  "-nosound",
+  "-nop4",
+  "-ddc=InstalledNoZenLocalFallback",
+  "-CoupledExperiment=4",
+  "-CoupledSeconds=0.12",
+  "-CoupledOutput=D:\\GitHub\\VirtualGameTeamProj\\Saved\\IntegratedFinalNoAir",
+  "-abslog=D:\\GitHub\\VirtualGameTeamProj\\Saved\\IntegratedFinalNoAir/engine.log",
+  "-ExecCmds=t.MaxFPS 30",
+  "-nullrhi"
+]

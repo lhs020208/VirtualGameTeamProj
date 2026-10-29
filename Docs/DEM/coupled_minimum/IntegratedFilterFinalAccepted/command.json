@@ -1,0 +1,19 @@
+[
+  "C:/Program Files/Epic Games/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe",
+  "D:\\GitHub\\VirtualGameTeamProj\\VirtualGameTeamProj.uproject",
+  "/Game/DEM/Tests/L_CoupledPowder_Filter",
+  "-game",
+  "-unattended",
+  "-nosound",
+  "-nop4",
+  "-ddc=InstalledNoZenLocalFallback",
+  "-CoupledExperiment=2",
+  "-CoupledSeconds=0.3",
+  "-CoupledOutput=D:\\GitHub\\VirtualGameTeamProj\\Saved\\IntegratedFilterFinalAccepted",
+  "-abslog=D:\\GitHub\\VirtualGameTeamProj\\Saved\\IntegratedFilterFinalAccepted/engine.log",
+  "-ExecCmds=t.MaxFPS 30",
+  "-windowed",
+  "-ResX=1280",
+  "-ResY=720",
+  "-CoupledScreenshot"
+]

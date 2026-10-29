@@ -1,0 +1,10 @@
+msbuild 버전 17.14.23+b0019275e(.NET Framework용)
+
+  powder_core.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_core.lib
+  air_tests.cpp
+  air_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\air_tests.exe
+msbuild 버전 17.14.23+b0019275e(.NET Framework용)
+
+  powder_granular.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\powder_granular.lib
+  granular_air_tests.cpp
+  granular_air_tests.vcxproj -> D:\GitHub\VirtualGameTeamProj\Intermediate\PowderCore\Release\granular_air_tests.exe

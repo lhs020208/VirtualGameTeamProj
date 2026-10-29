@@ -1,0 +1,14 @@
+[OUTPUT] 
+Internal ctest changing into directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+
+[HANDLER_OUTPUT] 
+Test project D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+
+    Start 55: physics_air_contract
+1/2 Test #55: physics_air_contract .............   Passed    0.01 sec
+    Start 56: physics_granular_air
+2/2 Test #56: physics_granular_air .............   Passed    2.20 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   2.21 sec

@@ -1,0 +1,8 @@
+adaptive=0 acoustic RMS errors 0.000132786 6.34904e-05 3.08716e-05
+adaptive=1 acoustic RMS errors 0.000117263 5.6448e-05 2.75923e-05
+coupled timestep velocities 0.99986237366755648 0.99986215380143306 0.99986204396465328
+clump ceiling analytic cached=0 dt=1.0000000000000001e-09 force_error_N=5.0057444897066289e-16 torque_error_Nm=2.0657222796317388e-19
+clump ceiling analytic cached=0 dt=5.0000000000000003e-10 force_error_N=5.0057444897066289e-16 torque_error_Nm=2.0657222796317388e-19
+clump ceiling analytic cached=1 dt=1.0000000000000001e-09 force_error_N=5.0057444897066289e-16 torque_error_Nm=2.0657222796317388e-19
+clump ceiling analytic cached=1 dt=5.0000000000000003e-10 force_error_N=5.0057444897066289e-16 torque_error_Nm=2.0657222796317388e-19
+PASS external wrench, 3D porosity equilibrium, pressure/reversal, open mass, two-way impulse, volume, rollback, injection/outlet, slab, temperature

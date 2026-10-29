@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "result": {
+    "time_s": 0.12021280000242686,
+    "rate": 0.007208971986184043,
+    "count": 0,
+    "gas_balance_kg": -2.2266802117421047e-17,
+    "particle_balance_kg": 0,
+    "exchange_error_Ns": 0,
+    "max_overlap_m": 0,
+    "min_epsilon": 1,
+    "temperature_K": 293.15,
+    "pressure_drop_Pa": 2000,
+    "dt_s": 1e-07,
+    "calibrated": false,
+    "failed": false
+  },
+  "protocol": {
+    "experiment": 1,
+    "supplied_kg": 4.7123889803846896e-06,
+    "retained_kg": 0,
+    "exited_kg": 4.7123889803846896e-06,
+    "filter_contact_kg": 0,
+    "minimum_accepted_dt_s": 1e-07,
+    "inlet_backflow_kg": 0,
+    "outlet_kg": 4.7123889803846896e-06,
+    "non_spherical_cpu": true,
+    "two_way_air": true,
+    "calibrated": false,
+    "by_type": [
+      {
+        "type": 0,
+        "supplied_kg": 1.0471975511965976e-06,
+        "exited_kg": 1.0471975511965976e-06,
+        "retained_kg": 0
+      },
+      {
+        "type": 1,
+        "supplied_kg": 1.1519173063162576e-06,
+        "exited_kg": 1.1519173063162576e-06,
+        "retained_kg": 0
+      },
+      {
+        "type": 2,
+        "supplied_kg": 2.5132741228718346e-06,
+        "exited_kg": 2.5132741228718346e-06,
+        "retained_kg": 0
+      }
+    ]
+  },
+  "rendered": false,
+  "monitor": [],
+  "wall_s": 22.515999999988708
+}

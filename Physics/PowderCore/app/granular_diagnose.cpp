@@ -9,7 +9,7 @@
 #include <thread>
 using Clock=std::chrono::steady_clock;
 int main(int argc,char** argv){try{
- if(argc!=9)throw std::runtime_error("usage: initial.bin output steps batch local profile(0/1/2) readback_ms rate(0=uncapped)");
+ if(argc!=9&&argc!=10)throw std::runtime_error("usage: initial.bin output steps batch local profile(0/1/2) readback_ms rate(0=uncapped) [off|still|wind]");
  const auto input=std::filesystem::path(argv[1]),out=std::filesystem::path(argv[2]);
  const unsigned steps=std::stoul(argv[3]),batch=std::stoul(argv[4]),local=std::stoul(argv[5]);const int profile=std::stoi(argv[6]);const double readms=std::stod(argv[7]),rate=std::stod(argv[8]);
  if(!steps||batch<1||batch>128||profile<0||profile>2||readms<0||rate<0)throw std::runtime_error("invalid diagnostic options");
@@ -17,6 +17,10 @@ int main(int argc,char** argv){try{
  powder::GranularConfig c;c.count=50000;c.dt=.000375f;c.iterations=16;c.test_mixer=true;c.binary_materials=true;c.rotation=true;c.rolling_friction=.02f;c.cross_friction=.35f;c.candidates=true;c.candidate_reuse=true;c.kernel_optimize=true;c.profile=profile>0;c.profile_split=profile==2;c.diagnostic_local_size=local;
  c.materials[0].radius_m=.0063647064;c.materials[0].density_kg_m3=900;c.materials[0].particle_friction=.3;c.materials[0].wall_friction=.25;
  c.materials[1].radius_m=.005;c.materials[1].density_kg_m3=1500;c.materials[1].particle_friction=.5;c.materials[1].wall_friction=.45;
+ const std::string airMode=argc==10?argv[9]:"off";
+ if(airMode!="off"&&airMode!="still"&&airMode!="wind")throw std::runtime_error("invalid air mode");
+ c.air.enabled=airMode!="off";if(airMode=="wind")c.air.velocity_m_s={2,0,0};
+ {std::ofstream air(out/"air_model.json");powder::write_granular_air(air,c.air);if(!air)throw std::runtime_error("air write failed");}
  if(std::filesystem::file_size(input)!=c.count*sizeof(powder::Grain))throw std::runtime_error("fixture must contain exactly 50000 float4 records");
  std::vector<powder::Grain> initial(c.count),velocity(c.count);std::ifstream f(input,std::ios::binary);f.read(reinterpret_cast<char*>(initial.data()),initial.size()*sizeof(powder::Grain));if(!f)throw std::runtime_error("initial read failed");
  powder::GranularGPU solver(c,initial,velocity);auto start=Clock::now(),lastRead=start;unsigned done=0,reads=0;

@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "actual_retained_kg_from_pebbles": {
+    "0": 5.235987755982988e-07,
+    "1": 5.759586531581288e-07,
+    "2": 1.2566370614359173e-06
+  },
+  "ledger_error_by_type_kg": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.0
+  },
+  "scope": "fixed virtual preset density; independent of supplied-minus-exited bookkeeping"
+}

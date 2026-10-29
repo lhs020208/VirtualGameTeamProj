@@ -1,0 +1,21 @@
+[
+  "C:/Program Files/Epic Games/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe",
+  "D:\\GitHub\\VirtualGameTeamProj\\VirtualGameTeamProj.uproject",
+  "/Game/DEM/Tests/L_MX301_BinaryMaterials",
+  "-game",
+  "-windowed",
+  "-ResX=1280",
+  "-ResY=720",
+  "-unattended",
+  "-nosound",
+  "-nop4",
+  "-ddc=InstalledNoZenLocalFallback",
+  "-GrainBenchmark",
+  "-GrainSeconds=30",
+  "-GrainAuditSnapshots",
+  "-GrainOutput=D:\\GitHub\\VirtualGameTeamProj\\Saved\\SimpleVisualsRate\\max30",
+  "-abslog=D:\\GitHub\\VirtualGameTeamProj\\Saved\\SimpleVisualsRate\\max30/engine.log",
+  "-ExecCmds=t.MaxFPS 30,set PowderGranularMixer TargetRate 2.0,getall PowderGranularMixer TargetRate",
+  "-csvCaptureFrames=600",
+  "-csvCompression=0"
+]

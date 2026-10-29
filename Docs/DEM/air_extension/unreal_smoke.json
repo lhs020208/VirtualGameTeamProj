@@ -1,0 +1,73 @@
+{
+  "command": [
+    "C:/Program Files/Epic Games/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe",
+    "D:\\GitHub\\VirtualGameTeamProj\\VirtualGameTeamProj.uproject",
+    "/Game/DEM/Tests/L_MX301_BinaryMaterials",
+    "-game",
+    "-nullrhi",
+    "-unattended",
+    "-nosound",
+    "-nop4",
+    "-ddc=InstalledNoZenLocalFallback",
+    "-GrainBenchmark",
+    "-GrainSeconds=2",
+    "-GrainPrescribedAir",
+    "-GrainAirX=2",
+    "-GrainAuditSnapshots",
+    "-GrainOutput=D:\\GitHub\\VirtualGameTeamProj\\Saved\\PrescribedAirUnreal_20261028T120041Z",
+    "-abslog=D:\\GitHub\\VirtualGameTeamProj\\Saved\\PrescribedAirUnreal_20261028T120041Z/engine.log"
+  ],
+  "air": {
+    "enabled": true,
+    "model": "prescribed_uniform_sphere_SN",
+    "two_way": false,
+    "dense_flow_validated": false,
+    "buoyancy": true,
+    "density_kg_m3": 1.225,
+    "viscosity_pa_s": 1.81e-05,
+    "velocity_local_m_s": [
+      2,
+      0,
+      0
+    ],
+    "diameter_basis": "computational_sphere",
+    "max_beta_dt": 0.25,
+    "max_Re": 200000
+  },
+  "audit": {
+    "result": {
+      "count": 50000,
+      "time": 2.019375018,
+      "rate": 0.391746797,
+      "receiver": 0,
+      "error": "",
+      "physical_accuracy_validated": false
+    },
+    "samples": [
+      {
+        "time_s": 1.8753750163596123,
+        "overlap_min_radius": 0.058349520753241846,
+        "wall_m": 4.343204517819749e-08,
+        "rotor_m": 2.3097064451998994e-08,
+        "mass_kg": 40.837922988283125,
+        "mix_index": 0.9556290657220963,
+        "pass_geometry": true
+      },
+      {
+        "time_s": 0.03937500040046871,
+        "overlap_min_radius": 0.001495090399989546,
+        "wall_m": 3.5223007728395206e-08,
+        "rotor_m": 0.0,
+        "mass_kg": 40.837922988283125,
+        "mix_index": 0.933035004983628,
+        "pass_geometry": true
+      }
+    ],
+    "passed": true,
+    "calibrated": false,
+    "scope": "sampled geometry and mass; not empirical validation or guaranteed speed"
+  },
+  "max_temperature_c": 54.0,
+  "max_power_w": 128.22,
+  "rendered": false
+}

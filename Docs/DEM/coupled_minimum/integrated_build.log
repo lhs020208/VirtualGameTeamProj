@@ -1,0 +1,68 @@
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" VirtualGameTeamProjEditor Win64 Development -Project=D:\GitHub\VirtualGameTeamProj\VirtualGameTeamProj.uproject -WaitMutex -NoHotReloadFromIDE -NoUBTMakefiles -ModuleWithSuffix=VirtualGameTeamProj,1049 -ModuleWithSuffix=DEMPrototype,1049
+Log file: C:\Users\lpet2\AppData\Local\UnrealBuildTool\Log.txt
+Determining max actions to execute in parallel (20 physical cores, 28 logical cores)
+  Executing up to 20 processes, one per physical core
+Using 'git status' to determine working set for adaptive non-unity build (D:\GitHub\VirtualGameTeamProj).
+UbaServer - Listening on 0.0.0.0:1345
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\BulkPrototypeTests.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PowderBulkPrototype.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMBridgeTests.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_clump.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PowderCameraController.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PowderDEMTest.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PowderClumpTest.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PowderGranularMixer.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PowderDropTest.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PowderProcessTwin.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_clump_worker.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\ProcessTwinTests.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_core.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\VirtualGameTeamProj.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Plugins\DEMPrototype\Intermediate\Build\Win64\x64\UnrealEditor\Development\DEMPrototype\Module.DEMPrototype.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PowderMeshGeometry.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_friction.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_coupled.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_geometry.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_gpu_opencl.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_gpu_clump.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_granular.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_granular_coupled.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_mesh.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_settings.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_results.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_supply.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_tracking.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_motion.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\EmitterIntegrationTests.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\Module.VirtualGameTeamProj.gen.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PerModuleInline.gen.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_elastic.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_world.cpp.dep.json!
+CppDependencyCache - There is no partition covering path to D:\GitHub\VirtualGameTeamProj\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\DEMCore_worker.cpp.dep.json!
+Building VirtualGameTeamProjEditor...
+===== Toolchain Information =====
+Using ISPC compiler (C:\Program Files\Epic Games\UE_5.8\Engine\Source\ThirdParty\Intel\ISPC\bin\Windows\ispc.exe)
+  Intel(r) Implicit SPMD Program Compiler (Intel(r) ISPC), 1.24.0 (build commit  @ 20250404, LLVM 18.1.2) 
+Using Visual Studio 14.44.35217 toolchain (C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+[Adaptive Build] Excluded from VirtualGameTeamProj unity file: DEMCore_coupled.cpp, DEMCore_granular_coupled.cpp, EmitterIntegrationTests.cpp, PowderCoupledTest.cpp, PowderGranularMixer.cpp
+=================================
+Using Unreal Build Accelerator local executor to run 6 action(s)
+  CPU 20 physical cores, 28 logical cores
+  Memory 31.85 GB physical, 34.24 GB/54.85 GB committed
+  UBA Storage capacity 40 GB
+[1/6] Link [x64] UnrealEditor-DEMPrototype-1049.lib
+   D:/GitHub/VirtualGameTeamProj/Plugins/DEMPrototype/Intermediate/Build/Win64/x64/UnrealEditor/Development/DEMPrototype/UnrealEditor-DEMPrototype-1049.lib 라이브러리 및 D:/GitHub/VirtualGameTeamProj/Plugins/DEMPrototype/Intermediate/Build/Win64/x64/UnrealEditor/Development/DEMPrototype/UnrealEditor-DEMPrototype-1049.exp 개체를 생성하고 있습니다.
+[2/6] Link [x64] UnrealEditor-DEMPrototype-1049.dll
+[3/6] Compile [x64] PowderCoupledTest.cpp
+[4/6] Link [x64] UnrealEditor-VirtualGameTeamProj-1049.lib
+   D:/GitHub/VirtualGameTeamProj/Intermediate/Build/Win64/x64/UnrealEditor/Development/VirtualGameTeamProj/UnrealEditor-VirtualGameTeamProj-1049.lib 라이브러리 및 D:/GitHub/VirtualGameTeamProj/Intermediate/Build/Win64/x64/UnrealEditor/Development/VirtualGameTeamProj/UnrealEditor-VirtualGameTeamProj-1049.exp 개체를 생성하고 있습니다.
+[5/6] Link [x64] UnrealEditor-VirtualGameTeamProj-1049.dll
+[6/6] WriteMetadata VirtualGameTeamProjEditor.target [NoUba]
+
+Total time in Unreal Build Accelerator local executor: 10.14 seconds
+Output binary: C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe
+
+Result: Succeeded
+Total execution time: 11.23 seconds
+Trace written to file C:\Users\lpet2\AppData\Local\UnrealBuildTool\Trace.uba with size 6.8kb

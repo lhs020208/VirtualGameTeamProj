@@ -1,0 +1,23 @@
+{
+  "coupled_rectangular_gas_experiment": true,
+  "target_rate": 0.1,
+  "requested_physical_s": 30,
+  "result": {
+    "count": 50000,
+    "time": 30.004875261,
+    "rate": 0.099999455,
+    "receiver": 0,
+    "error": "",
+    "physical_accuracy_validated": false
+  },
+  "five_second_windows": {
+    "count": 116,
+    "min": 0.09995103968931614,
+    "median": 0.09999826007003204,
+    "max": 0.10005458570579703
+  },
+  "max_temperature_c": 55.0,
+  "max_power_w": 67.09,
+  "initial_identical": true,
+  "scope": "1280x720 30FPS cap; existing editor left open; observed run only, not guaranteed future minimum"
+}

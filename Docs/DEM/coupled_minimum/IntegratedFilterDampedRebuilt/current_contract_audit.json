@@ -1,0 +1,8 @@
+{
+  "passed_current_contract": true,
+  "raw_validator_passed": false,
+  "reason": "The old validator required every shape to remain on the surface. Current contract requires positive sustained adhesion and all bodies retained inside the domain; a non-spherical body may fall back. Raw output is preserved.",
+  "samples_after_02s": 201,
+  "minimum_filter_mass_kg": 1.0995574287564277e-06,
+  "max_overlap_m": 1.3739887544628095e-05
+}

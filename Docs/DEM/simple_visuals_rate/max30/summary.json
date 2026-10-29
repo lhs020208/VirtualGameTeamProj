@@ -1,0 +1,22 @@
+{
+  "target_rate": 2.0,
+  "requested_physical_s": 30,
+  "result": {
+    "count": 50000,
+    "time": 30.001125261,
+    "rate": 0.249984622,
+    "receiver": 0,
+    "error": "",
+    "physical_accuracy_validated": false
+  },
+  "five_second_windows": {
+    "count": 104,
+    "min": 0.2312526103059304,
+    "median": 0.24200582718599264,
+    "max": 0.2705411277850294
+  },
+  "max_temperature_c": 62.0,
+  "max_power_w": 129.01,
+  "initial_identical": true,
+  "scope": "1280x720 30FPS cap; existing editor left open; observed run only, not guaranteed future minimum"
+}

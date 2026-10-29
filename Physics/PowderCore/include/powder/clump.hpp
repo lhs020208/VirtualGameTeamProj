@@ -27,6 +27,9 @@ struct ClumpReport {unsigned pair_lanes=1,integration_lanes=1;StepScale step_sca
 class ClumpWorld {
 public:
  std::vector<ClumpBody> bodies;
+ // External SI wrench per persistent body ID, consumed only after a successful step.
+ struct ExternalWrench {Vec3 force_n,torque_nm;};
+ std::map<ParticleId,ExternalWrench> external_wrenches;
  std::vector<FixedBox> boxes;
  std::vector<StaticTriangleMesh> meshes;
     std::vector<MovingTriangleMesh> moving_meshes;

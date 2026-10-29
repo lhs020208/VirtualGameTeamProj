@@ -52,7 +52,7 @@ void validate_granular_initial(GranularConfig c,const std::vector<Grain>& p){
  for(std::size_t i=0;i<p.size();++i){auto a=p[i];float x=a.x,y=a.y,z=a.z;
   const float r=c.binary_materials?float(c.materials[a.w==0?0:1].radius_m):c.radius;
   require(std::isfinite(x)&&std::isfinite(y)&&std::isfinite(z)&&(a.w==0||a.w==1),"invalid external position or group");
-  if(c.test_mixer){
+  if(c.simple_box){require(std::abs(x)<=.8-r+tol&&std::abs(y)<=.5-r+tol&&std::abs(z)<=.5-r+tol,"initial particle outside coupled box");}else if(c.test_mixer){
    for(int j=0;j<133;++j){auto plane=mxplanes[j];require(plane[0]*x+plane[1]*y+plane[2]*z-plane[3]<=-r+tol,"initial particle outside MX301 vessel");}
    for(auto& part:mxparts){double d=-1.e9;for(int j=int(part[0]);j<int(part[0]+part[1]);++j){auto plane=mxplanes[j];d=std::max(d,double(plane[0]*x+plane[1]*y+plane[2]*z-plane[3]));}require(d>=r-tol,"initial particle overlaps MX301 rotor");}
   }else{
@@ -67,11 +67,16 @@ void validate_granular_initial(GranularConfig c,const std::vector<Grain>& p){
 }
 struct GranularGPU::Impl {
  Api api;cl_device_id device=nullptr;cl_context context=nullptr;cl_command_queue queue=nullptr;cl_program program=nullptr;
- std::array<std::array<std::vector<unsigned char>,24>,14> argument_cache;
+ std::array<std::array<std::vector<unsigned char>,24>,17> argument_cache;
  cl_event read_event=nullptr;std::vector<Grain> read_buffer;
- std::array<cl_kernel,14> kernels{};std::array<cl_mem,19> buffers{};
+ std::array<cl_kernel,17> kernels{};std::array<cl_mem,27> buffers{};GranularGasField gas_field;bool cohesive=false;bool gas_ready=false;unsigned gas_steps=0;
  GranularConfig c;int nx=0,ny=0,nz=0,cells=0;float cell=0,angle=0;double time=0;std::string name;bool poisoned=false;GranularTiming timing;std::vector<std::pair<cl_event,unsigned>> events;
  Impl(GranularConfig cfg,const std::vector<Grain>* external=nullptr,const std::vector<Grain>* velocity=nullptr):c(cfg){try{
+ require(!c.coupled_air||(c.binary_materials&&!c.air.enabled),"coupled gas requires binary materials and excludes prescribed air");if(c.coupled_air){GranularAir contract;contract.enabled=true;for(const auto& m:c.materials)contract.validate_material(m);}
+ require(!c.simple_box||c.test_mixer,"simple box uses the extended test coordinate domain");
+ for(float gamma:{c.cohesion_gamma_j_m2,c.wall_adhesion_gamma_j_m2})require(std::isfinite(gamma)&&gamma>=0&&gamma<=10,"cohesion gamma must be 0..10 J/m2");cohesive=c.cohesion_gamma_j_m2>0||c.wall_adhesion_gamma_j_m2>0;require(!cohesive||!c.profile_split,"cohesive path does not support split-boundary diagnostics");require(!cohesive||(c.binary_materials&&c.simple_box),"GPU contact attraction currently requires binary simple box");
+ c.air.validate();require(!c.air.enabled||c.binary_materials,"prescribed air requires binary materials with explicit density");
+ if(c.air.enabled)for(const auto& m:c.materials)c.air.validate_material(m);
  require(c.diagnostic_local_size==64||c.diagnostic_local_size==128||c.diagnostic_local_size==256,"diagnostic workgroup must be 64, 128 or 256");
  require(!c.rotation||c.binary_materials,"rotation requires binary materials");require(std::isfinite(c.rolling_friction)&&c.rolling_friction>=0&&c.rolling_friction<=1,"invalid rolling friction");
  require(!c.boundary_candidates||c.test_mixer,"boundary candidates currently require MX301 test geometry");
@@ -89,6 +94,14 @@ struct GranularGPU::Impl {
  char text[256]{};check(api.clGetDeviceInfo(device,CL_DEVICE_NAME,sizeof(text),text,nullptr),"device name");name=text;
  cl_int err=0;context=api.clCreateContext(nullptr,1,&device,nullptr,nullptr,&err);check(err,"context");queue=api.clCreateCommandQueue(context,device,c.profile?CL_QUEUE_PROFILING_ENABLE:0,&err);check(err,"queue");
  program=api.clCreateProgramWithSource(context,1,&source,nullptr,&err);check(err,"program");std::string options=std::string("-cl-std=CL1.2 -DGRANULAR_BOUNDS_FAST=")+(c.fast_bounds?"1":"0")+" -DGRANULAR_MX301="+(c.test_mixer?"1":"0")+" -DGRANULAR_PROFILE_SPLIT="+(c.profile_split?"1":"0")+" -DGRANULAR_CANDIDATES="+(c.candidates?"1":"0")+" -DGRANULAR_REUSE="+(c.candidate_reuse?"1":"0")+" -DGRANULAR_BOUNDARY_CANDIDATES="+(c.boundary_candidates?"1":"0")+" -DGRANULAR_KERNEL_OPTIMIZE="+(c.kernel_optimize?"1":"0");std::ostringstream defines;defines<<std::scientific<<std::setprecision(9);
+ defines<<" -DGRANULAR_COHESION="<<(cohesive?1:0)<<" -DCOHESION_GAMMA="<<c.cohesion_gamma_j_m2<<"f -DWALL_GAMMA="<<c.wall_adhesion_gamma_j_m2<<"f";
+ defines<<" -DGRANULAR_SIMPLE_BOX="<<(c.simple_box?1:0);
+ defines<<" -DGRANULAR_COUPLED_AIR="<<(c.coupled_air?1:0);
+ defines<<" -DGRANULAR_AIR="<<(c.air.enabled?1:0);
+ if(c.air.enabled){defines<<" -DAIR_RHO="<<float(c.air.density_kg_m3)<<"f -DAIR_MU="<<float(c.air.viscosity_pa_s)<<"f";
+  for(int k=0;k<3;++k)defines<<" -DAIR_U"<<k<<"="<<float(c.air.velocity_m_s[k])<<"f";
+ }
+ if(c.air.enabled||c.coupled_air)for(int g=0;g<2;++g)defines<<" -DAIR_SOLID_RHO"<<g<<"="<<float(c.materials[g].density_kg_m3)<<"f";
  defines<<" -DGRANULAR_ROTATION="<<(c.rotation?1:0)<<" -DMAT_ROLL="<<c.rolling_friction<<"f";
  defines<<" -DGRANULAR_BINARY="<<(c.binary_materials?1:0);
  for(int g=0;g<2;++g){const auto& m=c.materials[g];defines<<" -DMAT_R"<<g<<"="<<float(m.radius_m)<<"f -DMAT_M"<<g<<"="<<float(m.mass_kg())<<"f -DMAT_MU"<<g<<"="<<float(m.particle_friction)<<"f -DMAT_W"<<g<<"="<<float(m.wall_friction)<<"f";}
@@ -104,6 +117,8 @@ struct GranularGPU::Impl {
  if(c.candidate_reuse){buffers[13]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(Grain),nullptr,&err);check(err,"reference positions");buffers[14]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,6*sizeof(cl_uint),nullptr,&err);check(err,"reuse control");arg(0,2,buffers[14]);arg(1,9,buffers[14]);}
  if(c.boundary_candidates){kernels[12]=api.clCreateKernel(program,"init_boundary_groups",&err);check(err,"boundary group kernel");buffers[15]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,44*sizeof(Grain),nullptr,&err);check(err,"boundary group buffer");arg(12,0,buffers[15]);run(12,22);}
  arg(3,c.candidates?17:14,buffers[15]);arg(3,c.candidates?18:15,buffers[6]);arg(4,c.profile_split?14:12,buffers[15]);if(c.profile_split){arg(5,5,buffers[15]);arg(6,7,buffers[15]);}
+ if(cohesive){kernels[16]=api.clCreateKernel(program,"adhesive_loads",&err);check(err,"adhesive kernel");buffers[25]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(Grain),nullptr,&err);check(err,"adhesive acceleration");buffers[26]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(Grain),nullptr,&err);check(err,"contact correction impulse");}
+ if(c.coupled_air){kernels[14]=api.clCreateKernel(program,"clear_gas",&err);check(err,"clear gas kernel");kernels[15]=api.clCreateKernel(program,"reduce_gas",&err);check(err,"reduce gas kernel");buffers[22]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,2*c.count*sizeof(Grain),nullptr,&err);check(err,"gas particle impulse");buffers[24]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(int),nullptr,&err);check(err,"gas particle links");}
  if(c.rotation){for(unsigned b=16;b<19;++b){buffers[b]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(Grain),nullptr,&err);check(err,"angular buffer");}}
  if(external){validate_granular_initial(c,*external);require(velocity!=nullptr,"missing external velocities");set(*external,*velocity);return;}
  std::vector<Grain> initial;initial.reserve(c.count);float pitch=2.04f*c.radius;
@@ -135,7 +150,7 @@ struct GranularGPU::Impl {
  void run(unsigned k,std::size_t n){std::size_t local=c.diagnostic_local_size,global=(n+local-1)/local*local;cl_event event=nullptr;check(api.clEnqueueNDRangeKernel(queue,kernels[k],1,nullptr,&global,&local,0,nullptr,c.profile?&event:nullptr),"dispatch");if(event)events.push_back({event,k});}
  void set(const std::vector<Grain>& state,const std::vector<Grain>& vel){require(state.size()==c.count&&vel.size()==c.count,"state count mismatch");for(unsigned i=0;i<c.count;i++)for(float v:{state[i].x,state[i].y,state[i].z,state[i].w,vel[i].x,vel[i].y,vel[i].z})require(std::isfinite(v),"nonfinite input state");
  for(const auto& a:state)require(a.w==0||a.w==1,"invalid group ID");
- drain_read();check(api.clEnqueueWriteBuffer(queue,buffers[0],CL_TRUE,0,state.size()*sizeof(Grain),state.data(),0,nullptr,nullptr),"state write");check(api.clEnqueueWriteBuffer(queue,buffers[2],CL_TRUE,0,vel.size()*sizeof(Grain),vel.data(),0,nullptr,nullptr),"velocity write");time=0;angle=0;poisoned=false;for(auto e:events)if(e.first)api.clReleaseEvent(e.first);events.clear();timing={};timing.profiling_enabled=c.profile;timing.split_boundaries=c.profile_split;timing.candidates_enabled=c.candidates;timing.candidate_capacity=c.candidates?c.candidate_capacity:0;timing.boundary_candidates_enabled=c.boundary_candidates;timing.kernel_optimize_enabled=c.kernel_optimize;timing.candidate_reuse_enabled=c.candidate_reuse;timing.candidate_audit_enabled=c.candidate_audit;timing.candidate_skin_m=c.candidate_reuse?c.radius*c.candidate_skin_ratio:0;
+ gas_ready=false;gas_steps=0;drain_read();check(api.clEnqueueWriteBuffer(queue,buffers[0],CL_TRUE,0,state.size()*sizeof(Grain),state.data(),0,nullptr,nullptr),"state write");check(api.clEnqueueWriteBuffer(queue,buffers[2],CL_TRUE,0,vel.size()*sizeof(Grain),vel.data(),0,nullptr,nullptr),"velocity write");time=0;angle=0;poisoned=false;for(auto e:events)if(e.first)api.clReleaseEvent(e.first);events.clear();timing={};timing.profiling_enabled=c.profile;timing.split_boundaries=c.profile_split;timing.candidates_enabled=c.candidates;timing.candidate_capacity=c.candidates?c.candidate_capacity:0;timing.boundary_candidates_enabled=c.boundary_candidates;timing.kernel_optimize_enabled=c.kernel_optimize;timing.candidate_reuse_enabled=c.candidate_reuse;timing.candidate_audit_enabled=c.candidate_audit;timing.candidate_skin_m=c.candidate_reuse?c.radius*c.candidate_skin_ratio:0;
  if(c.rotation){std::vector<Grain> zeros(c.count);for(unsigned b=16;b<19;++b)check(api.clEnqueueWriteBuffer(queue,buffers[b],CL_TRUE,0,zeros.size()*sizeof(Grain),zeros.data(),0,nullptr,nullptr),"reset angular state");}
  if(c.candidate_reuse){cl_uint control[6]{};check(api.clEnqueueWriteBuffer(queue,buffers[14],CL_TRUE,0,sizeof(control),control,0,nullptr,nullptr),"reset reuse state");}}
  void collect(){auto begin=Clock::now();cl_ulong first=0,last=0;for(auto& e:events){cl_ulong start=0,end=0;check(api.clGetEventProfilingInfo(e.first,CL_PROFILING_COMMAND_START,sizeof(start),&start,nullptr),"profile start");check(api.clGetEventProfilingInfo(e.first,CL_PROFILING_COMMAND_END,sizeof(end),&end,nullptr),"profile end");require(end>=start,"invalid GPU timestamps");if(!first)first=start;if(last&&start>last)timing.gpu_intercommand_gap+=(start-last)*1.e-9;last=end;timing.gpu_seconds[e.second]+=(end-start)*1.e-9;++timing.calls[e.second];api.clReleaseEvent(e.first);e.first=nullptr;}events.clear();if(first)timing.gpu_batch_span+=(last-first)*1.e-9;if(c.profile)timing.profile_collect_wall+=elapsed(begin);}
@@ -148,35 +163,49 @@ struct GranularGPU::Impl {
  void audit_candidates(){int n=static_cast<int>(c.count),capacity=static_cast<int>(c.candidate_capacity);
  arg(11,0,buffers[0]);arg(11,1,n);arg(11,2,c.radius);arg(11,3,buffers[10]);arg(11,4,buffers[11]);arg(11,5,capacity);arg(11,6,buffers[4]);arg(11,7,buffers[5]);arg(11,8,cell);arg(11,9,nx);arg(11,10,ny);arg(11,11,nz);arg(11,12,buffers[6]);run(11,c.count);
  }
- void advance(unsigned steps,float rpm,bool gate){auto begin=Clock::now();const double cpuBegin=thread_cpu_seconds();require(!poisoned,"reset required after rejected GPU batch");require(steps>0&&steps<=1000&&std::isfinite(rpm)&&std::abs(rpm)<=60,"invalid granular control");int zero=0;check(api.clEnqueueWriteBuffer(queue,buffers[6],CL_FALSE,0,sizeof(int),&zero,0,nullptr,nullptr),"clear error");cl_ulong zeroOverflow=0;if(c.candidates)check(api.clEnqueueWriteBuffer(queue,buffers[12],CL_FALSE,0,sizeof(zeroOverflow),&zeroOverflow,0,nullptr,nullptr),"clear candidate overflow");if(c.candidate_reuse)check(api.clEnqueueWriteBuffer(queue,buffers[14],CL_FALSE,3*sizeof(cl_uint),2*sizeof(cl_uint),&zeroOverflow,0,nullptr,nullptr),"clear reuse counters");int n=static_cast<int>(c.count),g=gate?1:0;float omega=rpm*.104719755f;
+ void advance(unsigned steps,float rpm,bool gate){auto begin=Clock::now();const double cpuBegin=thread_cpu_seconds();require(!poisoned,"reset required after rejected GPU batch");require(!c.simple_box||!gate,"simple box is closed; gate is unsupported");require(!c.coupled_air||gas_ready,"coupled gas field must be supplied before advance");require(steps>0&&steps<=1000&&std::isfinite(rpm)&&std::abs(rpm)<=60,"invalid granular control");int zero=0;check(api.clEnqueueWriteBuffer(queue,buffers[6],CL_FALSE,0,sizeof(int),&zero,0,nullptr,nullptr),"clear error");cl_ulong zeroOverflow=0;if(c.candidates)check(api.clEnqueueWriteBuffer(queue,buffers[12],CL_FALSE,0,sizeof(zeroOverflow),&zeroOverflow,0,nullptr,nullptr),"clear candidate overflow");if(c.candidate_reuse)check(api.clEnqueueWriteBuffer(queue,buffers[14],CL_FALSE,3*sizeof(cl_uint),2*sizeof(cl_uint),&zeroOverflow,0,nullptr,nullptr),"clear reuse counters");int n=static_cast<int>(c.count),g=gate?1:0;float omega=rpm*.104719755f;
  for(unsigned s=0;s<steps;s++){
-  angle+=omega*c.dt;
-  arg(2,0,buffers[0]);arg(2,1,buffers[1]);arg(2,2,buffers[2]);arg(2,3,n);arg(2,4,c.dt);arg(2,5,c.radius);arg(2,6,buffers[6]);arg(2,7,buffers[7]);if(c.rotation){arg(2,8,buffers[16]);arg(2,9,buffers[18]);}run(2,c.count);
+  angle+=omega*c.dt;if(c.coupled_air){arg(14,0,buffers[23]);int count=int(gas_field.velocity_density.size());arg(14,1,count);run(14,count);}
+  if(cohesive){if(c.cohesion_gamma_j_m2>0){if(c.candidate_reuse)check_reuse();arg(0,0,buffers[4]);arg(0,1,cells);run(0,cells);arg(1,0,buffers[0]);arg(1,1,buffers[4]);arg(1,2,buffers[5]);arg(1,3,n);arg(1,4,cell);arg(1,5,nx);arg(1,6,ny);arg(1,7,nz);arg(1,8,buffers[6]);run(1,c.count);if(c.candidates)build_candidates();}arg(16,0,buffers[0]);arg(16,1,buffers[4]);arg(16,2,buffers[5]);arg(16,3,n);arg(16,4,c.radius);arg(16,5,cell);arg(16,6,nx);arg(16,7,ny);arg(16,8,nz);arg(16,9,buffers[25]);arg(16,10,buffers[6]);if(c.candidates){int cap=int(c.candidate_capacity);arg(16,11,buffers[10]);arg(16,12,buffers[11]);arg(16,13,cap);}run(16,c.count);}
+
+  arg(2,0,buffers[0]);arg(2,1,buffers[1]);arg(2,2,buffers[2]);arg(2,3,n);arg(2,4,c.dt);arg(2,5,c.radius);arg(2,6,buffers[6]);arg(2,7,buffers[7]);if(c.rotation){arg(2,8,buffers[16]);arg(2,9,buffers[18]);}if(c.coupled_air){unsigned a=c.rotation?10:8;for(unsigned j=0;j<3;++j)arg(2,a+j,buffers[19+j]);Grain origin{gas_field.origin[0],gas_field.origin[1],gas_field.origin[2],0};std::array<int,4> dims{gas_field.cells[0],gas_field.cells[1],gas_field.cells[2],0};arg(2,a+3,origin);arg(2,a+4,dims);arg(2,a+5,gas_field.h);arg(2,a+6,gas_field.viscosity);arg(2,a+7,buffers[22]);arg(2,a+8,buffers[23]);arg(2,a+9,buffers[24]);}if(cohesive){unsigned a=(c.rotation?10:8)+(c.coupled_air?10:0);arg(2,a,buffers[25]);arg(2,a+1,buffers[26]);}run(2,c.count);
+  if(c.coupled_air){arg(15,0,buffers[23]);arg(15,1,buffers[24]);arg(15,2,buffers[1]);arg(15,3,buffers[22]);arg(15,4,buffers[21]);arg(15,5,buffers[20]);Grain origin{gas_field.origin[0],gas_field.origin[1],gas_field.origin[2],0};std::array<int,4> dims{gas_field.cells[0],gas_field.cells[1],gas_field.cells[2],0};arg(15,6,origin);arg(15,7,dims);arg(15,8,gas_field.h);arg(15,9,buffers[6]);arg(15,10,n);run(15,gas_field.velocity_density.size());}
   for(unsigned it=0;it<c.iterations;it++){
    if(c.candidate_reuse)check_reuse();
    arg(0,0,buffers[4]);arg(0,1,cells);run(0,cells);
    arg(1,0,buffers[0]);arg(1,1,buffers[4]);arg(1,2,buffers[5]);arg(1,3,n);arg(1,4,cell);arg(1,5,nx);arg(1,6,ny);arg(1,7,nz);arg(1,8,buffers[6]);run(1,c.count);
    if(c.candidates){build_candidates();int capacity=static_cast<int>(c.candidate_capacity);arg(3,14,buffers[10]);arg(3,15,buffers[11]);arg(3,16,capacity);}
    if(c.candidate_audit)audit_candidates();
-   arg(3,0,buffers[0]);arg(3,1,buffers[1]);arg(3,2,buffers[3]);arg(3,3,buffers[4]);arg(3,4,buffers[5]);arg(3,5,n);arg(3,6,c.radius);arg(3,7,cell);arg(3,8,nx);arg(3,9,ny);arg(3,10,nz);arg(3,11,angle);arg(3,12,g);arg(3,13,c.friction);if(c.rotation){unsigned a=c.candidates?19:16;arg(3,a,buffers[16]);arg(3,a+1,buffers[17]);}run(3,c.count);
+   arg(3,0,buffers[0]);arg(3,1,buffers[1]);arg(3,2,buffers[3]);arg(3,3,buffers[4]);arg(3,4,buffers[5]);arg(3,5,n);arg(3,6,c.radius);arg(3,7,cell);arg(3,8,nx);arg(3,9,ny);arg(3,10,nz);arg(3,11,angle);arg(3,12,g);arg(3,13,c.friction);if(c.rotation){unsigned a=c.candidates?19:16;arg(3,a,buffers[16]);arg(3,a+1,buffers[17]);}if(cohesive)arg(3,(c.candidates?19:16)+(c.rotation?2:0),buffers[26]);run(3,c.count);
    if(c.profile_split){arg(5,0,buffers[3]);arg(5,1,n);arg(5,2,c.radius);arg(5,3,angle);arg(5,4,g);run(5,c.count);}
    std::swap(buffers[0],buffers[3]);if(c.rotation)std::swap(buffers[16],buffers[17]);
   }
   if(c.profile_split){arg(6,0,buffers[0]);arg(6,1,n);arg(6,2,c.radius);arg(6,3,angle);arg(6,4,g);arg(6,5,buffers[8]);arg(6,6,buffers[9]);run(6,c.count);arg(4,12,buffers[8]);arg(4,13,buffers[9]);}
-  arg(4,0,buffers[0]);arg(4,1,buffers[1]);arg(4,2,buffers[2]);arg(4,3,n);arg(4,4,c.dt);arg(4,5,c.radius);arg(4,6,angle);arg(4,7,omega);arg(4,8,g);arg(4,9,c.friction);arg(4,10,buffers[6]);arg(4,11,buffers[7]);if(c.rotation){unsigned a=c.profile_split?15:13;arg(4,a,buffers[16]);arg(4,a+1,buffers[18]);}run(4,c.count);
+  arg(4,0,buffers[0]);arg(4,1,buffers[1]);arg(4,2,buffers[2]);arg(4,3,n);arg(4,4,c.dt);arg(4,5,c.radius);arg(4,6,angle);arg(4,7,omega);arg(4,8,g);arg(4,9,c.friction);arg(4,10,buffers[6]);arg(4,11,buffers[7]);if(c.rotation){unsigned a=c.profile_split?15:13;arg(4,a,buffers[16]);arg(4,a+1,buffers[18]);}if(cohesive)arg(4,(c.profile_split?15:13)+(c.rotation?2:0),buffers[26]);run(4,c.count);
  }
  timing.submit_wall+=elapsed(begin);timing.submit_thread_cpu+=thread_cpu_seconds()-cpuBegin;auto guardBegin=Clock::now();
  int error=0;check(api.clEnqueueReadBuffer(queue,buffers[6],CL_TRUE,0,sizeof(int),&error,0,nullptr,nullptr),"guard");timing.guard_wait_wall+=elapsed(guardBegin);
  if(c.candidates){cl_ulong overflow=0;check(api.clEnqueueReadBuffer(queue,buffers[12],CL_TRUE,0,sizeof(overflow),&overflow,0,nullptr,nullptr),"candidate fallback count");timing.candidate_fallback_particle_iterations+=overflow;}
  if(c.candidate_reuse){cl_uint counts[2]{};check(api.clEnqueueReadBuffer(queue,buffers[14],CL_TRUE,3*sizeof(cl_uint),sizeof(counts),counts,0,nullptr,nullptr),"reuse counters");timing.candidate_builds+=counts[0];timing.reuse_checks+=counts[1];timing.candidate_reuses+=counts[1]-counts[0];}
  collect();timing.advance_wall+=elapsed(begin);timing.advance_thread_cpu+=thread_cpu_seconds()-cpuBegin;
- if(error)throw std::runtime_error("granular safety rejection bits="+std::to_string(error)+" (1=domain,2=step displacement,4=nonfinite,8=missing candidate,16=excessive mass-weighted correction); reset required");time+=steps*c.dt;
+ if(error)throw std::runtime_error("granular safety rejection bits="+std::to_string(error)+" (1=domain,2=step displacement,4=nonfinite,8=missing candidate,16=excessive mass-weighted correction,32=air Re/slip/relaxation outside contract); reset required");time+=steps*c.dt;if(c.coupled_air)gas_steps+=steps;
  }
 };
 GranularGPU::GranularGPU(GranularConfig c):p(std::make_unique<Impl>(c)){}
 GranularGPU::GranularGPU(GranularConfig c,const std::vector<Grain>& a,const std::vector<Grain>& b):p(std::make_unique<Impl>(c,&a,&b)){}
 GranularGPU::~GranularGPU()=default;
 void GranularGPU::advance(unsigned s,float rpm,bool gate){try{p->advance(s,rpm,gate);}catch(...){p->poisoned=true;throw;}}
+void GranularGPU::set_gas_field(const GranularGasField& f){
+ require(p->c.coupled_air&&!p->poisoned,"coupled gas unavailable or solver invalid");std::size_t count=1;for(int n:f.cells){require(n>=2&&n<=64,"gas grid dimensions must be 2..64");count*=n;}
+ require(std::isfinite(f.h)&&f.h>0&&2*p->c.radius<=.5f*f.h,"gas grid requires particle diameter <= h/2");require(std::isfinite(f.viscosity)&&f.viscosity>=1e-7f&&f.viscosity<=1e-3f,"invalid gas viscosity");for(float x:f.origin)require(std::isfinite(x),"invalid gas origin");require(f.velocity_density.size()==count&&f.gradient_epsilon.size()==count,"gas grid field size mismatch");
+ for(std::size_t i=0;i<count;++i){auto a=f.velocity_density[i],b=f.gradient_epsilon[i];for(float x:{a.x,a.y,a.z,a.w,b.x,b.y,b.z,b.w})require(std::isfinite(x),"nonfinite gas field");require(a.w>=.01f&&a.w<=100.f&&std::hypot(a.x,a.y,a.z)<=100.f&&(b.w==0||(b.w>=.35f&&b.w<=1)),"gas field outside density/speed/porosity contract");}
+ if(p->gas_ready&&p->gas_field.velocity_density.size()==count){std::vector<Grain> zero(2*count);const void* data[]={f.velocity_density.data(),f.gradient_epsilon.data(),zero.data()};try{for(unsigned i=0;i<3;++i)check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[19+i],i==2?CL_TRUE:CL_FALSE,0,(i==2?2:1)*count*sizeof(Grain),data[i],0,nullptr,nullptr),"gas field refresh");}catch(...){p->api.clFinish(p->queue);p->poisoned=true;throw;}p->gas_field=f;p->gas_steps=0;return;}
+ std::array<cl_mem,4> next{};std::vector<Grain> zero(2*count);try{cl_int err=0;for(unsigned i=0;i<4;++i){next[i]=p->api.clCreateBuffer(p->context,CL_MEM_READ_WRITE,(i==2?2:1)*count*sizeof(Grain),nullptr,&err);check(err,"gas buffer");}const void* data[]={f.velocity_density.data(),f.gradient_epsilon.data(),zero.data()};for(unsigned i=0;i<3;++i)check(p->api.clEnqueueWriteBuffer(p->queue,next[i],CL_TRUE,0,(i==2?2:1)*count*sizeof(Grain),data[i],0,nullptr,nullptr),"gas field upload");}catch(...){for(auto b:next)if(b)p->api.clReleaseMemObject(b);throw;}
+ if(p->buffers[23])p->api.clReleaseMemObject(p->buffers[23]);p->buffers[23]=next[3];
+ for(unsigned i=0;i<3;++i){if(p->buffers[19+i])p->api.clReleaseMemObject(p->buffers[19+i]);p->buffers[19+i]=next[i];}p->gas_field=f;p->gas_ready=true;p->gas_steps=0;
+}
+GranularGasExchange GranularGPU::gas_exchange(){require(p->c.coupled_air&&p->gas_ready&&!p->poisoned,"valid coupled exchange unavailable");GranularGasExchange result;result.steps=p->gas_steps;std::size_t n=p->gas_field.velocity_density.size();std::vector<Grain> raw(n*2);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[21],CL_TRUE,0,raw.size()*sizeof(Grain),raw.data(),0,nullptr,nullptr),"gas exchange readback");result.impulse_volume.assign(raw.begin(),raw.begin()+n);result.drag_rate_kg_s.resize(n);for(std::size_t i=0;i<n;++i){result.drag_rate_kg_s[i]=result.steps?raw[i+n].x/result.steps:0;if(result.steps)result.impulse_volume[i].w/=result.steps;}return result;}
+
 std::vector<Grain> GranularGPU::snapshot(){auto begin=Clock::now();std::vector<Grain> result(p->c.count);cl_event event=nullptr;check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[0],CL_TRUE,0,result.size()*sizeof(Grain),result.data(),0,nullptr,p->c.profile?&event:nullptr),"snapshot");if(event){p->events.push_back({event,7});p->collect();}p->timing.snapshot_wall+=elapsed(begin);return result;}
 std::vector<Grain> GranularGPU::velocity_snapshot(){require(!p->poisoned,"invalid solver");std::vector<Grain> v(p->c.count);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[2],CL_TRUE,0,v.size()*sizeof(Grain),v.data(),0,nullptr,nullptr),"velocity snapshot");return v;}
  std::vector<Grain> GranularGPU::angular_velocity_snapshot(){require(p->c.rotation&&!p->poisoned,"angular state unavailable");std::vector<Grain> v(p->c.count);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[18],CL_TRUE,0,v.size()*sizeof(Grain),v.data(),0,nullptr,nullptr),"angular snapshot");return v;}
@@ -236,8 +265,8 @@ void write_granular_timing(std::ostream& out,const GranularTiming& t){
  out<<",\"candidate_reuse_enabled\":"<<(t.candidate_reuse_enabled?"true":"false")<<",\"candidate_audit_enabled\":"<<(t.candidate_audit_enabled?"true":"false")<<",\"candidate_skin_m\":"<<t.candidate_skin_m<<",\"reuse_checks\":"<<t.reuse_checks<<",\"candidate_reuses\":"<<t.candidate_reuses;
  out<<",\"kernel_optimize_enabled\":"<<(t.kernel_optimize_enabled?"true":"false")<<",\"argument_calls\":"<<t.argument_calls<<",\"argument_cache_hits\":"<<t.argument_cache_hits;
  out<<",\"boundary_candidates_enabled\":"<<(t.boundary_candidates_enabled?"true":"false");
- const char* names[]={"grid_clear","grid_build","predict",t.split_boundaries?"particle_contact":"contact_and_boundary",t.split_boundaries?"velocity":"velocity_and_boundary_probe","boundary_projection","boundary_probe","snapshot_readback","candidate_build","reuse_begin","reuse_check","candidate_audit","boundary_group_init","boundary_inspect"};
- for(unsigned i=0;i<14;++i)out<<",\""<<names[i]<<"_gpu_s\":"<<t.gpu_seconds[i]<<",\""<<names[i]<<"_calls\":"<<t.calls[i];
+ const char* names[]={"grid_clear","grid_build","predict",t.split_boundaries?"particle_contact":"contact_and_boundary",t.split_boundaries?"velocity":"velocity_and_boundary_probe","boundary_projection","boundary_probe","snapshot_readback","candidate_build","reuse_begin","reuse_check","candidate_audit","boundary_group_init","boundary_inspect","gas_clear","gas_reduce","adhesive_loads"};
+ for(unsigned i=0;i<17;++i)out<<",\""<<names[i]<<"_gpu_s\":"<<t.gpu_seconds[i]<<",\""<<names[i]<<"_calls\":"<<t.calls[i];
  out<<"}";
 }
 

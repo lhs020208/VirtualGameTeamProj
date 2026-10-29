@@ -1,0 +1,28 @@
+[OUTPUT] 
+Internal ctest changing into directory: D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+
+[HANDLER_OUTPUT] 
+Test project D:/GitHub/VirtualGameTeamProj/Intermediate/PowderCore
+
+    Start 48: optimization_granular_gpu
+1/9 Test #48: optimization_granular_gpu ..........   Passed    5.26 sec
+    Start 49: optimization_granular_candidates
+2/9 Test #49: optimization_granular_candidates ...   Passed    3.70 sec
+    Start 50: optimization_granular_safe_reuse
+3/9 Test #50: optimization_granular_safe_reuse ...   Passed    6.16 sec
+    Start 51: optimization_granular_boundaries
+4/9 Test #51: optimization_granular_boundaries ...   Passed    2.76 sec
+    Start 52: optimization_granular_stream
+5/9 Test #52: optimization_granular_stream .......   Passed    0.73 sec
+    Start 53: optimization_granular_kernel
+6/9 Test #53: optimization_granular_kernel .......   Passed    5.59 sec
+    Start 54: material_granular
+7/9 Test #54: material_granular ..................   Passed    4.77 sec
+    Start 55: physics_air_contract
+8/9 Test #55: physics_air_contract ...............   Passed    0.01 sec
+    Start 56: physics_granular_air
+9/9 Test #56: physics_granular_air ...............   Passed    1.98 sec
+
+100% tests passed, 0 tests failed out of 9
+
+Total Test time (real) =  30.97 sec
