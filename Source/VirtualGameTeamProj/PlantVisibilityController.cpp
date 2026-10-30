@@ -1,4 +1,7 @@
 #include "PlantVisibilityController.h"
+#include "PowderPlantTest.h"
+#include "EngineUtils.h"
+#include "Widgets/SNullWidget.h"
 #include "Camera/CameraActor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/GameViewportClient.h"
@@ -87,6 +90,8 @@ TSharedRef<SWidget> APlantVisibilityController::BuildPanel()
             .OnClicked_Lambda([WeakThis, Mode]() { if (WeakThis.IsValid()) WeakThis->SetViewMode(Mode); return FReply::Handled(); })
             [SNew(STextBlock).Text(FText::FromString(Label))];
     };
+    TSharedRef<SWidget> Simulation=SNullWidget::NullWidget;
+    if(GetWorld()&&GetWorld()->IsGameWorld())for(TActorIterator<APowderPlantTest>It(GetWorld());It;++It){Simulation=It->BuildSimulationPanel();break;}
     return SNew(SBorder).Padding(12).BorderBackgroundColor(FLinearColor(.035f,.045f,.06f,.96f))
         [SNew(SVerticalBox)
         + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,8)
@@ -108,7 +113,8 @@ TSharedRef<SWidget> APlantVisibilityController::BuildPanel()
                 const TCHAR* Mode = WeakThis->ViewMode == EPlantViewMode::Full ? TEXT("전체") :
                     WeakThis->ViewMode == EPlantViewMode::Cutaway ? TEXT("전면 개방") : TEXT("숨김");
                 return FText::FromString(FString::Printf(TEXT("현재: %s | 프레임: %s"),Mode,WeakThis->bShowFrames?TEXT("표시"):TEXT("숨김")));
-            })]];
+            })]
+        + SVerticalBox::Slot().AutoHeight().Padding(0,14,0,0)[Simulation]];
 }
 
 void APlantVisibilityController::OpenDisplayPanel()

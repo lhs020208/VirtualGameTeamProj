@@ -5,6 +5,7 @@
 class UInstancedStaticMeshComponent;
 class APlantVisibilityController;
 struct FPlantRuntime;
+class SWidget;
 USTRUCT()
 struct FPlantRotorVisual {
  GENERATED_BODY()
@@ -39,7 +40,17 @@ public:
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") FString Error;
  UFUNCTION(CallInEditor,BlueprintCallable,Category="Plant") void ResetSimulation();
  UFUNCTION(CallInEditor,BlueprintCallable,Category="Plant") void ExportSnapshot();
+ TSharedRef<SWidget> BuildSimulationPanel();
+ UFUNCTION(BlueprintCallable,Category="Plant") void ToggleSupplier(int32 Index);
+ UFUNCTION(BlueprintCallable,Category="Plant") void ToggleWeighingHopper();
+ UFUNCTION(BlueprintCallable,Category="Plant") void ToggleReceiver();
+ UFUNCTION(BlueprintCallable,Category="Plant") void ToggleMixer();
 private:
+ TArray<bool> SupplierOpen;
+ bool WeighingHopperOpen=false,AppliedHopperOpen=false;
+ bool ReceiverOpen=false,AppliedReceiverOpen=false,MixerEnabled=false;
+ uint32 AppliedSupplierMask=0;int32 CurrentPhase=0;
+ void InitializeSuppliers();
  UPROPERTY() TArray<TObjectPtr<UInstancedStaticMeshComponent>> Groups;
  UPROPERTY() TArray<FPlantRotorVisual> Rotor;
  UPROPERTY() TArray<TObjectPtr<AActor>> ValveVisuals;

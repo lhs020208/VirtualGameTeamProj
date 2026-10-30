@@ -23,9 +23,22 @@ inline void validate_plant_data(const std::vector<Grain>& d){
  for(float root:{d[0].x,d[0].y})if(root!=-1)walk(index(root),0);
  int start=index(d[0].z),count=int(d[0].w);need(count>=0&&count==d[0].w&&start+3*count<=d.size());
  for(int j=0;j<count;++j){auto a=d[start+3*j],b=d[start+3*j+1],q=d[start+3*j+2];need(a.w>.001&&b.w>.001&&a.w<2&&b.w<2);need(std::hypot(std::hypot(b.x-a.x,b.y-a.y),b.z-a.z)>1e-7);need(q.w>=0&&q.w<=2&&std::floor(q.w)==q.w);need(std::abs(q.x)/(3.141592653589793*std::pow(std::min(a.w,b.w),2))<=80);}
- int gates=index(d[5].x),n=int(d[5].y);need(n>=0&&n==d[5].y&&gates+2*n<=d.size());for(int i=0;i<n;++i){need(d[gates+2*i].w>0);float phase=d[gates+2*i+1].x;need(phase>=0&&phase<=2&&std::floor(phase)==phase);}
+ int gates=index(d[5].x),n=int(d[5].y);need(n>=0&&n==d[5].y&&gates+2*n<=d.size());for(int i=0;i<n;++i){need(d[gates+2*i].w>0);float phase=d[gates+2*i+1].x;need(phase>=0&&phase<=2&&std::floor(phase)==phase);auto control=d[gates+2*i+1];need((control.y==0||control.y==1)&&(control.z==0||control.z==1));}
  int grid=index(d[6].x),size=1;for(float v:{d[6].y,d[6].z,d[6].w}){need(v>=1&&v<=256&&std::floor(v)==v);size*=int(v);}need(size<=1000000&&grid+size<=d.size()&&d[7].w>0);
  for(int i=grid;i<grid+size;++i){int entries=int(d[i].y);need(entries>=0&&entries==d[i].y);if(!entries)continue;int at=index(d[i].x);need(at+entries<=d.size());for(int j=0;j<entries;++j){int cell=index(d[at+j].x);need(cell>=start&&cell<start+3*int(d[0].w)&&(cell-start)%3==0);}}
+}
+// GPU-only threaded nodes reference original triangles. Right-first preorder
+// matches the legacy LIFO stack's projection order exactly.
+inline std::vector<Grain> plant_threaded_upload(const std::vector<Grain>& source){
+ validate_plant_data(source);auto out=source;
+ std::function<int(int)> emit=[&](int old){int at=int(out.size());auto lo=source[old],hi=source[old+1];out.push_back(lo);out.push_back(hi);
+  if(lo.w>=0){int first=emit(int(hi.w));emit(int(lo.w));out[at].w=float(first);out[at+1].w=float(out.size());}
+  return at;
+ };
+ int a=source[0].x<0?-1:emit(int(source[0].x)),ae=int(out.size());
+ int b=source[0].y<0?-1:emit(int(source[0].y)),be=int(out.size());
+ if(out.size()>=4000000)throw std::invalid_argument("threaded plant data too large");
+ out[8]={float(a),float(ae),float(b),float(be)};return out;
 }
 inline std::vector<Grain> read_plant_data(const std::string& path){std::ifstream f(path,std::ios::binary);std::uint32_t n=0;f.read(reinterpret_cast<char*>(&n),4);if(!f||n<16||n>=4000000)throw std::runtime_error("plant file header invalid");std::vector<Grain>d(n);f.read(reinterpret_cast<char*>(d.data()),n*sizeof(Grain));if(!f||f.peek()!=EOF)throw std::runtime_error("plant file length invalid");validate_plant_data(d);return d;}
 // Incompressible, quasi-steady 1D pipe cells: Darcy-Weisbach + minor losses.
@@ -50,4 +63,36 @@ inline void solve_plant_pressure(std::vector<Grain>&d,const std::vector<PlantRou
   double q=(lo+hi)/2;for(int i:r.cells)d[i+2].x=float(q);
  }validate_plant_data(d);
 }
+inline std::vector<int> plant_supplier_gates(const std::vector<Grain>& d){
+ std::vector<int> result;for(int j=0;j<int(d[5].y);++j){int k=int(d[5].x)+2*j;if(d[k+1].x==0)result.push_back(k);}if(result.empty()||result.size()>32)throw std::invalid_argument("supplier count must be 1..32");return result;
+}
+// Closing an occupied disk waits; never insert a new wall through a particle.
+inline bool plant_supplier_closure_clear(Grain gate,const std::vector<Grain>& particles,float radius){
+ for(auto p:particles){double radial=std::hypot(p.x-gate.x,p.y-gate.y)-gate.w,axial=std::abs(p.z-gate.z)-.003;
+  double distance=std::hypot(std::max(radial,0.),std::max(axial,0.))+std::min(std::max(radial,axial),0.);
+  if(distance<radius+.00002)return false;
+ }return true;
+}
+inline void plant_set_supplier_valves(std::vector<Grain>& d,const std::vector<PlantRoute>& routes,double drop,std::uint32_t open_mask,std::uint32_t air_mask){
+ auto gates=plant_supplier_gates(d);solve_plant_pressure(d,routes,drop);size_t supplier=0;
+ for(size_t i=0;i<gates.size();++i){d[gates[i]+1].y=(open_mask&(std::uint32_t(1)<<i))?1.f:0.f;d[gates[i]+1].z=1.f;}
+ for(const auto&r:routes)if(r.phase==0){if(supplier>=gates.size())throw std::invalid_argument("supplier route count mismatch");if(!(air_mask&(std::uint32_t(1)<<supplier))||d[4].x!=0)for(int at:r.cells)d[at+2].x=0;++supplier;}
+ if(supplier!=gates.size())throw std::invalid_argument("supplier route count mismatch");validate_plant_data(d);
+}
+
+inline int plant_weighing_gate(const std::vector<Grain>& d){
+ int result=-1;for(int j=0;j<int(d[5].y);++j){int k=int(d[5].x)+2*j;if(d[k+1].x==1){if(result>=0)throw std::invalid_argument("ambiguous weighing gate");result=k;}}
+ if(result<0)throw std::invalid_argument("missing weighing gate");return result;
+}
+inline int plant_receiver_gate(const std::vector<Grain>& d){
+ int result=-1;for(int j=0;j<int(d[5].y);++j){int k=int(d[5].x)+2*j;if(d[k+1].x==2){if(result>=0)throw std::invalid_argument("ambiguous receiver gate");result=k;}}
+ if(result<0)throw std::invalid_argument("missing receiver gate");return result;
+}
+inline void plant_set_receiver_valve(std::vector<Grain>& d,bool open){int k=plant_receiver_gate(d);d[k+1].y=open?1.f:0.f;d[k+1].z=1.f;validate_plant_data(d);}
+inline void plant_set_manual_valves(std::vector<Grain>& d,const std::vector<PlantRoute>& routes,double drop,std::uint32_t suppliers,std::uint32_t supplier_air,bool hopper,bool hopper_air){
+ plant_set_supplier_valves(d,routes,drop,suppliers,supplier_air);int k=plant_weighing_gate(d);d[k+1].y=hopper?1.f:0.f;d[k+1].z=1.f;
+ if(!hopper_air||d[4].x!=1)for(const auto&r:routes)if(r.phase==1)for(int at:r.cells)d[at+2].x=0;
+ validate_plant_data(d);
+}
+
 }

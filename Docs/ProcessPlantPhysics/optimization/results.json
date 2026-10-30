@@ -1,0 +1,100 @@
+{
+  "base_commit": "1af59c8",
+  "device": "NVIDIA GeForce RTX 4060 Ti",
+  "conditions": {
+    "particles": 30000,
+    "per_species": 10000,
+    "radius_m": 0.00125,
+    "dt_s": 1e-05,
+    "iterations": 8,
+    "rpm": 15,
+    "pressure_Pa": 1000,
+    "warmup_steps": 32,
+    "steps": 320,
+    "repeats": 3,
+    "profiling": true,
+    "editor": "same idle editor; no PIE"
+  },
+  "cases": {
+    "initial": {
+      "baseline_median_wall_s": 0.2496636,
+      "optimized_median_wall_s": 0.2302463,
+      "speedup": 1.0843327341199405,
+      "baseline_rate": 0.0128172468874117,
+      "optimized_rate": 0.013898160361317425,
+      "long_steps": 3200,
+      "long_base_wall_s": 2.4781503,
+      "long_opt_wall_s": 2.3068804,
+      "long_exact_position_velocity_species": true,
+      "max_position_difference_m": 0,
+      "max_velocity_difference_m_s": 0,
+      "baseline_median_cpu_s": 0.25,
+      "optimized_median_cpu_s": 0.21875,
+      "baseline_median_gpu_span_s": 0.245371712,
+      "optimized_median_gpu_span_s": 0.226253952
+    },
+    "transfer": {
+      "baseline_median_wall_s": 1.444097,
+      "optimized_median_wall_s": 1.3803468,
+      "speedup": 1.046184190813497,
+      "baseline_rate": 0.0022159176288019436,
+      "optimized_rate": 0.002318257991397524,
+      "long_steps": 3200,
+      "long_base_wall_s": 14.2042934,
+      "long_opt_wall_s": 13.5755675,
+      "long_exact_position_velocity_species": true,
+      "max_position_difference_m": 0,
+      "max_velocity_difference_m_s": 0,
+      "baseline_median_cpu_s": 1.125,
+      "optimized_median_cpu_s": 1.0625,
+      "baseline_median_gpu_span_s": 1.438225152,
+      "optimized_median_gpu_span_s": 1.37387728
+    },
+    "receiver": {
+      "baseline_median_wall_s": 0.4070959,
+      "optimized_median_wall_s": 0.373188,
+      "speedup": 1.0908601026828302,
+      "baseline_rate": 0.007860555706898547,
+      "optimized_rate": 0.008574766605571455,
+      "long_steps": 3200,
+      "long_base_wall_s": 4.0418886,
+      "long_opt_wall_s": 3.7307421,
+      "long_exact_position_velocity_species": true,
+      "max_position_difference_m": 0,
+      "max_velocity_difference_m_s": 0,
+      "baseline_median_cpu_s": 0.34375,
+      "optimized_median_cpu_s": 0.328125,
+      "baseline_median_gpu_span_s": 0.40235536,
+      "optimized_median_gpu_span_s": 0.36884128
+    }
+  },
+  "extra_gpu_geometry_bytes": 2211520,
+  "geometry_gpu_bytes_before": 14876400,
+  "geometry_gpu_bytes_after": 17087920,
+  "cpu_temporary_upload_vector_bytes": 17087920,
+  "memory_note": "Exact allocation sizes, not measured whole-process peak or driver memory. Original host geometry remains resident.",
+  "checkpoint_hashes": {
+    "PlantValidStage1.bin": "f79d67e32a693bd4b1a1a7c4619158bb1fab9dedc712f0daea4834e70f19a857",
+    "PlantReceiverReady.bin": "92c89be2a953572b66016945b61071bb293f4464856bd8409f99bd0c7c0cecaf"
+  },
+  "rejected": [
+    "Squared distance arithmetic: changed contact trajectory; removed.",
+    "Triangle AABB alone: regressed the bottleneck transfer state; retained diagnostic switch OFF in runtime.",
+    "Per-phase AABB branch: regressed all states; removed."
+  ],
+  "regressions": {
+    "boundary_samples": 23895,
+    "boundary_exact_match": true,
+    "triangle_order_exact": true,
+    "phase_and_pressure_refresh": true,
+    "pressure_and_gas_tests": "3/3 passed",
+    "finite_valve": "passed",
+    "long_full_cycle": "not run; prior visible-flow validation retained",
+    "unreal_build": "1062 succeeded"
+  },
+  "not_claimed": [
+    "0.1x sustained speed",
+    "whole-cycle benchmark",
+    "new physical accuracy certification"
+  ]
+}

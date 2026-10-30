@@ -73,9 +73,9 @@ struct GranularGPU::Impl {
  std::array<std::array<std::vector<unsigned char>,24>,17> argument_cache;
  cl_event read_event=nullptr;std::vector<Grain> read_buffer;
  std::array<cl_kernel,17> kernels{};std::array<cl_mem,27> buffers{};GranularGasField gas_field;bool cohesive=false;bool gas_ready=false;unsigned gas_steps=0;
- GranularConfig c;int nx=0,ny=0,nz=0,cells=0;float cell=0,angle=0;double time=0;std::string name;bool poisoned=false;GranularTiming timing;std::vector<std::pair<cl_event,unsigned>> events;
+ Grain plant_thread_header{};GranularConfig c;int nx=0,ny=0,nz=0,cells=0;float cell=0,angle=0;double time=0;std::string name;bool poisoned=false;GranularTiming timing;std::vector<std::pair<cl_event,unsigned>> events;
  Impl(GranularConfig cfg,const std::vector<Grain>* external=nullptr,const std::vector<Grain>* velocity=nullptr):c(cfg){try{
- require(!c.plant||(external&&!c.binary_materials&&!c.rotation&&!c.candidates&&!c.coupled_air&&!c.air.enabled&&!c.profile_split&&!c.boundary_candidates&&c.plant_data.size()>=16&&c.plant_data.size()<4000000),"unsupported plant configuration");
+ require(!c.plant||(external&&!c.binary_materials&&!c.rotation&&!c.candidates&&!c.coupled_air&&!c.air.enabled&&!c.boundary_candidates&&c.plant_data.size()>=16&&c.plant_data.size()<4000000),"unsupported plant configuration");
  if(c.plant)validate_plant_data(c.plant_data);
  require(!c.coupled_air||(c.binary_materials&&!c.air.enabled),"coupled gas requires binary materials and excludes prescribed air");if(c.coupled_air){GranularAir contract;contract.enabled=true;for(const auto& m:c.materials)contract.validate_material(m);}
  require(!c.simple_box||c.test_mixer,"simple box uses the extended test coordinate domain");
@@ -109,6 +109,7 @@ struct GranularGPU::Impl {
  }
  if(c.air.enabled||c.coupled_air)for(int g=0;g<2;++g)defines<<" -DAIR_SOLID_RHO"<<g<<"="<<float(c.materials[g].density_kg_m3)<<"f";
  defines<<" -DGRANULAR_ROTATION="<<(c.rotation?1:0)<<" -DMAT_ROLL="<<c.rolling_friction<<"f";
+ defines<<" -DPLANT_TRIANGLE_FAST="<<(c.plant_triangle_fast?1:0)<<" -DPLANT_THREADED="<<(c.plant_threaded?1:0);
  defines<<" -DGRANULAR_BINARY="<<(c.binary_materials?1:0);
  for(int g=0;g<2;++g){const auto& m=c.materials[g];defines<<" -DMAT_R"<<g<<"="<<float(m.radius_m)<<"f -DMAT_M"<<g<<"="<<float(m.mass_kg())<<"f -DMAT_MU"<<g<<"="<<float(m.particle_friction)<<"f -DMAT_W"<<g<<"="<<float(m.wall_friction)<<"f";}
  defines<<" -DMAT_CROSS="<<c.cross_friction<<"f";options+=defines.str();
@@ -122,7 +123,7 @@ struct GranularGPU::Impl {
  if(c.candidates){for(unsigned i=10;i<13;++i){std::size_t bytes=i==10?std::size_t(c.count)*c.candidate_capacity*sizeof(int):i==11?std::size_t(c.count)*sizeof(int):2*sizeof(cl_uint);buffers[i]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,bytes,nullptr,&err);check(err,"candidate buffer allocation");}}
  if(c.candidate_reuse){buffers[13]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(Grain),nullptr,&err);check(err,"reference positions");buffers[14]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,6*sizeof(cl_uint),nullptr,&err);check(err,"reuse control");arg(0,2,buffers[14]);arg(1,9,buffers[14]);}
  if(c.boundary_candidates){kernels[12]=api.clCreateKernel(program,"init_boundary_groups",&err);check(err,"boundary group kernel");buffers[15]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,44*sizeof(Grain),nullptr,&err);check(err,"boundary group buffer");arg(12,0,buffers[15]);run(12,22);}
- if(c.plant){buffers[15]=api.clCreateBuffer(context,CL_MEM_READ_ONLY,c.plant_data.size()*sizeof(Grain),nullptr,&err);check(err,"plant buffer");check(api.clEnqueueWriteBuffer(queue,buffers[15],CL_TRUE,0,c.plant_data.size()*sizeof(Grain),c.plant_data.data(),0,nullptr,nullptr),"plant geometry upload");}
+ if(c.plant){auto upload=c.plant_threaded?plant_threaded_upload(c.plant_data):c.plant_data;plant_thread_header=upload[8];buffers[15]=api.clCreateBuffer(context,CL_MEM_READ_ONLY,upload.size()*sizeof(Grain),nullptr,&err);check(err,"plant buffer");check(api.clEnqueueWriteBuffer(queue,buffers[15],CL_TRUE,0,upload.size()*sizeof(Grain),upload.data(),0,nullptr,nullptr),"plant geometry upload");}
  arg(3,c.candidates?17:14,buffers[15]);arg(3,c.candidates?18:15,buffers[6]);arg(4,c.profile_split?14:12,buffers[15]);if(c.profile_split){arg(5,5,buffers[15]);arg(6,7,buffers[15]);}
  if(cohesive){kernels[16]=api.clCreateKernel(program,"adhesive_loads",&err);check(err,"adhesive kernel");buffers[25]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(Grain),nullptr,&err);check(err,"adhesive acceleration");buffers[26]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(Grain),nullptr,&err);check(err,"contact correction impulse");}
  if(c.coupled_air){kernels[14]=api.clCreateKernel(program,"clear_gas",&err);check(err,"clear gas kernel");kernels[15]=api.clCreateKernel(program,"reduce_gas",&err);check(err,"reduce gas kernel");buffers[22]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,2*c.count*sizeof(Grain),nullptr,&err);check(err,"gas particle impulse");buffers[24]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(int),nullptr,&err);check(err,"gas particle links");}
@@ -279,4 +280,4 @@ void write_granular_timing(std::ostream& out,const GranularTiming& t){
 
 }
 
-namespace powder {void GranularGPU::update_plant_field(const std::vector<Grain>& data){require(p->c.plant&&!p->poisoned&&data.size()==p->c.plant_data.size(),"plant field size mismatch");validate_plant_data(data);for(size_t i=0;i<data.size();++i){auto a=data[i],b=p->c.plant_data[i];if(i==4){a.x=b.x;}else if(i>=size_t(data[0].z)&&i<size_t(data[0].z+3*data[0].w)&&(i-size_t(data[0].z))%3==2)a.x=b.x;require(std::memcmp(&a,&b,sizeof(Grain))==0,"plant geometry is immutable during simulation");}p->drain_read();check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,0,data.size()*sizeof(Grain),data.data(),0,nullptr,nullptr),"plant field update");}}
+namespace powder {void GranularGPU::update_plant_field(const std::vector<Grain>& data){require(p->c.plant&&!p->poisoned&&data.size()==p->c.plant_data.size(),"plant field size mismatch");validate_plant_data(data);for(size_t i=0;i<data.size();++i){auto a=data[i],b=p->c.plant_data[i];if(i==4){a.x=b.x;}else if(i>=size_t(data[5].x)&&i<size_t(data[5].x+2*data[5].y)&&(i-size_t(data[5].x))%2==1&&b.x<=2){a.y=b.y;a.z=b.z;}else if(i>=size_t(data[0].z)&&i<size_t(data[0].z+3*data[0].w)&&(i-size_t(data[0].z))%3==2)a.x=b.x;require(std::memcmp(&a,&b,sizeof(Grain))==0,"plant geometry is immutable during simulation");}p->drain_read();auto upload=data;if(p->c.plant_threaded)upload[8]=p->plant_thread_header;check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,0,upload.size()*sizeof(Grain),upload.data(),0,nullptr,nullptr),"plant field update");}}

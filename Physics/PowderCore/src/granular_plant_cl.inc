@@ -13,19 +13,36 @@ float3 plant_closest(float3 p,float3 a,float3 b,float3 c){
  float inv=1.f/(va+vb+vc);return a+ab*(vb*inv)+ac*(vc*inv);
 }
 float3 plant_mesh(float3 p,float r,int root,__global const float4* data){
- if(root<0)return p;int stack[64],top=0;stack[top++]=root;
+ if(root<0)return p;
+#if PLANT_THREADED
+ int at=root==(int)data[0].x?(int)data[8].x:(int)data[8].z;
+ int end=root==(int)data[0].x?(int)data[8].y:(int)data[8].w;
+ while(at<end){float4 lo=data[at],hi=data[at+1];int next=lo.w>=0?(int)hi.w:at+2;
+  if(any(p<lo.xyz-r)||any(p>hi.xyz+r)){at=next;continue;}
+  if(lo.w>=0){at=(int)lo.w;continue;}
+#else
+ int stack[64],top=0;stack[top++]=root;
  while(top){int at=stack[--top];float4 lo=data[at],hi=data[at+1];if(any(p<lo.xyz-r)||any(p>hi.xyz+r))continue;
-  if(lo.w>=0){if(top>61)return (float3)(NAN);stack[top++]=(int)lo.w;stack[top++]=(int)hi.w;}
-  else for(int j=0;j<(int)(-lo.w);++j){int t=(int)hi.w+3*j;float3 a=data[t].xyz,b=data[t+1].xyz,c=data[t+2].xyz;
-   float3 q=plant_closest(p,a,b,c),d=p-q;float l=length(d);if(l<r){float3 n=l>1.e-9f?d/l:normalize(cross(b-a,c-a));p+=n*(r-l);}
+  if(lo.w>=0){if(top>61)return (float3)(NAN);stack[top++]=(int)lo.w;stack[top++]=(int)hi.w;continue;}
+#endif
+  for(int j=0;j<(int)(-lo.w);++j){int t=(int)hi.w+3*j;float3 a=data[t].xyz,b=data[t+1].xyz,c=data[t+2].xyz;
+#if PLANT_TRIANGLE_FAST
+   // Conservative triangle AABB only; original length/contact arithmetic; keep visit/projection order.
+   if(any(p<fmin(a,fmin(b,c))-r)||any(p>fmax(a,fmax(b,c))+r))continue;
+#endif
+   float3 q=plant_closest(p,a,b,c),d=p-q;float l=length(d);if(l<r){
+float3 n=l>1.e-9f?d/l:normalize(cross(b-a,c-a));p+=n*(r-l);}
   }
+#if PLANT_THREADED
+ at=next;
+#endif
  }return p;
 }
 float3 plant_boundary_ref(float3 p,float r,float angle,__global const float4* d,float3* wn,float3* wv,float3 reference){
  float3 initial=p;p=plant_mesh(p,r,(int)d[0].x,d);int phase=(int)d[4].x;
  // Configurable horizontal valve disks: xyz/radius plus open phase.
  int gates=(int)d[5].x,gatecount=(int)d[5].y;
- for(int j=0;j<gatecount;++j){int k=gates+2*j;int open=phase==(int)d[k+1].x;
+ for(int j=0;j<gatecount;++j){int k=gates+2*j;int open=phase==(int)d[k+1].x;if(d[k+1].z==1.f)open=d[k+1].y==1.f;
   float4 gate=d[k];if(!open){
    // Finite cylinder: round the rim by the particle radius. A radial entry
    // must not be snapped to a distant top/bottom plane.
