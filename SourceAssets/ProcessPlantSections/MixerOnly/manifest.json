@@ -1,0 +1,21 @@
+{
+  "section": 4,
+  "name": "MixerOnly",
+  "level": "L_Section04_MixerOnly",
+  "static_triangles": 5156,
+  "rotor_triangles": 8956,
+  "selected_meshes": [
+    "MX-301_Collision_Vessel"
+  ],
+  "visual_prefixes": [
+    "MX-301"
+  ],
+  "camera_target_cm": [
+    300,
+    0,
+    90
+  ],
+  "particle_count": 3000,
+  "independent_initial_condition": true,
+  "bytes": 2958324
+}
