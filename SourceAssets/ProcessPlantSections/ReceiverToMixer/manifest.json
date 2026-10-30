@@ -1,0 +1,49 @@
+{
+  "section": 3,
+  "name": "ReceiverToMixer",
+  "level": "L_Section03_ReceiverToMixer",
+  "static_triangles": 31728,
+  "rotor_triangles": 8956,
+  "selected_meshes": [
+    "BV272_110_Split_body_half",
+    "BV272_110_Split_body_half.001",
+    "BV272_111_Ferrule_neck",
+    "BV272_111_Ferrule_neck.001",
+    "DP_110_Upper_spool",
+    "DP_120_Flexible_sleeve",
+    "DP_130_Mixer_end_spool",
+    "MX-301_Collision_Vessel",
+    "P202_Reducer_272_to_44",
+    "RH201_110_Main_shell",
+    "RH201_120_Upper_module",
+    "RH201_121_Dished_lid",
+    "RH201_130_Conical_reducer",
+    "RH201_140_Discharge_neck",
+    "RH201_210_Inlet_weld_neck",
+    "RH201_211_Flexible_inlet_sleeve",
+    "RH201_215_Open_inlet_spigot",
+    "RH201_C01_Gasket",
+    "RH201_C02_Gasket",
+    "RH201_C03_Gasket",
+    "RH201_Filter_BottomCap",
+    "RH201_Filter_Core",
+    "RH201_Filter_Seal",
+    "RH201_Filter_TubeSheet"
+  ],
+  "visual_prefixes": [
+    "RH201",
+    "BV272",
+    "DP_",
+    "P202",
+    "MX-301",
+    "Test_BV272_seal"
+  ],
+  "camera_target_cm": [
+    300,
+    0,
+    200
+  ],
+  "particle_count": 3000,
+  "independent_initial_condition": true,
+  "bytes": 4430388
+}

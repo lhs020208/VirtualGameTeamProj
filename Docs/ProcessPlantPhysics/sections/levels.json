@@ -1,0 +1,26 @@
+[
+  {
+    "level": "/Game/ProcessPlant_20261029/L_Section01_SupplyToWeighing",
+    "section": 1,
+    "actor_count": 508,
+    "particles": 3000
+  },
+  {
+    "level": "/Game/ProcessPlant_20261029/L_Section02_WeighingToReceiver",
+    "section": 2,
+    "actor_count": 680,
+    "particles": 3000
+  },
+  {
+    "level": "/Game/ProcessPlant_20261029/L_Section03_ReceiverToMixer",
+    "section": 3,
+    "actor_count": 655,
+    "particles": 3000
+  },
+  {
+    "level": "/Game/ProcessPlant_20261029/L_Section04_MixerOnly",
+    "section": 4,
+    "actor_count": 396,
+    "particles": 3000
+  }
+]

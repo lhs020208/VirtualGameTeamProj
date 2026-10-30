@@ -15,7 +15,7 @@ inline void validate_plant_data(const std::vector<Grain>& d){
  auto index=[&](float f){need(f>=0&&f<d.size()&&std::floor(f)==f);return int(f);};
  need(d[1].w>=100&&d[1].w<=10000);need(d[2].x<d[3].x&&d[2].y<d[3].y&&d[2].z<d[3].z);
  need(d[4].x>=0&&d[4].x<=2&&std::floor(d[4].x)==d[4].x);
- need(d[10].x==0||d[10].x==1);
+ need(d[10].x==0||d[10].x==1);need(d[11].x>=0&&d[11].x<=4&&std::floor(d[11].x)==d[11].x);
  if(d[10].x==1){
   for(int group=0;group<2;++group){int start=index(group?d[9].z:d[9].x);float nf=group?d[9].w:d[9].y;need(nf>=0&&nf<=4096&&std::floor(nf)==nf);int n=int(nf);need(start>=16&&start+4*n<=d.size());if(!group)need(n>0);
    for(int j=0;j<n;++j){int k=start+4*j;for(int a=1;a<=3;++a){auto u=d[k+a];need(u.w>.0013f&&u.w<10);need(std::abs(u.x*u.x+u.y*u.y+u.z*u.z-1)<1e-4);for(int b=a+1;b<=3;++b){auto v=d[k+b];need(std::abs(u.x*v.x+u.y*v.y+u.z*v.z)<1e-4);}}}
@@ -100,6 +100,18 @@ inline void plant_set_receiver_valve(std::vector<Grain>& d,bool open){int k=plan
 // With outlet open, that dedicated suction is isolated (test operating assumption).
 inline void plant_set_manual_valves(std::vector<Grain>& d,const std::vector<PlantRoute>& routes,double drop,std::uint32_t suppliers,std::uint32_t supplier_air,bool hopper,bool hopper_air){
  if(!std::isfinite(drop)||drop<0||drop>3000)throw std::invalid_argument("invalid network pressure");
+ // Independent section tests. Fixed reservoir boundaries replace removed plant.
+ int section=int(d[11].x);
+ if(section>=1&&section<=4){
+  solve_plant_pressure(d,routes,drop);auto gates=plant_supplier_gates(d);size_t supplier=0;
+  for(const auto&r:routes){bool enabled=false;if(r.phase==0){enabled=section==1&&(suppliers&supplier_air&(std::uint32_t(1)<<supplier));++supplier;}else enabled=section==2&&hopper&&hopper_air;
+   if(!enabled)for(int at:r.cells)d[at+2].x=0;
+  }
+  for(size_t i=0;i<gates.size();++i){d[gates[i]+1].y=section==1&&(suppliers&(std::uint32_t(1)<<i))?1.f:0.f;d[gates[i]+1].z=1;}
+  int gate=plant_weighing_gate(d);d[gate+1].y=section==2&&hopper?1.f:0.f;d[gate+1].z=1;
+  d[4].y=1;d[4].z=section==1?float(-drop):0.f;d[4].w=section==2?float(-drop):0.f;validate_plant_data(d);return;
+ }
+
  auto gates=plant_supplier_gates(d);std::vector<const PlantRoute*> inputs;const PlantRoute* output=nullptr;
  for(const auto&r:routes){if(r.phase==0)inputs.push_back(&r);else if(r.phase==1){if(output)throw std::invalid_argument("multiple receiver routes");output=&r;}else throw std::invalid_argument("unsupported network route");}
  if(inputs.size()!=gates.size()||!output)throw std::invalid_argument("network route mismatch");
