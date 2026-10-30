@@ -38,8 +38,33 @@ float3 n=l>1.e-9f?d/l:normalize(cross(b-a,c-a));p+=n*(r-l);}
 #endif
  }return p;
 }
+// OBB test geometry: union of hollow corridor interiors, minus solid baffles.
+// Four records per box: centre, then three unit axes with half extents in w.
+float3 plant_box_local(float3 p,int k,__global const float4* d){
+ float3 q=p-d[k].xyz;return (float3)(dot(q,d[k+1].xyz),dot(q,d[k+2].xyz),dot(q,d[k+3].xyz));
+}
+float3 plant_box_world(float3 q,int k,__global const float4* d){return d[k].xyz+q.x*d[k+1].xyz+q.y*d[k+2].xyz+q.z*d[k+3].xyz;}
+float3 plant_obb_walls(float3 p,float r,__global const float4* d){
+ int start=(int)d[9].x,count=(int)d[9].y;float best=INFINITY;float3 closest=p;
+ // Eroded interiors overlap by >2r, so joints have no artificial end wall.
+ for(int i=0;i<count;++i){int k=start+4*i;float3 h=(float3)(d[k+1].w,d[k+2].w,d[k+3].w)-r;
+  float3 q=plant_box_local(p,k,d),c=clamp(q,-h,h),delta=q-c;float distance=dot(delta,delta);
+  if(distance<best){best=distance;closest=plant_box_world(c,k,d);}if(distance<1.e-16f){closest=p;break;}
+ }
+ p=closest;start=(int)d[9].z;count=(int)d[9].w;
+ for(int i=0;i<count;++i){int k=start+4*i;float3 h=(float3)(d[k+1].w,d[k+2].w,d[k+3].w),q=plant_box_local(p,k,d);
+  float3 gap=fabs(q)-h,outside=fmax(gap,(float3)(0));float l=length(outside),distance=l+fmin(fmax(gap.x,fmax(gap.y,gap.z)),0.f);
+  if(distance<r){float3 n;
+   if(l>1.e-9f)n=copysign(outside,q)/l;
+   else if(gap.x>=gap.y&&gap.x>=gap.z)n=(float3)(copysign(1.f,q.x),0,0);
+   else if(gap.y>=gap.z)n=(float3)(0,copysign(1.f,q.y),0);
+   else n=(float3)(0,0,copysign(1.f,q.z));
+   p=plant_box_world(q+n*(r-distance),k,d);
+  }
+ }return p;
+}
 float3 plant_boundary_ref(float3 p,float r,float angle,__global const float4* d,float3* wn,float3* wv,float3 reference){
- float3 initial=p;p=plant_mesh(p,r,(int)d[0].x,d);int phase=(int)d[4].x;
+ float3 initial=p;p=d[10].x==1.f?plant_obb_walls(p,r,d):plant_mesh(p,r,(int)d[0].x,d);int phase=(int)d[4].x;
  // Configurable horizontal valve disks: xyz/radius plus open phase.
  int gates=(int)d[5].x,gatecount=(int)d[5].y;
  for(int j=0;j<gatecount;++j){int k=gates+2*j;int open=phase==(int)d[k+1].x;if(d[k+1].z==1.f)open=d[k+1].y==1.f;

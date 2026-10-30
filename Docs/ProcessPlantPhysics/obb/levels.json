@@ -1,0 +1,31 @@
+{
+  "level": "/Game/ProcessPlant_20261029/L_ProcessPlant_OBBTest",
+  "actor": [
+    "Plant_OBB_Pressure_Grains_Test"
+  ],
+  "kept": [
+    "/Game/ProcessPlant_20261029/L_ProcessPlant_Assembly",
+    "/Game/ProcessPlant_20261029/L_ProcessPlant_Assembly_Display",
+    "/Game/ProcessPlant_20261029/L_ProcessPlant_FlowTest",
+    "/Game/ProcessPlant_20261029/L_ProcessPlant_OBBTest"
+  ],
+  "deleted": [
+    "/Game/DEM/Tests/L_CoupledPowder_Filter",
+    "/Game/DEM/Tests/L_CoupledPowder_GPU50k",
+    "/Game/DEM/Tests/L_CoupledPowder_Minimum",
+    "/Game/DEM/Tests/L_CoupledPowder_Transport",
+    "/Game/DEM/Tests/L_MX301_BinaryMaterials",
+    "/Game/DEM/Tests/L_MX301_LegacyBaseline",
+    "/Game/L_BulkPrototype",
+    "/Game/L_ClumpTest",
+    "/Game/L_GranularMixer",
+    "/Game/L_MX301_Test",
+    "/Game/L_Main",
+    "/Game/L_MeshTest",
+    "/Game/L_MixingTest",
+    "/Game/L_PaddleTest",
+    "/Game/L_ProcessPlant_Assembly_Backup_20261030",
+    "/Game/L_ProcessTwin"
+  ],
+  "retained_references": {}
+}

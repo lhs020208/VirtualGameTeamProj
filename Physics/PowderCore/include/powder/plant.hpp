@@ -15,6 +15,12 @@ inline void validate_plant_data(const std::vector<Grain>& d){
  auto index=[&](float f){need(f>=0&&f<d.size()&&std::floor(f)==f);return int(f);};
  need(d[1].w>=100&&d[1].w<=10000);need(d[2].x<d[3].x&&d[2].y<d[3].y&&d[2].z<d[3].z);
  need(d[4].x>=0&&d[4].x<=2&&std::floor(d[4].x)==d[4].x);
+ need(d[10].x==0||d[10].x==1);
+ if(d[10].x==1){
+  for(int group=0;group<2;++group){int start=index(group?d[9].z:d[9].x);float nf=group?d[9].w:d[9].y;need(nf>=0&&nf<=4096&&std::floor(nf)==nf);int n=int(nf);need(start>=16&&start+4*n<=d.size());if(!group)need(n>0);
+   for(int j=0;j<n;++j){int k=start+4*j;for(int a=1;a<=3;++a){auto u=d[k+a];need(u.w>.0013f&&u.w<10);need(std::abs(u.x*u.x+u.y*u.y+u.z*u.z-1)<1e-4);for(int b=a+1;b<=3;++b){auto v=d[k+b];need(std::abs(u.x*v.x+u.y*v.y+u.z*v.z)<1e-4);}}}
+  }
+ }
  std::set<int> visited;
  std::function<void(int,int)> walk=[&](int at,int depth){need(at>=16&&at+1<d.size()&&depth<60&&visited.insert(at).second);auto lo=d[at],hi=d[at+1];need(lo.x<=hi.x&&lo.y<=hi.y&&lo.z<=hi.z);
   if(lo.w>=0){walk(index(lo.w),depth+1);walk(index(hi.w),depth+1);}
