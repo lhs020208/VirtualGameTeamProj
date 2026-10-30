@@ -1,0 +1,18 @@
+{
+  "count": 30000,
+  "species_counts": {
+    "0": 10000,
+    "1": 10000,
+    "2": 10000
+  },
+  "finite": true,
+  "unique_sequential_ids": true,
+  "overlapping_pairs": 2516,
+  "max_overlap_diameter_fraction": 0.003971084757121643,
+  "counts": {
+    "weighing": 0,
+    "receiver": 156,
+    "mixer": 29020
+  },
+  "note": "One snapshot only; not a trajectory-wide overlap bound, wall-containment proof or physical calibration."
+}

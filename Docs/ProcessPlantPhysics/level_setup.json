@@ -1,0 +1,6 @@
+{
+  "level": "/Game/ProcessPlant_20261029/L_ProcessPlant_FlowTest",
+  "particles": 30000,
+  "rotor_parts": 55,
+  "actor": "/Game/ProcessPlant_20261029/L_ProcessPlant_FlowTest.L_ProcessPlant_FlowTest:PersistentLevel.PowderPlantTest_0"
+}

@@ -42,3 +42,8 @@ Thumbs.db
 
 # Keep source-controlled Unreal project assets and configuration:
 # Config/, Content/, Source/, Plugins/, Build/, and *.uproject
+
+# Disposable plant validation snapshots (reports live in Docs/Saved).
+SourceAssets/ProcessPlantPhysics/last_probe.csv
+SourceAssets/ProcessPlantPhysics/probe_checkpoint.bin
+SourceAssets/ProcessPlantPhysics/stage_*_checkpoint.bin

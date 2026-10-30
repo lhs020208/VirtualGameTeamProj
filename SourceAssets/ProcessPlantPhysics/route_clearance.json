@@ -1,0 +1,7 @@
+{
+  "tested": 7353,
+  "minimum_clearance_m": 0.02193722315132618,
+  "obstructions": [],
+  "passed": true,
+  "note": "Centreline clearance only, not full fluid-volume certification or particle transport proof"
+}

@@ -62,6 +62,9 @@ int candidate_index(int i,int k,int n,int capacity){
 }
 int cellid(float3 p,float cell,int nx,int ny,int nz){
  int3 q=convert_int3(floor((p+GRID_OFFSET)/cell));
+#if GRANULAR_PLANT
+ return plant_hash(q);
+#endif
  if(any(q<(int3)(0))||q.x>=nx||q.y>=ny||q.z>=nz)return -1;
  return (q.z*ny+q.y)*nx+q.x;
 }
@@ -96,6 +99,9 @@ __kernel void reduce_gas(__global const int* head,__global const int* link,__glo
 }
 #endif
 __kernel void predict(__global float4* pos,__global float4* old,__global float4* vel,int n,float dt,float r,__global int* error,__global float4* predicted
+#if GRANULAR_PLANT
+ ,__global const float4* plant
+#endif
 #if GRANULAR_ROTATION
  ,__global float4* angular,__global const float4* spin
 #endif
@@ -128,6 +134,10 @@ __kernel void predict(__global float4* pos,__global float4* old,__global float4*
  float3 impulse=mass*(v-vel[i].xyz-dt*gravity);
  particle_impulse[i]=(float4)(-impulse,volume)/sum;particle_impulse[i+n]=(float4)(mass*beta/(1+beta*dt)/sum,0,0,0);
  int3 bucket=clamp(base,(int3)(0),gas_size.xyz-1);int bin=(bucket.z*gas_size.y+bucket.y)*gas_size.x+bucket.x;gas_link[i]=atomic_xchg(gas_head+bin,i);
+#elif GRANULAR_PLANT
+ float3 air=plant_air(pos[i].xyz,plant);float rho=plant[1].w,re=1.2f*(2*r)*length(air-vel[i].xyz)/1.81e-5f;float cdre=re<1000?24*(1+.15f*pow(re,.687f)):.44f*re;float beta=3*1.81e-5f*cdre/(16*rho*r*r);v=(vel[i].xyz+dt*(external+beta*air))/(1+dt*beta);
+ if(!isfinite(beta)||length(air-vel[i].xyz)>100.f||re>200000.f||beta*dt>.1f){atomic_or(error,32);return;}
+ if(any(pos[i].xyz<plant[2].xyz)||any(pos[i].xyz>plant[3].xyz)){atomic_or(error,1);return;}
 #elif GRANULAR_AIR
  float rho=pos[i].w==0?AIR_SOLID_RHO0:AIR_SOLID_RHO1;
  float3 air=(float3)(AIR_U0,AIR_U1,AIR_U2);
@@ -167,7 +177,9 @@ __kernel void init_boundary_groups(__global float4* bounds){
 }
 float3 boundary_eval(float3 p,float r,float angle,int gate,float3* wallnormal,float3* wallvelocity,__global const float4* bounds,int* work){
  float3 start=p;*wallnormal=(float3)(0);*wallvelocity=(float3)(0);
-#if GRANULAR_SIMPLE_BOX
+#if GRANULAR_PLANT
+ return plant_boundary(p,r,angle,bounds,wallnormal,wallvelocity);
+#elif GRANULAR_SIMPLE_BOX
  float3 original=p;p=clamp(p,(float3)(-.8f+r,-.5f+r,-.5f+r),(float3)(.8f-r,.5f-r,.5f-r));float3 delta=p-original;if(length(delta)>0)*wallnormal=normalize(delta);return p;
 #elif GRANULAR_MX301
  // Closed test-only interior and conservative convex rotor components from source asset.
@@ -334,8 +346,14 @@ __kernel void solve(__global const float4* pos,__global const float4* old,__glob
 #endif
  { // On overflow traverse the entire original grid; never consume a truncated list.
  for(int z=-1;z<=1;z++)for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
-  int3 c=q+(int3)(x,y,z);if(any(c<(int3)(0))||c.x>=nx||c.y>=ny||c.z>=nz)continue;
-  int j=head[(c.z*ny+c.y)*nx+c.x];while(j>=0){if(j!=i){correction+=pair_correction(pos[i],pos[j],old[i].xyz,old[j].xyz,i,j,r,mu
+  int3 c=q+(int3)(x,y,z);
+#if GRANULAR_PLANT
+  int j=head[plant_hash(c)];while(j>=0){if(j!=i&&all(convert_int3(floor((pos[j].xyz+GRID_OFFSET)/cell))==c)){
+#else
+  if(any(c<(int3)(0))||c.x>=nx||c.y>=ny||c.z>=nz)continue;
+  int j=head[(c.z*ny+c.y)*nx+c.x];while(j>=0){if(j!=i){
+#endif
+correction+=pair_correction(pos[i],pos[j],old[i].xyz,old[j].xyz,i,j,r,mu
 #if GRANULAR_ROTATION
  ,angular[i].xyz,angular[j].xyz,&ac
 #endif
@@ -353,7 +371,12 @@ __kernel void solve(__global const float4* pos,__global const float4* old,__glob
 #if GRANULAR_PROFILE_SPLIT
  p+=correction;
 #else
- float3 wn,wv;float3 unbounded=p+correction;p=boundaries(unbounded,r,angle,gate,&wn,&wv,bounds);
+ float3 wn,wv;float3 unbounded=p+correction;
+#if GRANULAR_PLANT
+ p=plant_boundary_ref(unbounded,r,angle,bounds,&wn,&wv,old[i].xyz);
+#else
+ p=boundaries(unbounded,r,angle,gate,&wn,&wv,bounds);
+#endif
 #if GRANULAR_COHESION
  contact_correction[i].xyz+=correction+(p-unbounded);
 #endif
@@ -383,14 +406,18 @@ __kernel void velocity(__global float4* pos,__global const float4* old,__global 
 #if GRANULAR_PROFILE_SPLIT
  wn=normals[i].xyz;wv=wallvelocities[i].xyz;
 #else
+#if GRANULAR_PLANT
+ plant_boundary_ref(p,r*1.002f,angle,bounds,&wn,&wv,old[i].xyz);
+#else
  boundaries(p,r*1.002f,angle,gate,&wn,&wv,bounds);
+#endif
 #endif
  wv*=omega;
 #if GRANULAR_ROTATION
  float3 w=angular[i].xyz/dt;
 #endif
  if(length(wn)>0){float3 relative=v-wv;float vn=dot(relative,wn);float3 tangent=relative-vn*wn;float tl=length(tangent);float normalImpulse;
-#if GRANULAR_AIR || GRANULAR_COUPLED_AIR || GRANULAR_COHESION
+#if GRANULAR_AIR || GRANULAR_COUPLED_AIR || GRANULAR_COHESION || GRANULAR_PLANT
  // Free predicted velocity includes drag and buoyancy; no extra dry gravity impulse.
  normalImpulse=fmax(0.f,-dot(vel[i].xyz-wv,wn));
 #else

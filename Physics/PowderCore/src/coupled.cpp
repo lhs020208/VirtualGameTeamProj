@@ -31,6 +31,32 @@ Vec3 GasGrid::extent()const{return {config.cells[0]*config.h,config.cells[1]*con
 double GasGrid::pressure(int i)const{const auto& c=cells.at(i);return c.mass/(c.epsilon*std::pow(config.h,3))*R*config.temperature_k;}
 Vec3 GasGrid::velocity(int i)const{const auto& c=cells.at(i);return times(c.momentum,1/c.mass);}
 double GasGrid::mass()const{double m=0;for(auto& c:cells)if(!c.solid)m+=c.mass;return m;}
+void GasGrid::validate_pressure_ports()const{
+ config.validate();check(cells.size()==std::size_t(config.cells[0]*config.cells[1]*config.cells[2]),"gas grid dimensions changed without reset");
+ std::set<std::array<int,3>> used;
+ for(const auto& port:pressure_ports){
+  check(port.cell>=0&&std::size_t(port.cell)<cells.size()&&!cells[port.cell].solid,"pressure port must belong to a fluid cell");
+  check(port.axis>=0&&port.axis<3&&(port.side==0||port.side==1),"invalid pressure port face");
+  check(std::isfinite(port.absolute_pa)&&port.absolute_pa>=5000&&port.absolute_pa<=200000,"port pressure outside 5..200kPa absolute");
+  check(used.insert({port.cell,port.axis,port.side}).second,"duplicate pressure port face");
+  int q[3]{port.cell%config.cells[0],(port.cell/config.cells[0])%config.cells[1],port.cell/(config.cells[0]*config.cells[1])};q[port.axis]+=port.side?1:-1;
+  bool outside=q[port.axis]<0||q[port.axis]>=config.cells[port.axis];
+  check(outside||cells[index(q[0],q[1],q[2])].solid,"pressure port cannot replace an interior fluid face");
+ }
+}
+double GasGrid::reservoir_pressure(int cell,int k,int side)const{
+ for(const auto& port:pressure_ports)if(port.cell==cell&&port.axis==k&&port.side==side)return port.absolute_pa;
+ int q[3]{cell%config.cells[0],(cell/config.cells[0])%config.cells[1],cell/(config.cells[0]*config.cells[1])};q[k]+=side?1:-1;
+ return q[k]<0||q[k]>=config.cells[k]?config.boundary_pa[2*k+side]:0;
+}
+Vec3 GasGrid::pressure_gradient(int cell)const{
+ Vec3 result{};double pc=pressure(cell);
+ for(int k=0;k<3;++k){double pv[2];for(int side=0;side<2;++side){
+  int q[3]{cell%config.cells[0],(cell/config.cells[0])%config.cells[1],cell/(config.cells[0]*config.cells[1])};q[k]+=side?1:-1;
+  bool outside=q[k]<0||q[k]>=config.cells[k];int neighbor=outside?-1:index(q[0],q[1],q[2]);
+  if(outside||cells[neighbor].solid){double p=reservoir_pressure(cell,k,side);pv[side]=p>0?2*p-pc:pc;}else pv[side]=pressure(neighbor);
+ }component(result,k,(pv[1]-pv[0])/(2*config.h));}return result;
+}
 void GasGrid::initialize_pressure(){for(auto& c:cells){c.mass=c.solid?0:config.initial_pressure_pa/(R*config.temperature_k)*c.epsilon*std::pow(config.h,3);c.momentum={};}boundary_mass_out=0;}
 std::vector<std::pair<int,double>> GasGrid::stencil(Vec3 p)const{
  const auto e=extent();check(p.x>=0&&p.y>=0&&p.z>=0&&p.x<=e.x&&p.y<=e.y&&p.z<=e.z,"particle outside gas grid");
@@ -55,6 +81,7 @@ double GasGrid::explicit_dt_limit(double cfl)const{
  check(maxwave>0,"gas grid has no fluid cells");return std::min(cfl*config.h/(3*maxwave),cfl*minrho*config.h*config.h/(6*config.viscosity()));
 }
 GasReport GasGrid::step(double dt,Vec3 gravity){
+ validate_pressure_ports();
  config.validate();check(cells.size()==static_cast<std::size_t>(config.cells[0]*config.cells[1]*config.cells[2]),"gas grid dimensions changed without reset");check(std::isfinite(dt)&&dt>0,"invalid gas dt");
  const double h=config.h,v=h*h*h,area=h*h,c=std::sqrt(R*config.temperature_k),mu=config.viscosity();
  struct State{double rho,eps,p;Vec3 u;double sound;};std::vector<State> primitive(cells.size());
@@ -63,11 +90,11 @@ GasReport GasGrid::step(double dt,Vec3 gravity){
  report.cfl=3*maxwave*dt/h;check(report.cfl<=.4&&6*mu*dt/(minrho*h*h)<=.4,"gas acoustic/viscous CFL exceeded; reduce dt");
  auto next=cells;double boundary=0;
  auto state=[&](int i){return primitive[i];};
- auto face=[&](int l,int r,int k,int side){
+ auto face=[&](int l,int r,int k,int){
   bool L=l>=0&&!cells[l].solid,B=r>=0&&!cells[r].solid;if(!L&&!B)return;
   State a=L?state(l):state(r),b=B?state(r):a;if(!L)a=b;
   bool wall=false;
-  if(!L||!B){int missing=!L?l:r;double p=missing<0?config.boundary_pa[side]:0;State ghost=L?a:b;
+  if(!L||!B){double p=reservoir_pressure(L?l:r,k,L?1:0);State ghost=L?a:b;
    if(p==0){if(config.slip_walls)component(ghost.u,k,-axis(ghost.u,k));else ghost.u=times(ghost.u,-1);wall=true;}else{ghost.p=p;ghost.rho=p/(R*config.temperature_k);}
    if(!L)a=ghost;else b=ghost;
   }
@@ -79,7 +106,7 @@ GasReport GasGrid::step(double dt,Vec3 gravity){
   if(wall)flux=0;
   if(L){next[l].mass-=dt*area*flux;next[l].momentum=plus(next[l].momentum,times(mom,-dt*area));}
   if(B){next[r].mass+=dt*area*flux;next[r].momentum=plus(next[r].momentum,times(mom,dt*area));}
-  if(l<0)boundary-=dt*area*flux;if(r<0)boundary+=dt*area*flux;
+  if(!L)boundary-=dt*area*flux;if(!B)boundary+=dt*area*flux;
  };
  for(int k=0;k<3;++k){auto n=config.cells;for(int z=0;z<n[2]+(k==2);++z)for(int y=0;y<n[1]+(k==1);++y)for(int x=0;x<n[0]+(k==0);++x){int q[3]{x,y,z},lo[3]{x,y,z};--lo[k];int l=lo[k]<0?-1:index(lo[0],lo[1],lo[2]),r=q[k]>=n[k]?-1:index(x,y,z);face(l,r,k,2*k+(r<0?1:0));}}
  for(auto& q:next)if(!q.solid){q.momentum=plus(q.momentum,times(gravity,q.mass*dt));check(std::isfinite(q.mass)&&q.mass>0&&std::isfinite(len(q.momentum)),"nonpositive/nonfinite gas update");}
@@ -108,12 +135,11 @@ CoupledReport CoupledWorld::step(double dt){
  using Clock=std::chrono::steady_clock;auto start=Clock::now();auto seconds=[](auto a,auto b){return std::chrono::duration<double>(b-a).count();};
  auto nextGas=gas;nextGas.step(dt,dem.gravity_m_s2);auto gasEnd=Clock::now();auto nextDem=dem;nextDem.external_wrenches.clear();
  Vec3 particleImpulse{},gasImpulse{};std::vector<Vec3> reaction(gas.cells.size());std::vector<double> rates(gas.cells.size());
- const double mu=gas.config.viscosity(),h=gas.config.h;auto n=gas.config.cells;
+ const double mu=gas.config.viscosity();
  // Each cell state/gradient is identical for every particle that gathers it.
  struct GatherCell {Vec3 u,grad;double rho=0,eps=1;};std::vector<GatherCell> gathered(nextGas.cells.size());
  for(std::size_t i=0;i<gathered.size();++i)if(!nextGas.cells[i].solid){auto& a=gathered[i];a.u=nextGas.velocity(int(i));a.rho=nextGas.pressure(int(i))/(R*gas.config.temperature_k);a.eps=nextGas.cells[i].epsilon;
-  int q[3]{int(i)%n[0],(int(i)/n[0])%n[1],int(i)/(n[0]*n[1])};const double pc=nextGas.pressure(int(i));
-  for(int k=0;k<3;++k){double pv[2];for(int side=0;side<2;++side){int c[3]{q[0],q[1],q[2]};c[k]+=side?1:-1;if(c[k]<0||c[k]>=n[k])pv[side]=gas.config.boundary_pa[2*k+side]>0?2*gas.config.boundary_pa[2*k+side]-pc:pc;else{int j=gas.index(c[0],c[1],c[2]);pv[side]=nextGas.cells[j].solid?pc:nextGas.pressure(j);}}component(a.grad,k,(pv[1]-pv[0])/(2*h));}
+  a.grad=nextGas.pressure_gradient(int(i));
  }
  for(const auto& b:dem.bodies)for(const auto& p:clump_particles(b)){
   auto e=gas.extent();if(p.position_m.x<0||p.position_m.x>e.x||p.position_m.y<0||p.position_m.y>e.y||p.position_m.z<0||p.position_m.z>e.z)continue;

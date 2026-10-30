@@ -1,0 +1,28 @@
+{
+  "scope": "Source-based reduced pipe pressure network + 3D GPU granular plant test",
+  "implemented": [
+    "Source mesh/BVH walls independent of render cutaway",
+    "Configurable source-count charge: 10000 per supplier, currently 30000",
+    "Pipe pressure flow solver and spatial gas-cell lookup",
+    "Rectangular inlet transfer chambers and tapered streamtube drag",
+    "Automatic ideal valves based on particle destination counts",
+    "MX301 source rotor collision and synchronized visuals",
+    "Separate FlowTest level, 1-4 close-up cameras, 30fps runtime display cap",
+    "Finite cylinder valve contacts and source-bore-matched seals; adjustable partial-batch valve schedule with retained particle accounting"
+  ],
+  "unimplemented_or_unverified": [
+    "Full 3D volumetric CFD / resolved hopper junction flow",
+    "Vacuum generator/filter capacity and chamber pressure transients",
+    "Two-way particle-to-gas pressure feedback / dense plugs",
+    "Single uninterrupted end-to-end validation; checkpoint-linked stages passed but 100% mixer transfer not reached",
+    "Real-material calibration and mesh/time-step convergence"
+  ],
+  "level": "/Game/ProcessPlant_20261029/L_ProcessPlant_FlowTest",
+  "build": "UE 5.8 Development editor, suffix 1061, succeeded",
+  "tests": "See validation.json",
+  "runtime_scene_modified": true,
+  "full_plant_simulation_executed": true,
+  "calibrated": false,
+  "acceptance": "User accepts broadly expected visible transport/mixing with residual grains; no requirement for zero residue.",
+  "prototype_status": "Completed to revised flow-demonstration criterion; quantitative CFD/real-plant validation remains outside verified scope."
+}

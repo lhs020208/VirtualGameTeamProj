@@ -1,0 +1,34 @@
+{
+  "source_sha256": "18fb4cde7b0ad3b2740de17feb31f6a25cdd86d62af5881c1848a1135e33d834",
+  "groups": [
+    {
+      "id": "H-101A",
+      "species": 0,
+      "count": 10000,
+      "radius_m": 0.00125,
+      "mass_kg": 0.09817477042468105
+    },
+    {
+      "id": "H-101B",
+      "species": 1,
+      "count": 10000,
+      "radius_m": 0.00125,
+      "mass_kg": 0.09817477042468105
+    },
+    {
+      "id": "H-101C",
+      "species": 2,
+      "count": 10000,
+      "radius_m": 0.00125,
+      "mass_kg": 0.09817477042468105
+    }
+  ],
+  "total_count": 30000,
+  "charge_sha256": "5744990dca35f992080fa2fd56fdef0363e16f71b4551e9b2e9ea2831630cbd4",
+  "simulation_executed": false,
+  "materials_calibrated": false,
+  "notes": [
+    "Three colours label sources; all use the same virtual properties initially.",
+    "No teleportation, forced route, or prescribed particle trajectory. Initial state only."
+  ]
+}

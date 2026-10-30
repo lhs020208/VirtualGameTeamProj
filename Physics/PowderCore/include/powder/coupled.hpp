@@ -12,12 +12,19 @@ struct GasConfig {
  void validate()const;double viscosity()const;
 };
 struct GasCell {double mass=0,epsilon=1;Vec3 momentum;bool solid=false;};
+// A physical pressure opening on ONE fluid-cell face, including a face beside
+// a solid mask cell. It must not replace a fluid/fluid interior face.
+struct GasPressurePort {int cell=0,axis=0,side=0;double absolute_pa=101325;};
 struct GasReport {double mass=0,boundary_mass_out=0,min_epsilon=1,max_speed=0,cfl=0;};
 struct GasGrid {
  GasConfig config;std::vector<GasCell> cells;double boundary_mass_out=0;
+ std::vector<GasPressurePort> pressure_ports;
  explicit GasGrid(GasConfig c={});
  int index(int x,int y,int z)const;Vec3 centre(int i)const;Vec3 extent()const;
  double pressure(int i)const;Vec3 velocity(int i)const;double mass()const;
+ void validate_pressure_ports()const;
+ double reservoir_pressure(int fluid_cell,int axis,int side)const;
+ Vec3 pressure_gradient(int fluid_cell)const;
  void initialize_pressure();
  // Positive normalized CIC, excludes gas-solid cells, conservative volume/force mapping.
  std::vector<std::pair<int,double>> stencil(Vec3 p)const;

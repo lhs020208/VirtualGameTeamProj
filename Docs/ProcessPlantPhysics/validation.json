@@ -1,0 +1,124 @@
+{
+  "schema": "plant-validation/1",
+  "source_sha256": "18fb4cde7b0ad3b2740de17feb31f6a25cdd86d62af5881c1848a1135e33d834",
+  "runtime_sha256": "dea1d373b910af67d58357321c7498f6cc1bb67d82d1e3c96f4f9075746465e6",
+  "model": "1D quasi-steady single-phase pipe pressure + 3D approximate granular contacts; one-way gas drag",
+  "full_3d_cfd": false,
+  "pressure_ports_regression": "passed",
+  "coupled_regression": "passed",
+  "pipe_pressure_analytic_and_continuity": "passed",
+  "source_route_audit": {
+    "tested": 7353,
+    "minimum_clearance_m": 0.02193722315132618,
+    "obstructions": [],
+    "passed": true,
+    "note": "Centreline clearance only, not full fluid-volume certification or particle transport proof"
+  },
+  "sparse_path": {
+    "particles": 30,
+    "physical_s": 4,
+    "counts": {
+      "mixer": 16,
+      "receiver": 14
+    },
+    "all_reached_receiver": true,
+    "all_reached_mixer": false,
+    "note": "Receiver lower shoulder retains grains; no teleportation or forced removal. Historical preliminary geometry; superseded by 30000-particle stage tests."
+  },
+  "unreal_render_smoke": {
+    "count": 30000,
+    "physical_s": 0.0206399995,
+    "actual_rate": 0.0120122487,
+    "wh": 0,
+    "rh": 0,
+    "mixer": 0,
+    "failed": false,
+    "scope": "Initial 0.02 s rendering/startup smoke only, not sustained performance."
+  },
+  "full_30000_path": {
+    "method": "Checkpoint-linked stage tests, not a single uninterrupted full-cycle test. Restarted solver time/rotor phase at stage boundaries; no particles were in mixer before discharge restart.",
+    "supply": {
+      "all_reached_weighing": true,
+      "physical_s": 0.90016
+    },
+    "transfer": {
+      "physical_s": 2.6,
+      "wall_s": 645.987636,
+      "audit": {
+        "count": 30000,
+        "species_counts": {
+          "0": 10000,
+          "1": 10000,
+          "2": 10000
+        },
+        "finite": true,
+        "unique_sequential_ids": true,
+        "overlapping_pairs": 30877,
+        "max_overlap_diameter_fraction": 0.005166819210332407,
+        "counts": {
+          "weighing": 0,
+          "receiver": 29657,
+          "mixer": 0
+        },
+        "note": "One snapshot only; not a trajectory-wide overlap bound, wall-containment proof or physical calibration."
+      },
+      "safety_guard_passed": true
+    },
+    "discharge": {
+      "physical_s": 1.0,
+      "wall_s": 189.255034,
+      "audit": {
+        "count": 30000,
+        "species_counts": {
+          "0": 10000,
+          "1": 10000,
+          "2": 10000
+        },
+        "finite": true,
+        "unique_sequential_ids": true,
+        "overlapping_pairs": 2516,
+        "max_overlap_diameter_fraction": 0.003971084757121643,
+        "counts": {
+          "weighing": 0,
+          "receiver": 156,
+          "mixer": 29020
+        },
+        "note": "One snapshot only; not a trajectory-wide overlap bound, wall-containment proof or physical calibration."
+      },
+      "safety_guard_passed": true
+    },
+    "all_reached_mixer": false,
+    "no_particles_removed": true,
+    "continuous_cycle_certified": false
+  },
+  "temperature_observed_C": [
+    39,
+    59
+  ],
+  "calibrated": false,
+  "performance_certified": false,
+  "finite_valve_regression": "passed: top, bottom, rim and corner; no excessive rim projection",
+  "seal_fit": {
+    "passed": true,
+    "joints": [
+      {
+        "joint": "BV122",
+        "body_bore_radius_m": 0.06399981307988006,
+        "matched": true,
+        "overlaps_both_body_ends": true
+      },
+      {
+        "joint": "BV272",
+        "body_bore_radius_m": 0.13899990382276037,
+        "matched": true,
+        "overlaps_both_body_ends": true
+      }
+    ],
+    "note": "Bore/axial overlap check. Does not certify every source surface is watertight."
+  },
+  "test_schedule": {
+    "receiver_min_fraction": 0.98,
+    "receiver_wait_physical_s": 2.0,
+    "meaning": "Valve operation only; residual grains remain in solver and totals."
+  }
+}

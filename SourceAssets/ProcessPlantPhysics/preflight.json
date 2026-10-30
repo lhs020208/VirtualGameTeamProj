@@ -1,0 +1,21 @@
+{
+  "initial_charge_valid": true,
+  "count": 30000,
+  "suppliers": {
+    "H-101A": 10000,
+    "H-101B": 10000,
+    "H-101C": 10000
+  },
+  "minimum_initial_wall_clearance_m": 0.2279304850101471,
+  "reducer_axial_clearance_rays": 64,
+  "source_unchanged": true,
+  "simulation_executed": false,
+  "full_plant_lumen_validated": false,
+  "pressure_solver_integrated": false,
+  "end_to_end_transport_validated": false,
+  "limits": [
+    "Local seed and reducer checks only; not a whole-plant fluid seal or topology certificate.",
+    "A dedicated wall mesh is not a fluid-volume mesh.",
+    "Open mesh edges require interface classification; they are not automatically leaks."
+  ]
+}

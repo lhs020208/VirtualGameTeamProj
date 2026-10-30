@@ -1,0 +1,37 @@
+{
+  "schema": "plant-pressure-boundaries/1",
+  "units": "Pa absolute; metres; kelvin",
+  "source_sha256": "18fb4cde7b0ad3b2740de17feb31f6a25cdd86d62af5881c1848a1135e33d834",
+  "calibrated_equipment": false,
+  "temperature_k": 293.15,
+  "ambient_absolute_pa": 101325,
+  "initial_absolute_pa": 101325,
+  "ports": [
+    {
+      "source_port": "AIR_PORT_VAC_RECEIVER",
+      "position_blender_m": [
+        3.2260000705718994,
+        1.975754670979768e-08,
+        3.5369999408721924
+      ],
+      "absolute_pa": 100325,
+      "enabled": false,
+      "fluid_face_ids": [],
+      "status": "requires assembled fluid-domain face mapping"
+    },
+    {
+      "source_port": "PORT_ASSUMED_WH101.VAC",
+      "position_blender_m": [
+        -0.17000000178813934,
+        0.27000001072883606,
+        2.0850000381469727
+      ],
+      "absolute_pa": 100325,
+      "enabled": false,
+      "fluid_face_ids": [],
+      "status": "requires assembled fluid-domain face mapping"
+    }
+  ],
+  "simulation_enabled": false,
+  "note": "Settings prepared only. Not consumed by an Unreal whole-plant solver yet. Never substitute actuator compressed-air ports for powder suction ports."
+}

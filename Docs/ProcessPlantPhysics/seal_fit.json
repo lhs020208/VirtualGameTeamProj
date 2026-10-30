@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "joints": [
+    {
+      "joint": "BV122",
+      "body_bore_radius_m": 0.06399981307988006,
+      "matched": true,
+      "overlaps_both_body_ends": true
+    },
+    {
+      "joint": "BV272",
+      "body_bore_radius_m": 0.13899990382276037,
+      "matched": true,
+      "overlaps_both_body_ends": true
+    }
+  ],
+  "note": "Bore/axial overlap check. Does not certify every source surface is watertight."
+}
