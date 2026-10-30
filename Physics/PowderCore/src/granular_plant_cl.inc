@@ -68,7 +68,7 @@ float3 plant_air(float3 p,__global const float4* d){
  int start=(int)d[0].z,count=(int)d[0].w,phase=(int)d[4].x;float best=INFINITY;float3 velocity=(float3)(0);
  int3 dims=convert_int3(d[6].yzw),key=convert_int3(floor((p-d[7].xyz)/d[7].w));if(any(key<0)||any(key>=dims))return velocity;
  float4 bucket=d[(int)d[6].x+(key.z*dims.y+key.y)*dims.x+key.x];
- for(int i=0;i<(int)bucket.y;++i){int at=(int)d[(int)bucket.x+i].x;float4 a=d[at],b=d[at+1],q=d[at+2];if((int)q.w!=phase)continue;
+ for(int i=0;i<(int)bucket.y;++i){int at=(int)d[(int)bucket.x+i].x;float4 a=d[at],b=d[at+1],q=d[at+2];if((d[4].y!=1.f&&(int)q.w!=phase)||q.x==0.f)continue;
   float3 ab=b.xyz-a.xyz;float l2=dot(ab,ab),t=dot(p-a.xyz,ab)/l2;
   // Finite flow cells have planar ends, not hemispherical caps. Otherwise a
   // large upstream hopper cell can override a narrow downstream nozzle cell.

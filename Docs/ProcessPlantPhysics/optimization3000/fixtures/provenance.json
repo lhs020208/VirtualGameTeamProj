@@ -1,0 +1,7 @@
+{
+  "hopper": "lowest 1000 per species from earlier 30000-particle checkpoint; dense seeded local benchmark",
+  "mixer": "1000 per species inside mixer, z<0.65m, from earlier discharge CSV; zero velocities/reset rotor angle; initial unrestricted selection rejected by safety guard",
+  "pipe": "synthetic compact plugs inside source route, 1000 per supplier",
+  "initial": "current test_charge.csv, 1000 per supplier",
+  "scope": "fixed identical 3000-particle comparison fixtures; not continuous full-process certification"
+}

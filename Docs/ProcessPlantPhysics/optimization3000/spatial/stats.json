@@ -1,0 +1,9 @@
+{
+  "cell_m": 0.1,
+  "radius_m": 0.00125,
+  "leaves": 32768,
+  "occupied_cells": 9818,
+  "references": 122599,
+  "extra_bytes": 3735664,
+  "max_candidates": 774
+}

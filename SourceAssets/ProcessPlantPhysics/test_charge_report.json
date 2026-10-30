@@ -4,27 +4,27 @@
     {
       "id": "H-101A",
       "species": 0,
-      "count": 10000,
+      "count": 1000,
       "radius_m": 0.00125,
-      "mass_kg": 0.09817477042468105
+      "mass_kg": 0.009817477042468105
     },
     {
       "id": "H-101B",
       "species": 1,
-      "count": 10000,
+      "count": 1000,
       "radius_m": 0.00125,
-      "mass_kg": 0.09817477042468105
+      "mass_kg": 0.009817477042468105
     },
     {
       "id": "H-101C",
       "species": 2,
-      "count": 10000,
+      "count": 1000,
       "radius_m": 0.00125,
-      "mass_kg": 0.09817477042468105
+      "mass_kg": 0.009817477042468105
     }
   ],
-  "total_count": 30000,
-  "charge_sha256": "5744990dca35f992080fa2fd56fdef0363e16f71b4551e9b2e9ea2831630cbd4",
+  "total_count": 3000,
+  "charge_sha256": "dfbc7633c3e49a3ab63edc2e311763967624147b020a7e197a6235034205a4f1",
   "simulation_executed": false,
   "materials_calibrated": false,
   "notes": [

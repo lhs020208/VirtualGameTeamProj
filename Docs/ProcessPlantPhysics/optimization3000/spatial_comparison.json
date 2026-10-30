@@ -1,0 +1,22 @@
+{
+  "initial": {
+    "max_position_delta_m": 0.0,
+    "max_velocity_delta": 0.0,
+    "baseline_repeat_delta": 0.0
+  },
+  "pipe": {
+    "max_position_delta_m": 0.0,
+    "max_velocity_delta": 0.0,
+    "baseline_repeat_delta": 0.0
+  },
+  "hopper": {
+    "max_position_delta_m": 0.0,
+    "max_velocity_delta": 0.0,
+    "baseline_repeat_delta": 0.0
+  },
+  "mixer": {
+    "max_position_delta_m": 0.0,
+    "max_velocity_delta": 0.0,
+    "baseline_repeat_delta": 0.0
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "initial": {
+    "baseline_rate": 0.0408157398145,
+    "candidate_rate": 0.0412267658234,
+    "max_position_delta_m": 0.0,
+    "rms_position_delta_m": 0.0,
+    "baseline_region_counts": [
+      0,
+      0,
+      0
+    ],
+    "candidate_region_counts": [
+      0,
+      0,
+      0
+    ]
+  },
+  "pipe": {
+    "baseline_rate": 0.0349171908155,
+    "candidate_rate": 0.0346882331999,
+    "max_position_delta_m": 0.0,
+    "rms_position_delta_m": 0.0,
+    "baseline_region_counts": [
+      0,
+      0,
+      0
+    ],
+    "candidate_region_counts": [
+      0,
+      0,
+      0
+    ]
+  },
+  "hopper": {
+    "baseline_rate": 0.00281856884579,
+    "candidate_rate": 0.00228941367518,
+    "max_position_delta_m": 0.0035899989306926727,
+    "rms_position_delta_m": 0.00030146108474582434,
+    "baseline_region_counts": [
+      1998,
+      0,
+      0
+    ],
+    "candidate_region_counts": [
+      1998,
+      0,
+      0
+    ]
+  },
+  "mixer": {
+    "baseline_rate": 0.0154441156791,
+    "candidate_rate": 0.0153643348127,
+    "max_position_delta_m": 0.0,
+    "rms_position_delta_m": 0.0,
+    "baseline_region_counts": [
+      0,
+      0,
+      3000
+    ],
+    "candidate_region_counts": [
+      0,
+      0,
+      3000
+    ]
+  }
+}

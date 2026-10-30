@@ -1,0 +1,8 @@
+{
+  "SourceAssets\\ProcessPlantPhysics\\runtime.plant": "dea1d373b910af67d58357321c7498f6cc1bb67d82d1e3c96f4f9075746465e6",
+  "SourceAssets\\ProcessPlantPhysics\\runtime.routes": "8283d4b3a8f215132930e09facf72ada3910b3b643b5b32dccc6a482efc2e6d1",
+  "SourceAssets\\ProcessPlantPhysics\\test_charge.csv": "dfbc7633c3e49a3ab63edc2e311763967624147b020a7e197a6235034205a4f1",
+  "Docs\\ProcessPlantPhysics\\optimization3000\\fixtures\\hopper.bin": "68ace4e4d07e7c1369beeeb293418b17326cf333cc50d4fcb26a14edea67a693",
+  "Docs\\ProcessPlantPhysics\\optimization3000\\fixtures\\mixer.bin": "ddf3f585f6912edd0ed4018321c2eff5c2c75a77038f4f347516bdb3380c1937",
+  "Docs\\ProcessPlantPhysics\\optimization3000\\fixtures\\pipe.bin": "2224fc072a99aca791f32bb8366541c0079c2e5b7e1c3147d8cf62f3af456e73"
+}

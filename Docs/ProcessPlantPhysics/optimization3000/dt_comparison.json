@@ -1,0 +1,146 @@
+{
+  "initial_10": {
+    "max_delta_m": 0.0,
+    "rms_delta_m": 0.0,
+    "max_overlap_fraction": 0,
+    "nonfinite": 0,
+    "count": 3000,
+    "region_counts": [
+      0,
+      0,
+      0
+    ]
+  },
+  "initial_15": {
+    "max_delta_m": 1.1920928955078125e-06,
+    "rms_delta_m": 1.118282284551242e-06,
+    "max_overlap_fraction": 0,
+    "nonfinite": 0,
+    "count": 3000,
+    "region_counts": [
+      0,
+      0,
+      0
+    ]
+  },
+  "initial_20": {
+    "max_delta_m": 2.1457672119140625e-06,
+    "rms_delta_m": 2.1457672119140625e-06,
+    "max_overlap_fraction": 0,
+    "nonfinite": 0,
+    "count": 3000,
+    "region_counts": [
+      0,
+      0,
+      0
+    ]
+  },
+  "pipe_10": {
+    "max_delta_m": 0.0,
+    "rms_delta_m": 0.0,
+    "max_overlap_fraction": 0,
+    "nonfinite": 0,
+    "count": 3000,
+    "region_counts": [
+      0,
+      0,
+      0
+    ]
+  },
+  "pipe_15": {
+    "max_delta_m": 0.0001517198543297127,
+    "rms_delta_m": 1.895887908176519e-05,
+    "max_overlap_fraction": 0,
+    "nonfinite": 0,
+    "count": 3000,
+    "region_counts": [
+      0,
+      0,
+      0
+    ]
+  },
+  "pipe_20": {
+    "max_delta_m": 0.00016982867964543402,
+    "rms_delta_m": 2.0979092369088903e-05,
+    "max_overlap_fraction": 0,
+    "nonfinite": 0,
+    "count": 3000,
+    "region_counts": [
+      0,
+      0,
+      0
+    ]
+  },
+  "hopper_10": {
+    "max_delta_m": 0.0,
+    "rms_delta_m": 0.0,
+    "max_overlap_fraction": 0.0006557442247867584,
+    "nonfinite": 0,
+    "count": 3000,
+    "region_counts": [
+      1555,
+      0,
+      0
+    ]
+  },
+  "hopper_15": {
+    "max_delta_m": 0.0777844488620758,
+    "rms_delta_m": 0.00474809855222702,
+    "max_overlap_fraction": 0.0013058073818683624,
+    "nonfinite": 0,
+    "count": 3000,
+    "region_counts": [
+      1553,
+      0,
+      0
+    ]
+  },
+  "hopper_20": {
+    "max_delta_m": 0.06194967404007912,
+    "rms_delta_m": 0.004717686213552952,
+    "max_overlap_fraction": 0.0033441931009292603,
+    "nonfinite": 0,
+    "count": 3000,
+    "region_counts": [
+      1554,
+      0,
+      0
+    ]
+  },
+  "mixer_10": {
+    "max_delta_m": 0.0,
+    "rms_delta_m": 0.0,
+    "max_overlap_fraction": 0.0001473352313041687,
+    "nonfinite": 0,
+    "count": 3000,
+    "region_counts": [
+      0,
+      0,
+      3000
+    ]
+  },
+  "mixer_15": {
+    "max_delta_m": 0.12226895987987518,
+    "rms_delta_m": 0.007823668420314789,
+    "max_overlap_fraction": 0.00011883676052093506,
+    "nonfinite": 0,
+    "count": 3000,
+    "region_counts": [
+      0,
+      0,
+      3000
+    ]
+  },
+  "mixer_20": {
+    "max_delta_m": 0.11273705214262009,
+    "rms_delta_m": 0.008576571941375732,
+    "max_overlap_fraction": 0.00014081597328186035,
+    "nonfinite": 0,
+    "count": 3000,
+    "region_counts": [
+      0,
+      0,
+      3000
+    ]
+  }
+}

@@ -18,7 +18,7 @@
           3.299999952316284
         ]
       ],
-      "particle_count": 10000,
+      "particle_count": 1000,
       "radius_m": 0.00125,
       "density_kg_m3": 1200,
       "material": "virtual_test_material",
@@ -38,7 +38,7 @@
           3.299999952316284
         ]
       ],
-      "particle_count": 10000,
+      "particle_count": 1000,
       "radius_m": 0.00125,
       "density_kg_m3": 1200,
       "material": "virtual_test_material",
@@ -58,7 +58,7 @@
           3.299999952316284
         ]
       ],
-      "particle_count": 10000,
+      "particle_count": 1000,
       "radius_m": 0.00125,
       "density_kg_m3": 1200,
       "material": "virtual_test_material",

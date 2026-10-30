@@ -1,0 +1,50 @@
+{
+  "dt10_initial": {
+    "exit": 0,
+    "output": "PASS Docs\\ProcessPlantPhysics\\optimization3000\\evidence\\dt10_initial wall=1.14249 rate=0.0420134\n"
+  },
+  "dt15_initial": {
+    "exit": 0,
+    "output": "PASS Docs\\ProcessPlantPhysics\\optimization3000\\evidence\\dt15_initial wall=0.75419 rate=0.0636445\n"
+  },
+  "dt20_initial": {
+    "exit": 0,
+    "output": "PASS Docs\\ProcessPlantPhysics\\optimization3000\\evidence\\dt20_initial wall=0.571326 rate=0.0840151\n"
+  },
+  "dt10_pipe": {
+    "exit": 0,
+    "output": "PASS Docs\\ProcessPlantPhysics\\optimization3000\\evidence\\dt10_pipe wall=1.70732 rate=0.0281142\n"
+  },
+  "dt15_pipe": {
+    "exit": 0,
+    "output": "PASS Docs\\ProcessPlantPhysics\\optimization3000\\evidence\\dt15_pipe wall=1.14029 rate=0.0420946\n"
+  },
+  "dt20_pipe": {
+    "exit": 0,
+    "output": "PASS Docs\\ProcessPlantPhysics\\optimization3000\\evidence\\dt20_pipe wall=0.851618 rate=0.0563633\n"
+  },
+  "dt10_hopper": {
+    "exit": 0,
+    "output": "PASS Docs\\ProcessPlantPhysics\\optimization3000\\evidence\\dt10_hopper wall=17.2164 rate=0.00278804\n"
+  },
+  "dt15_hopper": {
+    "exit": 0,
+    "output": "PASS Docs\\ProcessPlantPhysics\\optimization3000\\evidence\\dt15_hopper wall=11.4734 rate=0.00418358\n"
+  },
+  "dt20_hopper": {
+    "exit": 0,
+    "output": "PASS Docs\\ProcessPlantPhysics\\optimization3000\\evidence\\dt20_hopper wall=8.59623 rate=0.00558385\n"
+  },
+  "dt10_mixer": {
+    "exit": 0,
+    "output": "PASS Docs\\ProcessPlantPhysics\\optimization3000\\evidence\\dt10_mixer wall=3.15607 rate=0.0152088\n"
+  },
+  "dt15_mixer": {
+    "exit": 0,
+    "output": "PASS Docs\\ProcessPlantPhysics\\optimization3000\\evidence\\dt15_mixer wall=2.11375 rate=0.0227085\n"
+  },
+  "dt20_mixer": {
+    "exit": 0,
+    "output": "PASS Docs\\ProcessPlantPhysics\\optimization3000\\evidence\\dt20_mixer wall=1.57929 rate=0.0303934\n"
+  }
+}

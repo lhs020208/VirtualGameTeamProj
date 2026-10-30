@@ -1,0 +1,12 @@
+{
+  "removed_inner_triangles": 1024,
+  "retained_static_triangles": 210100,
+  "source_cone_sides": 512,
+  "max_circle_polygon_radial_error_m": 6.588651089611819e-06,
+  "analytic_z_range_m": [
+    0.71,
+    0.94
+  ],
+  "fallback": "original static root outside eligible interior shell or after projection exits region",
+  "original_file_unchanged": true
+}

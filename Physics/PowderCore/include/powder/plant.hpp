@@ -89,9 +89,25 @@ inline int plant_receiver_gate(const std::vector<Grain>& d){
  if(result<0)throw std::invalid_argument("missing receiver gate");return result;
 }
 inline void plant_set_receiver_valve(std::vector<Grain>& d,bool open){int k=plant_receiver_gate(d);d[k+1].y=open?1.f:0.f;d[k+1].z=1.f;validate_plant_data(d);}
+// Manual topology: atmospheric suppliers -> weighing node -> ideal receiver suction.
+// With weighing outlet closed, its dedicated suction holds -drop instead.
+// With outlet open, that dedicated suction is isolated (test operating assumption).
 inline void plant_set_manual_valves(std::vector<Grain>& d,const std::vector<PlantRoute>& routes,double drop,std::uint32_t suppliers,std::uint32_t supplier_air,bool hopper,bool hopper_air){
- plant_set_supplier_valves(d,routes,drop,suppliers,supplier_air);int k=plant_weighing_gate(d);d[k+1].y=hopper?1.f:0.f;d[k+1].z=1.f;
- if(!hopper_air||d[4].x!=1)for(const auto&r:routes)if(r.phase==1)for(int at:r.cells)d[at+2].x=0;
+ if(!std::isfinite(drop)||drop<0||drop>3000)throw std::invalid_argument("invalid network pressure");
+ auto gates=plant_supplier_gates(d);std::vector<const PlantRoute*> inputs;const PlantRoute* output=nullptr;
+ for(const auto&r:routes){if(r.phase==0)inputs.push_back(&r);else if(r.phase==1){if(output)throw std::invalid_argument("multiple receiver routes");output=&r;}else throw std::invalid_argument("unsupported network route");}
+ if(inputs.size()!=gates.size()||!output)throw std::invalid_argument("network route mismatch");
+ auto loss=[&](const PlantRoute&r,double q){double sum=0;for(int at:r.cells){if(at<int(d[0].z)||at+2>=int(d.size())||(at-int(d[0].z))%3||d[at+2].w!=r.phase)throw std::invalid_argument("network cell mismatch");auto a=d[at],b=d[at+1],v=d[at+2];double len=std::hypot(std::hypot(b.x-a.x,b.y-a.y),b.z-a.z);sum+=v.z==1?plant_cell_loss(q,len,2*a.w*b.w/(a.w+b.w),v.y,4*a.w*b.w):plant_cell_loss(q,len,std::min(a.w,b.w),v.y);}return sum;};
+ auto flow=[&](const PlantRoute&r,double dp){if(dp<=0)return 0.;double lo=0,hi=1;for(int n=0;n<55;++n){double q=(lo+hi)/2;if(loss(r,q)>dp)hi=q;else lo=q;}return (lo+hi)/2;};
+ const auto mask=suppliers&supplier_air;double suction=drop;
+ if(hopper&&hopper_air){
+  double lo=0,hi=drop;for(int n=0;n<50;++n){double p=(lo+hi)/2,in=0;for(size_t i=0;i<inputs.size();++i)if(mask&(std::uint32_t(1)<<i))in+=flow(*inputs[i],p);double out=flow(*output,drop-p);if(in>out)hi=p;else lo=p;}suction=(lo+hi)/2;
+ }
+ double total=0;for(size_t i=0;i<inputs.size();++i){double q=(mask&(std::uint32_t(1)<<i))?flow(*inputs[i],suction):0;total+=q;for(int at:inputs[i]->cells)d[at+2].x=float(q);d[gates[i]+1].y=(suppliers&(std::uint32_t(1)<<i))?1.f:0.f;d[gates[i]+1].z=1;}
+ for(int at:output->cells)d[at+2].x=hopper&&hopper_air?float(total):0;
+ int k=plant_weighing_gate(d);d[k+1].y=hopper?1.f:0.f;d[k+1].z=1;
+ d[4].y=1; // Explicit network mode; legacy staged benchmarks retain y=0.
+ d[4].z=float(-suction);d[4].w=float(-drop);
  validate_plant_data(d);
 }
 

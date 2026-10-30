@@ -547,3 +547,8 @@ if(WIN32)
  add_executable(plant_valve_tests tests/plant_valve_tests.cpp)
  target_link_libraries(plant_valve_tests PRIVATE powder_granular)
 endif()
+
+if(WIN32)
+ add_executable(plant_analytic_tests tests/plant_analytic_tests.cpp)
+ target_link_libraries(plant_analytic_tests PRIVATE powder_granular)
+endif()

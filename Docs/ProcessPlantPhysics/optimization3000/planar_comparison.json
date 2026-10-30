@@ -1,0 +1,18 @@
+{
+  "initial": {
+    "max_position_delta_m": 0.0,
+    "max_velocity_delta": 0.0
+  },
+  "pipe": {
+    "max_position_delta_m": 0.0,
+    "max_velocity_delta": 0.0
+  },
+  "hopper": {
+    "max_position_delta_m": 0.0009437549742870033,
+    "max_velocity_delta": 0.6252826452255249
+  },
+  "mixer": {
+    "max_position_delta_m": 0.010816912166774273,
+    "max_velocity_delta": 3.79546856880188
+  }
+}
