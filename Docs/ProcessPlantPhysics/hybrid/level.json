@@ -1,0 +1,6 @@
+{
+  "level": "/Game/ProcessPlant_20261029/L_ProcessPlant_HybridCollisionTest",
+  "particles": 30,
+  "actor": "Plant_Hybrid_Pressure_Grains_Test",
+  "data_directory": "SourceAssets/ProcessPlantHybrid"
+}

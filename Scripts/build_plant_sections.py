@@ -60,7 +60,14 @@ for section,(name,groups,prefixes,camera) in enumerate(specs,1):
    for j in range(count):packed[at+j+shift][0]+=shift
  (dst/'runtime.plant').write_bytes(struct.pack('<I',len(packed))+np.array(packed,dtype='<f4').tobytes())
  routes=m['routes'];(dst/'runtime.routes').write_text(str(len(routes))+'\n'+'\n'.join(str(r['phase'])+' '+str(len(r['cells']))+' '+' '.join(str(c+shift) for c in r['cells']) for r in routes)+'\n')
- if section==1:shutil.copyfile(SRC/'test_charge.csv',dst/'test_charge.csv')
+ if section==1:
+  # Section fixtures remain 3,000 x 1.25mm even when the full-flow trial changes.
+  from prepare_plant_particle_charge import charge
+  suppliers=json.loads((SRC/'manifest.json').read_text(encoding='utf-8'))['suppliers'];rows=[]
+  for species,supplier in enumerate(suppliers):
+   supplier=dict(supplier,particle_count=1000,radius_m=.00125,density_kg_m3=1200);rows.extend(charge(supplier,len(rows),species))
+  with (dst/'test_charge.csv').open('w',newline='') as f:
+   w=csv.writer(f);w.writerow(['id','species','supplier','x_m','y_m','z_m','radius_m','density_kg_m3']);w.writerows(rows)
  else:
   centre={2:(0,0,1.2),3:(3,0,2.6),4:(2.7,0,.60)}[section]
   with (dst/'test_charge.csv').open('w',newline='') as f:

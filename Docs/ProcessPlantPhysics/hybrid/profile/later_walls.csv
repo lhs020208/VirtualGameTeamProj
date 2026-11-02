@@ -1,0 +1,3 @@
+region,angle,points,gpu_us_median,gpu_us_min,gpu_us_max
+actual_after_0p3s_30,0,30,162.7786667,162.576,163.3413333
+actual_after_0p3s_30,0.349999994,30,162.704,162.5413333,162.92

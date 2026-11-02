@@ -1,0 +1,19 @@
+{
+  "count_before": 30,
+  "count_after": 30,
+  "blue_mean_before_m": [
+    -0.00047999999999999996,
+    1.39952,
+    2.2354
+  ],
+  "blue_mean_after_m": [
+    -0.029226283999999998,
+    0.014062932,
+    0.7129352
+  ],
+  "valves": "Only supplier B opened manually; weighing outlet and receiver outlet closed; mixer stopped",
+  "editor_module": 1072,
+  "editor_state_at_finish": "PIE stopped; HybridCollisionTest remains open",
+  "observed_weighing_count": 10,
+  "limits": "Short visual observation and UI region count, not long-duration containment certification"
+}

@@ -1,0 +1,148 @@
+{
+  "schema": "plant-hybrid/1",
+  "static_shapes": 185682,
+  "rotor_shapes": 2726,
+  "static_obbs": 10470,
+  "rotor_obbs": 2685,
+  "source_static_triangles": 211124,
+  "source_rotor_triangles": 8956,
+  "patch_half_thickness_m": 2.5e-06,
+  "meshes": [
+    {
+      "source": "Collision_WH101_Body_ID700",
+      "source_triangles": 4392,
+      "source_area_m2": 3.737181986024871,
+      "converted_area_m2": 3.737181986024873,
+      "converted_triangles": 4392,
+      "obb_count": 1094,
+      "retained_triangles": 0,
+      "cone_extension_boxes": 0,
+      "max_plane_fit_error_m": 1.1128944386566486e-08
+    },
+    {
+      "source": "Collision_WH101_Cone_ID700_to_44_final",
+      "source_triangles": 4096,
+      "source_area_m2": 0.9877162998028973,
+      "converted_area_m2": 0.9877162998028997,
+      "converted_triangles": 4096,
+      "obb_count": 1537,
+      "retained_triangles": 0,
+      "cone_extension_boxes": 0,
+      "max_plane_fit_error_m": 8.261506247130286e-10
+    },
+    {
+      "source": "Collision_WH101_Separate_Top_Cover",
+      "source_triangles": 11600,
+      "source_area_m2": 0.8461574278018625,
+      "converted_area_m2": 0.8461574278018673,
+      "converted_triangles": 11600,
+      "obb_count": 2898,
+      "retained_triangles": 0,
+      "cone_extension_boxes": 0,
+      "max_plane_fit_error_m": 2.282727284283246e-09
+    },
+    {
+      "source": "H-101A_Collision",
+      "source_triangles": 1792,
+      "source_area_m2": 4.148564781927009,
+      "converted_area_m2": 4.140450055430592,
+      "converted_triangles": 1788,
+      "obb_count": 640,
+      "retained_triangles": 4,
+      "cone_extension_boxes": 0,
+      "max_plane_fit_error_m": 3.568565748041772e-08
+    },
+    {
+      "source": "H-101B_Collision",
+      "source_triangles": 1792,
+      "source_area_m2": 4.148564804948101,
+      "converted_area_m2": 4.14856480494811,
+      "converted_triangles": 1792,
+      "obb_count": 642,
+      "retained_triangles": 0,
+      "cone_extension_boxes": 0,
+      "max_plane_fit_error_m": 2.524432722301204e-08
+    },
+    {
+      "source": "H-101C_Collision",
+      "source_triangles": 1792,
+      "source_area_m2": 4.148564781927009,
+      "converted_area_m2": 4.140450055430599,
+      "converted_triangles": 1788,
+      "obb_count": 640,
+      "retained_triangles": 4,
+      "cone_extension_boxes": 0,
+      "max_plane_fit_error_m": 3.568565748041772e-08
+    },
+    {
+      "source": "MX-301_Collision_Vessel",
+      "source_triangles": 5156,
+      "source_area_m2": 10.499610474230403,
+      "converted_area_m2": 9.44294702304452,
+      "converted_triangles": 4711,
+      "obb_count": 1170,
+      "retained_triangles": 445,
+      "cone_extension_boxes": 0,
+      "max_plane_fit_error_m": 1.0128673287972369e-07
+    },
+    {
+      "source": "RH201_110_Main_shell",
+      "source_triangles": 1688,
+      "source_area_m2": 2.732705352330721,
+      "converted_area_m2": 2.7029011731947303,
+      "converted_triangles": 1617,
+      "obb_count": 418,
+      "retained_triangles": 71,
+      "cone_extension_boxes": 0,
+      "max_plane_fit_error_m": 1.1371409984341527e-07
+    },
+    {
+      "source": "RH201_120_Upper_module",
+      "source_triangles": 1592,
+      "source_area_m2": 0.693447143382598,
+      "converted_area_m2": 0.6861051334548312,
+      "converted_triangles": 1568,
+      "obb_count": 405,
+      "retained_triangles": 24,
+      "cone_extension_boxes": 0,
+      "max_plane_fit_error_m": 1.472610311185247e-07
+    },
+    {
+      "source": "RH201_130_Conical_reducer",
+      "source_triangles": 2560,
+      "source_area_m2": 0.6568995112265406,
+      "converted_area_m2": 0.6568995112265404,
+      "converted_triangles": 2560,
+      "obb_count": 1026,
+      "retained_triangles": 0,
+      "cone_extension_boxes": 0,
+      "max_plane_fit_error_m": 7.248235871270712e-08
+    },
+    {
+      "source": "MX-301_Collision_Rotor",
+      "source_triangles": 8956,
+      "source_area_m2": 1.085607732470733,
+      "converted_area_m2": 1.0855627805015358,
+      "converted_triangles": 8915,
+      "obb_count": 2685,
+      "retained_triangles": 41,
+      "cone_extension_boxes": 0,
+      "max_plane_fit_error_m": 1.533261962659948e-07
+    }
+  ],
+  "spatial_search": "source-order stackless AABB BVH; exact 2D edge BVH for complex clipped patches",
+  "obb_semantics": "thin source-aligned solid wall slabs; nonrectangular patches clipped to original polygon edges and holes; original mesh fallback at mixer shaft/end interfaces",
+  "pipe_geometry": "unchanged source triangles and connection sleeves",
+  "pressure": "unchanged full network",
+  "particles": 3000,
+  "ordered_leaf_index": [
+    {
+      "original_leaves": 32768,
+      "spatial_nodes": 16383
+    },
+    {
+      "original_leaves": 512,
+      "spatial_nodes": 255
+    }
+  ]
+}

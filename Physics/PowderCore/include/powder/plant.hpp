@@ -15,10 +15,42 @@ inline void validate_plant_data(const std::vector<Grain>& d){
  auto index=[&](float f){need(f>=0&&f<d.size()&&std::floor(f)==f);return int(f);};
  need(d[1].w>=100&&d[1].w<=10000);need(d[2].x<d[3].x&&d[2].y<d[3].y&&d[2].z<d[3].z);
  need(d[4].x>=0&&d[4].x<=2&&std::floor(d[4].x)==d[4].x);
- need(d[10].x==0||d[10].x==1);need(d[11].x>=0&&d[11].x<=4&&std::floor(d[11].x)==d[11].x);
+ need(d[10].x==0||d[10].x==1||d[10].x==2);need(d[11].x>=0&&d[11].x<=4&&std::floor(d[11].x)==d[11].x);
  if(d[10].x==1){
   for(int group=0;group<2;++group){int start=index(group?d[9].z:d[9].x);float nf=group?d[9].w:d[9].y;need(nf>=0&&nf<=4096&&std::floor(nf)==nf);int n=int(nf);need(start>=16&&start+4*n<=d.size());if(!group)need(n>0);
    for(int j=0;j<n;++j){int k=start+4*j;for(int a=1;a<=3;++a){auto u=d[k+a];need(u.w>.0013f&&u.w<10);need(std::abs(u.x*u.x+u.y*u.y+u.z*u.z-1)<1e-4);for(int b=a+1;b<=3;++b){auto v=d[k+b];need(std::abs(u.x*v.x+u.y*v.y+u.z*v.z)<1e-4);}}}
+  }
+ }
+ if(d[10].x==2){
+  need(d[10].z==0&&d[10].w==0); // GPU-only cache pointers must not come from assets.
+  need(d[14].x<d[14].y&&d[15].x<d[15].y&&d[14].w>0);
+  for(int tree=0;tree<2;++tree){int root=index(tree?d[12].y:d[12].x),end=index(tree?d[13].y:d[13].x);need(root>=16&&end>root&&(end-root)%2==0);size_t shapes=0;
+   for(int at=root;at<end;at+=2){auto lo=d[at],hi=d[at+1];need(lo.x<=hi.x&&lo.y<=hi.y&&lo.z<=hi.z);
+    if(lo.w>=0){need(index(lo.w)==at+2&&hi.w>at+2&&hi.w<=end&&std::floor(hi.w)==hi.w&&(int(hi.w)-root)%2==0);}
+    else {need(-lo.w>=1&&-lo.w<=8&&std::floor(lo.w)==lo.w);int refs=index(hi.w);need(refs>=end&&refs+int(-lo.w)<=d.size());shapes+=size_t(-lo.w);
+     for(int j=0;j<int(-lo.w);++j){auto ref=d[refs+j];int k=index(ref.x);need(ref.y==1||ref.y==2||ref.y==3||ref.y==4);need(k>=16&&k+((ref.y==1||ref.y==4)?3:ref.y==2?4:5)<=root);
+      if(ref.y==3){int edges=index(d[k+4].x);float n=d[k+4].y;need(n>=3&&n<=100000&&std::floor(n)==n&&edges+int(n)<=root);for(int edgeIndex=0;edgeIndex<int(n);++edgeIndex){auto e=d[edges+edgeIndex];need(std::hypot(e.x-e.z,e.y-e.w)>1e-9);}}
+      if(ref.y==3&&d[k+4].w!=0){
+       int eroot=index(d[k+4].z),eend=index(d[k+4].w);need(eroot>=k+5&&eend>eroot&&eend<=root&&(eend-eroot)%2==0);std::set<int> edgeIds;
+       for(int en=eroot;en<eend;en+=2){auto el=d[en],eh=d[en+1];need(el.x<=eh.x&&el.y<=eh.y);
+        if(el.w>=0)need(index(el.w)==en+2&&eh.w>en+2&&eh.w<=eend&&std::floor(eh.w)==eh.w&&(int(eh.w)-eroot)%2==0);
+        else {need(-el.w>=1&&-el.w<=8&&std::floor(el.w)==el.w);int refsStart=index(eh.w);need(refsStart>=eend&&refsStart+int(-el.w)<=root);for(int ei=0;ei<int(-el.w);++ei){float id=d[refsStart+ei].x;need(id>=0&&id<d[k+4].y&&std::floor(id)==id&&edgeIds.insert(int(id)).second);}}
+       }need(edgeIds.size()==size_t(d[k+4].y));
+      }
+      if(ref.y==4){auto u=d[k+1];need(u.w>0&&u.w<10&&std::abs(u.x*u.x+u.y*u.y+u.z*u.z-1)<1e-4&&d[k+2].x>0&&d[k+2].y>d[k+2].x);}
+      if(ref.y==2||ref.y==3)for(int a=1;a<=3;++a){auto u=d[k+a];need(u.w>1e-7&&u.w<10&&std::abs(u.x*u.x+u.y*u.y+u.z*u.z-1)<1e-4);for(int b=a+1;b<=3;++b){auto v=d[k+b];need(std::abs(u.x*v.x+u.y*v.y+u.z*v.z)<1e-4);}}
+     }
+    }
+   }
+   float auxiliary=tree?d[13].w:d[13].z;
+   if(auxiliary!=0){int header=index(auxiliary),aroot=index(d[header].x),aend=index(d[header].y);need(aroot==header+1&&aend>aroot&&(aend-aroot)%3==0);std::vector<int> original;for(int at=root;at<end;at+=2)if(d[at].w<0)original.push_back(at);need(d[header].z==original.size());std::set<int> ids;
+    auto contains=[&](int outer,int inner){auto a=d[outer],b=d[outer+1],x=d[inner],y=d[inner+1];need(a.x<=x.x&&a.y<=x.y&&a.z<=x.z&&b.x>=y.x&&b.y>=y.y&&b.z>=y.z);};
+    for(int at=aroot;at<aend;at+=3){auto lo=d[at],hi=d[at+1],rank=d[at+2];need(lo.x<=hi.x&&lo.y<=hi.y&&lo.z<=hi.z&&rank.x>=0&&rank.y<original.size()&&rank.x<=rank.y);
+     if(lo.w>=0){int left=index(lo.w);need(left==at+3);int right=d[left].w>=0?index(d[left+1].w):left+3;need(right<aend);int escape=d[right].w>=0?int(d[right+1].w):right+3;need(hi.w==escape&&escape<=aend);contains(at,left);contains(at,right);need(rank.x==std::min(d[left+2].x,d[right+2].x)&&rank.y==std::max(d[left+2].y,d[right+2].y));}
+     else {need(-lo.w>=1&&-lo.w<=4&&std::floor(lo.w)==lo.w);int refs=index(hi.w);need(refs>=aend&&refs+int(-lo.w)<=d.size());for(int j=0;j<int(-lo.w);++j){auto ref=d[refs+j];need(ref.y>=0&&ref.y<original.size()&&std::floor(ref.y)==ref.y&&ref.x==original[int(ref.y)]&&ids.insert(int(ref.y)).second&&ref.y>=rank.x&&ref.y<=rank.y);contains(at,int(ref.x));}}
+    }need(ids.size()==original.size());
+   }
+   need(shapes==size_t(tree?d[12].w:d[12].z));
   }
  }
  std::set<int> visited;

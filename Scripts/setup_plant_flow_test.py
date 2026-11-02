@@ -27,7 +27,7 @@ cls=u.load_class(None,'/Script/VirtualGameTeamProj.PowderPlantTest');assert cls
 test=next((a for a in actors.get_all_level_actors() if a.get_class()==cls),None)
 if not test:test=actors.spawn_actor_from_class(cls,u.Vector());test.set_actor_label('Plant_Pressure_Grains_Test')
 test.reset_simulation();assert not test.get_editor_property('error'),test.get_editor_property('error')
-assert test.get_editor_property('particle_count')==30000
+assert test.get_editor_property('particle_count')==sum(s['particle_count'] for s in json.loads((root/'SourceAssets/ProcessPlantPhysics/manifest.json').read_text(encoding='utf-8'))['suppliers'])
 # Keep the supplied source level unchanged; close its displaced inspection cover here.
 for name in ['WH101_Inspection_Lid','WH101_Inspection_Handle']:
  if name in inventory:

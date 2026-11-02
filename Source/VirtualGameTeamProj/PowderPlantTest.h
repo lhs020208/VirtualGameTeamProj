@@ -23,7 +23,7 @@ public:
  UPROPERTY(EditAnywhere,Category="Plant|Test",meta=(ClampMin="0",ClampMax="4")) int32 SectionTest=0;
  UPROPERTY(EditAnywhere,Category="Plant|Test") FString DataDirectory=TEXT("SourceAssets/ProcessPlantPhysics");
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Plant|Control") bool Running=true;
- UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Plant|Control",meta=(ClampMin="0.001",ClampMax="0.1")) double TargetRate=.1;
+ UPROPERTY(meta=(DeprecatedProperty,DeprecationMessage="Simulation now runs without a rate cap; this saved value is ignored.")) double TargetRate=.1;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Plant|Control",meta=(ClampMin="0",ClampMax="3000")) double TestPressureDropPa=1000;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Plant|Control",meta=(ClampMin="0",ClampMax="30")) double MixerRPM=15;
  UPROPERTY(EditAnywhere,Category="Plant|Test",meta=(ClampMin="0.000001",ClampMax="0.000025")) double FixedDt=.00001;
@@ -47,6 +47,7 @@ public:
  UFUNCTION(BlueprintCallable,Category="Plant") void ToggleReceiver();
  UFUNCTION(BlueprintCallable,Category="Plant") void ToggleMixer();
 private:
+ float ParticleRadiusM=.00125f;
  TArray<bool> SupplierOpen;
  bool WeighingHopperOpen=false,AppliedHopperOpen=false;
  bool ReceiverOpen=false,AppliedReceiverOpen=false,MixerEnabled=false;

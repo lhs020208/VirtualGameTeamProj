@@ -63,8 +63,143 @@ float3 plant_obb_walls(float3 p,float r,__global const float4* d){
   }
  }return p;
 }
-float3 plant_boundary_ref(float3 p,float r,float angle,__global const float4* d,float3* wn,float3* wv,float3 reference){
- float3 initial=p;p=d[10].x==1.f?plant_obb_walls(p,r,d):plant_mesh(p,r,(int)d[0].x,d);int phase=(int)d[4].x;
+// Hybrid wall BVH. Leaf references point at exact triangles or solid OBB slabs.
+float3 plant_hybrid_shape(float3 p,float r,int k,int type,__global const float4* d){
+ if(type==1){float3 a=d[k].xyz,b=d[k+1].xyz,c=d[k+2].xyz;
+  if(any(p<fmin(a,fmin(b,c))-r)||any(p>fmax(a,fmax(b,c))+r))return p;
+  float3 q=plant_closest(p,a,b,c),delta=p-q;float len=length(delta);
+  if(len<r)p+=(len>1.e-9f?delta/len:normalize(cross(b-a,c-a)))*(r-len);return p;
+ }
+ // Experimental finite annular cylinder: open bore, annular end faces.
+ if(type==4){float3 axis=d[k+1].xyz,q=p-d[k].xyz;float z=dot(q,axis);float3 radial=q-z*axis;float rho=length(radial);
+  float inner=d[k+2].x-rho,outer=rho-d[k+2].y,dr=fmax(inner,outer),dz=fabs(z)-d[k+1].w;
+  float2 out=fmax((float2)(dr,dz),(float2)(0));float len=length(out),distance=len+fmin(fmax(dr,dz),0.f);
+  if(distance<r){float3 nr=rho>1.e-9f?radial/rho:(float3)(1,0,0);if(inner>outer)nr=-nr;float3 nz=axis*copysign(1.f,z),n;
+   if(dr>0&&dz>0)n=(nr*out.x+nz*out.y)/len;else n=dr>dz?nr:nz;p+=n*(r-distance);
+  }return p;
+ }
+ float3 h=(float3)(d[k+1].w,d[k+2].w,d[k+3].w),q=plant_box_local(p,k,d),gap=fabs(q)-h;
+ if(any(gap>r))return p;
+ if(type==3){
+  int edges=(int)d[k+4].x,count=(int)d[k+4].y,inside=0,bestId=2147483647;float best=INFINITY;float2 nearest=q.xy;
+  int node=(int)d[k+4].z,end=(int)d[k+4].w;
+  // Farther edges cannot contact an outside particle. For an inside particle,
+  // an edge beyond max(radius,halfThickness) cannot beat the planar face.
+  // Parity still considers every ray-crossing edge, even beyond this radius.
+  if(end){float reach=fmax(r,h.z)+1.e-6f;best=reach*reach;}
+  // A node can be skipped only if it cannot improve nearest distance AND
+  // cannot intersect the positive-X parity ray. Tie-break by source edge ID.
+  int linear=0;
+  while(node<end||(!end&&linear<count)){
+   int first=linear,n=1,next=0;
+   if(end){float4 lo=d[node],hi=d[node+1];next=lo.w>=0?(int)hi.w:node+2;
+    float2 gap=fmax(fmax(lo.xy-q.xy,q.xy-hi.xy),(float2)(0));
+    int ray=q.y>=lo.y&&q.y<=hi.y&&q.x<=hi.x;
+    if(dot(gap,gap)>best+1.e-12f&&!ray){node=next;continue;}
+    if(lo.w>=0){node=(int)lo.w;continue;}first=(int)hi.w;n=(int)(-lo.w);
+   }
+   for(int entry=0;entry<n;++entry){int j=end?(int)d[first+entry].x:first;float4 edge=d[edges+j];float2 a=edge.xy,b=edge.zw,ab=b-a;float t=clamp(dot(q.xy-a,ab)/dot(ab,ab),0.f,1.f);float2 point=a+t*ab;float ds=dot(q.xy-point,q.xy-point);if(ds<best||(ds==best&&j<bestId)){best=ds;nearest=point;bestId=j;}
+   if((a.y>q.y)!=(b.y>q.y))if(q.x<a.x+(q.y-a.y)*(b.x-a.x)/(b.y-a.y))inside=!inside;
+   }
+   if(end)node=next;else ++linear;
+  }
+  float dl=sqrt(best),lateral=inside?-dl:dl,dz=fabs(q.z)-h.z;float2 outside=fmax((float2)(lateral,dz),(float2)(0));float len=length(outside),distance=len+fmin(fmax(lateral,dz),0.f);
+  if(distance<r){float2 radial=dl>1.e-9f?(inside?nearest-q.xy:q.xy-nearest)/dl:(float2)(1,0);float3 n;
+   if(lateral>0&&dz>0)n=(float3)(radial*outside.x,copysign(outside.y,q.z))/len;
+   else if(lateral>dz)n=(float3)(radial,0);else n=(float3)(0,0,copysign(1.f,q.z));
+   float3 delta=n*(r-distance);p+=delta.x*d[k+1].xyz+delta.y*d[k+2].xyz+delta.z*d[k+3].xyz;
+  }return p;
+ }
+
+ float3 outside=fmax(gap,(float3)(0));float len=length(outside),distance=len+fmin(fmax(gap.x,fmax(gap.y,gap.z)),0.f);
+ if(distance<r){float3 n;
+  if(len>1.e-9f)n=copysign(outside,q)/len;
+  else if(gap.x>=gap.y&&gap.x>=gap.z)n=(float3)(copysign(1.f,q.x),0,0);
+  else if(gap.y>=gap.z)n=(float3)(0,copysign(1.f,q.y),0);
+  else n=(float3)(0,0,copysign(1.f,q.z));
+  // Add displacement in world coordinates; avoid a lossy world/local round trip.
+  float3 delta=n*(r-distance);p+=delta.x*d[k+1].xyz+delta.y*d[k+2].xyz+delta.z*d[k+3].xyz;
+ }return p;
+}
+float3 plant_hybrid_linear(float3 p,float r,int at,int end,__global const float4* d){
+ while(at<end){float4 lo=d[at],hi=d[at+1];int next=lo.w>=0?(int)hi.w:at+2;
+  if(any(p<lo.xyz-r)||any(p>hi.xyz+r)){at=next;continue;}
+  if(lo.w>=0){at=(int)lo.w;continue;}
+  for(int j=0;j<(int)(-lo.w);++j){float4 ref=d[(int)hi.w+j];p=plant_hybrid_shape(p,r,(int)ref.x,(int)ref.y,d);}
+  at=next;
+ }return p;
+}
+// Find the next overlapping ORIGINAL leaf, not the next spatially visited leaf.
+// No earlier leaf can change p if its AABB misses. Re-query after each leaf's
+// corrections, so newly reachable later leaves are never omitted.
+int2 plant_next_leaf(float3 p,float r,int header,int cursor,__global const float4* d){
+ int at=(int)d[header].x,end=(int)d[header].y,best=2147483647,leaf=-1;
+ while(at<end){float4 lo=d[at],hi=d[at+1],rank=d[at+2];int next=lo.w>=0?(int)hi.w:at+3;
+  if(rank.y<cursor||rank.x>=best||any(p<lo.xyz-r)||any(p>hi.xyz+r)){at=next;continue;}
+  if(lo.w>=0){at=(int)lo.w;continue;}
+  for(int j=0;j<(int)(-lo.w);++j){float4 ref=d[(int)hi.w+j];int id=(int)ref.y,k=(int)ref.x;
+   if(id>=cursor&&id<best&&!any(p<d[k].xyz-r)&&!any(p>d[k+1].xyz+r)){best=id;leaf=k;}
+  }at=next;
+ }return (int2)(leaf,best);
+}
+#define PLANT_CACHE_CAPACITY 64
+#define PLANT_CACHE_TREE_STRIDE 66
+#define PLANT_CACHE_STRIDE 139
+int plant_cache_base(__global const float4* d){
+ return d[10].z>0&&get_global_id(0)<(uint)d[10].w?(int)d[10].z+(int)get_global_id(0)*PLANT_CACHE_STRIDE:-1;
+}
+void plant_cache_count(__global const float4* d,int counter){
+ int base=plant_cache_base(d);if(base<0)return;
+ __global uint* counts=(__global uint*)(d+base+138);if(counts[counter]!=0xffffffffu)++counts[counter];
+}
+float3 plant_hybrid_cached(float3 p,float r,int root,int end,int header,__global const float4* d){
+ int base=plant_cache_base(d)+(root==(int)d[12].x?0:PLANT_CACHE_TREE_STRIDE);
+ __global float4* cache=(__global float4*)(d+base);float4 anchor=cache[0],meta=cache[1];
+ int valid=meta.w==1.f&&meta.y==header&&all(fabs(p-anchor.xyz)+r<=anchor.w-1.e-6f);
+ if(!valid){
+  plant_cache_count(d,0);float reach=r*3.002f+2.e-6f;int count=0,at=(int)d[header].x,finish=(int)d[header].y;
+  cache[0]=(float4)(p,reach);cache[1]=(float4)(-1,header,0,1);
+  while(at<finish){float4 lo=d[at],hi=d[at+1];int next=lo.w>=0?(int)hi.w:at+3;
+   if(any(p<lo.xyz-reach)||any(p>hi.xyz+reach)){at=next;continue;}
+   if(lo.w>=0){at=(int)lo.w;continue;}
+   for(int j=0;j<(int)(-lo.w);++j){float4 ref=d[(int)hi.w+j];int k=(int)ref.x;
+    if(any(p<d[k].xyz-reach)||any(p>d[k+1].xyz+reach))continue;
+    if(count==PLANT_CACHE_CAPACITY){plant_cache_count(d,2);return plant_hybrid_linear(p,r,root,end,d);}
+    int dest=count;while(dest>0&&cache[2+dest-1].y>ref.y){cache[2+dest]=cache[2+dest-1];--dest;}cache[2+dest]=ref;++count;
+   }at=next;
+  }
+  cache[1].x=count;anchor=cache[0];meta=cache[1];
+ }else plant_cache_count(d,1);
+ // An overflowing list is never used. Keep the exact original traversal.
+ if(meta.x<0)return plant_hybrid_linear(p,r,root,end,d);
+ for(int i=0;i<(int)meta.x;++i){int at=(int)cache[2+i].x;
+  if(any(p<d[at].xyz-r)||any(p>d[at+1].xyz+r))continue;
+  for(int j=0;j<(int)(-d[at].w);++j){float4 ref=d[(int)d[at+1].w+j];p=plant_hybrid_shape(p,r,(int)ref.x,(int)ref.y,d);}
+  // A correction can leave the cached envelope mid-query. Continue after the
+  // fully processed original leaf; never restart/replay earlier contacts.
+  if(any(fabs(p-anchor.xyz)+r>anchor.w-1.e-6f)){cache[1].w=0;return plant_hybrid_linear(p,r,at+2,end,d);}
+ }return p;
+}
+float3 plant_hybrid(float3 p,float r,int root,int end,__global const float4* d){
+#if PLANT_WALL_MODE >= 1
+ int header=root==(int)d[12].x?(int)d[13].z:(int)d[13].w;
+#if PLANT_WALL_MODE >= 2
+ if(header>0&&plant_cache_base(d)>=0)return plant_hybrid_cached(p,r,root,end,header,d);
+#endif
+ if(header>0){int cursor=0;
+  while(cursor<(int)d[header].z){int2 next=plant_next_leaf(p,r,header,cursor,d);if(next.x<0)break;
+   int at=next.x;for(int j=0;j<(int)(-d[at].w);++j){float4 ref=d[(int)d[at+1].w+j];p=plant_hybrid_shape(p,r,(int)ref.x,(int)ref.y,d);}cursor=next.y+1;
+  }return p;
+ }
+#endif
+ return plant_hybrid_linear(p,r,root,end,d);
+}
+int plant_hybrid_reference_zone(float3 p,float r,__global const float4* d){
+ float pad=2*r+.0001f;
+ return p.z<d[14].z+pad&&fabs(p.y)<d[14].w+pad&&((p.x>d[14].x-pad&&p.x<d[14].y+pad)||(p.x>d[15].x-pad&&p.x<d[15].y+pad));
+}
+float3 plant_boundary_ref_uncached(float3 p,float r,float angle,__global const float4* d,float3* wn,float3* wv,float3 reference){
+ float3 initial=p;int referenceZone=d[10].x==2.f&&plant_hybrid_reference_zone(p,r,d);p=d[10].x==2.f&&!referenceZone?plant_hybrid(p,r,(int)d[12].x,(int)d[13].x,d):(d[10].x==1.f?plant_obb_walls(p,r,d):plant_mesh(p,r,(int)d[0].x,d));if(d[10].x==2.f&&!referenceZone&&plant_hybrid_reference_zone(p,r,d)){referenceZone=1;p=plant_mesh(initial,r,(int)d[0].x,d);}int phase=(int)d[4].x;
  // Configurable horizontal valve disks: xyz/radius plus open phase.
  int gates=(int)d[5].x,gatecount=(int)d[5].y;
  for(int j=0;j<gatecount;++j){int k=gates+2*j;int open=phase==(int)d[k+1].x;if(d[k+1].z==1.f)open=d[k+1].y==1.f;
@@ -84,9 +219,23 @@ float3 plant_boundary_ref(float3 p,float r,float angle,__global const float4* d,
  }
  float3 delta=p-initial;*wn=length(delta)>1.e-9f?normalize(delta):(float3)(0);*wv=(float3)(0);
  float3 pivot=d[1].xyz,rotated=plant_rotate(p-pivot,-angle)+pivot;
- float3 moved=plant_mesh(rotated,r,(int)d[0].y,d),shift=plant_rotate(moved-rotated,angle);
+ float3 moved=d[10].x==2.f&&!referenceZone?plant_hybrid(rotated,r,(int)d[12].y,(int)d[13].y,d):plant_mesh(rotated,r,(int)d[0].y,d),shift=plant_rotate(moved-rotated,angle);
  if(length(shift)>1.e-9f){p+=shift;*wn=normalize(shift);*wv=(float3)(0,-(p.z-pivot.z),p.y-pivot.y);}
  return p;
+}
+float3 plant_boundary_ref(float3 p,float r,float angle,__global const float4* d,float3* wn,float3* wv,float3 reference){
+#if PLANT_WALL_MODE >= 3
+ int base=plant_cache_base(d);
+ if(base>=0){__global float4* memo=(__global float4*)(d+base+132);
+  float4 input=(float4)(p,r),key=(float4)(reference,angle);
+  if(memo[5].w==1.f&&memo[5].x==d[4].x&&all(memo[0]==input)&&all(memo[1]==key)){
+   plant_cache_count(d,3);*wn=memo[3].xyz;*wv=memo[4].xyz;return memo[2].xyz;
+  }
+  float3 result=plant_boundary_ref_uncached(p,r,angle,d,wn,wv,reference);
+  memo[0]=input;memo[1]=key;memo[2]=(float4)(result,0);memo[3]=(float4)(*wn,0);memo[4]=(float4)(*wv,0);memo[5]=(float4)(d[4].x,0,0,1);return result;
+ }
+#endif
+ return plant_boundary_ref_uncached(p,r,angle,d,wn,wv,reference);
 }
 float3 plant_boundary(float3 p,float r,float angle,__global const float4* d,float3* wn,float3* wv){return plant_boundary_ref(p,r,angle,d,wn,wv,p);}
 float3 plant_air(float3 p,__global const float4* d){

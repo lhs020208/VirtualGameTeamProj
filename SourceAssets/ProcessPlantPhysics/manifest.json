@@ -1,6 +1,6 @@
 {
   "schema": "plant-physics-source/1",
-  "source": "D:\\GitHub\\가상현실게임\\hoper_팀원전달_MX301패들수정_20261028\\hoper.blend",
+  "source": "D:\\GitHub\\\uac00\uc0c1\ud604\uc2e4\uac8c\uc784\\hoper_\ud300\uc6d0\uc804\ub2ec_MX301\ud328\ub4e4\uc218\uc815_20261028\\hoper.blend",
   "sha256": "18fb4cde7b0ad3b2740de17feb31f6a25cdd86d62af5881c1848a1135e33d834",
   "coordinates": "Blender world metres; UE = 100 * (x,-y,z)",
   "suppliers": [
@@ -19,7 +19,7 @@
         ]
       ],
       "particle_count": 1000,
-      "radius_m": 0.00125,
+      "radius_m": 0.002,
       "density_kg_m3": 1200,
       "material": "virtual_test_material",
       "calibrated": false
@@ -39,7 +39,7 @@
         ]
       ],
       "particle_count": 1000,
-      "radius_m": 0.00125,
+      "radius_m": 0.002,
       "density_kg_m3": 1200,
       "material": "virtual_test_material",
       "calibrated": false
@@ -59,7 +59,7 @@
         ]
       ],
       "particle_count": 1000,
-      "radius_m": 0.00125,
+      "radius_m": 0.002,
       "density_kg_m3": 1200,
       "material": "virtual_test_material",
       "calibrated": false

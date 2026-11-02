@@ -1,0 +1,9 @@
+{
+  "particle_count": 30,
+  "physical_seconds": 1.9844799498678185,
+  "actual_rate": 0.009052384164225687,
+  "data_directory": "SourceAssets/ProcessPlantHybrid",
+  "fixed_dt": 1e-05,
+  "contact_iterations": 8,
+  "error": ""
+}
