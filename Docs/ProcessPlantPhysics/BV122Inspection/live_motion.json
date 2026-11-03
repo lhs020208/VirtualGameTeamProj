@@ -1,0 +1,72 @@
+[
+  {
+    "x_m": [
+      1.5,
+      2.14
+    ],
+    "count": 7811,
+    "median_displacement_mm": 1.0786681602792045,
+    "outside_gas_radius": 0,
+    "mean_dx_m_s": 0.03435626922910968
+  },
+  {
+    "x_m": [
+      2.14,
+      2.2
+    ],
+    "count": 2550,
+    "median_displacement_mm": 1.8616018802811485,
+    "outside_gas_radius": 434,
+    "mean_dx_m_s": 0.06115183264763679
+  },
+  {
+    "x_m": [
+      2.2,
+      2.445
+    ],
+    "count": 5526,
+    "median_displacement_mm": 2.1090786362071574,
+    "outside_gas_radius": 0,
+    "mean_dx_m_s": 0.06679008684506098
+  },
+  {
+    "x_m": [
+      2.445,
+      2.57
+    ],
+    "count": 1472,
+    "median_displacement_mm": 0.8489680313266323,
+    "outside_gas_radius": 0,
+    "mean_dx_m_s": 0.025749844292662912
+  },
+  {
+    "x_m": [
+      2.57,
+      2.655
+    ],
+    "count": 675,
+    "median_displacement_mm": 0.7901119477646563,
+    "outside_gas_radius": 0,
+    "mean_dx_m_s": 0.02485253835073549
+  },
+  {
+    "x_m": [
+      2.655,
+      2.77
+    ],
+    "count": 206,
+    "median_displacement_mm": 0.07989564946852976,
+    "outside_gas_radius": 0,
+    "mean_dx_m_s": 0.0070263139392503955
+  },
+  {
+    "x_m": [
+      2.77,
+      2.9
+    ],
+    "count": 1,
+    "median_displacement_mm": 0.0,
+    "outside_gas_radius": 0,
+    "mean_dx_m_s": 0.0
+  }
+]

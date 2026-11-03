@@ -134,7 +134,7 @@
   "obb_semantics": "thin source-aligned solid wall slabs; nonrectangular patches clipped to original polygon edges and holes; original mesh fallback at mixer shaft/end interfaces",
   "pipe_geometry": "unchanged source triangles and connection sleeves",
   "pressure": "unchanged full network",
-  "particles": 3000,
+  "particles": 20000,
   "ordered_leaf_index": [
     {
       "original_leaves": 32768,

@@ -1,0 +1,48 @@
+{
+  "parts": [
+    {
+      "name": "BV122_PIPE_Weighing_side",
+      "x_min": 1.899999976158142,
+      "x_max": 2.140000104904175,
+      "inner_radius_m": 0.06099979390452463
+    },
+    {
+      "name": "BV122_111_Ferrule_neck",
+      "x_min": 2.140000104904175,
+      "x_max": 2.1538000106811523,
+      "inner_radius_m": 0.06099979955207533
+    },
+    {
+      "name": "BV122_110_Split_body_half",
+      "x_min": 2.1538000106811523,
+      "x_max": 2.1679999828338623,
+      "inner_radius_m": 0.06399981307988198
+    },
+    {
+      "name": "BV122_110_Split_body_half.001",
+      "x_min": 2.1720001697540283,
+      "x_max": 2.1862001419067383,
+      "inner_radius_m": 0.06399981307988006
+    },
+    {
+      "name": "BV122_111_Ferrule_neck.001",
+      "x_min": 2.1862001419067383,
+      "x_max": 2.200000047683716,
+      "inner_radius_m": 0.06099980080708715
+    },
+    {
+      "name": "BV122_PIPE_Receiver_side",
+      "x_min": 2.200000047683716,
+      "x_max": 2.444999933242798,
+      "inner_radius_m": 0.06099980268960526
+    }
+  ],
+  "source_split_gap_mm": 4,
+  "runtime_seam_bottom_radius_mm": 63.999969482421804,
+  "body_recess_depth_mm": 3,
+  "body_recess_width_mm": 32.4,
+  "particle_diameter_mm": 4,
+  "runtime_local_triangle_count": 5760,
+  "sampled_floor_missing_count": 0,
+  "source_unchanged": true
+}

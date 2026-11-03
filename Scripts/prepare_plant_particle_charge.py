@@ -15,10 +15,12 @@ def charge(supplier, first_id, species):
     count = supplier['particle_count']
     r = supplier['radius_m']
     rho = supplier['density_kg_m3']
-    if not isinstance(count, int) or not 1 <= count <= 1000000:
+    if not isinstance(count, int) or not 0 <= count <= 1000000:
         raise ValueError('invalid count')
     if not math.isfinite(r) or r <= 0 or not math.isfinite(rho) or rho <= 0:
         raise ValueError('invalid virtual material')
+    if count == 0:
+        return []
     lo, hi = supplier['cylinder_bounds_m']
     center = [(lo[i] + hi[i]) / 2 for i in range(3)]
     # 20 mm margin includes render-shell versus actual inside-radius difference.

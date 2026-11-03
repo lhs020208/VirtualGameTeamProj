@@ -1,0 +1,320 @@
+{
+  "method": "Static original leaf AABB overlap at frozen sampled positions, radius 2.004 mm. Counts shape function candidates before projection; not measured GPU calls, not whole-trajectory reachability. Rotor/gates/reference fallback not included.",
+  "inventory": {
+    "RH201_121_Dished_lid": 3584,
+    "RH201_120_Upper_module": 429,
+    "RH201_C01_Gasket": 1024,
+    "RH201_Filter_TubeSheet": 384,
+    "RH201_110_Main_shell": 489,
+    "RH201_Filter_Seal": 384,
+    "RH201_Filter_Core": 768,
+    "RH201_Filter_BottomCap": 380,
+    "RH201_210_Inlet_weld_neck": 1024,
+    "RH201_211_Flexible_inlet_sleeve": 1024,
+    "RH201_215_Open_inlet_spigot": 1208,
+    "PL_C01_Ferrule": 1024,
+    "PL_C01_Seal": 1024,
+    "BV122_PIPE_Receiver_side": 878,
+    "PL_C01_Ferrule.001": 1024,
+    "BV122_111_Ferrule_neck.001": 986,
+    "BV122_110_Split_body_half.001": 1024,
+    "BV122_110_Split_body_half": 1024,
+    "generated_connection_sleeve": 384,
+    "BV122_111_Ferrule_neck": 1002,
+    "BV122_PIPE_Weighing_side": 862,
+    "PL_C02_Ferrule": 1024,
+    "PL_C02_Seal": 1024,
+    "RH201_130_Conical_reducer": 1026,
+    "RH201_C02_Gasket": 1024,
+    "H-101C_Collision": 644,
+    "P101C_OutletNeck": 384,
+    "PL_C03_Ferrule": 1024,
+    "PL_C02_Ferrule.001": 1024,
+    "PL_C03_Ferrule.001": 1024,
+    "PL_C03_Seal": 1024,
+    "PL_120_Main_straight_ID122": 1556,
+    "PL_130_Long_radius_elbow_R400": 16640,
+    "PL_C04_Ferrule": 1024,
+    "PL_C04_Seal": 1024,
+    "PL_140_Weighing_side_riser": 1024,
+    "RH201_140_Discharge_neck": 1240,
+    "RH201_C03_Gasket": 1024,
+    "BV272_111_Ferrule_neck.001": 808,
+    "BV272_110_Split_body_half.001": 1024,
+    "BV272_110_Split_body_half": 1024,
+    "BV272_111_Ferrule_neck": 1024,
+    "DP_110_Upper_spool": 1024,
+    "DP_120_Flexible_sleeve": 1024,
+    "DP_130_Mixer_end_spool": 1024,
+    "P202_Reducer_272_to_44": 768,
+    "MX-301_Collision_Vessel": 1615,
+    "V101C_Body": 384,
+    "P101C_RigidRoute_ID44": 8832,
+    "PL_C05_Ferrule": 1024,
+    "PL_C04_Ferrule.001": 1024,
+    "PL_C05_Ferrule.001": 1024,
+    "PL_C05_Seal": 1024,
+    "PL_C07_Seal": 1024,
+    "PL_C07_Ferrule": 1024,
+    "PL_C07_Ferrule.001": 1024,
+    "FH122S_110_Smooth_liner": 25856,
+    "P201_Expansion_44_to_122": 768,
+    "P201_LowRoute_ID44": 8832,
+    "H-101B_Collision": 642,
+    "P101B_RigidRoute_ID44": 21504,
+    "Collision_WH101_Separate_Top_Cover": 2898,
+    "Collision_WH101_Inspection_Lid": 508,
+    "Collision_WH101_Inspection_Neck": 4096,
+    "P101C_WeighingFlexibleJoint": 384,
+    "P101B_OutletNeck": 384,
+    "H-101A_Collision": 644,
+    "V101B_Body": 384,
+    "P101A_RigidRoute_ID44": 8832,
+    "P101A_OutletNeck": 384,
+    "V101A_Body": 384,
+    "P101B_WeighingFlexibleJoint": 384,
+    "P101A_WeighingFlexibleJoint": 384,
+    "Collision_WH101_Body_ID700": 1094,
+    "Collision_WH101_Inlet_B": 3072,
+    "Collision_WH101_Inlet_C": 3072,
+    "Collision_ASSUMED_Transition_C": 2224,
+    "Collision_WH101_Inlet_A": 3072,
+    "Collision_ASSUMED_Transition_A": 2224,
+    "Collision_WH101_Cone_ID700_to_44_final": 1537,
+    "Collision_WH101_Outlet_Neck": 3072,
+    "CollisionPreview_ASSUMED_VT_HousingTop": 2244,
+    "CollisionPreview_ASSUMED_VT_BoreBody": 6156,
+    "CollisionPreview_ASSUMED_VT_HousingBottom": 2244
+  },
+  "samples": {
+    "initial": {
+      "points": 512,
+      "shape_candidates": 11337,
+      "individual_aabb_misses": 11337,
+      "per_source": [
+        {
+          "name": "H-101B_Collision",
+          "candidates": 4857,
+          "individual_aabb_misses": 4857
+        },
+        {
+          "name": "H-101A_Collision",
+          "candidates": 4774,
+          "individual_aabb_misses": 4774
+        },
+        {
+          "name": "P101B_RigidRoute_ID44",
+          "candidates": 928,
+          "individual_aabb_misses": 928
+        },
+        {
+          "name": "P201_LowRoute_ID44",
+          "candidates": 512,
+          "individual_aabb_misses": 512
+        },
+        {
+          "name": "P101C_WeighingFlexibleJoint",
+          "candidates": 177,
+          "individual_aabb_misses": 177
+        },
+        {
+          "name": "P101B_OutletNeck",
+          "candidates": 89,
+          "individual_aabb_misses": 89
+        }
+      ]
+    },
+    "recorded_stall": {
+      "points": 512,
+      "shape_candidates": 28541,
+      "individual_aabb_misses": 27489,
+      "per_source": [
+        {
+          "name": "BV122_PIPE_Receiver_side",
+          "candidates": 7729,
+          "individual_aabb_misses": 7526
+        },
+        {
+          "name": "BV122_PIPE_Weighing_side",
+          "candidates": 6618,
+          "individual_aabb_misses": 6375
+        },
+        {
+          "name": "PL_C02_Ferrule",
+          "candidates": 2010,
+          "individual_aabb_misses": 1980
+        },
+        {
+          "name": "PL_120_Main_straight_ID122",
+          "candidates": 1754,
+          "individual_aabb_misses": 1662
+        },
+        {
+          "name": "RH201_215_Open_inlet_spigot",
+          "candidates": 1458,
+          "individual_aabb_misses": 1375
+        },
+        {
+          "name": "PL_C02_Seal",
+          "candidates": 1443,
+          "individual_aabb_misses": 1434
+        },
+        {
+          "name": "PL_C01_Ferrule.001",
+          "candidates": 1027,
+          "individual_aabb_misses": 1005
+        },
+        {
+          "name": "RH201_211_Flexible_inlet_sleeve",
+          "candidates": 1003,
+          "individual_aabb_misses": 956
+        },
+        {
+          "name": "PL_C02_Ferrule.001",
+          "candidates": 571,
+          "individual_aabb_misses": 546
+        },
+        {
+          "name": "RH201_110_Main_shell",
+          "candidates": 541,
+          "individual_aabb_misses": 537
+        },
+        {
+          "name": "RH201_210_Inlet_weld_neck",
+          "candidates": 466,
+          "individual_aabb_misses": 431
+        },
+        {
+          "name": "RH201_130_Conical_reducer",
+          "candidates": 453,
+          "individual_aabb_misses": 453
+        },
+        {
+          "name": "BV122_110_Split_body_half.001",
+          "candidates": 429,
+          "individual_aabb_misses": 409
+        },
+        {
+          "name": "BV122_110_Split_body_half",
+          "candidates": 427,
+          "individual_aabb_misses": 413
+        },
+        {
+          "name": "BV122_111_Ferrule_neck.001",
+          "candidates": 357,
+          "individual_aabb_misses": 334
+        },
+        {
+          "name": "BV122_111_Ferrule_neck",
+          "candidates": 357,
+          "individual_aabb_misses": 346
+        },
+        {
+          "name": "PL_C01_Ferrule",
+          "candidates": 303,
+          "individual_aabb_misses": 285
+        },
+        {
+          "name": "PL_C01_Seal",
+          "candidates": 215,
+          "individual_aabb_misses": 197
+        },
+        {
+          "name": "PL_C03_Ferrule",
+          "candidates": 196,
+          "individual_aabb_misses": 196
+        },
+        {
+          "name": "BV272_110_Split_body_half.001",
+          "candidates": 174,
+          "individual_aabb_misses": 170
+        },
+        {
+          "name": "Collision_WH101_Cone_ID700_to_44_final",
+          "candidates": 167,
+          "individual_aabb_misses": 24
+        },
+        {
+          "name": "H-101C_Collision",
+          "candidates": 164,
+          "individual_aabb_misses": 164
+        },
+        {
+          "name": "MX-301_Collision_Vessel",
+          "candidates": 144,
+          "individual_aabb_misses": 144
+        },
+        {
+          "name": "V101C_Body",
+          "candidates": 96,
+          "individual_aabb_misses": 96
+        },
+        {
+          "name": "generated_connection_sleeve",
+          "candidates": 95,
+          "individual_aabb_misses": 87
+        },
+        {
+          "name": "RH201_140_Discharge_neck",
+          "candidates": 94,
+          "individual_aabb_misses": 94
+        },
+        {
+          "name": "P101C_OutletNeck",
+          "candidates": 48,
+          "individual_aabb_misses": 48
+        },
+        {
+          "name": "BV272_111_Ferrule_neck",
+          "candidates": 47,
+          "individual_aabb_misses": 47
+        },
+        {
+          "name": "RH201_C02_Gasket",
+          "candidates": 37,
+          "individual_aabb_misses": 37
+        },
+        {
+          "name": "BV272_110_Split_body_half",
+          "candidates": 35,
+          "individual_aabb_misses": 35
+        },
+        {
+          "name": "BV272_111_Ferrule_neck.001",
+          "candidates": 32,
+          "individual_aabb_misses": 32
+        },
+        {
+          "name": "DP_110_Upper_spool",
+          "candidates": 22,
+          "individual_aabb_misses": 22
+        },
+        {
+          "name": "PL_C04_Seal",
+          "candidates": 17,
+          "individual_aabb_misses": 17
+        },
+        {
+          "name": "H-101B_Collision",
+          "candidates": 4,
+          "individual_aabb_misses": 4
+        },
+        {
+          "name": "PL_C03_Ferrule.001",
+          "candidates": 4,
+          "individual_aabb_misses": 4
+        },
+        {
+          "name": "P201_LowRoute_ID44",
+          "candidates": 2,
+          "individual_aabb_misses": 2
+        },
+        {
+          "name": "Collision_WH101_Body_ID700",
+          "candidates": 2,
+          "individual_aabb_misses": 2
+        }
+      ]
+    }
+  }
+}

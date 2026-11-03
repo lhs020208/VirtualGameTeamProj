@@ -1,0 +1,11 @@
+{
+  "snapshot": "live_a.csv",
+  "velocity": "zero: frozen-position restart, not original live velocity",
+  "counts": [
+    30,
+    3000,
+    20000
+  ],
+  "runtime_sha256": "2d58ff63eccb7f4a79106741239d77441fdfbc3f161ef7aad16ba0064154d54b",
+  "reference_exe_sha256": "6e7935bc6732d22b5b145dcc90aae79a89c9602748af46fc30d055ca103ebb58"
+}

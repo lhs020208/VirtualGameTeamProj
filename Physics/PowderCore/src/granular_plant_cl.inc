@@ -121,11 +121,20 @@ float3 plant_hybrid_shape(float3 p,float r,int k,int type,__global const float4*
   float3 delta=n*(r-distance);p+=delta.x*d[k+1].xyz+delta.y*d[k+2].xyz+delta.z*d[k+3].xyz;
  }return p;
 }
+)CLC"
+R"CLC(
+float3 plant_hybrid_ref(float3 p,float r,float4 ref,__global const float4* d){
+#if PLANT_WALL_MODE >= 4
+ int k=(int)ref.z;
+ if(k>0&&(any(p<d[k].xyz-r)||any(p>d[k+1].xyz+r)))return p;
+#endif
+ return plant_hybrid_shape(p,r,(int)ref.x,(int)ref.y,d);
+}
 float3 plant_hybrid_linear(float3 p,float r,int at,int end,__global const float4* d){
  while(at<end){float4 lo=d[at],hi=d[at+1];int next=lo.w>=0?(int)hi.w:at+2;
   if(any(p<lo.xyz-r)||any(p>hi.xyz+r)){at=next;continue;}
   if(lo.w>=0){at=(int)lo.w;continue;}
-  for(int j=0;j<(int)(-lo.w);++j){float4 ref=d[(int)hi.w+j];p=plant_hybrid_shape(p,r,(int)ref.x,(int)ref.y,d);}
+  for(int j=0;j<(int)(-lo.w);++j){float4 ref=d[(int)hi.w+j];p=plant_hybrid_ref(p,r,ref,d);}
   at=next;
  }return p;
 }
@@ -159,28 +168,65 @@ float3 plant_hybrid_cached(float3 p,float r,int root,int end,int header,__global
  if(!valid){
   plant_cache_count(d,0);float reach=r*3.002f+2.e-6f;int count=0,at=(int)d[header].x,finish=(int)d[header].y;
   cache[0]=(float4)(p,reach);cache[1]=(float4)(-1,header,0,1);
+#if PLANT_WALL_MODE >= 6
+  at=root==(int)d[12].x?(int)d[9].x:(int)d[9].z;
+  finish=root==(int)d[12].x?(int)d[9].y:(int)d[9].w;
+  while(at<finish){float4 lo=d[at],hi=d[at+1];int next=lo.w>=0?(int)hi.w:at+2;
+   if(any(p<lo.xyz-reach)||any(p>hi.xyz+reach)){at=next;continue;}
+   if(lo.w>=0){at=(int)lo.w;continue;}
+   for(int j=0;j<(int)(-lo.w);++j){float4 ref=d[(int)hi.w+j];int bound=(int)ref.w;
+    if(any(p<d[bound].xyz-reach)||any(p>d[bound+1].xyz+reach))continue;
+    int original=(int)ref.x;if(any(p<d[original].xyz-reach)||any(p>d[original+1].xyz+reach))continue;
+    int dest=0;while(dest<count&&cache[2+dest].y<ref.y)++dest;
+    if(dest<count&&cache[2+dest].y==ref.y){cache[2+dest].z=(float)(((uint)cache[2+dest].z)|((uint)ref.z));continue;}
+    if(count==PLANT_CACHE_CAPACITY){plant_cache_count(d,2);return plant_hybrid_linear(p,r,root,end,d);}
+    for(int move=count;move>dest;--move)cache[2+move]=cache[2+move-1];cache[2+dest]=ref;++count;
+   }at=next;
+  }
+#else
   while(at<finish){float4 lo=d[at],hi=d[at+1];int next=lo.w>=0?(int)hi.w:at+3;
    if(any(p<lo.xyz-reach)||any(p>hi.xyz+reach)){at=next;continue;}
    if(lo.w>=0){at=(int)lo.w;continue;}
    for(int j=0;j<(int)(-lo.w);++j){float4 ref=d[(int)hi.w+j];int k=(int)ref.x;
     if(any(p<d[k].xyz-reach)||any(p>d[k+1].xyz+reach))continue;
+#if PLANT_WALL_MODE >= 5
+    uint mask=0;
+    for(int shape=0;shape<(int)(-d[k].w);++shape){float4 item=d[(int)d[k+1].w+shape];int bound=(int)item.z;
+     if(bound<=0||(!any(p<d[bound].xyz-reach)&&!any(p>d[bound+1].xyz+reach)))mask|=1u<<shape;
+    }
+    if(mask==0)continue;ref.z=(float)mask;
+#endif
     if(count==PLANT_CACHE_CAPACITY){plant_cache_count(d,2);return plant_hybrid_linear(p,r,root,end,d);}
     int dest=count;while(dest>0&&cache[2+dest-1].y>ref.y){cache[2+dest]=cache[2+dest-1];--dest;}cache[2+dest]=ref;++count;
    }at=next;
   }
+#endif
   cache[1].x=count;anchor=cache[0];meta=cache[1];
  }else plant_cache_count(d,1);
  // An overflowing list is never used. Keep the exact original traversal.
  if(meta.x<0)return plant_hybrid_linear(p,r,root,end,d);
  for(int i=0;i<(int)meta.x;++i){int at=(int)cache[2+i].x;
   if(any(p<d[at].xyz-r)||any(p>d[at+1].xyz+r))continue;
-  for(int j=0;j<(int)(-d[at].w);++j){float4 ref=d[(int)d[at+1].w+j];p=plant_hybrid_shape(p,r,(int)ref.x,(int)ref.y,d);}
+  for(int j=0;j<(int)(-d[at].w);++j){
+#if PLANT_WALL_MODE >= 5
+   if(!(((uint)cache[2+i].z)&(1u<<j)))continue;
+#endif
+   float4 ref=d[(int)d[at+1].w+j];p=plant_hybrid_ref(p,r,ref,d);
+#if PLANT_WALL_MODE >= 5
+   // The original leaf is already admitted. Finish all remaining shapes if a
+   // correction escapes the envelope, then resume at the NEXT original leaf.
+   if(any(fabs(p-anchor.xyz)+r>anchor.w-1.e-6f)){
+    cache[1].w=0;for(int rest=j+1;rest<(int)(-d[at].w);++rest)p=plant_hybrid_ref(p,r,d[(int)d[at+1].w+rest],d);
+    return plant_hybrid_linear(p,r,at+2,end,d);
+   }
+#endif
+  }
   // A correction can leave the cached envelope mid-query. Continue after the
   // fully processed original leaf; never restart/replay earlier contacts.
   if(any(fabs(p-anchor.xyz)+r>anchor.w-1.e-6f)){cache[1].w=0;return plant_hybrid_linear(p,r,at+2,end,d);}
  }return p;
 }
-float3 plant_hybrid(float3 p,float r,int root,int end,__global const float4* d){
+float3 plant_hybrid_accelerated(float3 p,float r,int root,int end,__global const float4* d){
 #if PLANT_WALL_MODE >= 1
  int header=root==(int)d[12].x?(int)d[13].z:(int)d[13].w;
 #if PLANT_WALL_MODE >= 2
@@ -188,11 +234,26 @@ float3 plant_hybrid(float3 p,float r,int root,int end,__global const float4* d){
 #endif
  if(header>0){int cursor=0;
   while(cursor<(int)d[header].z){int2 next=plant_next_leaf(p,r,header,cursor,d);if(next.x<0)break;
-   int at=next.x;for(int j=0;j<(int)(-d[at].w);++j){float4 ref=d[(int)d[at+1].w+j];p=plant_hybrid_shape(p,r,(int)ref.x,(int)ref.y,d);}cursor=next.y+1;
+   int at=next.x;for(int j=0;j<(int)(-d[at].w);++j){float4 ref=d[(int)d[at+1].w+j];p=plant_hybrid_ref(p,r,ref,d);}cursor=next.y+1;
   }return p;
  }
 #endif
  return plant_hybrid_linear(p,r,root,end,d);
+}
+float3 plant_hybrid(float3 p,float r,int root,int end,__global const float4* d){
+ float3 result=plant_hybrid_accelerated(p,r,root,end,d);
+#if PLANT_BOUNDARY_AUDIT
+ // Diagnostic same-input oracle: exact original leaf admission and shape order,
+ // without new bounds/masks/cache. Any difference poisons the step, never hides it.
+ int at=root;
+ while(at<end){float4 lo=d[at],hi=d[at+1];int next=lo.w>=0?(int)hi.w:at+2;
+  if(any(p<lo.xyz-r)||any(p>hi.xyz+r)){at=next;continue;}
+  if(lo.w>=0){at=(int)lo.w;continue;}
+  for(int j=0;j<(int)(-lo.w);++j){float4 ref=d[(int)hi.w+j];p=plant_hybrid_shape(p,r,(int)ref.x,(int)ref.y,d);}at=next;
+ }
+ if(any(p!=result))return (float3)(NAN);
+#endif
+ return result;
 }
 int plant_hybrid_reference_zone(float3 p,float r,__global const float4* d){
  float pad=2*r+.0001f;

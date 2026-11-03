@@ -1,0 +1,9 @@
+{
+  "physical_seconds": 6.423679837724194,
+  "test_pressure_drop_pa": 1000.0,
+  "particle_count": 20000,
+  "running": true,
+  "error": "",
+  "data_directory": "SourceAssets/ProcessPlantHybrid",
+  "second_physical_seconds": 6.453919836960267
+}

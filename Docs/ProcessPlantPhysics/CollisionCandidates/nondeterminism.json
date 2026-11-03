@@ -1,0 +1,20 @@
+{
+  "repeat_baseline": {
+    "position_max_component_m": 0.003280453383922577,
+    "velocity_max_component_m_s": 0.2411838173866272,
+    "position_rms_m": 0.00014120627020020038,
+    "nonidentical_position_components": 53522
+  },
+  "current_mode3": {
+    "position_max_component_m": 0.003270275890827179,
+    "velocity_max_component_m_s": 0.27267852425575256,
+    "position_rms_m": 0.000141973709105514,
+    "nonidentical_position_components": 53534
+  },
+  "extended_stall20000_m5": {
+    "position_max_component_m": 0.003067862242460251,
+    "velocity_max_component_m_s": 0.21474316716194153,
+    "position_rms_m": 0.00014140109124127775,
+    "nonidentical_position_components": 53514
+  }
+}
