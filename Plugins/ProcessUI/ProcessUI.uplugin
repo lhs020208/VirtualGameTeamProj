@@ -1,0 +1,14 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "0.1-draft",
+  "FriendlyName": "Process UI (draft integration)",
+  "Description": "Isolated process controller, test provider and Korean desktop UI.",
+  "Category": "Project",
+  "EnabledByDefault": true,
+  "CanContainContent": true,
+  "Modules": [
+    { "Name": "ProcessUI", "Type": "Runtime", "LoadingPhase": "Default" },
+    { "Name": "ProcessUIEditor", "Type": "Editor", "LoadingPhase": "Default" }
+  ]
+}

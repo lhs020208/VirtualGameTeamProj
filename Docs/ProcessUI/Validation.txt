@@ -1,0 +1,48 @@
+PASS example validation
+PASS initial start
+PASS scheduled time is mixer charge start
+PASS scheduled addition preserves mixing
+PASS provider confirms charge start at reservation, not delayed request
+PASS full initial and scheduled sequence completes
+PASS all material follows common route; mass conserved
+PASS scheduled zero distinct from initial; impossible receiver schedule rejected
+PASS partial receiver transfer reached
+PASS partial receiver transfer explicit resume with frozen clock
+PASS partial receiver transfer completes without duplicate material
+PASS partial scheduled mixer charge reached
+PASS partial scheduled mixer charge explicit resume with frozen clock
+PASS partial scheduled mixer charge completes without duplicate material
+PASS initial mixing command pending reached
+PASS initial mixing command pending explicit resume with frozen clock
+PASS initial mixing command pending completes without duplicate material
+PASS old command completion flags cannot advance sequence
+PASS stale stopped snapshot cannot authorize resume
+PASS fourth supply hopper accepted dynamically
+PASS four-hopper sequence completes
+PASS manual intervention pauses sequence
+PASS stop acknowledgement separate; clock frozen
+PASS partial amount retained
+PASS explicit resume
+PASS resume only remaining amount, no duplicate dose
+PASS unready deadline stops at scheduled clock
+PASS no automatic late charge
+PASS missed reservation requires abort and reset; resume forbidden
+PASS recovered preparation cannot resume missed additive dose
+PASS missed reservation requires explicit batch abort before reset
+PASS missed reservation reset waits for latest stop confirmation
+PASS missed reservation reset allowed after abort and confirmed stop
+PASS missed reservation reset clears batch without automatic restart
+PASS failed close blocks resume
+PASS independent close works before full stop confirmation
+PASS wrong material prevents normal resume
+PASS reset waits for current stop request confirmation
+PASS reset requested after abort and safe confirmation
+PASS reset generation confirmed without automatic restart
+PASS named save
+PASS named load
+PASS roundtrip preserved; validates without execution
+PASS invalid schema rejected
+PASS path traversal rejected
+PASS diameter mm to micrometers
+PASS unsupported is not zero
+PASS load test level with UI rig
