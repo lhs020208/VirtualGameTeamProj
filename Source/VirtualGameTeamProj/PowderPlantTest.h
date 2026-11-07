@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "PlantSimulationSnapshot.h"
 #include "PowderPlantTest.generated.h"
 class UInstancedStaticMeshComponent;
 class APlantVisibilityController;
@@ -41,12 +42,15 @@ public:
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") FString Error;
  UFUNCTION(CallInEditor,BlueprintCallable,Category="Plant") void ResetSimulation();
  UFUNCTION(CallInEditor,BlueprintCallable,Category="Plant") void ExportSnapshot();
+ UFUNCTION(BlueprintPure,Category="Plant|Read Only") FPlantSimulationSnapshot GetSimulationSnapshot() const;
  TSharedRef<SWidget> BuildSimulationPanel();
  UFUNCTION(BlueprintCallable,Category="Plant") void ToggleSupplier(int32 Index);
  UFUNCTION(BlueprintCallable,Category="Plant") void ToggleWeighingHopper();
  UFUNCTION(BlueprintCallable,Category="Plant") void ToggleReceiver();
  UFUNCTION(BlueprintCallable,Category="Plant") void ToggleMixer();
 private:
+ int64 SnapshotEpoch=0;
+ TArray<int32> InitialSupplierCounts;
  float ParticleRadiusM=.00125f;
  TArray<bool> SupplierOpen;
  bool WeighingHopperOpen=false,AppliedHopperOpen=false;

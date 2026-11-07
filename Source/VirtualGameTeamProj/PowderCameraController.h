@@ -14,6 +14,8 @@ public:
     virtual void SetupInputComponent() override;
     virtual void PlayerTick(float DeltaTime) override;
     float GetNavigationSpeed() const { return MoveSpeed; }
+    // Cancel held navigation when switching back to a UI-only screen.
+    void CancelNavigation();
 private:
     void BeginLook();
     void EndLook();

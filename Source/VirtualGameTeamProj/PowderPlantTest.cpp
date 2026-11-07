@@ -1,5 +1,6 @@
 #include "PowderPlantTest.h"
 #include "PlantVisibilityController.h"
+#include "ProcessUIStateAdapter.h"
 #include "Camera/CameraActor.h"
 #include "powder/plant.hpp"
 #include "Components/InstancedStaticMeshComponent.h"
@@ -29,16 +30,19 @@
 #include <sstream>
 #include <chrono>
 namespace {
-std::vector<powder::Grain> ReadCharge(const FString& Path,float& Radius){
+std::vector<powder::Grain> ReadCharge(const FString& Path,float& Radius,TArray<int32>& InitialCounts){
+ InitialCounts.Init(0,3);
  FString Text;if(!FFileHelper::LoadFileToString(Text,*Path))throw std::runtime_error("particle charge file missing");
  std::istringstream File(TCHAR_TO_UTF8(*Text));std::string Line;std::getline(File,Line);std::vector<powder::Grain> P;
  while(std::getline(File,Line)){std::replace(Line.begin(),Line.end(),',',' ');std::istringstream Row(Line);unsigned Id,Type;std::string Supplier;float X,Y,Z,R,D;
   if(!(Row>>Id>>Type>>Supplier>>X>>Y>>Z>>R>>D)||Id!=P.size()||!std::isfinite(R)||R<=.001f||R>=.01f||D!=1200||Type>=32)throw std::runtime_error("invalid virtual charge; radius must be 1..10mm and density 1200");if(P.empty())Radius=R;else if(std::abs(R-Radius)>1e-8f)throw std::runtime_error("plant solver requires uniform particle radius");P.push_back({X,Y,Z,float(Type)});
+  if(Supplier.size()==6&&Supplier.substr(0,5)=="H-101"&&Supplier[5]>='A'&&Supplier[5]<='C')++InitialCounts[Supplier[5]-'A'];
  }if(P.empty())throw std::runtime_error("empty particle charge");return P;
 }
 void Count(const std::vector<powder::Grain>&P,int&WH,int&RH,int&MX){WH=RH=MX=0;for(auto A:P){if(std::hypot(A.x,A.y)<.355&&A.z>.603&&A.z<1.78)++WH;if(std::hypot(A.x-3,A.y)<.255&&A.z>2.163&&A.z<3.7)++RH;if(A.x>2.25&&A.x<3.75&&std::abs(A.y)<.45&&A.z>.57&&A.z<1.31)++MX;}}
 }
 struct FPlantRuntime {
+ FPlantSimulationSnapshot Published;
  std::thread Thread;std::mutex Mutex;std::atomic<bool> Quit{false},Run{true};
  std::atomic<double> Drop{1000},RPM{15};std::atomic<uint32> RequestedSuppliers{0};std::atomic<bool> RequestedHopper{false},RequestedReceiver{false};
  std::vector<powder::Grain> Points;std::string Error;double Time=0,Wall=0,Angle=0;
@@ -55,9 +59,28 @@ struct FPlantRuntime {
     powder::GranularGPU GPU(C,P,std::vector<powder::Grain>(P.size()));
     const auto WallMemory=GPU.plant_memory_bytes();UE_LOG(LogTemp,Display,TEXT("Plant collision mode=%u particles=%u plant_bytes=%llu acceleration_bytes=%llu cache_bytes=%llu"),C.plant_wall_mode,C.count,(unsigned long long)WallMemory[0],(unsigned long long)WallMemory[1],(unsigned long long)WallMemory[2]);
     int PhaseNow=0;double StageStart=0,Active=0;
+    double LastAppliedRPM=0;bool HasAppliedRPM=false,WasPaused=false;
+    // Telemetry only: called under Mutex, with results from a completed GPU batch.
+    auto Publish=[&](EPlantExecutionState Execution){
+     Published.Validity=EPlantValueValidity::Valid;Published.Execution=Execution;
+     Published.PhysicalSeconds=Time;Published.InWeighingHopper=WH;Published.InReceiver=RH;Published.InMixer=MX;
+     Published.AppliedSupplierMask=int32(OpenSuppliers);Published.AppliedHopperOpen=HopperOpen;Published.AppliedReceiverOpen=ReceiverOpen;
+     Published.AppliedRPM=LastAppliedRPM;Published.AppliedRPMValid=HasAppliedRPM;
+     Published.UpdatedUtc=FDateTime::UtcNow();Published.PublishedWallSeconds=FPlatformTime::Seconds();++Published.Sequence;
+    };
+    {std::lock_guard<std::mutex>L(Mutex);Count(Points,WH,RH,MX);Publish(Run?EPlantExecutionState::Running:EPlantExecutionState::Paused);}
     auto LastPublish=std::chrono::steady_clock::now(),LastControl=LastPublish;
     while(!Quit){
-     if(!Run){std::this_thread::sleep_for(std::chrono::milliseconds(5));continue;}
+     if(!Run){
+      auto Now=std::chrono::steady_clock::now();
+      if(!WasPaused||std::chrono::duration<double>(Now-LastPublish).count()>.1){
+       // Capture the final completed batch once on pause; heartbeats do not step the solver.
+       if(!WasPaused){auto Final=GPU.snapshot();std::lock_guard<std::mutex>L(Mutex);Points=std::move(Final);Time=GPU.time();Angle=GPU.angle();Wall=Active;Count(Points,WH,RH,MX);OpenSuppliers=Open;HopperOpen=OpenHopper;ReceiverOpen=OpenReceiver;++Generation;}
+       {std::lock_guard<std::mutex>L(Mutex);Publish(EPlantExecutionState::Paused);}LastPublish=Now;
+      }
+      WasPaused=true;std::this_thread::sleep_for(std::chrono::milliseconds(5));continue;
+     }
+     WasPaused=false;
      auto Begin=std::chrono::steady_clock::now();double S=RPM,D=Drop;
      if(!std::isfinite(S)||S<0||S>30)throw std::runtime_error("invalid live RPM");
      bool WantHopper=RequestedHopper.load(),WantReceiver=RequestedReceiver.load();
@@ -72,17 +95,18 @@ struct FPlantRuntime {
       }LastControl=Begin;
      }
      GPU.advance(16,float(S),false);
+     LastAppliedRPM=S;HasAppliedRPM=true;
      // No wall-clock pacing: run the next fixed-dt batch as soon as this one completes.
      Active+=std::chrono::duration<double>(std::chrono::steady_clock::now()-Begin).count();
      if(PhaseNow==0||(PhaseNow==1&&!WantHopper))StageStart=GPU.time(); // An intentional closed supply is not a timeout.
      if(std::chrono::duration<double>(std::chrono::steady_clock::now()-LastPublish).count()>.1){
       auto Next=GPU.snapshot();int W,H,M;Count(Next,W,H,M);
-      {std::lock_guard<std::mutex>L(Mutex);Points=std::move(Next);Time=GPU.time();Angle=GPU.angle();Wall=Active;WH=W;RH=H;MX=M;Phase=PhaseNow;OpenSuppliers=Open;HopperOpen=OpenHopper;ReceiverOpen=OpenReceiver;++Generation;}
+      {std::lock_guard<std::mutex>L(Mutex);Points=std::move(Next);Time=GPU.time();Angle=GPU.angle();Wall=Active;WH=W;RH=H;MX=M;Phase=PhaseNow;OpenSuppliers=Open;HopperOpen=OpenHopper;ReceiverOpen=OpenReceiver;++Generation;Publish(EPlantExecutionState::Running);}
       // Manual valve operation may intentionally retain material indefinitely.
       LastPublish=std::chrono::steady_clock::now();
      }
     }
-   }catch(const std::exception&E){std::lock_guard<std::mutex>L(Mutex);Error=E.what();Run=false;}
+   }catch(const std::exception&E){std::lock_guard<std::mutex>L(Mutex);Error=E.what();Run=false;Published.Error=UTF8_TO_TCHAR(E.what());Published.Validity=EPlantValueValidity::Error;Published.Execution=EPlantExecutionState::Fault;Published.UpdatedUtc=FDateTime::UtcNow();Published.PublishedWallSeconds=FPlatformTime::Seconds();++Published.Sequence;}
   });
  }
  ~FPlantRuntime(){Quit=true;if(Thread.joinable())Thread.join();}
@@ -91,11 +115,11 @@ APowderPlantTest::APowderPlantTest(){PrimaryActorTick.bCanEverTick=true;RootComp
 APowderPlantTest::~APowderPlantTest(){Stop();}
 void APowderPlantTest::Stop(){delete Runtime;Runtime=nullptr;}
 void APowderPlantTest::CacheRotor(){Rotor.Empty();for(TActorIterator<AActor>It(GetWorld());It;++It){const FString N=It->GetActorNameOrLabel();if(N.StartsWith(TEXT("MX-301_"))&&(N.Contains(TEXT("Paddle"))||N.Contains(TEXT("Shaft")))&&!N.Contains(TEXT("Drive"))&&!N.Contains(TEXT("Support"))){FPlantRotorVisual V;V.Actor=*It;V.Initial=It->GetActorTransform();if(auto*Root=It->GetRootComponent())Root->SetMobility(EComponentMobility::Movable);Rotor.Add(V);}}}
-void APowderPlantTest::ResetSimulation(){Stop();Error.Empty();PhysicalSeconds=ActualRate=0;Generation=0;CurrentPhase=0;AppliedSupplierMask=0;WeighingHopperOpen=AppliedHopperOpen=false;ReceiverOpen=AppliedReceiverOpen=MixerEnabled=false;InWeighingHopper=InReceiver=InMixer=0;try{
+void APowderPlantTest::ResetSimulation(){++SnapshotEpoch;InitialSupplierCounts.Empty();Stop();Error.Empty();PhysicalSeconds=ActualRate=0;Generation=0;CurrentPhase=0;AppliedSupplierMask=0;WeighingHopperOpen=AppliedHopperOpen=false;ReceiverOpen=AppliedReceiverOpen=MixerEnabled=false;InWeighingHopper=InReceiver=InMixer=0;try{
   InitializeSuppliers();for(int i=0;i<SupplierOpen.Num();++i)SupplierOpen[i]=false;
   if(!std::isfinite(FixedDt)||FixedDt<1e-6||FixedDt>2.5e-5||ContactIterations<4||ContactIterations>32||!std::isfinite(StageTimeoutSeconds)||StageTimeoutSeconds<=0)throw std::runtime_error("invalid plant test controls");
   powder::plant_discharge_ready(0,1,0,MinimumReceiverFraction,ReceiverTransferSeconds);
-  FString Root=FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()/DataDirectory);auto P=ReadCharge(Root/TEXT("test_charge.csv"),ParticleRadiusM);ParticleCount=int32(P.size());int Types=0;for(auto A:P)Types=FMath::Max(Types,int(A.w)+1);
+  FString Root=FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()/DataDirectory);auto P=ReadCharge(Root/TEXT("test_charge.csv"),ParticleRadiusM,InitialSupplierCounts);ParticleCount=int32(P.size());int Types=0;for(auto A:P)Types=FMath::Max(Types,int(A.w)+1);
   while(Groups.Num()<Types){auto*G=NewObject<UInstancedStaticMeshComponent>(this);G->SetupAttachment(RootComponent);G->SetCollisionEnabled(ECollisionEnabled::NoCollision);G->SetCastShadow(false);G->RegisterComponent();AddInstanceComponent(G);Groups.Add(G);}
   auto*Mesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/DEM/SM_GrainSphere.SM_GrainSphere"));if(!Mesh)Mesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Sphere.Sphere"));auto*Mat=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/M_BulkFlow.M_BulkFlow"));FLinearColor Colors[3]{FLinearColor(.9,.025,.01),FLinearColor(.01,.2,.9),FLinearColor(.9,.7,.01)};
   for(int I=0;I<Groups.Num();++I){auto*G=Groups[I].Get();G->ClearInstances();G->SetStaticMesh(Mesh);if(Mat){G->SetMaterial(0,Mat);if(auto*M=G->CreateDynamicMaterialInstance(0))M->SetVectorParameterValue(TEXT("Tint"),Colors[I%3]);}}
@@ -107,7 +131,7 @@ void APowderPlantTest::Show(){if(!Runtime)return;std::lock_guard<std::mutex>L(Ru
  TArray<TArray<FTransform>> T;T.SetNum(Groups.Num());for(auto A:Runtime->Points){auto*G=Groups[int(A.w)].Get();double Diameter=G->GetStaticMesh()->GetBounds().BoxExtent.GetMax()*2;T[int(A.w)].Add(FTransform(FQuat::Identity,FVector(A.x,-A.y,A.z)*100,FVector((200.*ParticleRadiusM)/Diameter)));}for(int I=0;I<Groups.Num();++I)Groups[I]->BatchUpdateInstancesTransforms(0,T[I],false,true,true);
  for(auto V:ValveVisuals)if(V){const FString N=V->GetActorNameOrLabel();const int SupplierIndex=N.Len()>4?int(N[4]-TCHAR('A')):-1;bool Open=N.StartsWith(TEXT("BV122"))||(N.StartsWith(TEXT("V101"))&&SupplierIndex>=0&&SupplierIndex<SupplierOpen.Num()&&Runtime->Phase<2&&((Runtime->OpenSuppliers&(uint32(1)<<SupplierIndex))!=0))||(N.StartsWith(TEXT("ASSUMED"))&&Runtime->HopperOpen&&Runtime->Phase<2)||(N.StartsWith(TEXT("BV272"))&&Runtime->ReceiverOpen);V->SetActorHiddenInGame(Open||(Display&&Display->ViewMode==EPlantViewMode::Hidden));}
  FQuat Q(FVector(1,0,0),-Runtime->Angle);FVector Pivot(300,0,90);for(auto V:Rotor)if(V.Actor){FTransform X=V.Initial;X.SetLocation(Pivot+Q.RotateVector(V.Initial.GetLocation()-Pivot));X.SetRotation(Q*V.Initial.GetRotation());V.Actor->SetActorTransform(X);}}
-void APowderPlantTest::Tick(float D){Super::Tick(D);if(auto*PC=GetWorld()->GetFirstPlayerController()){if(PC->WasInputKeyJustPressed(EKeys::SpaceBar))Running=!Running;if(PC->WasInputKeyJustPressed(EKeys::R))ResetSimulation();if(PC->WasInputKeyJustPressed(EKeys::O))ExportSnapshot();if(auto*Camera=Cast<ACameraActor>(PC->GetViewTarget())){int View=-1;if(PC->WasInputKeyJustPressed(EKeys::One))View=0;if(PC->WasInputKeyJustPressed(EKeys::Two))View=1;if(PC->WasInputKeyJustPressed(EKeys::Three))View=2;if(PC->WasInputKeyJustPressed(EKeys::Four))View=3;if(View>=0){FVector Targets[]{FVector(0,-140,260),FVector(0,0,115),FVector(300,0,275),FVector(300,0,90)};FVector Target=Targets[View];Camera->SetActorLocation(Target+FVector(80,View==0?300:150,60));Camera->SetActorRotation((Target-Camera->GetActorLocation()).Rotation());}}}if(Runtime){Runtime->Run=Running;Runtime->Drop=TestPressureDropPa;Runtime->RPM=MixerEnabled?MixerRPM:0;uint32 Mask=0;for(int i=0;i<SupplierOpen.Num();++i)if(SupplierOpen[i])Mask|=uint32(1)<<i;Runtime->RequestedSuppliers=Mask;Runtime->RequestedHopper=WeighingHopperOpen;Runtime->RequestedReceiver=ReceiverOpen;}LastShow+=D;if(LastShow>.1){Show();LastShow=0;}if(SmokeSeconds>0){if(!SmokeShot&&PhysicalSeconds>=SmokeSeconds*.4){if(auto*PC=GetWorld()->GetFirstPlayerController())if(auto*Camera=Cast<ACameraActor>(PC->GetViewTarget())){FVector Target(0,-140,260);Camera->SetActorLocation(Target+FVector(30,300,60));Camera->SetActorRotation((Target-Camera->GetActorLocation()).Rotation());}FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("PlantFlowPreview.png"),true,false);SmokeShot=true;}
+void APowderPlantTest::Tick(float D){Super::Tick(D);if(auto*PC=GetWorld()->GetFirstPlayerController()){const auto* UI=GetWorld()->GetSubsystem<UProcessUIStateSubsystem>();if(!UI||!UI->IsReadOnlyScreenActive()){if(PC->WasInputKeyJustPressed(EKeys::SpaceBar))Running=!Running;if(PC->WasInputKeyJustPressed(EKeys::R))ResetSimulation();if(PC->WasInputKeyJustPressed(EKeys::O))ExportSnapshot();}if(auto*Camera=Cast<ACameraActor>(PC->GetViewTarget())){int View=-1;if(PC->WasInputKeyJustPressed(EKeys::One))View=0;if(PC->WasInputKeyJustPressed(EKeys::Two))View=1;if(PC->WasInputKeyJustPressed(EKeys::Three))View=2;if(PC->WasInputKeyJustPressed(EKeys::Four))View=3;if(View>=0){FVector Targets[]{FVector(0,-140,260),FVector(0,0,115),FVector(300,0,275),FVector(300,0,90)};FVector Target=Targets[View];Camera->SetActorLocation(Target+FVector(80,View==0?300:150,60));Camera->SetActorRotation((Target-Camera->GetActorLocation()).Rotation());}}}if(Runtime){Runtime->Run=Running;Runtime->Drop=TestPressureDropPa;Runtime->RPM=MixerEnabled?MixerRPM:0;uint32 Mask=0;for(int i=0;i<SupplierOpen.Num();++i)if(SupplierOpen[i])Mask|=uint32(1)<<i;Runtime->RequestedSuppliers=Mask;Runtime->RequestedHopper=WeighingHopperOpen;Runtime->RequestedReceiver=ReceiverOpen;}LastShow+=D;if(LastShow>.1){Show();LastShow=0;}if(SmokeSeconds>0){if(!SmokeShot&&PhysicalSeconds>=SmokeSeconds*.4){if(auto*PC=GetWorld()->GetFirstPlayerController())if(auto*Camera=Cast<ACameraActor>(PC->GetViewTarget())){FVector Target(0,-140,260);Camera->SetActorLocation(Target+FVector(30,300,60));Camera->SetActorRotation((Target-Camera->GetActorLocation()).Rotation());}FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("PlantFlowPreview.png"),true,false);SmokeShot=true;}
  if(PhysicalSeconds>=SmokeSeconds||!Error.IsEmpty()||FPlatformTime::Seconds()-SmokeStart>SmokeWallLimit){ExportSnapshot();FString Report=FString::Printf(TEXT("{\"count\":%d,\"physical_s\":%.9g,\"actual_rate\":%.9g,\"wh\":%d,\"rh\":%d,\"mixer\":%d,\"failed\":%s}"),ParticleCount,PhysicalSeconds,ActualRate,InWeighingHopper,InReceiver,InMixer,Error.IsEmpty()&&PhysicalSeconds>=SmokeSeconds?TEXT("false"):TEXT("true"));FFileHelper::SaveStringToFile(Report,*(FPaths::ProjectSavedDir()/TEXT("PlantSmoke.json")));if(!Error.IsEmpty())FFileHelper::SaveStringToFile(Error,*(FPaths::ProjectSavedDir()/TEXT("PlantSmokeError.txt")));FPlatformMisc::RequestExitWithStatus(false,Error.IsEmpty()&&PhysicalSeconds>=SmokeSeconds?0:1);SmokeSeconds=0;}}}
 void APowderPlantTest::ExportSnapshot(){if(!Runtime)return;std::lock_guard<std::mutex>L(Runtime->Mutex);std::ostringstream S;S<<"id,species,x_m,y_m,z_m\n";unsigned Id=0;for(auto A:Runtime->Points)S<<Id++<<','<<A.w<<','<<A.x<<','<<A.y<<','<<A.z<<'\n';FFileHelper::SaveStringToFile(UTF8_TO_TCHAR(S.str().c_str()),*(FPaths::ProjectSavedDir()/TEXT("PlantSnapshot.csv")));}
 void APowderPlantTest::EndPlay(const EEndPlayReason::Type Reason){Stop();if(auto*FPS=IConsoleManager::Get().FindConsoleVariable(TEXT("t.MaxFPS")))if(FPS->GetFloat()==30.f)FPS->Set(PreviousMaxFPS,ECVF_SetByCode);Super::EndPlay(Reason);}
@@ -178,4 +202,21 @@ TSharedRef<SWidget> APowderPlantTest::BuildSimulationPanel(){
  Panel->AddSlot().AutoHeight().Padding(0,8,0,0)[SNew(STextBlock).WrapTextAt(350).Text(FText::FromString(TEXT("1~4: 장치 확대 | Space: 일시정지\nR: 초기화 | O: 입자 저장\n관로 압력 근사 + GPU 입자 시험 · 미보정")))];
  Panel->AddSlot().AutoHeight().Padding(0,4)[SNew(STextBlock).WrapTextAt(350).ColorAndOpacity(FLinearColor(1,.25,.2)).Text_Lambda([Weak](){return Weak.IsValid()?FText::FromString(Weak->Error):FText::GetEmpty();})];
  return SNew(SBox).WidthOverride(360)[Panel];
+}
+
+FPlantSimulationSnapshot APowderPlantTest::GetSimulationSnapshot() const {
+ check(IsInGameThread());
+ FPlantSimulationSnapshot Result;
+ if(Runtime){std::lock_guard<std::mutex> Lock(Runtime->Mutex);Result=Runtime->Published;}
+ else {Result.Validity=EPlantValueValidity::Initializing;Result.Execution=EPlantExecutionState::Initializing;}
+ Result.Epoch=SnapshotEpoch;Result.SourceActorPath=GetPathName();
+ Result.InitialSupplierCounts=InitialSupplierCounts;Result.RequestedSuppliers=SupplierOpen;
+ Result.RequestedHopperOpen=WeighingHopperOpen;Result.RequestedReceiverOpen=ReceiverOpen;
+ Result.RequestedRunning=Running;Result.RequestedMixerEnabled=MixerEnabled;Result.RequestedRPM=MixerRPM;
+ if(!Error.IsEmpty()){Result.Error=Error;Result.Validity=EPlantValueValidity::Error;Result.Execution=EPlantExecutionState::Fault;}
+ if(Result.Validity==EPlantValueValidity::Valid){
+  if(!Running&&Result.Execution==EPlantExecutionState::Running)Result.Execution=EPlantExecutionState::PauseRequested;
+  if(Running&&Result.Execution==EPlantExecutionState::Paused)Result.Execution=EPlantExecutionState::ResumeRequested;
+ }
+ return Result;
 }

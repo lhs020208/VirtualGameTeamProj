@@ -1,5 +1,7 @@
 #include "PlantVisibilityController.h"
 #include "PowderPlantTest.h"
+#include "ProcessUIStateAdapter.h"
+#include "Blueprint/UserWidget.h"
 #include "EngineUtils.h"
 #include "Widgets/SNullWidget.h"
 #include "Camera/CameraActor.h"
@@ -125,6 +127,12 @@ void APlantVisibilityController::OpenDisplayPanel()
         if (!ViewportPanel && GetWorld()->GetGameViewport())
         {
             ViewportPanel = SNew(SOverlay)
+                .Visibility_Lambda([World = TWeakObjectPtr<UWorld>(GetWorld())]()
+                {
+                    // The read-only screen must not expose the legacy manual controls underneath it.
+                    const auto* UI = World.IsValid() ? World->GetSubsystem<UProcessUIStateSubsystem>() : nullptr;
+                    return UI && UI->StatusWidget && UI->StatusWidget->IsInViewport() ? EVisibility::Collapsed : EVisibility::Visible;
+                })
                 + SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(16)[BuildPanel()];
             GetWorld()->GetGameViewport()->AddViewportWidgetContent(ViewportPanel.ToSharedRef(), 30);
         }

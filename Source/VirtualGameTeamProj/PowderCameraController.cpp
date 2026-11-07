@@ -1,4 +1,6 @@
 #include "PowderCameraController.h"
+#include "ProcessUIStateAdapter.h"
+#include "Blueprint/UserWidget.h"
 #include "PowderDropTest.h"
 #include "PowderDEMTest.h"
 #include "Camera/CameraActor.h"
@@ -43,8 +45,25 @@ void APowderCameraController::EndLook() { bLooking = false; Velocity = FVector::
 void APowderCameraController::BeginPan() { bPanning = true; UpdateCapture(); }
 void APowderCameraController::EndPan() { bPanning = false; UpdateCapture(); }
 
+void APowderCameraController::CancelNavigation()
+{
+    bLooking = bPanning = false;
+    Velocity = FVector::ZeroVector;
+    UpdateCapture();
+}
+
 void APowderCameraController::UpdateCapture()
 {
+    const auto* UI = GetWorld()->GetSubsystem<UProcessUIStateSubsystem>();
+    if (UI && UI->IsReadOnlyScreenActive() && !UI->IsObservationViewActive())
+    {
+        // A delayed mouse release/focus change must not re-enable game input in 2D.
+        bLooking = bPanning = false; Velocity = FVector::ZeroVector;
+        bShowMouseCursor = true;
+        FInputModeUIOnly Mode; Mode.SetWidgetToFocus(UI->StatusWidget->TakeWidget());
+        SetInputMode(Mode);
+        return;
+    }
     bShowMouseCursor = !(bLooking || bPanning);
     if (bShowMouseCursor)
     {
