@@ -1,0 +1,2968 @@
+{
+  "BeginHover": [
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_0"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_FunctionEntry_0"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableSet_1"
+              }
+            },
+            {
+              "direction": "EGPD_Input",
+              "index_id": 2,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallDelegate_1"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_FunctionEntry_0"
+            }
+          },
+          "type_id": "스트링",
+          "name": "EquipmentId"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 2,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_2"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_FunctionEntry_0"
+            }
+          },
+          "type_id": "텍스트",
+          "name": "DisplayName"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 2,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_3"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 3,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_FunctionEntry_0"
+            }
+          },
+          "type_id": "텍스트",
+          "name": "Description"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_FunctionEntry_0"
+      },
+      "type_id": "|"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableSet_1"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_0"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_FunctionEntry_0"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_0"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_0"
+            }
+          },
+          "type_id": "Self 오브젝트 레퍼런스",
+          "name": "self"
+        }
+      ],
+      "position": {
+        "x": 300,
+        "y": 0
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_0"
+      },
+      "type_id": "|CancelHover"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_2"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableSet_1"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        },
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableSet_1"
+            }
+          },
+          "type_id": "스트링",
+          "name": "Output_Get"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_0"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableSet_1"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_FunctionEntry_0"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableSet_1"
+            }
+          },
+          "type_id": "스트링",
+          "name": "HoverEquipmentId"
+        }
+      ],
+      "position": {
+        "x": 650,
+        "y": 148
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableSet_1"
+      },
+      "type_id": "|SetHoverEquipmentId"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_3"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_2"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableSet_1"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_2"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_1"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_2"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 2,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_FunctionEntry_0"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_2"
+            }
+          },
+          "type_id": "텍스트",
+          "name": "InText"
+        }
+      ],
+      "position": {
+        "x": 950,
+        "y": 148
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_2"
+      },
+      "type_id": "위젯|SetText(Text)"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_2"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_1"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "HoverName"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 650,
+        "y": 0
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_1"
+      },
+      "type_id": "|GetHoverName"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_4"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_3"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_2"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_3"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_3"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_3"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 3,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_FunctionEntry_0"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_3"
+            }
+          },
+          "type_id": "텍스트",
+          "name": "InText"
+        }
+      ],
+      "position": {
+        "x": 1300,
+        "y": 148
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_3"
+      },
+      "type_id": "위젯|SetText(Text)"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_3"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_3"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "HoverDescription"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 950,
+        "y": 0
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_3"
+      },
+      "type_id": "|GetHoverDescription"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_1"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_4"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_3"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_4"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_5"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_4"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "NSLOCTEXT(\"\", \"43AF4FCD446B163783B999A14D6C7864\", \"현재 상태: 데이터 없음\")",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_4"
+            }
+          },
+          "type_id": "텍스트",
+          "name": "InText"
+        }
+      ],
+      "position": {
+        "x": 1650,
+        "y": 74
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_4"
+      },
+      "type_id": "위젯|SetText(Text)"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_4"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_5"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "HoverStatus"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 1300,
+        "y": 0
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_5"
+      },
+      "type_id": "|GetHoverStatus"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "false",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_1"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_7"
+            }
+          },
+          "type_id": "부울",
+          "name": "IsPinned"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 1650,
+        "y": 308
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_7"
+      },
+      "type_id": "|GetIsPinned"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_1"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_2"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_1"
+            }
+          },
+          "type_id": "실행",
+          "name": "else"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_4"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_1"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "true",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_7"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_1"
+            }
+          },
+          "type_id": "부울",
+          "name": "Condition"
+        }
+      ],
+      "position": {
+        "x": 2000,
+        "y": 191
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_1"
+      },
+      "type_id": "Utilities|FlowControl|Branch"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "false",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_2"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_9"
+            }
+          },
+          "type_id": "부울",
+          "name": "Is3D"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 2000,
+        "y": 339
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_9"
+      },
+      "type_id": "|GetIs3D"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_2"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_6"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_2"
+            }
+          },
+          "type_id": "실행",
+          "name": "else"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_1"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_2"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "true",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_VariableGet_9"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_2"
+            }
+          },
+          "type_id": "부울",
+          "name": "Condition"
+        }
+      ],
+      "position": {
+        "x": 2300,
+        "y": 265
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_2"
+      },
+      "type_id": "Utilities|FlowControl|Branch"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallDelegate_1"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_6"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        },
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_6"
+            }
+          },
+          "type_id": "타이머 핸들 구조체",
+          "name": "ReturnValue"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_IfThenElse_2"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_6"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_6"
+            }
+          },
+          "type_id": "오브젝트 레퍼런스",
+          "name": "Object"
+        },
+        {
+          "value": "ShowHover",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_6"
+            }
+          },
+          "type_id": "스트링",
+          "name": "FunctionName"
+        },
+        {
+          "value": "2.5",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 3,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_6"
+            }
+          },
+          "type_id": "플로트(단정밀도)",
+          "name": "Time"
+        },
+        {
+          "value": "false",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 4,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_6"
+            }
+          },
+          "type_id": "부울",
+          "name": "bLooping"
+        },
+        {
+          "value": "false",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 5,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_6"
+            }
+          },
+          "type_id": "부울",
+          "name": "bMaxOncePerFrame"
+        },
+        {
+          "value": "0.000000",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 6,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_6"
+            }
+          },
+          "type_id": "플로트(단정밀도)",
+          "name": "InitialStartDelay"
+        },
+        {
+          "value": "0.000000",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 7,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_6"
+            }
+          },
+          "type_id": "플로트(단정밀도)",
+          "name": "InitialStartDelayVariance"
+        }
+      ],
+      "position": {
+        "x": 2600,
+        "y": 265
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_6"
+      },
+      "type_id": "유틸리티|시간|SetTimerbyFunctionName"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallDelegate_1"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallFunction_6"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallDelegate_1"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallDelegate_1"
+            }
+          },
+          "type_id": "WBP Process UIV2 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_FunctionEntry_0"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallDelegate_1"
+            }
+          },
+          "type_id": "스트링",
+          "name": "EquipmentId"
+        }
+      ],
+      "position": {
+        "x": 2950,
+        "y": 132
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:BeginHover.K2Node_CallDelegate_1"
+      },
+      "type_id": "|CallOnStateRequested"
+    }
+  ],
+  "SelectEquipment": [
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_9"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_FunctionEntry_0"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_5"
+              }
+            },
+            {
+              "direction": "EGPD_Input",
+              "index_id": 2,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallDelegate_3"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_FunctionEntry_0"
+            }
+          },
+          "type_id": "스트링",
+          "name": "EquipmentId"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 2,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_11"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_FunctionEntry_0"
+            }
+          },
+          "type_id": "텍스트",
+          "name": "DisplayName"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 2,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_12"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 3,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_FunctionEntry_0"
+            }
+          },
+          "type_id": "텍스트",
+          "name": "Description"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 2,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_25"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 4,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_FunctionEntry_0"
+            }
+          },
+          "type_id": "부울",
+          "name": "IsMixer"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_FunctionEntry_0"
+      },
+      "type_id": "|"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_5"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_9"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_FunctionEntry_0"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_9"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_9"
+            }
+          },
+          "type_id": "Self 오브젝트 레퍼런스",
+          "name": "self"
+        }
+      ],
+      "position": {
+        "x": 300,
+        "y": 0
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_9"
+      },
+      "type_id": "|CancelHover"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_7"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_5"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        },
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_5"
+            }
+          },
+          "type_id": "스트링",
+          "name": "Output_Get"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_9"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_5"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_FunctionEntry_0"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_5"
+            }
+          },
+          "type_id": "스트링",
+          "name": "SelectedEquipmentId"
+        }
+      ],
+      "position": {
+        "x": 650,
+        "y": 0
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_5"
+      },
+      "type_id": "|SetSelectedEquipmentId"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_11"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_7"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        },
+        {
+          "value": "false",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_7"
+            }
+          },
+          "type_id": "부울",
+          "name": "Output_Get"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_5"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_7"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "true",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_7"
+            }
+          },
+          "type_id": "부울",
+          "name": "IsPinned"
+        }
+      ],
+      "position": {
+        "x": 950,
+        "y": 148
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_7"
+      },
+      "type_id": "|SetIsPinned"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_12"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_11"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_7"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_11"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_12"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_11"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 2,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_FunctionEntry_0"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_11"
+            }
+          },
+          "type_id": "텍스트",
+          "name": "InText"
+        }
+      ],
+      "position": {
+        "x": 1250,
+        "y": 49
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_11"
+      },
+      "type_id": "위젯|SetText(Text)"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_11"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_12"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "PanelName"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 950,
+        "y": 0
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_12"
+      },
+      "type_id": "|GetPanelName"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_13"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_12"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_11"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_12"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_14"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_12"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 3,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_FunctionEntry_0"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_12"
+            }
+          },
+          "type_id": "텍스트",
+          "name": "InText"
+        }
+      ],
+      "position": {
+        "x": 1600,
+        "y": 148
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_12"
+      },
+      "type_id": "위젯|SetText(Text)"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_12"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_14"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "PanelDescription"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 1250,
+        "y": 283
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_14"
+      },
+      "type_id": "|GetPanelDescription"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_14"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_13"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_12"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_13"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_16"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_13"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "NSLOCTEXT(\"\", \"EEC36B884081B4F4096295A8C32FC4F3\", \"데이터 없음\")",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_13"
+            }
+          },
+          "type_id": "텍스트",
+          "name": "InText"
+        }
+      ],
+      "position": {
+        "x": 1950,
+        "y": 148
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_13"
+      },
+      "type_id": "위젯|SetText(Text)"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_13"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_16"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "StatusValue"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 1600,
+        "y": 0
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_16"
+      },
+      "type_id": "|GetStatusValue"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_15"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_14"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_13"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_14"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_18"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_14"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "NSLOCTEXT(\"\", \"E926087D467800DF1984C1BD3D0BF4F7\", \"데이터 없음\")",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_14"
+            }
+          },
+          "type_id": "텍스트",
+          "name": "InText"
+        }
+      ],
+      "position": {
+        "x": 2300,
+        "y": 148
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_14"
+      },
+      "type_id": "위젯|SetText(Text)"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_14"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_18"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "QuantityValue"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 1950,
+        "y": 0
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_18"
+      },
+      "type_id": "|GetQuantityValue"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_16"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_15"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_14"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_15"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_20"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_15"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "NSLOCTEXT(\"\", \"A8EED91B4DFD917A57FAE48F531E260F\", \"미확인\")",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_15"
+            }
+          },
+          "type_id": "텍스트",
+          "name": "InText"
+        }
+      ],
+      "position": {
+        "x": 2650,
+        "y": 74
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_15"
+      },
+      "type_id": "위젯|SetText(Text)"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_15"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_20"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "ValveValue"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 2300,
+        "y": 0
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_20"
+      },
+      "type_id": "|GetValveValue"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_18"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_16"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_15"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_16"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_22"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_16"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "NSLOCTEXT(\"\", \"5E584DFD4F32A5E2303F1C83DC3B2291\", \"실제 장비 미연결\")",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_16"
+            }
+          },
+          "type_id": "텍스트",
+          "name": "InText"
+        }
+      ],
+      "position": {
+        "x": 3000,
+        "y": 191
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_16"
+      },
+      "type_id": "위젯|SetText(Text)"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_16"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_22"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "DataSource"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 2650,
+        "y": 308
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_22"
+      },
+      "type_id": "|GetDataSource"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_19"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_18"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_16"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_18"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_24"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_18"
+            }
+          },
+          "type_id": "위젯 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "Visible",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_18"
+            }
+          },
+          "type_id": "ESlateVisibility 열거형",
+          "name": "InVisibility"
+        }
+      ],
+      "position": {
+        "x": 3350,
+        "y": 308
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_18"
+      },
+      "type_id": "위젯|SetVisibility"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_18"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_24"
+            }
+          },
+          "type_id": "버튼 오브젝트 레퍼런스",
+          "name": "PanelBlocker"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 3000,
+        "y": 425
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_24"
+      },
+      "type_id": "|GetPanelBlocker"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_20"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_19"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_18"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_19"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_26"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_19"
+            }
+          },
+          "type_id": "위젯 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "Collapsed",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_19"
+            }
+          },
+          "type_id": "ESlateVisibility 열거형",
+          "name": "InVisibility"
+        }
+      ],
+      "position": {
+        "x": 3700,
+        "y": 154
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_19"
+      },
+      "type_id": "위젯|SetVisibility"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_19"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_26"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "SelectHint"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 3350,
+        "y": 0
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_26"
+      },
+      "type_id": "|GetSelectHint"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_9"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_20"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_19"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_20"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_28"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_20"
+            }
+          },
+          "type_id": "위젯 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "Collapsed",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_20"
+            }
+          },
+          "type_id": "ESlateVisibility 열거형",
+          "name": "InVisibility"
+        }
+      ],
+      "position": {
+        "x": 4050,
+        "y": 271
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_20"
+      },
+      "type_id": "위젯|SetVisibility"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_20"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_28"
+            }
+          },
+          "type_id": "텍스트 오브젝트 레퍼런스",
+          "name": "DetailsText"
+        }
+      ],
+      "input_pins": [],
+      "position": {
+        "x": 3700,
+        "y": 388
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableGet_28"
+      },
+      "type_id": "|GetDetailsText"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallDelegate_3"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_9"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        },
+        {
+          "value": "false",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_9"
+            }
+          },
+          "type_id": "부울",
+          "name": "Output_Get"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_20"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_9"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "false",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_9"
+            }
+          },
+          "type_id": "부울",
+          "name": "DetailsOpen"
+        }
+      ],
+      "position": {
+        "x": 4400,
+        "y": 271
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_9"
+      },
+      "type_id": "|SetDetailsOpen"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_22"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallDelegate_3"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_VariableSet_9"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallDelegate_3"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallDelegate_3"
+            }
+          },
+          "type_id": "WBP Process UIV2 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 1,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_FunctionEntry_0"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallDelegate_3"
+            }
+          },
+          "type_id": "스트링",
+          "name": "EquipmentId"
+        }
+      ],
+      "position": {
+        "x": 4700,
+        "y": 136
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallDelegate_3"
+      },
+      "type_id": "|CallOnStateRequested"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Input",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_25"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_22"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallDelegate_3"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_22"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_22"
+            }
+          },
+          "type_id": "위젯 오브젝트 레퍼런스",
+          "name": "self"
+        }
+      ],
+      "position": {
+        "x": 5000,
+        "y": 136
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_22"
+      },
+      "type_id": "위젯|SetFocus"
+    },
+    {
+      "output_pins": [
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Output",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_25"
+            }
+          },
+          "type_id": "실행",
+          "name": "then"
+        }
+      ],
+      "input_pins": [
+        {
+          "value": "",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 0,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_22"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 0,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_25"
+            }
+          },
+          "type_id": "실행",
+          "name": "execute"
+        },
+        {
+          "value": "",
+          "connected_pins": [],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 1,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_25"
+            }
+          },
+          "type_id": "Self 오브젝트 레퍼런스",
+          "name": "self"
+        },
+        {
+          "value": "false",
+          "connected_pins": [
+            {
+              "direction": "EGPD_Output",
+              "index_id": 4,
+              "node": {
+                "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_FunctionEntry_0"
+              }
+            }
+          ],
+          "pin_id": {
+            "direction": "EGPD_Input",
+            "index_id": 2,
+            "node": {
+              "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_25"
+            }
+          },
+          "type_id": "부울",
+          "name": "IsMixer"
+        }
+      ],
+      "position": {
+        "x": 5350,
+        "y": 68
+      },
+      "node": {
+        "refPath": "/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2:SelectEquipment.K2Node_CallFunction_25"
+      },
+      "type_id": "|ConfigureCommands"
+    }
+  ]
+}
