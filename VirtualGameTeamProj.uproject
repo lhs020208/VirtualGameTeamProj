@@ -25,6 +25,14 @@
     {
       "Name": "DEMPrototype",
       "Enabled": true
+    },
+    {
+      "Name": "EditorToolset",
+      "Enabled": true
+    },
+    {
+      "Name": "UMGToolSet",
+      "Enabled": true
     }
   ]
 }
