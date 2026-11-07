@@ -1,0 +1,11 @@
+{
+  "epoch": 1793946786.5645463,
+  "config": {
+    "data_directory": "SourceAssets/ProcessPlant_20261104/Simulation",
+    "fixed_dt": "1e-05",
+    "contact_iterations": "8",
+    "mixer_rpm": "15.0",
+    "test_pressure_drop_pa": "1000.0",
+    "particle_count": "20000"
+  }
+}

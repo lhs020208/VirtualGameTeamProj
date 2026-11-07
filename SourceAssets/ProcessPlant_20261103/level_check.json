@@ -1,0 +1,13 @@
+{
+  "level": "/Game/ProcessPlant_20261103/L_ProcessPlant_ParticleSetup",
+  "particles": {
+    "Initial_Powder_A": 10000,
+    "Initial_Powder_B": 10000
+  },
+  "radius_m": 0.002,
+  "density_kg_m3": 1200,
+  "mesh_actors": 2254,
+  "A_max_position_error_cm": 0,
+  "B_max_position_error_cm": 0,
+  "verified_saved_positions": 20000
+}

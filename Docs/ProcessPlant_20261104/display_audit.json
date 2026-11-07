@@ -1,0 +1,52 @@
+[
+  {
+    "name": "DirectionalLight",
+    "class": "DirectionalLight",
+    "components": [
+      "ArrowComponent0",
+      "BillboardComponent_0"
+    ]
+  },
+  {
+    "name": "SkyLight",
+    "class": "SkyLight",
+    "components": [
+      "Sprite",
+      "BillboardComponent_0"
+    ]
+  },
+  {
+    "name": "SkyAtmosphere",
+    "class": "SkyAtmosphere",
+    "components": [
+      "Sprite",
+      "ArrowComponent"
+    ]
+  },
+  {
+    "name": "Plant_OverviewCamera",
+    "class": "CameraActor",
+    "components": [
+      "CameraProxyMeshComponent_0",
+      "DrawFrustumComponent_0"
+    ]
+  },
+  {
+    "name": "PlayerStart",
+    "class": "PlayerStart",
+    "components": [
+      "CollisionCapsule",
+      "Sprite",
+      "Sprite2",
+      "Arrow"
+    ]
+  },
+  {
+    "name": "Plant_Pressure_Grains_20261103",
+    "class": "PowderPlantTest",
+    "components": [
+      "InstancedStaticMeshComponent_0",
+      "InstancedStaticMeshComponent_1"
+    ]
+  }
+]

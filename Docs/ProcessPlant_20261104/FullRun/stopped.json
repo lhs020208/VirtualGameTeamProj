@@ -1,0 +1,8 @@
+{
+  "epoch": 1793950356.2203722,
+  "physical_seconds": 14.89007962384494,
+  "running": false,
+  "pie": true,
+  "reason": "User requested immediate observation end, preserve current particle state",
+  "error": ""
+}

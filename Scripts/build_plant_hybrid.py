@@ -9,7 +9,7 @@ import json,math,struct,shutil,argparse
 import numpy as np
 from scipy.spatial import ConvexHull
 ROOT=Path(__file__).resolve().parents[1];SRC=ROOT/'SourceAssets/ProcessPlantPhysics'
-parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,default=ROOT/'SourceAssets/ProcessPlantHybrid');parser.add_argument('--spatial',action='store_true',help='REJECTED experiment: changes contact order; diagnostic output only');parser.add_argument('--linear-edges',action='store_true',help='Reference polygon scan for regression');parser.add_argument('--analytic-necks',action='store_true',help='Experimental finite annular cylinders for supply outlet necks');args=parser.parse_args();OUT=args.output;OUT.mkdir(exist_ok=True,parents=True)
+parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,default=ROOT/'SourceAssets/ProcessPlantHybrid');parser.add_argument('--spatial',action='store_true',help='REJECTED experiment: changes contact order; diagnostic output only');parser.add_argument('--linear-edges',action='store_true',help='Reference polygon scan for regression');parser.add_argument('--analytic-necks',action='store_true',help='Experimental finite annular cylinders for supply outlet necks');parser.add_argument('--source',type=Path,default=SRC);args=parser.parse_args();SRC=args.source;OUT=args.output;OUT.mkdir(exist_ok=True,parents=True)
 if args.spatial and OUT.resolve()==(ROOT/'SourceAssets/ProcessPlantHybrid').resolve():parser.error('Rejected spatial experiment must use a separate --output directory')
 manifest=json.loads((SRC/'runtime_manifest.json').read_text(encoding='utf-8'))
 if args.analytic_necks and OUT.resolve()==(ROOT/'SourceAssets/ProcessPlantHybrid').resolve():parser.error('Analytic experiment must use a separate --output directory')
@@ -74,7 +74,10 @@ def patch_shapes(name,verts,triangles,allow_cone=False):
 static=[];rotor=[];stats=[]
 for name in manifest['selected_meshes']+['MX-301_Collision_Rotor']:
  d=json.loads((SRC/(name+'.json')).read_text(encoding='utf-8'));v=np.array(d['vertices']);t=np.array(d['triangles'])
- if name=='Collision_WH101_Inspection_Lid':v+=np.array([.195,.195,1.837])
+ for change in manifest['test_overrides']:
+  if change.get('source')!=name:continue
+  if change['kind']=='translation':v+=np.array(change['delta_m'])
+  if change['kind']=='receiver_transform':v=v*[-1,-1,1]+[3,0,1.992]
  selected=name.startswith(('H-101','Collision_WH101_Body','Collision_WH101_Cone','Collision_WH101_Separate_Top','MX-301','RH201_110','RH201_120','RH201_130'))
  target=rotor if name=='MX-301_Collision_Rotor' else static
  if args.analytic_necks and name in ('P101A_OutletNeck','P101B_OutletNeck','P101C_OutletNeck'):
