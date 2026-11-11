@@ -1,0 +1,28 @@
+{
+  "utc": "2026-11-10T13:20:14.046989+00:00",
+  "source": "D:\\GitHub\\VirtualGameTeamProj\\Scripts\\run_full_process_20261110.py",
+  "source_sha256": "796b56eb098625329d20e0340f612372ffe48d34d80987b4c241e29489469b1f",
+  "cases": [
+    {
+      "case": "five replacement locks",
+      "passed": true,
+      "recovery_files": 5,
+      "exception_escaped": false
+    },
+    {
+      "case": "next publish succeeds after lock release",
+      "passed": true
+    },
+    {
+      "case": "primary and recovery writes denied",
+      "passed": true,
+      "exception_escaped": false,
+      "warning_emitted": true
+    }
+  ],
+  "limitations": [
+    "Isolated Python fault injection, not actual UE/Windows concurrent reader integration.",
+    "No physics state, Unreal process, or large simulation was started.",
+    "Other CSV/snapshot I/O paths are not covered."
+  ]
+}

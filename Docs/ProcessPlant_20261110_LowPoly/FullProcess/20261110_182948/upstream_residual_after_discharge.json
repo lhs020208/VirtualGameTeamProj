@@ -1,0 +1,9 @@
+{
+  "sim_s": 11.5723197077,
+  "count": 262,
+  "max_endpoint_displacement_m": 0.0,
+  "source_transition_utc": "2026-11-10T10:49:28.054050+00:00",
+  "source_transition_sim_s": 8.81487977732,
+  "snapshot": "00197_RH_to_MX.csv",
+  "note": "All upstream residual IDs remain tracked after actual WH close / RH open pressure change; endpoint comparison only"
+}

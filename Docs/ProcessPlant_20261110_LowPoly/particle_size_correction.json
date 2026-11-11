@@ -1,0 +1,13 @@
+{
+  "old_csv_restored_sha256": "cc3e9211a4e40a90952cfcafd575d8579d788192eb83a2ca6bb6c6e8ed18b3d6",
+  "new_charge_counts": {
+    "H-101A": 10000,
+    "H-101B": 10000
+  },
+  "new_radius_m": [
+    0.002
+  ],
+  "minimum_lattice_step_m": 0.0047999999999999154,
+  "initial_wall_projection_m": 0,
+  "note": "Only this turn enlargement reverted. New lowpoly never enlarged; older unrelated 18mm settings not edited."
+}

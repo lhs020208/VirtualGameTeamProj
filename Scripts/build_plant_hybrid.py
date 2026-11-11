@@ -9,7 +9,7 @@ import json,math,struct,shutil,argparse
 import numpy as np
 from scipy.spatial import ConvexHull
 ROOT=Path(__file__).resolve().parents[1];SRC=ROOT/'SourceAssets/ProcessPlantPhysics'
-parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,default=ROOT/'SourceAssets/ProcessPlantHybrid');parser.add_argument('--spatial',action='store_true',help='REJECTED experiment: changes contact order; diagnostic output only');parser.add_argument('--linear-edges',action='store_true',help='Reference polygon scan for regression');parser.add_argument('--analytic-necks',action='store_true',help='Experimental finite annular cylinders for supply outlet necks');parser.add_argument('--source',type=Path,default=SRC);args=parser.parse_args();SRC=args.source;OUT=args.output;OUT.mkdir(exist_ok=True,parents=True)
+parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,default=ROOT/'SourceAssets/ProcessPlantHybrid');parser.add_argument('--spatial',action='store_true',help='REJECTED experiment: changes contact order; diagnostic output only');parser.add_argument('--linear-edges',action='store_true',help='Reference polygon scan for regression');parser.add_argument('--analytic-necks',action='store_true',help='Experimental finite annular cylinders for supply outlet necks');parser.add_argument('--source',type=Path,default=SRC);parser.add_argument('--retain-mesh',action='append',default=[],help='Retain original triangles at validated complex junctions');args=parser.parse_args();SRC=args.source;OUT=args.output;OUT.mkdir(exist_ok=True,parents=True)
 if args.spatial and OUT.resolve()==(ROOT/'SourceAssets/ProcessPlantHybrid').resolve():parser.error('Rejected spatial experiment must use a separate --output directory')
 manifest=json.loads((SRC/'runtime_manifest.json').read_text(encoding='utf-8'))
 if args.analytic_necks and OUT.resolve()==(ROOT/'SourceAssets/ProcessPlantHybrid').resolve():parser.error('Analytic experiment must use a separate --output directory')
@@ -88,7 +88,7 @@ for name in manifest['selected_meshes']+['MX-301_Collision_Rotor']:
   angles=np.unique(np.round(np.arctan2(v[:,1]-centre[1],v[:,0]-centre[0]),5));gaps=np.diff(np.r_[angles,angles[0]+2*math.pi]);sagitta=float(radii[-1]*(1-math.cos(gaps.max()/2)))
   assert sagitta<.00006,(name,sagitta)
   target.append(dict(type=4,centre=centre.tolist(),axis=[0,0,1],half_length=float(np.ptp(v[:,2])/2),radii=radii.tolist(),source=name,_triangles=v[t].copy(),sagitta_m=sagitta))
- elif selected:
+ elif selected and name not in args.retain_mesh:
   shapes,stat=patch_shapes(name,v,t,allow_cone=name.startswith(('H-101','Collision_WH101_Cone','RH201_130')));target.extend(shapes);stats.append(stat)
  else:target.extend(dict(type=1,vertices=tri.tolist(),source=name) for tri in v[t])
 for sleeve in manifest['test_overrides']:
@@ -179,6 +179,7 @@ routes=manifest['routes'];(OUT/'runtime.routes').write_text(str(len(routes))+'\n
 shutil.copyfile(SRC/'test_charge.csv',OUT/'test_charge.csv')
 report=dict(schema='plant-hybrid/1',static_shapes=len(static),rotor_shapes=len(rotor),static_obbs=sum(s['type']!=1 for s in static),rotor_obbs=sum(s['type']!=1 for s in rotor),source_static_triangles=manifest['static_triangles'],source_rotor_triangles=manifest['rotor_triangles'],patch_half_thickness_m=HALF_THICKNESS,meshes=stats,spatial_search=('experimental spatial median BVH' if args.spatial else 'source-order stackless AABB BVH')+('; linear edge reference' if args.linear_edges else '; exact 2D edge BVH for complex clipped patches'),obb_semantics='thin source-aligned solid wall slabs; nonrectangular patches clipped to original polygon edges and holes; original mesh fallback at mixer shaft/end interfaces',pipe_geometry='unchanged source triangles and connection sleeves',pressure='unchanged full network',particles=sum(1 for _ in (OUT/'test_charge.csv').open())-1)
 report['analytic_cylinders']=[{k:v for k,v in s.items() if k!='_triangles'} for s in static if s['type']==4]
+report['explicit_retained_meshes']=args.retain_mesh
 if args.analytic_necks:report['pipe_geometry']='experimental analytic supplier outlet necks; other pipe triangles unchanged'
 (OUT/'manifest.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
 (OUT/'obb_geometry.json').write_text(json.dumps(dict(static=[{k:v for k,v in s.items() if k!='_triangles'} for s in static if s['type']!=1],rotor=[{k:v for k,v in s.items() if k!='_triangles'} for s in rotor if s['type']!=1]),indent=2),encoding='utf-8')

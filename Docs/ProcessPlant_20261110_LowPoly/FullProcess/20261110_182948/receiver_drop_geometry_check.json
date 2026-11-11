@@ -1,0 +1,83 @@
+{
+  "snapshot": "00178_RH_to_MX.csv",
+  "previous_snapshot": "00175_RH_to_MX.csv",
+  "sim_s": 10.1761597429,
+  "note": "Read-only source-vertex radial envelope check, not exact mesh signed-distance or physical leak certification",
+  "mesh_source": "Intermediate/PlantLowPoly20261110/Physics",
+  "count": 18563,
+  "within_inner_radius": 18427,
+  "within_radius_plus_2_5mm": 18563,
+  "max_radial_excess_m": 0.0007493276451220887,
+  "bounds_m": [
+    [
+      2.86320996284,
+      -0.136808037758,
+      1.3109048605
+    ],
+    [
+      3.13658738136,
+      0.136660814285,
+      2.13895130157
+    ]
+  ],
+  "endpoint_stationary_count": 168,
+  "moving_over_10um_count": 18388,
+  "z_quantiles_m": [
+    1.3109048605,
+    1.376884937284,
+    1.44830024242,
+    1.488514399524,
+    2.13895130157
+  ],
+  "regions": {
+    "P202_Reducer_272_to_44": {
+      "count": 18395,
+      "bounds_m": [
+        [
+          2.93108177185,
+          -0.0825685709715,
+          1.3109048605
+        ],
+        [
+          3.05961060524,
+          0.079718567431,
+          1.53500890732
+        ]
+      ]
+    },
+    "DP_130_Mixer_end_spool": {
+      "count": 0,
+      "bounds_m": null
+    },
+    "DP_120_Flexible_sleeve": {
+      "count": 0,
+      "bounds_m": null
+    },
+    "DP_110_Upper_spool": {
+      "count": 0,
+      "bounds_m": null
+    },
+    "BV272_neck_body_seal": {
+      "count": 168,
+      "bounds_m": [
+        [
+          2.86320996284,
+          -0.136808037758,
+          2.13466358185
+        ],
+        [
+          3.13658738136,
+          0.136660814285,
+          2.13895130157
+        ]
+      ]
+    }
+  },
+  "correction": {
+    "snapshot": "00185_RH_to_MX.csv",
+    "note": "BV272 inner radius is a step from .136 to .139 at z=2.133, not a taper",
+    "count": 17987,
+    "outside_inner_radius": 0,
+    "max_radial_excess_m": -0.002004803144798846
+  }
+}

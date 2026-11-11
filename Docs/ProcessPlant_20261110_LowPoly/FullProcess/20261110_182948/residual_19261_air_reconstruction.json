@@ -1,0 +1,20 @@
+{
+  "particle_id": 19261,
+  "pressure_supply_Pa_g": 500,
+  "pressure_WH_Pa_g": -500,
+  "B_route_flow_m3s": 0.0631859228014946,
+  "selected_cell": 2133332,
+  "selected_cell_in_GPU_bucket": true,
+  "air_m_s": [
+    39.22348403930664,
+    -13.725091934204102,
+    8.012169564608485e-05
+  ],
+  "air_speed_m_s": 41.555503845214844,
+  "zero_particle_velocity_drag_acceleration_m_s2": [
+    134.4709930419922,
+    -47.05412292480469,
+    0.0002746834943536669
+  ],
+  "note": "CPU reconstruction from current pressure settings and same 1D formula; particle live velocity and contact impulses not measured; no proof of physical static equilibrium."
+}

@@ -1,0 +1,1 @@
+PASS receiver manual gates and mixer start/stop;  all closed; independent supplier gates/flow; hopper open/close; pending-close flow cutoff and occupancy; threaded refresh

@@ -1,0 +1,63 @@
+{
+  "notice": "Recorded coordinate reconstruction, NOT a live simulation",
+  "sim_s": 38.2652790333,
+  "particle_diameter_m": 0.004,
+  "groups": {
+    "B": {
+      "count": 1,
+      "min_m": [
+        0.306216418743,
+        1.4000749588,
+        2.02150654793
+      ],
+      "max_m": [
+        0.306216418743,
+        1.4000749588,
+        2.02150654793
+      ]
+    },
+    "WH": {
+      "count": 261,
+      "min_m": [
+        -0.128430485725,
+        -0.0400263033807,
+        0.786002159119
+      ],
+      "max_m": [
+        0.177145421505,
+        0.180375307798,
+        0.84782063961
+      ]
+    },
+    "RH": {
+      "count": 648,
+      "min_m": [
+        2.86320996284,
+        -0.136808037758,
+        1.31199741364
+      ],
+      "max_m": [
+        3.13658738136,
+        0.136660814285,
+        2.13895130157
+      ]
+    }
+  },
+  "display": "existing render cutaway materials; frame hidden; recorded particles only; original render meshes; P101B_* actors hidden only in this temporary visualization",
+  "shots": [
+    {
+      "name": "08_B_exposed",
+      "camera_cm": [
+        37,
+        -125,
+        209
+      ],
+      "target_cm": [
+        30.62164,
+        -140.0075,
+        202.15065
+      ]
+    }
+  ],
+  "additional_hidden_render_prefix": "P101B_*"
+}

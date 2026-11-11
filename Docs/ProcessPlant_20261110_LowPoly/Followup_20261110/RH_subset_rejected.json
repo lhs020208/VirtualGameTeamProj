@@ -1,0 +1,13 @@
+{
+  "case": "RH 648 independent subset initialization",
+  "result": "rejected_initial_particles_overlap",
+  "count": 648,
+  "minimum_center_distance_m": 0.003998651687913379,
+  "maximum_geometric_overlap_m": 1.348312086621277e-06,
+  "pairs_below_diameter": 919,
+  "closest_ids": [
+    10300,
+    11511
+  ],
+  "note": "Observed snapshot overlap; positions not adjusted; independent restart rejected, not evidence of physical blockage."
+}

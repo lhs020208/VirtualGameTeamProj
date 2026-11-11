@@ -1,0 +1,100 @@
+{
+  "run_directory": "D:\\GitHub\\VirtualGameTeamProj\\Docs\\ProcessPlant_20261110_LowPoly\\Followup_20261110\\UE_ReportLock_220707",
+  "pid": 60200,
+  "kind": "short real UE Windows sharing-lock integration test",
+  "cases": [
+    {
+      "case": "actual Windows no-delete-share lock while PIE runs",
+      "passed": true,
+      "start_sim_s": 0.07903999800328165,
+      "end_sim_s": 0.1916799951577559,
+      "recovery_count": 11,
+      "latest_reader_source": "status_recovery_55e366cd50234790ab0005d028ceb55c.json"
+    },
+    {
+      "case": "lock release normal publish and report reader synchronization",
+      "passed": true,
+      "sim_s": 0.24207999388454482
+    },
+    {
+      "case": "final save locked, final recovery selected",
+      "passed": true,
+      "source": "status_recovery_1fab716ca7894858b97887093ccb2080.json",
+      "revision": 14
+    },
+    {
+      "case": "final normal save after unlocking",
+      "passed": true
+    }
+  ],
+  "finished": true,
+  "physical_parameters_changed": false,
+  "sim_s": 0.24207999388454482,
+  "wall_s": 21.969000000040978,
+  "particle_count": 20000,
+  "run_log": "D:/GitHub/VirtualGameTeamProj/Saved/PlantPressureRuns/20261110T130710Z_07C6D0714D1BD6F88742F2B36E0630AE.csv",
+  "report_revision": 16,
+  "report_io_warnings": [
+    {
+      "utc": "2026-11-10T13:07:14.207749+00:00",
+      "error": "[WinError 5] \uc561\uc138\uc2a4\uac00 \uac70\ubd80\ub418\uc5c8\uc2b5\ub2c8\ub2e4: 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.tmp' -> 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.json'",
+      "physics_continues": true
+    },
+    {
+      "utc": "2026-11-10T13:07:15.227000+00:00",
+      "error": "[WinError 5] \uc561\uc138\uc2a4\uac00 \uac70\ubd80\ub418\uc5c8\uc2b5\ub2c8\ub2e4: 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.tmp' -> 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.json'",
+      "physics_continues": true
+    },
+    {
+      "utc": "2026-11-10T13:07:16.223895+00:00",
+      "error": "[WinError 5] \uc561\uc138\uc2a4\uac00 \uac70\ubd80\ub418\uc5c8\uc2b5\ub2c8\ub2e4: 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.tmp' -> 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.json'",
+      "physics_continues": true
+    },
+    {
+      "utc": "2026-11-10T13:07:17.236801+00:00",
+      "error": "[WinError 5] \uc561\uc138\uc2a4\uac00 \uac70\ubd80\ub418\uc5c8\uc2b5\ub2c8\ub2e4: 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.tmp' -> 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.json'",
+      "physics_continues": true
+    },
+    {
+      "utc": "2026-11-10T13:07:18.246147+00:00",
+      "error": "[WinError 5] \uc561\uc138\uc2a4\uac00 \uac70\ubd80\ub418\uc5c8\uc2b5\ub2c8\ub2e4: 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.tmp' -> 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.json'",
+      "physics_continues": true
+    },
+    {
+      "utc": "2026-11-10T13:07:19.262451+00:00",
+      "error": "[WinError 5] \uc561\uc138\uc2a4\uac00 \uac70\ubd80\ub418\uc5c8\uc2b5\ub2c8\ub2e4: 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.tmp' -> 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.json'",
+      "physics_continues": true
+    },
+    {
+      "utc": "2026-11-10T13:07:20.264877+00:00",
+      "error": "[WinError 5] \uc561\uc138\uc2a4\uac00 \uac70\ubd80\ub418\uc5c8\uc2b5\ub2c8\ub2e4: 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.tmp' -> 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.json'",
+      "physics_continues": true
+    },
+    {
+      "utc": "2026-11-10T13:07:21.290642+00:00",
+      "error": "[WinError 5] \uc561\uc138\uc2a4\uac00 \uac70\ubd80\ub418\uc5c8\uc2b5\ub2c8\ub2e4: 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.tmp' -> 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.json'",
+      "physics_continues": true
+    },
+    {
+      "utc": "2026-11-10T13:07:22.328137+00:00",
+      "error": "[WinError 5] \uc561\uc138\uc2a4\uac00 \uac70\ubd80\ub418\uc5c8\uc2b5\ub2c8\ub2e4: 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.tmp' -> 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.json'",
+      "physics_continues": true
+    },
+    {
+      "utc": "2026-11-10T13:07:23.320245+00:00",
+      "error": "[WinError 5] \uc561\uc138\uc2a4\uac00 \uac70\ubd80\ub418\uc5c8\uc2b5\ub2c8\ub2e4: 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.tmp' -> 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.json'",
+      "physics_continues": true
+    },
+    {
+      "utc": "2026-11-10T13:07:24.338139+00:00",
+      "error": "[WinError 5] \uc561\uc138\uc2a4\uac00 \uac70\ubd80\ub418\uc5c8\uc2b5\ub2c8\ub2e4: 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.tmp' -> 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.json'",
+      "physics_continues": true
+    },
+    {
+      "utc": "2026-11-10T13:07:29.373924+00:00",
+      "error": "[WinError 5] \uc561\uc138\uc2a4\uac00 \uac70\ubd80\ub418\uc5c8\uc2b5\ub2c8\ub2e4: 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.tmp' -> 'D:\\\\GitHub\\\\VirtualGameTeamProj\\\\Docs\\\\ProcessPlant_20261110_LowPoly\\\\Followup_20261110\\\\UE_ReportLock_220707\\\\status.json'",
+      "physics_continues": true
+    }
+  ],
+  "finished_utc": "2026-11-10T13:07:29.372903+00:00"
+}

@@ -1,0 +1,9 @@
+{
+  "pid": 17164,
+  "stage": 1,
+  "sim_s": 4.056319897528738,
+  "count": 20000,
+  "data_directory": "SourceAssets/ProcessPlant_20261110_LowPoly/Simulation",
+  "source_callback": "D:/GitHub/VirtualGameTeamProj/Scripts/run_full_process_20261110.py",
+  "read_only": true
+}

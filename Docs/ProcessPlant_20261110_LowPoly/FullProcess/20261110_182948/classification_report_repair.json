@@ -1,0 +1,29 @@
+{
+  "utc": "2026-11-10T12:10:39.317878+00:00",
+  "cause": "Classifier exited on transient Windows PermissionError during atomic classified_status.json replacement",
+  "stale_snapshot": "00293_RH_to_MX.csv",
+  "stale_sim_s": 20.148479491,
+  "repair": "Retry replacement; reload existing classification cache; process newest snapshots first",
+  "simulation_reset": false,
+  "physics_changes": false,
+  "current_source_snapshot": "00324_RH_to_MX.csv",
+  "current_classified_snapshot": "00324_RH_to_MX.csv",
+  "current_classified_counts": {
+    "MX": [
+      9257,
+      9552
+    ],
+    "RH_to_MX_lumen_envelope": [
+      502,
+      427
+    ],
+    "Supply_to_WH_pipe": [
+      0,
+      1
+    ],
+    "WH": [
+      241,
+      20
+    ]
+  }
+}

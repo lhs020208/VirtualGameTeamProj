@@ -1,0 +1,32 @@
+{
+  "WH_0": {
+    "after_sim_s": 0.497119987442,
+    "by_sim_s": 0.585439985211,
+    "snapshot": "00004_A_to_WH.csv"
+  },
+  "WH_1": {
+    "after_sim_s": 1.96543995035,
+    "by_sim_s": 1.99759994954,
+    "snapshot": "00037_B_to_WH.csv"
+  },
+  "RH_0": {
+    "after_sim_s": 4.51855988585,
+    "by_sim_s": 4.55071988504,
+    "snapshot": "00136_WH_to_RH.csv"
+  },
+  "RH_1": {
+    "after_sim_s": 4.62431988318,
+    "by_sim_s": 4.66991988203,
+    "snapshot": "00139_WH_to_RH.csv"
+  },
+  "MX_0": {
+    "after_sim_s": 9.23583976668,
+    "by_sim_s": 9.30847976485,
+    "snapshot": "00166_RH_to_MX.csv"
+  },
+  "MX_1": {
+    "after_sim_s": 9.23583976668,
+    "by_sim_s": 9.30847976485,
+    "snapshot": "00166_RH_to_MX.csv"
+  }
+}

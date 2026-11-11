@@ -11,7 +11,8 @@ from collections import defaultdict
 ROOT=Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser()
 parser.add_argument('--source', type=Path, default=ROOT/'SourceAssets/ProcessPlantPhysics')
-DIR=parser.parse_args().source
+parser.add_argument('--mixer-pivot', type=float, nargs=3, default=[3,0,.9], help='Source-world shaft axis point in metres')
+args=parser.parse_args();DIR=args.source
 manifest=json.loads((DIR/'manifest.json').read_text(encoding='utf-8'))
 packed=[[0.,0.,0.,0.] for _ in range(16)]
 selected=[];triangles=[];overrides=[]
@@ -114,7 +115,7 @@ for route in routes:
         aa,bb=route['box_cell'];i=len(packed);route['cells'].append(i);packed.extend([aa,bb,[0,0,1,route['phase']]])
         cells.append(dict(route=route['id'],a=aa,b=bb,packed_index=i,rectangular=True))
 packed[0]=[staticroot,rotorroot,airoffset,len(cells)]
-packed[1]=[3,0,.9,1200];packed[2]=[-2,-2.2 if latest else -1,-.2,0];packed[3]=[5,2.2,4.5,0];packed[4]=[0,0,0,0];packed[5]=[gateoffset,len(gates)//2,0,0]
+packed[1]=[*args.mixer_pivot,1200];packed[2]=[-2,-2.2 if latest else -1,-.2,0];packed[3]=[5,2.2,4.5,0];packed[4]=[0,0,0,0];packed[5]=[gateoffset,len(gates)//2,0,0]
 # Broad phase for gas cells; exact circular-tube membership is still tested on GPU.
 origin=np.array(packed[2][:3]);h=.1;dims=np.ceil((np.array(packed[3][:3])-origin)/h).astype(int);bins=defaultdict(list)
 for cell in cells:
@@ -129,5 +130,6 @@ with (DIR/'runtime.plant').open('wb') as f:
     f.write(struct.pack('<I',len(packed)));f.write(np.array(packed,dtype='<f4').tobytes())
 (DIR/'runtime.routes').write_text(str(len(routes))+'\n'+'\n'.join(str(r['phase'])+' '+str(len(r['cells']))+' '+' '.join(map(str,r['cells'])) for r in routes)+'\n')
 report=dict(schema='plant-runtime/1',source_sha256=manifest['sha256'],model='1D quasi-steady single-phase pipe pressure + 3D approximate granular contacts; one-way gas drag',calibrated=False,static_triangles=staticcount,rotor_triangles=rotorcount,selected_meshes=selected,test_overrides=overrides,flow_cells=cells,routes=routes,particle_file='test_charge.csv',gate_count=len(gates)//2,gate_data=gates,closed_gate_half_thickness_m=.003,scope_limitations=['No resolved 3D turbulence','No powder back reaction/plug pressure loss','No compressible chamber transient','Closed pressure interfaces are boundary assumptions; no full 3D watertight-volume certification'],ready_for_simulation=False)
+report['mixer_pivot_m']=args.mixer_pivot
 (DIR/'runtime_manifest.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 print('PLANT_RUNTIME',staticcount,rotorcount,len(cells),'triangles/rotor/cells',len(packed)*16,'bytes')
