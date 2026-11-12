@@ -86,7 +86,7 @@ TSharedRef<SWidget> APowderPlantTest::BuildSimulationPanel(){
  if(SupplierOpen.IsEmpty()){try{InitializeSuppliers();}catch(const std::exception&E){Error=UTF8_TO_TCHAR(E.what());}}
  const TWeakObjectPtr<APowderPlantTest> Weak(this);
  TSharedRef<SVerticalBox> Panel=SNew(SVerticalBox);
- if(RegulatedPressureEnabled)Panel->AddSlot().AutoHeight().Padding(0,0,0,8)[BuildPressurePanel()];
+ Panel->AddSlot().AutoHeight().Padding(0,0,0,8)[BuildPressurePanel()];
  if(SectionTest>0){const TCHAR*Names[]{TEXT(""),TEXT("공급기 → 칭량호퍼 | 칭량부 시험 흡입압"),TEXT("칭량호퍼 → 수취부 | 칭량부 대기압·수취부 시험 흡입압"),TEXT("수취부 → 혼합기 | 양쪽 대기압·중력 배출"),TEXT("혼합기 내부 | 공기 이송 없음")};Panel->AddSlot().AutoHeight()[SNew(STextBlock).WrapTextAt(350).Text(FText::FromString(Names[FMath::Clamp(SectionTest,0,4)]))];}
  if(DataDirectory.Contains(TEXT("ProcessPlantHybrid")))Panel->AddSlot().AutoHeight()[SNew(STextBlock).WrapTextAt(350).Text(FText::FromString(TEXT("혼합 충돌 시험: 관·연결부 메시 / 호퍼·혼합기 OBB")))];
  if(DataDirectory.Contains(TEXT("ProcessPlantOBB")))Panel->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("OBB 통로 근사 시험 · 원본 형상과 다름")))];

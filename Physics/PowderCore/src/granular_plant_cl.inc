@@ -12,7 +12,7 @@ float3 plant_closest(float3 p,float3 a,float3 b,float3 c){
  float va=d3*d6-d5*d4;if(va<=0&&(d4-d3)>=0&&(d5-d6)>=0)return b+(c-b)*((d4-d3)/((d4-d3)+(d5-d6)));
  float inv=1.f/(va+vb+vc);return a+ab*(vb*inv)+ac*(vc*inv);
 }
-float3 plant_mesh(float3 p,float r,int root,__global const float4* data){
+float3 plant_mesh(float3 p,float r,int root,__global const float4* data,float3* correction){
  if(root<0)return p;
 #if PLANT_THREADED
  int at=root==(int)data[0].x?(int)data[8].x:(int)data[8].z;
@@ -31,7 +31,7 @@ float3 plant_mesh(float3 p,float r,int root,__global const float4* data){
    if(any(p<fmin(a,fmin(b,c))-r)||any(p>fmax(a,fmax(b,c))+r))continue;
 #endif
    float3 q=plant_closest(p,a,b,c),d=p-q;float l=length(d);if(l<r){
-float3 n=l>1.e-9f?d/l:normalize(cross(b-a,c-a));p+=n*(r-l);}
+float3 n=l>1.e-9f?d/l:normalize(cross(b-a,c-a));float3 move=n*(r-l);*correction+=move;p+=move;}
   }
 #if PLANT_THREADED
  at=next;
@@ -64,18 +64,18 @@ float3 plant_obb_walls(float3 p,float r,__global const float4* d){
  }return p;
 }
 // Hybrid wall BVH. Leaf references point at exact triangles or solid OBB slabs.
-float3 plant_hybrid_shape(float3 p,float r,int k,int type,__global const float4* d){
+float3 plant_hybrid_shape(float3 p,float r,int k,int type,__global const float4* d,float3* correction){
  if(type==1){float3 a=d[k].xyz,b=d[k+1].xyz,c=d[k+2].xyz;
   if(any(p<fmin(a,fmin(b,c))-r)||any(p>fmax(a,fmax(b,c))+r))return p;
   float3 q=plant_closest(p,a,b,c),delta=p-q;float len=length(delta);
-  if(len<r)p+=(len>1.e-9f?delta/len:normalize(cross(b-a,c-a)))*(r-len);return p;
+  if(len<r){float3 move=(len>1.e-9f?delta/len:normalize(cross(b-a,c-a)))*(r-len);*correction+=move;p+=move;}return p;
  }
  // Experimental finite annular cylinder: open bore, annular end faces.
  if(type==4){float3 axis=d[k+1].xyz,q=p-d[k].xyz;float z=dot(q,axis);float3 radial=q-z*axis;float rho=length(radial);
   float inner=d[k+2].x-rho,outer=rho-d[k+2].y,dr=fmax(inner,outer),dz=fabs(z)-d[k+1].w;
   float2 out=fmax((float2)(dr,dz),(float2)(0));float len=length(out),distance=len+fmin(fmax(dr,dz),0.f);
   if(distance<r){float3 nr=rho>1.e-9f?radial/rho:(float3)(1,0,0);if(inner>outer)nr=-nr;float3 nz=axis*copysign(1.f,z),n;
-   if(dr>0&&dz>0)n=(nr*out.x+nz*out.y)/len;else n=dr>dz?nr:nz;p+=n*(r-distance);
+   if(dr>0&&dz>0)n=(nr*out.x+nz*out.y)/len;else n=dr>dz?nr:nz;float3 move=n*(r-distance);*correction+=move;p+=move;
   }return p;
  }
  float3 h=(float3)(d[k+1].w,d[k+2].w,d[k+3].w),q=plant_box_local(p,k,d),gap=fabs(q)-h;
@@ -107,7 +107,7 @@ float3 plant_hybrid_shape(float3 p,float r,int k,int type,__global const float4*
   if(distance<r){float2 radial=dl>1.e-9f?(inside?nearest-q.xy:q.xy-nearest)/dl:(float2)(1,0);float3 n;
    if(lateral>0&&dz>0)n=(float3)(radial*outside.x,copysign(outside.y,q.z))/len;
    else if(lateral>dz)n=(float3)(radial,0);else n=(float3)(0,0,copysign(1.f,q.z));
-   float3 delta=n*(r-distance);p+=delta.x*d[k+1].xyz+delta.y*d[k+2].xyz+delta.z*d[k+3].xyz;
+   float3 delta=n*(r-distance);float3 move=delta.x*d[k+1].xyz+delta.y*d[k+2].xyz+delta.z*d[k+3].xyz;*correction+=move;p+=move;
   }return p;
  }
 
@@ -118,23 +118,23 @@ float3 plant_hybrid_shape(float3 p,float r,int k,int type,__global const float4*
   else if(gap.y>=gap.z)n=(float3)(0,copysign(1.f,q.y),0);
   else n=(float3)(0,0,copysign(1.f,q.z));
   // Add displacement in world coordinates; avoid a lossy world/local round trip.
-  float3 delta=n*(r-distance);p+=delta.x*d[k+1].xyz+delta.y*d[k+2].xyz+delta.z*d[k+3].xyz;
+  float3 delta=n*(r-distance);float3 move=delta.x*d[k+1].xyz+delta.y*d[k+2].xyz+delta.z*d[k+3].xyz;*correction+=move;p+=move;
  }return p;
 }
 )CLC"
 R"CLC(
-float3 plant_hybrid_ref(float3 p,float r,float4 ref,__global const float4* d){
+float3 plant_hybrid_ref(float3 p,float r,float4 ref,__global const float4* d,float3* correction){
 #if PLANT_WALL_MODE >= 4
  int k=(int)ref.z;
  if(k>0&&(any(p<d[k].xyz-r)||any(p>d[k+1].xyz+r)))return p;
 #endif
- return plant_hybrid_shape(p,r,(int)ref.x,(int)ref.y,d);
+ return plant_hybrid_shape(p,r,(int)ref.x,(int)ref.y,d,correction);
 }
-float3 plant_hybrid_linear(float3 p,float r,int at,int end,__global const float4* d){
+float3 plant_hybrid_linear(float3 p,float r,int at,int end,__global const float4* d,float3* correction){
  while(at<end){float4 lo=d[at],hi=d[at+1];int next=lo.w>=0?(int)hi.w:at+2;
   if(any(p<lo.xyz-r)||any(p>hi.xyz+r)){at=next;continue;}
   if(lo.w>=0){at=(int)lo.w;continue;}
-  for(int j=0;j<(int)(-lo.w);++j){float4 ref=d[(int)hi.w+j];p=plant_hybrid_ref(p,r,ref,d);}
+  for(int j=0;j<(int)(-lo.w);++j){float4 ref=d[(int)hi.w+j];p=plant_hybrid_ref(p,r,ref,d,correction);}
   at=next;
  }return p;
 }
@@ -161,7 +161,7 @@ void plant_cache_count(__global const float4* d,int counter){
  int base=plant_cache_base(d);if(base<0)return;
  __global uint* counts=(__global uint*)(d+base+138);if(counts[counter]!=0xffffffffu)++counts[counter];
 }
-float3 plant_hybrid_cached(float3 p,float r,int root,int end,int header,__global const float4* d){
+float3 plant_hybrid_cached(float3 p,float r,int root,int end,int header,__global const float4* d,float3* correction){
  int base=plant_cache_base(d)+(root==(int)d[12].x?0:PLANT_CACHE_TREE_STRIDE);
  __global float4* cache=(__global float4*)(d+base);float4 anchor=cache[0],meta=cache[1];
  int valid=meta.w==1.f&&meta.y==header&&all(fabs(p-anchor.xyz)+r<=anchor.w-1.e-6f);
@@ -179,7 +179,7 @@ float3 plant_hybrid_cached(float3 p,float r,int root,int end,int header,__global
     int original=(int)ref.x;if(any(p<d[original].xyz-reach)||any(p>d[original+1].xyz+reach))continue;
     int dest=0;while(dest<count&&cache[2+dest].y<ref.y)++dest;
     if(dest<count&&cache[2+dest].y==ref.y){cache[2+dest].z=(float)(((uint)cache[2+dest].z)|((uint)ref.z));continue;}
-    if(count==PLANT_CACHE_CAPACITY){plant_cache_count(d,2);return plant_hybrid_linear(p,r,root,end,d);}
+    if(count==PLANT_CACHE_CAPACITY){plant_cache_count(d,2);return plant_hybrid_linear(p,r,root,end,d,correction);}
     for(int move=count;move>dest;--move)cache[2+move]=cache[2+move-1];cache[2+dest]=ref;++count;
    }at=next;
   }
@@ -196,7 +196,7 @@ float3 plant_hybrid_cached(float3 p,float r,int root,int end,int header,__global
     }
     if(mask==0)continue;ref.z=(float)mask;
 #endif
-    if(count==PLANT_CACHE_CAPACITY){plant_cache_count(d,2);return plant_hybrid_linear(p,r,root,end,d);}
+    if(count==PLANT_CACHE_CAPACITY){plant_cache_count(d,2);return plant_hybrid_linear(p,r,root,end,d,correction);}
     int dest=count;while(dest>0&&cache[2+dest-1].y>ref.y){cache[2+dest]=cache[2+dest-1];--dest;}cache[2+dest]=ref;++count;
    }at=next;
   }
@@ -204,52 +204,53 @@ float3 plant_hybrid_cached(float3 p,float r,int root,int end,int header,__global
   cache[1].x=count;anchor=cache[0];meta=cache[1];
  }else plant_cache_count(d,1);
  // An overflowing list is never used. Keep the exact original traversal.
- if(meta.x<0)return plant_hybrid_linear(p,r,root,end,d);
+ if(meta.x<0)return plant_hybrid_linear(p,r,root,end,d,correction);
  for(int i=0;i<(int)meta.x;++i){int at=(int)cache[2+i].x;
   if(any(p<d[at].xyz-r)||any(p>d[at+1].xyz+r))continue;
   for(int j=0;j<(int)(-d[at].w);++j){
 #if PLANT_WALL_MODE >= 5
    if(!(((uint)cache[2+i].z)&(1u<<j)))continue;
 #endif
-   float4 ref=d[(int)d[at+1].w+j];p=plant_hybrid_ref(p,r,ref,d);
+   float4 ref=d[(int)d[at+1].w+j];p=plant_hybrid_ref(p,r,ref,d,correction);
 #if PLANT_WALL_MODE >= 5
    // The original leaf is already admitted. Finish all remaining shapes if a
    // correction escapes the envelope, then resume at the NEXT original leaf.
    if(any(fabs(p-anchor.xyz)+r>anchor.w-1.e-6f)){
-    cache[1].w=0;for(int rest=j+1;rest<(int)(-d[at].w);++rest)p=plant_hybrid_ref(p,r,d[(int)d[at+1].w+rest],d);
-    return plant_hybrid_linear(p,r,at+2,end,d);
+    cache[1].w=0;for(int rest=j+1;rest<(int)(-d[at].w);++rest)p=plant_hybrid_ref(p,r,d[(int)d[at+1].w+rest],d,correction);
+    return plant_hybrid_linear(p,r,at+2,end,d,correction);
    }
 #endif
   }
   // A correction can leave the cached envelope mid-query. Continue after the
   // fully processed original leaf; never restart/replay earlier contacts.
-  if(any(fabs(p-anchor.xyz)+r>anchor.w-1.e-6f)){cache[1].w=0;return plant_hybrid_linear(p,r,at+2,end,d);}
+  if(any(fabs(p-anchor.xyz)+r>anchor.w-1.e-6f)){cache[1].w=0;return plant_hybrid_linear(p,r,at+2,end,d,correction);}
  }return p;
 }
-float3 plant_hybrid_accelerated(float3 p,float r,int root,int end,__global const float4* d){
+float3 plant_hybrid_accelerated(float3 p,float r,int root,int end,__global const float4* d,float3* correction){
 #if PLANT_WALL_MODE >= 1
  int header=root==(int)d[12].x?(int)d[13].z:(int)d[13].w;
 #if PLANT_WALL_MODE >= 2
- if(header>0&&plant_cache_base(d)>=0)return plant_hybrid_cached(p,r,root,end,header,d);
+ if(header>0&&plant_cache_base(d)>=0)return plant_hybrid_cached(p,r,root,end,header,d,correction);
 #endif
  if(header>0){int cursor=0;
   while(cursor<(int)d[header].z){int2 next=plant_next_leaf(p,r,header,cursor,d);if(next.x<0)break;
-   int at=next.x;for(int j=0;j<(int)(-d[at].w);++j){float4 ref=d[(int)d[at+1].w+j];p=plant_hybrid_ref(p,r,ref,d);}cursor=next.y+1;
+   int at=next.x;for(int j=0;j<(int)(-d[at].w);++j){float4 ref=d[(int)d[at+1].w+j];p=plant_hybrid_ref(p,r,ref,d,correction);}cursor=next.y+1;
   }return p;
  }
 #endif
- return plant_hybrid_linear(p,r,root,end,d);
+ return plant_hybrid_linear(p,r,root,end,d,correction);
 }
-float3 plant_hybrid(float3 p,float r,int root,int end,__global const float4* d){
- float3 result=plant_hybrid_accelerated(p,r,root,end,d);
+float3 plant_hybrid(float3 p,float r,int root,int end,__global const float4* d,float3* correction){
+ float3 result=plant_hybrid_accelerated(p,r,root,end,d,correction);
 #if PLANT_BOUNDARY_AUDIT
  // Diagnostic same-input oracle: exact original leaf admission and shape order,
  // without new bounds/masks/cache. Any difference poisons the step, never hides it.
+ float3 auditCorrection=(float3)(0);
  int at=root;
  while(at<end){float4 lo=d[at],hi=d[at+1];int next=lo.w>=0?(int)hi.w:at+2;
   if(any(p<lo.xyz-r)||any(p>hi.xyz+r)){at=next;continue;}
   if(lo.w>=0){at=(int)lo.w;continue;}
-  for(int j=0;j<(int)(-lo.w);++j){float4 ref=d[(int)hi.w+j];p=plant_hybrid_shape(p,r,(int)ref.x,(int)ref.y,d);}at=next;
+  for(int j=0;j<(int)(-lo.w);++j){float4 ref=d[(int)hi.w+j];p=plant_hybrid_shape(p,r,(int)ref.x,(int)ref.y,d,&auditCorrection);}at=next;
  }
  if(any(p!=result))return (float3)(NAN);
 #endif
@@ -260,7 +261,10 @@ int plant_hybrid_reference_zone(float3 p,float r,__global const float4* d){
  return p.z<d[14].z+pad&&fabs(p.y)<d[14].w+pad&&((p.x>d[14].x-pad&&p.x<d[14].y+pad)||(p.x>d[15].x-pad&&p.x<d[15].y+pad));
 }
 float3 plant_boundary_ref_uncached(float3 p,float r,float angle,__global const float4* d,float3* wn,float3* wv,float3 reference){
- float3 initial=p;int referenceZone=d[10].x==2.f&&plant_hybrid_reference_zone(p,r,d);p=d[10].x==2.f&&!referenceZone?plant_hybrid(p,r,(int)d[12].x,(int)d[13].x,d):(d[10].x==1.f?plant_obb_walls(p,r,d):plant_mesh(p,r,(int)d[0].x,d));if(d[10].x==2.f&&!referenceZone&&plant_hybrid_reference_zone(p,r,d)){referenceZone=1;p=plant_mesh(initial,r,(int)d[0].x,d);}int phase=(int)d[4].x;
+ // Sum geometric projections before rounding them into world positions.
+ float3 displacement=(float3)(0);float3* correction=&displacement;
+ float3 initial=p;int referenceZone=d[10].x==2.f&&plant_hybrid_reference_zone(p,r,d);p=d[10].x==2.f&&!referenceZone?plant_hybrid(p,r,(int)d[12].x,(int)d[13].x,d,correction):(d[10].x==1.f?plant_obb_walls(p,r,d):plant_mesh(p,r,(int)d[0].x,d,correction));if(d[10].x==2.f&&!referenceZone&&plant_hybrid_reference_zone(p,r,d)){referenceZone=1;displacement=(float3)(0);p=plant_mesh(initial,r,(int)d[0].x,d,correction);}int phase=(int)d[4].x;
+ if(d[10].x==1.f)displacement=p-initial;
  // Configurable horizontal valve disks: xyz/radius plus open phase.
  int gates=(int)d[5].x,gatecount=(int)d[5].y;
  for(int j=0;j<gatecount;++j){int k=gates+2*j;int open=phase==(int)d[k+1].x;if(d[k+1].z==1.f)open=d[k+1].y==1.f;
@@ -274,14 +278,15 @@ float3 plant_boundary_ref_uncached(float3 p,float r,float angle,__global const f
     if(dr>0.f&&dz>0.f)normal=(float3)(axis.x*outside.x,axis.y*outside.x,copysign(outside.y,z))/length(outside);
     else if(dr>dz)normal=(float3)(axis.x,axis.y,0);
     else normal=(float3)(0,0,copysign(1.f,z));
-    p+=normal*(r-distance);
+    float3 move=normal*(r-distance);displacement+=move;p+=move;
    }
   }
  }
- float3 delta=p-initial;*wn=length(delta)>1.e-9f?normalize(delta):(float3)(0);*wv=(float3)(0);
+ float3 delta=displacement;*wn=length(delta)>1.e-9f?normalize(delta):(float3)(0);*wv=(float3)(0);
  float3 pivot=d[1].xyz,rotated=plant_rotate(p-pivot,-angle)+pivot;
- float3 moved=d[10].x==2.f&&!referenceZone?plant_hybrid(rotated,r,(int)d[12].y,(int)d[13].y,d):plant_mesh(rotated,r,(int)d[0].y,d),shift=plant_rotate(moved-rotated,angle);
- if(length(shift)>1.e-9f){p+=shift;*wn=normalize(shift);*wv=(float3)(0,-(p.z-pivot.z),p.y-pivot.y);}
+ displacement=(float3)(0);
+ float3 moved=d[10].x==2.f&&!referenceZone?plant_hybrid(rotated,r,(int)d[12].y,(int)d[13].y,d,correction):plant_mesh(rotated,r,(int)d[0].y,d,correction),shift=plant_rotate(moved-rotated,angle);
+ if(length(displacement)>1.e-9f){p+=shift;*wn=plant_rotate(normalize(displacement),angle);*wv=(float3)(0,-(p.z-pivot.z),p.y-pivot.y);}
  return p;
 }
 float3 plant_boundary_ref(float3 p,float r,float angle,__global const float4* d,float3* wn,float3* wv,float3 reference){

@@ -40,6 +40,19 @@ bool APowderPlantTest::LoadPressureProfile(){
 }
 TSharedRef<SWidget> APowderPlantTest::BuildPressurePanel(){
  const TWeakObjectPtr<APowderPlantTest> weak(this);auto panel=SNew(SVerticalBox);
+ if (!RegulatedPressureEnabled)
+ {
+     panel->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("이송 차압 (kPa) · 입력 후 Enter")))];
+     panel->AddSlot().AutoHeight()[SNew(SNumericEntryBox<double>)
+         .MinValue(0.0).MaxValue(3.0)
+         .Value_Lambda([weak]() -> TOptional<double> { return weak.IsValid() ? weak->TestPressureDropPa / 1000.0 : 0.0; })
+         .OnValueCommitted_Lambda([weak](double Value, ETextCommit::Type)
+         {
+             if (weak.IsValid() && FMath::IsFinite(Value))
+                 weak->TestPressureDropPa = FMath::Clamp(Value, 0.0, 3.0) * 1000.0;
+         })];
+     return panel;
+ }
  panel->AddSlot().AutoHeight()[SNew(STextBlock).WrapTextAt(350).Text(FText::FromString(TEXT("시험 압력 · 실제 설비 안전값 아님\nkPa(g): 대기=0 / 절대압=101.325+표시값\n이상적 조절기 유지압 · 압축 과도해석 아님")))];
  for(int row=0;row<2;++row){auto bar=SNew(SHorizontalBox);for(int col=0;col<3;++col){int stage=row*3+col;bar->AddSlot().FillWidth(1).Padding(1)[SNew(SButton).IsFocusable(false).OnClicked_Lambda([weak,stage](){if(weak.IsValid())weak->ApplyPressurePreset(stage);return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(Names[stage]))]];}panel->AddSlot().AutoHeight()[bar];}
  panel->AddSlot().AutoHeight()[SNew(STextBlock).WrapTextAt(350).Text_Lambda([weak](){if(!weak.IsValid())return FText::GetEmpty();int s=FMath::Clamp(weak->PressureStage,0,5);return FText::FromString(FString::Printf(TEXT("%s · %s\n%s"),Names[s],weak->PressureManualOverride?TEXT("수동값 우선"):TEXT("단계 시험값"),Hints[s]));})];

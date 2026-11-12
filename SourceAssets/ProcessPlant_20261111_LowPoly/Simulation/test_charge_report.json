@@ -1,0 +1,55 @@
+{
+  "source_sha256": "2ad336b6df17f397a1b03800f568379e778454960f99857a5bddd25fd836a26d",
+  "groups": [
+    {
+      "id": "H-101A",
+      "species": 0,
+      "count": 10000,
+      "radius_m": 0.002,
+      "mass_kg": 0.40212385965949354
+    },
+    {
+      "id": "H-101B",
+      "species": 1,
+      "count": 10000,
+      "radius_m": 0.002,
+      "mass_kg": 0.40212385965949354
+    },
+    {
+      "id": "H-101C",
+      "species": 2,
+      "count": 0,
+      "radius_m": 0.002,
+      "mass_kg": 0.0
+    },
+    {
+      "id": "H-101D",
+      "species": 3,
+      "count": 0,
+      "radius_m": 0.002,
+      "mass_kg": 0.0
+    },
+    {
+      "id": "H-101E",
+      "species": 4,
+      "count": 0,
+      "radius_m": 0.002,
+      "mass_kg": 0.0
+    },
+    {
+      "id": "H-101F",
+      "species": 5,
+      "count": 0,
+      "radius_m": 0.002,
+      "mass_kg": 0.0
+    }
+  ],
+  "total_count": 20000,
+  "charge_sha256": "cc3e9211a4e40a90952cfcafd575d8579d788192eb83a2ca6bb6c6e8ed18b3d6",
+  "simulation_executed": false,
+  "materials_calibrated": false,
+  "notes": [
+    "Three colours label sources; all use the same virtual properties initially.",
+    "No teleportation, forced route, or prescribed particle trajectory. Initial state only."
+  ]
+}

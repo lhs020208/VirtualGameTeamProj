@@ -21,6 +21,11 @@ continuous='COLLISION_RH201_PowderPath_Static'
 metadata={item['id']:item for item in manifest['meshes']}
 latest=continuous in metadata
 exclusions=json.loads(metadata[continuous]['properties']['render_collision_exclusions']) if latest else []
+# The delivered continuous discharge collider replaces the static shells
+# from BV272 through P202. The manual valve disc remains a runtime gate.
+continuous_discharge = 'COLLISION_RH201_DischargePath_Static' in metadata
+if continuous_discharge:
+    exclusions += ['BV272_110_*', 'BV272_111_*', 'DP_1[123]0_*', 'P202_Reducer*']
 def add_source(name):
     d=mesh(name);v=np.array(d['vertices']);t=np.array(d['triangles'])
     if name==continuous:
@@ -50,7 +55,7 @@ def sleeve(a,b,ra,rb,name):
 sleeve([.7,0,1.712],[.7,0,1.812],.061,.065,'Test_PL_cuff_connection')
 # Closed valve-body split seams and receiver gasket seats are real interfaces.
 if not latest:sleeve([2.167,0,2.682],[2.173,0,2.682],.064,.064,'Test_BV122_seal')
-sleeve([3,0,2.157],[3,0,2.163],.139,.139,'Test_BV272_seal')
+if not continuous_discharge:sleeve([3,0,2.157],[3,0,2.163],.139,.139,'Test_BV272_seal')
 def bvh(ts):
     ts=np.asarray(ts,dtype=float);area=np.linalg.norm(np.cross(ts[:,1]-ts[:,0],ts[:,2]-ts[:,0]),axis=1);ts=ts[area>1e-12]
     def node(ids):

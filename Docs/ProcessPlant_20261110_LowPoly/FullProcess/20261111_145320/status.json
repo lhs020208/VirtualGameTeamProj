@@ -1,0 +1,455 @@
+{
+  "run_directory": "D:\\GitHub\\VirtualGameTeamProj\\Docs\\ProcessPlant_20261110_LowPoly\\FullProcess\\20261111_145320",
+  "level_load_wall_s": 8.562000000034459,
+  "diameter_mm": 4,
+  "counts": [
+    10000,
+    10000
+  ],
+  "pressure_units": "Pa(g); absolute=101325+gauge",
+  "stages": [
+    {
+      "stage": "A_to_WH",
+      "sim_s": 1.6071999594,
+      "stage_sim_s": 1.506239961950464,
+      "wall_s": 797.530999999959,
+      "stage_wall_s": 782.905999999959,
+      "snapshot": "00026_A_to_WH.csv",
+      "zones": {
+        "Supply": [
+          0,
+          0
+        ],
+        "WH": [
+          10000,
+          0
+        ],
+        "RH": [
+          0,
+          0
+        ],
+        "MX": [
+          0,
+          0
+        ],
+        "Other": [
+          0,
+          10000
+        ]
+      },
+      "bounds_m": {
+        "WH_0": [
+          [
+            -0.153985157609,
+            -0.214150875807,
+            0.605000019073
+          ],
+          [
+            0.193971931934,
+            0.195740148425,
+            0.864653229713
+          ]
+        ],
+        "Other_1": [
+          [
+            -0.0773749649525,
+            1.33627033234,
+            2.23500013351
+          ],
+          [
+            0.0794232040644,
+            1.46499550343,
+            2.3622546196
+          ]
+        ]
+      },
+      "composition_variance": null,
+      "actual_runtime_row": {
+        "event": "sample",
+        "utc": "2026-11-11T06:06:33.884Z",
+        "sim_s": "1.60287995951",
+        "active_wall_s": "782.6048928",
+        "elapsed_since_ready_s": "784.0848403",
+        "setup_s": "0.4833277",
+        "pressure_stage": "0",
+        "manual": "1",
+        "supply_set_Pa_g": "500",
+        "WH_set_Pa_g": "-500",
+        "RH_set_Pa_g": "0",
+        "supply_applied_Pa_g": "500",
+        "WH_applied_Pa_g": "-500",
+        "RH_applied_Pa_g": "0",
+        "supplier_requested_mask": "1",
+        "supplier_applied_mask": "1",
+        "WH_requested_open": "0",
+        "WH_applied_open": "0",
+        "RH_requested_open": "0",
+        "RH_applied_open": "0",
+        "mixer_RPM": "0",
+        "WH_regulator_m3_s": "-0.0642026812591",
+        "transfer_m3_s": "0",
+        "SupplyA_speciesA": "0",
+        "SupplyA_speciesB": "0",
+        "SupplyB_speciesA": "0",
+        "SupplyB_speciesB": "10000",
+        "SupplyC_speciesA": "0",
+        "SupplyC_speciesB": "0",
+        "SupplyD_speciesA": "0",
+        "SupplyD_speciesB": "0",
+        "SupplyE_speciesA": "0",
+        "SupplyE_speciesB": "0",
+        "SupplyF_speciesA": "0",
+        "SupplyF_speciesB": "0",
+        "WH_speciesA": "10000",
+        "WH_speciesB": "0",
+        "RH_speciesA": "0",
+        "RH_speciesB": "0",
+        "MX_speciesA": "0",
+        "MX_speciesB": "0",
+        "Other_speciesA": "0",
+        "Other_speciesB": "0"
+      },
+      "result": "completed_all_arrived",
+      "start_sim_s": 0.10095999744953588
+    },
+    {
+      "stage": "B_to_WH",
+      "sim_s": 3.00783992402,
+      "stage_sim_s": 1.4006399646200003,
+      "wall_s": 2152.5779999999795,
+      "stage_wall_s": 1355.0470000000205,
+      "snapshot": "00072_B_to_WH.csv",
+      "zones": {
+        "Supply": [
+          0,
+          0
+        ],
+        "WH": [
+          10000,
+          10000
+        ],
+        "RH": [
+          0,
+          0
+        ],
+        "MX": [
+          0,
+          0
+        ],
+        "Other": [
+          0,
+          0
+        ]
+      },
+      "bounds_m": {
+        "WH_0": [
+          [
+            -0.136373206973,
+            -0.210177466273,
+            0.605000019073
+          ],
+          [
+            0.176693186164,
+            0.162390306592,
+            0.849650740623
+          ]
+        ],
+        "WH_1": [
+          [
+            -0.15089854598,
+            -0.110910199583,
+            0.696455776691
+          ],
+          [
+            0.121704190969,
+            0.175587460399,
+            0.820785403252
+          ]
+        ]
+      },
+      "composition_variance": null,
+      "actual_runtime_row": {
+        "event": "sample",
+        "utc": "2026-11-11T06:29:07.834Z",
+        "sim_s": "3.00399992411",
+        "active_wall_s": "2134.4961591",
+        "elapsed_since_ready_s": "2138.0343895",
+        "setup_s": "0.4833277",
+        "pressure_stage": "0",
+        "manual": "1",
+        "supply_set_Pa_g": "500",
+        "WH_set_Pa_g": "-500",
+        "RH_set_Pa_g": "0",
+        "supply_applied_Pa_g": "500",
+        "WH_applied_Pa_g": "-500",
+        "RH_applied_Pa_g": "0",
+        "supplier_requested_mask": "2",
+        "supplier_applied_mask": "2",
+        "WH_requested_open": "0",
+        "WH_applied_open": "0",
+        "RH_requested_open": "0",
+        "RH_applied_open": "0",
+        "mixer_RPM": "0",
+        "WH_regulator_m3_s": "-0.0631859256363",
+        "transfer_m3_s": "0",
+        "SupplyA_speciesA": "0",
+        "SupplyA_speciesB": "0",
+        "SupplyB_speciesA": "0",
+        "SupplyB_speciesB": "0",
+        "SupplyC_speciesA": "0",
+        "SupplyC_speciesB": "0",
+        "SupplyD_speciesA": "0",
+        "SupplyD_speciesB": "0",
+        "SupplyE_speciesA": "0",
+        "SupplyE_speciesB": "0",
+        "SupplyF_speciesA": "0",
+        "SupplyF_speciesB": "0",
+        "WH_speciesA": "10000",
+        "WH_speciesB": "10000",
+        "RH_speciesA": "0",
+        "RH_speciesB": "0",
+        "MX_speciesA": "0",
+        "MX_speciesB": "0",
+        "Other_speciesA": "0",
+        "Other_speciesB": "0"
+      },
+      "result": "completed_all_arrived",
+      "start_sim_s": 1.6071999594
+    },
+    {
+      "stage": "WH_to_RH",
+      "sim_s": 5.35679986468,
+      "stage_sim_s": 2.34895994066,
+      "wall_s": 3025.890000000014,
+      "stage_wall_s": 873.3120000000345,
+      "snapshot": "00102_WH_to_RH.csv",
+      "zones": {
+        "Supply": [
+          0,
+          0
+        ],
+        "WH": [
+          0,
+          0
+        ],
+        "RH": [
+          10000,
+          10000
+        ],
+        "MX": [
+          0,
+          0
+        ],
+        "Other": [
+          0,
+          0
+        ]
+      },
+      "bounds_m": {
+        "RH_0": [
+          [
+            2.86304306984,
+            -0.136988356709,
+            2.16500020027
+          ],
+          [
+            3.13694024086,
+            0.136992976069,
+            2.20924448967
+          ]
+        ],
+        "RH_1": [
+          [
+            2.87407541275,
+            -0.136876180768,
+            2.16500020027
+          ],
+          [
+            3.13698935509,
+            0.136962622404,
+            2.20857453346
+          ]
+        ]
+      },
+      "composition_variance": null,
+      "actual_runtime_row": {
+        "event": "sample",
+        "utc": "2026-11-11T06:43:41.494Z",
+        "sim_s": "5.31519986573",
+        "active_wall_s": "3006.1544766",
+        "elapsed_since_ready_s": "3011.6949625",
+        "setup_s": "0.4833277",
+        "pressure_stage": "0",
+        "manual": "1",
+        "supply_set_Pa_g": "0",
+        "WH_set_Pa_g": "500",
+        "RH_set_Pa_g": "-1000",
+        "supply_applied_Pa_g": "0",
+        "WH_applied_Pa_g": "500",
+        "RH_applied_Pa_g": "-1000",
+        "supplier_requested_mask": "0",
+        "supplier_applied_mask": "0",
+        "WH_requested_open": "1",
+        "WH_applied_open": "1",
+        "RH_requested_open": "0",
+        "RH_applied_open": "0",
+        "mixer_RPM": "0",
+        "WH_regulator_m3_s": "0.0857877203038",
+        "transfer_m3_s": "0.0857877203038",
+        "SupplyA_speciesA": "0",
+        "SupplyA_speciesB": "0",
+        "SupplyB_speciesA": "0",
+        "SupplyB_speciesB": "0",
+        "SupplyC_speciesA": "0",
+        "SupplyC_speciesB": "0",
+        "SupplyD_speciesA": "0",
+        "SupplyD_speciesB": "0",
+        "SupplyE_speciesA": "0",
+        "SupplyE_speciesB": "0",
+        "SupplyF_speciesA": "0",
+        "SupplyF_speciesB": "0",
+        "WH_speciesA": "0",
+        "WH_speciesB": "0",
+        "RH_speciesA": "10000",
+        "RH_speciesB": "10000",
+        "MX_speciesA": "0",
+        "MX_speciesB": "0",
+        "Other_speciesA": "0",
+        "Other_speciesB": "0"
+      },
+      "result": "completed_all_arrived",
+      "start_sim_s": 3.00783992402
+    }
+  ],
+  "completed": false,
+  "PIE_ready_wall_s": 14.625,
+  "active_stage": "RH_to_MX",
+  "report_revision": 287,
+  "latest": {
+    "stage": "RH_to_MX",
+    "sim_s": 27.551359304,
+    "stage_sim_s": 22.194559439320003,
+    "wall_s": 8417.640000000014,
+    "stage_wall_s": 5391.75,
+    "snapshot": "00282_RH_to_MX.csv",
+    "zones": {
+      "Supply": [
+        0,
+        0
+      ],
+      "WH": [
+        0,
+        0
+      ],
+      "RH": [
+        0,
+        0
+      ],
+      "MX": [
+        9558,
+        9623
+      ],
+      "Other": [
+        442,
+        377
+      ]
+    },
+    "bounds_m": {
+      "MX_0": [
+        [
+          2.80811190605,
+          -0.148490920663,
+          0.944501936436
+        ],
+        [
+          3.20060992241,
+          0.154234841466,
+          1.11948990822
+        ]
+      ],
+      "Other_0": [
+        [
+          2.86304306984,
+          -0.136982798576,
+          1.31200003624
+        ],
+        [
+          3.13662743568,
+          0.136978909373,
+          2.15058159828
+        ]
+      ],
+      "MX_1": [
+        [
+          2.81111240387,
+          -0.151550769806,
+          0.944499194622
+        ],
+        [
+          3.1999437809,
+          0.152164518833,
+          1.12549555302
+        ]
+      ],
+      "Other_1": [
+        [
+          2.90841460228,
+          -0.136992633343,
+          1.31200003624
+        ],
+        [
+          3.13653922081,
+          0.136977925897,
+          2.14531755447
+        ]
+      ]
+    },
+    "composition_variance": 0.0012341376260133912,
+    "actual_runtime_row": {
+      "event": "sample",
+      "utc": "2026-11-11T08:13:35.539Z",
+      "sim_s": "27.5398393043",
+      "active_wall_s": "8386.07683",
+      "elapsed_since_ready_s": "8405.7382791",
+      "setup_s": "0.4833277",
+      "pressure_stage": "0",
+      "manual": "1",
+      "supply_set_Pa_g": "0",
+      "WH_set_Pa_g": "0",
+      "RH_set_Pa_g": "0",
+      "supply_applied_Pa_g": "0",
+      "WH_applied_Pa_g": "0",
+      "RH_applied_Pa_g": "0",
+      "supplier_requested_mask": "0",
+      "supplier_applied_mask": "0",
+      "WH_requested_open": "0",
+      "WH_applied_open": "0",
+      "RH_requested_open": "1",
+      "RH_applied_open": "1",
+      "mixer_RPM": "0",
+      "WH_regulator_m3_s": "0",
+      "transfer_m3_s": "0",
+      "SupplyA_speciesA": "0",
+      "SupplyA_speciesB": "0",
+      "SupplyB_speciesA": "0",
+      "SupplyB_speciesB": "0",
+      "SupplyC_speciesA": "0",
+      "SupplyC_speciesB": "0",
+      "SupplyD_speciesA": "0",
+      "SupplyD_speciesB": "0",
+      "SupplyE_speciesA": "0",
+      "SupplyE_speciesB": "0",
+      "SupplyF_speciesA": "0",
+      "SupplyF_speciesB": "0",
+      "WH_speciesA": "0",
+      "WH_speciesB": "0",
+      "RH_speciesA": "0",
+      "RH_speciesB": "0",
+      "MX_speciesA": "9558",
+      "MX_speciesB": "9623",
+      "Other_speciesA": "442",
+      "Other_speciesB": "377"
+    }
+  },
+  "run_log": "D:\\GitHub\\VirtualGameTeamProj\\Saved\\PlantPressureRuns\\20261111T055329Z_3F84F71244F67053DF3E41B3DF8EF7BC.csv"
+}

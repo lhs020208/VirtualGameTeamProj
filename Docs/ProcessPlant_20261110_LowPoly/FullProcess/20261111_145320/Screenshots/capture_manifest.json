@@ -1,0 +1,75 @@
+{
+  "notice": "Recorded coordinate reconstruction, NOT a live simulation",
+  "sim_s": 27.551359304,
+  "particle_diameter_m": 0.004,
+  "groups": {
+    "valve": {
+      "count": 224,
+      "min_m": [
+        2.86304306984,
+        -0.136992633343,
+        2.13492560387
+      ],
+      "max_m": [
+        3.13662743568,
+        0.136978909373,
+        2.15058159828
+      ]
+    },
+    "inlet": {
+      "count": 595,
+      "min_m": [
+        2.98001813889,
+        -0.0219838637859,
+        1.31200003624
+      ],
+      "max_m": [
+        3.02034139633,
+        0.0266043618321,
+        1.37021005154
+      ]
+    }
+  },
+  "display": "existing render cutaway materials; frame hidden; recorded particles only; original render meshes",
+  "shots": [
+    {
+      "name": "locations",
+      "camera_cm": [
+        420,
+        210,
+        270
+      ],
+      "target_cm": [
+        300,
+        0,
+        180
+      ]
+    },
+    {
+      "name": "valve224",
+      "camera_cm": [
+        335,
+        55,
+        226
+      ],
+      "target_cm": [
+        300,
+        0,
+        213.5
+      ]
+    },
+    {
+      "name": "inlet595",
+      "camera_cm": [
+        315,
+        28,
+        142
+      ],
+      "target_cm": [
+        300,
+        0,
+        132
+      ]
+    }
+  ]
+}

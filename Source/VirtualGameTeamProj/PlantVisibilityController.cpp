@@ -18,6 +18,8 @@
 #include "Widgets/SOverlay.h"
 #include "Styling/CoreStyle.h"
 #include "Widgets/Layout/SScrollBox.h"
+#include "Widgets/Layout/SDPIScaler.h"
+#include "Misc/ConfigCacheIni.h"
 
 APlantVisibilityController::APlantVisibilityController()
 {
@@ -94,8 +96,29 @@ TSharedRef<SWidget> APlantVisibilityController::BuildPanel()
     };
     TSharedRef<SWidget> Simulation=SNullWidget::NullWidget;
     if(GetWorld()&&GetWorld()->IsGameWorld())for(TActorIterator<APowderPlantTest>It(GetWorld());It;++It){Simulation=It->BuildSimulationPanel();break;}
-    return SNew(SBox).MaxDesiredHeight(680)[SNew(SScrollBox)+SScrollBox::Slot()[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).Padding(12).BorderBackgroundColor(FLinearColor(.035f,.045f,.06f,.96f))
+    int32 Percent = 125;
+    GConfig->GetInt(TEXT("PlantDisplay"), TEXT("PanelScalePercent"), Percent, GGameUserSettingsIni);
+    const auto Scale = MakeShared<int32>(FMath::Clamp(Percent, 100, 200));
+    auto ScaleButton = [Scale](int32 Step, const TCHAR* Label)
+    {
+        return SNew(SButton).IsFocusable(false)
+            .OnClicked_Lambda([Scale, Step]()
+            {
+                *Scale = FMath::Clamp(*Scale + Step, 100, 200);
+                GConfig->SetInt(TEXT("PlantDisplay"), TEXT("PanelScalePercent"), *Scale, GGameUserSettingsIni);
+                GConfig->Flush(false, GGameUserSettingsIni);
+                return FReply::Handled();
+            })
+            [SNew(STextBlock).Text(FText::FromString(Label))];
+    };
+    return SNew(SBox).MaxDesiredHeight(680)[SNew(SScrollBox)+SScrollBox::Slot()[SNew(SDPIScaler).DPIScale_Lambda([Scale]() { return *Scale / 100.f; })[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).Padding(12).BorderBackgroundColor(FLinearColor(.035f,.045f,.06f,.96f))
         [SNew(SVerticalBox)
+        + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,6)
+            [SNew(SHorizontalBox)
+            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,8,0)
+                [SNew(STextBlock).Text_Lambda([Scale]() { return FText::FromString(FString::Printf(TEXT("화면 배율 %d%%"), *Scale)); })]
+            + SHorizontalBox::Slot().AutoWidth()[ScaleButton(-25, TEXT("축소"))]
+            + SHorizontalBox::Slot().AutoWidth()[ScaleButton(25, TEXT("확대"))]]
         + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,8)
             [SNew(STextBlock).Text(FText::FromString(TEXT("공정 설비 표시 · 물리 계산과 독립")))]
         + SVerticalBox::Slot().AutoHeight()
@@ -116,7 +139,7 @@ TSharedRef<SWidget> APlantVisibilityController::BuildPanel()
                     WeakThis->ViewMode == EPlantViewMode::Cutaway ? TEXT("전면 개방") : TEXT("숨김");
                 return FText::FromString(FString::Printf(TEXT("현재: %s | 프레임: %s"),Mode,WeakThis->bShowFrames?TEXT("표시"):TEXT("숨김")));
             })]
-        + SVerticalBox::Slot().AutoHeight().Padding(0,14,0,0)[Simulation]]]];
+        + SVerticalBox::Slot().AutoHeight().Padding(0,14,0,0)[Simulation]]]]];
 }
 
 void APlantVisibilityController::OpenDisplayPanel()
