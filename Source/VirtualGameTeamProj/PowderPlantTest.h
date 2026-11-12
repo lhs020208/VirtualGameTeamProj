@@ -2,9 +2,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "PlantSimulationSnapshot.h"
+#include "ProcessControlTypes.h"
 #include "PowderPlantTest.generated.h"
 class UInstancedStaticMeshComponent;
 class APlantVisibilityController;
+class UProcessControlService;
 struct FPlantRuntime;
 class SWidget;
 USTRUCT()
@@ -32,6 +34,7 @@ public:
  UPROPERTY(EditAnywhere,Category="Plant|Test",meta=(ToolTip="Physical seconds before an incomplete stage stops with a diagnostic, never teleports particles.")) double StageTimeoutSeconds=60;
  UPROPERTY(EditAnywhere,Category="Plant|Test",meta=(ClampMin="0.01",ClampMax="1",ToolTip="Test valve schedule only. Remaining particles are retained, never discarded.")) double MinimumReceiverFraction=.98;
  UPROPERTY(EditAnywhere,Category="Plant|Test",meta=(ClampMin="0")) double ReceiverTransferSeconds=2.;
+ UPROPERTY(EditAnywhere,Category="Plant|Transfer Observation",meta=(ToolTip="Provisional model-mass completion criteria, not an approved operating standard. Applied on initialization. Never controls valves.")) FPlantTransferSettings TransferSettings;
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") int32 ParticleCount=0;
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") int32 InWeighingHopper=0;
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") int32 InReceiver=0;
@@ -49,6 +52,21 @@ public:
  UFUNCTION(BlueprintCallable,Category="Plant") void ToggleReceiver();
  UFUNCTION(BlueprintCallable,Category="Plant") void ToggleMixer();
 private:
+ friend class UProcessControlService;
+ TWeakObjectPtr<UProcessControlService> ControlOwner;
+ FPlantControlTargets ControlTargets;
+ bool ClaimControl(UProcessControlService* ServiceOwner);
+ void ReleaseControl(UProcessControlService* ServiceOwner);
+ bool ValidateControl(int64 Epoch, FString& Reason) const;
+ bool SetSupplierValve(int32 Index, bool Open, int64 Epoch, int64& Revision, FString& Reason);
+ bool SetWeighingValve(bool Open, int64 Epoch, int64& Revision, FString& Reason);
+ bool SetReceiverValve(bool Open, int64 Epoch, int64& Revision, FString& Reason);
+ bool SetMixerEnabled(bool Enabled, int64 Epoch, int64& Revision, FString& Reason);
+ bool SetMixerRPM(double RPM, int64 Epoch, int64& Revision, FString& Reason);
+ bool SetSimulationRunning(bool Run, int64 Epoch, int64& Revision, FString& Reason);
+ bool RequestAllClosed(int64 Epoch, int64& Revision, FString& Reason);
+ void PublishControls();
+ bool LegacyControlsAllowed() const;
  int64 SnapshotEpoch=0;
  TArray<int32> InitialSupplierCounts;
  float ParticleRadiusM=.00125f;

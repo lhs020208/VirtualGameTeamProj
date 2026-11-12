@@ -177,13 +177,13 @@ FAutoConsoleCommandWithWorldAndArgs ScreenValidation(
             }
             else
             {
-                UE_LOG(LogTemp,Display,TEXT("PROCESS_UI_SCREEN_PASS 9 equipment, 2D/3D, commands disabled, no control writes"));
+                UE_LOG(LogTemp,Display,TEXT("PROCESS_UI_SCREEN_PASS 9 equipment, 2D/3D, unsupported transfer disabled, no control writes"));
                 FPlatformMisc::RequestExitWithStatus(false,0);return false;
             }
-            for(const TCHAR* Name:{TEXT("ValveOpen"),TEXT("ValveClose"),TEXT("TransferStart"),TEXT("TransferStop"),TEXT("MixerStart"),TEXT("MixerStop"),TEXT("SetRPM"),TEXT("ManualRequest")})
+            for(const TCHAR* Name:{TEXT("TransferStart"),TEXT("TransferStop")})
             {
                 auto* Button=UI->GetWidgetFromName(Name);
-                if(!Button||Button->GetIsEnabled()){Fail(TEXT("a command was enabled"));return false;}
+                if(!Button||Button->GetIsEnabled()){Fail(TEXT("unsupported transfer was enabled"));return false;}
             }
             for(int32 I=0;I<9;++I)
             {

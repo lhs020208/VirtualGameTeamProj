@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PlantTransferTypes.h"
 #include "PlantSimulationSnapshot.generated.h"
 
 UENUM(BlueprintType)
@@ -13,6 +14,45 @@ UENUM(BlueprintType)
 enum class EPlantExecutionState : uint8
 {
     Unavailable, Initializing, Running, Paused, PauseRequested, ResumeRequested, Fault
+};
+
+USTRUCT(BlueprintType)
+struct FPlantMassValue
+{
+    GENERATED_BODY()
+    UPROPERTY(BlueprintReadOnly) double Kg = 0;
+    UPROPERTY(BlueprintReadOnly) FString Unit = TEXT("kg");
+    UPROPERTY(BlueprintReadOnly) EPlantValueValidity Validity = EPlantValueValidity::Unknown;
+    UPROPERTY(BlueprintReadOnly) FDateTime UpdatedUtc;
+    UPROPERTY(BlueprintReadOnly) FString Source = TEXT("시뮬레이션 계산값");
+};
+
+USTRUCT(BlueprintType)
+struct FPlantTransferSnapshot
+{
+    GENERATED_BODY()
+    UPROPERTY(BlueprintReadOnly) int64 Id = 0;
+    UPROPERTY(BlueprintReadOnly) int64 Connection = 0;
+    UPROPERTY(BlueprintReadOnly) int64 OpeningControlRevision = 0;
+    UPROPERTY(BlueprintReadOnly) EPlantValueValidity Validity = EPlantValueValidity::Unknown;
+    UPROPERTY(BlueprintReadOnly) EPlantTransferState State = EPlantTransferState::Idle;
+    UPROPERTY(BlueprintReadOnly) FString Reason;
+    UPROPERTY(BlueprintReadOnly) FDateTime UpdatedUtc;
+    UPROPERTY(BlueprintReadOnly) double StartedSimulationSeconds = 0;
+    UPROPERTY(BlueprintReadOnly) double ObservedSimulationSeconds = 0;
+    UPROPERTY(BlueprintReadOnly) double StableSeconds = 0;
+    UPROPERTY(BlueprintReadOnly) double BaselineKg = 0;
+    UPROPERTY(BlueprintReadOnly) double RemainingKg = 0;
+    UPROPERTY(BlueprintReadOnly) double InTransitKg = 0;
+    // Current residence of the captured IDs, not a cumulative crossing counter.
+    UPROPERTY(BlueprintReadOnly) double ArrivedKg = 0;
+    UPROPERTY(BlueprintReadOnly) double UnclassifiedKg = 0;
+    UPROPERTY(BlueprintReadOnly) double InitialReceiverKg = 0;
+    UPROPERTY(BlueprintReadOnly) bool OutletAppliedOpen = false;
+    // Carrier flow from the field successfully uploaded to the solver, not a pressure/flow sensor.
+    UPROPERTY(BlueprintReadOnly) double CalculatedCarrierFlowM3s = 0;
+    UPROPERTY(BlueprintReadOnly) bool CarrierFlowValid = false;
+    UPROPERTY(BlueprintReadOnly) FPlantTransferSettings Criteria;
 };
 
 /** A copy of committed telemetry, never a view into GPU/worker memory. */
@@ -46,6 +86,17 @@ struct FPlantSimulationSnapshot
     // RPM used by the last successful solver batch, not a tachometer reading.
     UPROPERTY(BlueprintReadOnly) double AppliedRPM = 0;
     UPROPERTY(BlueprintReadOnly) bool AppliedRPMValid = false;
+    // Worker acknowledgement of one coherent control mailbox, scoped to Epoch.
+    UPROPERTY(BlueprintReadOnly) int64 ProcessedControlRevision = 0;
+    UPROPERTY(BlueprintReadOnly) int64 RequestedControlRevision = 0;
+    UPROPERTY(BlueprintReadOnly) double WorkerTargetRPM = 15;
+    UPROPERTY(BlueprintReadOnly) bool WorkerMixerEnabled = false;
+    UPROPERTY(BlueprintReadOnly) FPlantMassValue WeighingMass;
+    UPROPERTY(BlueprintReadOnly) FPlantMassValue PipeMass;
+    UPROPERTY(BlueprintReadOnly) FPlantMassValue ReceiverMass;
+    UPROPERTY(BlueprintReadOnly) double ModelParticleMassKg = 0;
+    UPROPERTY(BlueprintReadOnly) FString MassDiagnostic;
+    UPROPERTY(BlueprintReadOnly) FPlantTransferSnapshot Transfer;
 };
 
 USTRUCT(BlueprintType)
@@ -77,6 +128,8 @@ struct FProcessEquipmentSnapshot
     UPROPERTY(BlueprintReadOnly) FProcessStateValue ValveAppliedOpen;
     UPROPERTY(BlueprintReadOnly) FProcessStateValue RequestedRPM;
     UPROPERTY(BlueprintReadOnly) FProcessStateValue AppliedRPM;
+    UPROPERTY(BlueprintReadOnly) FPlantMassValue CurrentMass;
+    UPROPERTY(BlueprintReadOnly) FPlantTransferSnapshot Transfer;
 };
 
 /** Per-binding ordering guard. Reset only when changing the explicit source. */

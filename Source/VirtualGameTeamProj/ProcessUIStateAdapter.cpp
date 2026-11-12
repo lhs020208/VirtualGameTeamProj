@@ -1,7 +1,10 @@
 #include "ProcessUIStateAdapter.h"
+#include "ProcessControlService.h"
+#include "ProcessControlUI.h"
 #include "PowderPlantTest.h"
 #include "PowderCameraController.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetTree.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "Components/VerticalBox.h"
@@ -76,6 +79,14 @@ void HideUnavailableControls(UUserWidget* W)
 
 void PrepareReadOnlyPanel(UUserWidget* W)
 {
+    if(auto* Panel=Cast<UVerticalBox>(W->GetWidgetFromName(TEXT("PanelContents"))))
+        if(!W->GetWidgetFromName(TEXT("TransferTelemetry")))
+        {
+            auto* Detail=W->WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(),TEXT("TransferTelemetry"));
+            Detail->SetAutoWrapText(true);Detail->SetVisibility(ESlateVisibility::Collapsed);
+            Panel->AddChildToVerticalBox(Detail)->SetPadding(FMargin(6,8));StyleText(W,TEXT("TransferTelemetry"),15,Ink);
+        }
+
     SetLabel(W, TEXT("Title"), TEXT("원료 투입 · 혼합\n장비 상태 확인"));
     SetLabel(W, TEXT("View2DText"), TEXT("공정도"));
     SetLabel(W, TEXT("View3DText"), TEXT("3D 보기"));
@@ -110,6 +121,10 @@ void PrepareReadOnlyPanel(UUserWidget* W)
 
 FString TileText(const FProcessEquipmentSnapshot& S)
 {
+    if(S.EquipmentId==TEXT("weigher"))
+        return TEXT("현재 담긴 양\n")+UProcessUIStateAdapter::FormatMass(S.CurrentMass)+
+            (S.ValveAppliedOpen.Validity==EPlantValueValidity::Valid?(S.ValveAppliedOpen.Value!=0?TEXT("\n밸브 열림"):TEXT("\n밸브 닫힘")):TEXT(""));
+
     switch (S.Validity)
     {
     case EPlantValueValidity::Unsupported: return TEXT("시뮬레이션\n미구현");
@@ -151,6 +166,7 @@ FProcessEquipmentSnapshot UProcessUIStateAdapter::BuildEquipment(const FString& 
 {
     FProcessEquipmentSnapshot R;
     R.EquipmentId = Id;
+    if(Id==TEXT("weigher")||Id==TEXT("receiver"))R.Source=TEXT("시뮬레이션 계산값");
     if (!IsImplementedId(Id))
     {
         R.Validity = EPlantValueValidity::Unsupported;
@@ -167,6 +183,13 @@ FProcessEquipmentSnapshot UProcessUIStateAdapter::BuildEquipment(const FString& 
     if (R.Validity == EPlantValueValidity::Valid &&
         (S->PublishedWallSeconds <= 0 || Now - S->PublishedWallSeconds > MaxAge)) R.Validity = EPlantValueValidity::Stale;
     const auto Validity = R.Validity;
+    if(Id==TEXT("weigher")||Id==TEXT("receiver"))
+    {
+        R.CurrentMass=Id==TEXT("weigher")?S->WeighingMass:S->ReceiverMass;R.Transfer=S->Transfer;
+        if(Validity!=EPlantValueValidity::Valid){R.CurrentMass.Validity=Validity;R.Transfer.Validity=Validity;}
+        if(!S->MassDiagnostic.IsEmpty())R.Error+=TEXT("\n")+S->MassDiagnostic;
+    }
+
     R.SimulationTime = Value(S->PhysicalSeconds, TEXT("s"), Validity);
     if (Id.StartsWith(TEXT("supply-")))
     {
@@ -204,10 +227,33 @@ FProcessEquipmentSnapshot UProcessUIStateAdapter::BuildEquipment(const FString& 
     return R;
 }
 
+FString UProcessUIStateAdapter::FormatMass(const FPlantMassValue& Mass)
+{
+    if(Mass.Validity!=EPlantValueValidity::Valid||!FMath::IsFinite(Mass.Kg)||Mass.Kg<0)return TEXT("데이터 없음");
+    if(Mass.Kg==0)return TEXT("0 g");
+    return Mass.Kg<1?FString::Printf(TEXT("%.3f g"),Mass.Kg*1000):FString::Printf(TEXT("%.4f kg"),Mass.Kg);
+}
+
+FString UProcessUIStateAdapter::FormatTransfer(const FPlantTransferSnapshot& T)
+{
+    if(T.Validity!=EPlantValueValidity::Valid)return TEXT("수동 이송 · 판정 불가\n데이터 없음\n")+T.Reason;
+    if(T.State==EPlantTransferState::Idle)return TEXT("수동 이송 · 시작 전\n칭량호퍼 출구의 실제 개방 직전 기준량을 기록합니다.\n시험 기준 · 운전 기준 미확정");
+    const TCHAR* State=T.State==EPlantTransferState::Complete?TEXT("완료"):T.State==EPlantTransferState::Indeterminate?TEXT("판정 불가"):
+        T.State==EPlantTransferState::Empty?TEXT("이송할 원료 없음"):TEXT("이송 중");
+    auto Mass=[](double Kg){FPlantMassValue V;V.Kg=Kg;V.Validity=EPlantValueValidity::Valid;return FormatMass(V);};
+    FString Text=FString::Printf(TEXT("수동 이송 #%lld · %s\n기준량 %s\n남은 양 %s / 이동 중 %s\n이번 도착 %s\n기존 수취량 %s (도착량에서 제외)\n안정 관찰 %.3f / %.3f초 (해석 시간)\n출구 밸브 %s · 완료와 별도 확인\n%s\n시험 기준: 잔량 WH %s / 배관 %s\n질량 오차 %s · 운전 기준 미확정"),
+        T.Id,State,*Mass(T.BaselineKg),*Mass(T.RemainingKg),*Mass(T.InTransitKg),*Mass(T.ArrivedKg),*Mass(T.InitialReceiverKg),T.StableSeconds,T.Criteria.StableSimulationSeconds,
+        T.OutletAppliedOpen?TEXT("열림"):TEXT("닫힘"),*T.Reason,*Mass(T.Criteria.WeighingResidualKg),*Mass(T.Criteria.PipeResidualKg),*Mass(T.Criteria.MassErrorKg));
+    if(T.UnclassifiedKg>0)Text+=TEXT("\n미분류 ")+Mass(T.UnclassifiedKg);
+    if(T.OutletAppliedOpen&&T.CarrierFlowValid&&T.CalculatedCarrierFlowM3s==0&&T.State!=EPlantTransferState::Complete)
+        Text+=TEXT("\n계산된 이송 공기 유량 0 m³/s · 현재 공기 흐름이 없습니다.\n현재 모델은 공급 밸브를 모두 닫으면 이송 공기도 흐르지 않습니다. 독립 이송 공기 공급은 미지원입니다.");
+    return Text;
+}
+
 void UProcessUIStateAdapter::Format(const FProcessEquipmentSnapshot& S, FText& Status, FText& Quantity, FText& Valve)
 {
     // Always replace every field, including unsupported/missing/error cases.
-    Quantity = FText::FromString(TEXT("미확인")); Valve = FText::FromString(TEXT("미확인"));
+    Quantity = FText::FromString(S.EquipmentId==TEXT("weigher")||S.EquipmentId==TEXT("receiver")?TEXT("데이터 없음"):TEXT("미확인")); Valve = FText::FromString(TEXT("미확인"));
     switch (S.Validity)
     {
     case EPlantValueValidity::Unsupported: Status = FText::FromString(TEXT("시뮬레이션 미구현")); return;
@@ -219,7 +265,9 @@ void UProcessUIStateAdapter::Format(const FProcessEquipmentSnapshot& S, FText& S
     default: break;
     }
     Status = FText::FromString(FString::Printf(TEXT("%s\n시뮬레이션 시간 %.4f초"), ExecutionText(S.Execution), S.SimulationTime.Value));
-    if (S.RegionParticleCount.Validity == EPlantValueValidity::Valid)
+    if(S.EquipmentId==TEXT("weigher")||S.EquipmentId==TEXT("receiver"))
+        Quantity=FText::FromString(FormatMass(S.CurrentMass)+TEXT("\n모델 기준 · 배치 환산 없음"));
+    else if (S.RegionParticleCount.Validity == EPlantValueValidity::Valid)
         Quantity = FText::FromString(FText::AsNumber(int64(S.RegionParticleCount.Value)).ToString() + TEXT("개\n무게(kg)는 제공하지 않습니다"));
     else if (S.InitialParticleCount.Validity == EPlantValueValidity::Valid)
         Quantity = FText::FromString(FText::AsNumber(int64(S.InitialParticleCount.Value)).ToString() + TEXT("개\n현재 남은 양은 집계하지 않습니다"));
@@ -332,9 +380,9 @@ void UProcessUIStateAdapter::Push(const FString& Id)
     if (Id == ReadString(W, TEXT("SelectedEquipmentId")))
     {
         SetLabel(W, TEXT("ValveLabel"), Id == TEXT("mixer") ? TEXT("혼합기 회전 설정") : TEXT("밸브 상태"));
-        SetLabel(W, TEXT("QuantityLabel"), Id.StartsWith(TEXT("supply-")) ? TEXT("처음 넣은 입자 수") : TEXT("현재 영역의 입자 수"));
+        SetLabel(W, TEXT("QuantityLabel"), Id.StartsWith(TEXT("supply-")) ? TEXT("처음 넣은 입자 수") : (Id==TEXT("weigher")||Id==TEXT("receiver"))?TEXT("현재 담긴 양"):TEXT("현재 영역의 입자 수"));
         const TCHAR* Description = Id.StartsWith(TEXT("supply-")) ? TEXT("칭량호퍼로 원료를 보내는 공급 장비입니다.") :
-            Id == TEXT("weigher") ? TEXT("공급된 원료를 모으는 호퍼입니다. 현재는 입자 수를 조회할 수 있습니다.") :
+            Id == TEXT("weigher") ? TEXT("호퍼 내부 입자의 모델 질량입니다. 출구를 열면 수취호퍼까지 이번 이송분을 관찰합니다.") :
             Id == TEXT("receiver") ? TEXT("혼합기로 보내기 전 원료를 받아두는 호퍼입니다.") : TEXT("원료를 섞는 장비입니다. 아래 회전수는 계산에 사용된 값이며 실측값은 아닙니다.");
         if (State.Validity == EPlantValueValidity::Unsupported) Description = TEXT("공정도에는 표시되지만 이 장비의 시뮬레이션은 아직 구현되지 않았습니다.");
         SetLabel(W, TEXT("PanelDescription"), Description);
@@ -342,7 +390,15 @@ void UProcessUIStateAdapter::Push(const FString& Id)
             Label->SetToolTipText(FText::FromString(State.UpdatedUtc.GetTicks() > 0 ? FString::Printf(TEXT("%s\n갱신 UTC %s\n초기화 세대 %lld · 스냅샷 %lld\n%s"),
                 *State.SourceActorPath, *State.UpdatedUtc.ToIso8601(), State.Epoch, State.Sequence, *State.Error) : TEXT("아직 전달된 시뮬레이션 상태가 없습니다.")));
         if (auto* Label = W->GetWidgetFromName(TEXT("StatusValue"))) Label->SetToolTipText(FText::FromString(State.Error));
+        if(auto* Detail=Cast<UTextBlock>(W->GetWidgetFromName(TEXT("TransferTelemetry"))))
+        {
+            Detail->SetVisibility(Id==TEXT("weigher")||Id==TEXT("receiver")?ESlateVisibility::Visible:ESlateVisibility::Collapsed);
+            Detail->SetText(FText::FromString(FormatTransfer(State.Transfer)));
+            Detail->SetToolTipText(FText::FromString(FString::Printf(TEXT("시뮬레이션 계산값 · 모델 입자 기준 · kg 내부 단위\n이송 %lld · 연결 %lld · 개방 직전 작업자 제어 번호 %lld\n시작 해석 시간 %.6f초 · 관찰 %.6f초\n질량 갱신 UTC %s\n입자 중심은 한 구역에만 집계합니다. 도착량은 이번 ID의 현재 수취호퍼 체류량입니다.\n자동 차단·자동 이송·다음 투입은 실행하지 않습니다."),
+                State.Transfer.Id,State.Transfer.Connection,State.Transfer.OpeningControlRevision,State.Transfer.StartedSimulationSeconds,State.Transfer.ObservedSimulationSeconds,*State.CurrentMass.UpdatedUtc.ToIso8601())));
+        }
         HideUnavailableControls(W);
+        if(CommandUI.IsValid())CommandUI->Refresh();
     }
 }
 
@@ -376,6 +432,7 @@ void UProcessUIStateAdapter::Refresh()
         Format(ReadEquipment(TEXT("weigher")), Status, Quantity, Valve);
         SetLabel(W, TEXT("ThreeDNotice"), *FString::Printf(TEXT("3D 관찰 · 조회 전용\n%s\n\n우클릭 드래그: 회전 · 우클릭 + WASD/QE: 이동\n가운데 버튼: 평행 이동 · 휠: 확대/축소\n밸브·혼합 명령은 아직 연결하지 않았습니다."), *Status.ToString()));
     }
+    if(CommandUI.IsValid())CommandUI->Refresh();
 }
 
 bool UProcessUIStateSubsystem::DoesSupportWorldType(EWorldType::Type Type) const
@@ -392,6 +449,8 @@ void UProcessUIStateSubsystem::OnWorldBeginPlay(UWorld& World)
 void UProcessUIStateSubsystem::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+    if(ControlService)ControlService->Tick();
+    if(ControlUI)ControlUI->Refresh();
     if (PendingOpen && GetWorld()->GetFirstPlayerController())
     {
         PendingOpen = false;
@@ -430,6 +489,11 @@ bool UProcessUIStateSubsystem::OpenForActor(APowderPlantTest* Actor)
     {
         UE_LOG(LogTemp, Error, TEXT("Process UI read-only interface mismatch")); Close(); return false;
     }
+    if(!ControlService)ControlService=NewObject<UProcessControlService>(this);
+    ControlService->Attach(Actor);
+    ControlUI=NewObject<UProcessControlUI>(this);
+    if(!ControlUI->Attach(StatusWidget,ControlService)){Close();return false;}
+    Adapter->CommandUI=ControlUI;
     auto* Observation = FindFProperty<FMulticastDelegateProperty>(StatusWidget->GetClass(), TEXT("OnObservationViewRequested"));
     if (!Observation) { Close(); return false; }
     FScriptDelegate Handler; Handler.BindUFunction(this, TEXT("HandleObservationViewRequested"));
@@ -441,6 +505,8 @@ bool UProcessUIStateSubsystem::OpenForActor(APowderPlantTest* Actor)
 
 void UProcessUIStateSubsystem::Close()
 {
+    if(ControlUI)ControlUI->Detach();
+    ControlUI=nullptr;
     if (Adapter) Adapter->Detach();
     if (StatusWidget)
     {
@@ -495,5 +561,8 @@ void UProcessUIStateSubsystem::HandleObservationViewRequested(bool ShowObservati
 
 void UProcessUIStateSubsystem::Deinitialize()
 {
-    PendingOpen = false; Close(); Super::Deinitialize();
+    PendingOpen = false; Close();
+    if(ControlService)ControlService->Detach();
+    ControlService=nullptr;
+    Super::Deinitialize();
 }

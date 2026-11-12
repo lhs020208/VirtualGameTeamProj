@@ -7,6 +7,8 @@
 
 class APowderPlantTest;
 class UUserWidget;
+class UProcessControlService;
+class UProcessControlUI;
 
 /** The only state supplier for one UI instance. It has no simulation command API. */
 UCLASS(BlueprintType)
@@ -22,8 +24,11 @@ public:
     FProcessEquipmentSnapshot ReadEquipment(const FString& EquipmentId);
     static FProcessEquipmentSnapshot BuildEquipment(const FString& Id, const FPlantSimulationSnapshot* State, double Now, double MaxAge = 2.0);
     static void Format(const FProcessEquipmentSnapshot& State, FText& Status, FText& Quantity, FText& Valve);
+    static FString FormatMass(const FPlantMassValue& Mass);
+    static FString FormatTransfer(const FPlantTransferSnapshot& Transfer);
     UPROPERTY(BlueprintReadOnly, Category="Process UI|Read Only") TMap<FString, FProcessEquipmentSnapshot> Latest;
     bool IsAttached() const;
+    TWeakObjectPtr<UProcessControlUI> CommandUI;
 private:
     TWeakObjectPtr<APowderPlantTest> SourceActor;
     TWeakObjectPtr<UUserWidget> Widget;
@@ -51,6 +56,8 @@ public:
     UFUNCTION() void HandleObservationViewRequested(bool ShowObservation);
     UPROPERTY(BlueprintReadOnly, Transient) TObjectPtr<UProcessUIStateAdapter> Adapter;
     UPROPERTY(BlueprintReadOnly, Transient) TObjectPtr<UUserWidget> StatusWidget;
+    UPROPERTY(Transient) TObjectPtr<UProcessControlService> ControlService;
+    UPROPERTY(Transient) TObjectPtr<UProcessControlUI> ControlUI;
 protected:
     virtual bool DoesSupportWorldType(EWorldType::Type WorldType) const override;
 private:
