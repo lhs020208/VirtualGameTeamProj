@@ -16,10 +16,11 @@ FPlantTransferTelemetry::FPlantTransferTelemetry(const powder::GranularConfig& C
 {
     // Read the actual plant drag density and actual float solver radius. No parcel/batch multiplier exists.
     if(!C.plant||C.binary_materials||C.plant_data.size()<16||C.plant_data[11].x!=0||!FMath::IsFinite(C.radius)||C.radius<=0)
-        GeometryError=TEXT("현재 질량 구역은 FlowTest 전체 공정의 동일 구형 입자 모델만 지원합니다.");
+        GeometryError=TEXT("현재 질량 구역은 검증된 전체 공정의 동일 구형 입자 모델만 지원합니다.");
     else
     {
         const double Density=C.plant_data[1].w;
+        LowPolyReceiver=powder::plant_supplier_gates(C.plant_data).size()==6;
         ParticleMassKg=(4.0/3.0)*UE_DOUBLE_PI*double(C.radius)*double(C.radius)*double(C.radius)*Density;
         const auto W=C.plant_data[powder::plant_weighing_gate(C.plant_data)];
         const auto R=C.plant_data[powder::plant_receiver_gate(C.plant_data)];
@@ -77,7 +78,15 @@ EPlantMassRegion FPlantTransferTelemetry::Classify(const powder::Grain& P) const
     }
     // RH201_130_Conical_reducer, 140_Discharge_neck, 110_Main_shell, 120_Upper_module, 121_Dished_lid.
     // Neck extends down to the BV272 gate. Inlet spigot stays pipe until the centre enters the receiver bore.
-    if(P.z>=ReceiverGateZ&&P.z<3.688)
+    // LowPoly runtime source triangles confirm the powder chamber ends at the
+    // filter tube sheet, not the roof of the clean-air module. Exclude the
+    // bottom cap, core/bore and seal from arrived powder inventory.
+    const double RX=double(P.x)-3, Radial2=RX*RX+double(P.y)*P.y;
+    const bool Filter=LowPolyReceiver &&
+        ((P.z>=double(3.037f)&&P.z<double(3.047f)&&Radial2<=.095*.095)||
+         (P.z>=double(3.047f)&&P.z<double(3.387f)&&Radial2<=.06*.06)||
+         (P.z>=double(3.387f)&&P.z<double(3.39f)&&Radial2<=.10*.10));
+    if(P.z>=ReceiverGateZ&&P.z<(LowPolyReceiver?double(3.39f):3.688)&&!Filter)
     {
         const double Profile[][2]={{2.16,.136},{2.292,.136},{2.307,.141},{2.487,.246},{3.63,.246},
             {3.641,.242},{3.662,.215},{3.679,.15},{3.687,.07},{3.688,.0001}};
@@ -144,6 +153,14 @@ void FPlantTransferTelemetry::Indeterminate(const FString& Reason)
 
 void FPlantTransferTelemetry::Begin(const std::vector<powder::Grain>& Positions,double Time,int64 Revision,bool ReceiverOpen)
 {
+    // A manual close/full-stop is not a new batch. Preserve the original cohort
+    // on reopening, including a sticky indeterminate result. Empty/completed
+    // observations may start a new batch on the next real opening edge.
+    if(Transfer.Id>0&&Transfer.BaselineKg>0&&Transfer.State!=EPlantTransferState::Complete)
+    {
+        Observe(Positions,Time,false,ReceiverOpen);
+        return;
+    }
     const auto Connection=Transfer.Connection;ResetConnection(Connection);
     Transfer.Id=++NextId;Transfer.OpeningControlRevision=Revision;Transfer.StartedSimulationSeconds=Time;
     if(!Collect(Positions))

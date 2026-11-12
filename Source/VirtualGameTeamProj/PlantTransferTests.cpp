@@ -11,9 +11,9 @@ struct FTransferFixture
     powder::GranularConfig C;
     std::vector<powder::PlantRoute> Routes;
     std::vector<powder::Grain> P{{0,0,1.1f,0},{.05f,0,1.1f,0},{3,0,2.5f,0},{-1.2f,1.4f,2.7f,0}};
-    FTransferFixture()
+    FTransferFixture(const TCHAR* Directory=TEXT("SourceAssets/ProcessPlantPhysics"))
     {
-        auto Root=FPaths::ProjectDir()/TEXT("SourceAssets/ProcessPlantPhysics");
+        auto Root=FPaths::ProjectDir()/Directory;
         C.plant=true;C.radius=.002f;C.count=unsigned(P.size());
         C.plant_data=powder::read_plant_data(TCHAR_TO_UTF8(*(Root/TEXT("runtime.plant"))));
         Routes=powder::read_plant_routes(TCHAR_TO_UTF8(*(Root/TEXT("runtime.routes"))));
@@ -123,6 +123,45 @@ bool FPlantMassFormattingTest::RunTest(const FString&)
     TestTrue(TEXT("stale hides both mass and transfer completion"),Stale.CurrentMass.Validity==EPlantValueValidity::Stale&&UProcessUIStateAdapter::FormatTransfer(Stale.Transfer).Contains(TEXT("데이터 없음")));
     FText Status,Quantity,Valve;UProcessUIStateAdapter::Format(UProcessUIStateAdapter::BuildEquipment(TEXT("weigher"),nullptr,10),Status,Quantity,Valve);
     TestEqual(TEXT("disconnected quantity cleared"),Quantity.ToString(),FString(TEXT("데이터 없음")));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPlantLowPolyTransferTest,"ProcessUI.Transfer.LowPolyCohort",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FPlantLowPolyTransferTest::RunTest(const FString&)
+{
+    FTransferFixture F(TEXT("SourceAssets/ProcessPlant_20261111_LowPoly/Simulation"));
+    FPlantTransferTelemetry T(F.C,F.Routes,{});
+    T.Observe(F.P,0,false,false);
+    TestEqual(TEXT("new dataset has six supplier gates"),int32(powder::plant_supplier_gates(F.C.plant_data).size()),6);
+    TestTrue(TEXT("actual float radius and runtime density"),FMath::Abs(T.ParticleMassKg-4.0212391695907155e-5)<1e-14);
+    TestTrue(TEXT("new geometry mass valid"),Read(T).WeighingMass.Validity==EPlantValueValidity::Valid);
+    TestTrue(TEXT("WH gate center belongs only to WH"),T.Classify({0,0,.6f,0})==EPlantMassRegion::Weighing);
+    TestTrue(TEXT("downstream gate plane belongs to pipe"),T.Classify({0,0,.599f,0})==EPlantMassRegion::Pipe);
+    TestTrue(TEXT("spigot overlap still in pipe"),T.Classify({2.76f,0,2.682f,0})==EPlantMassRegion::Pipe);
+    TestTrue(TEXT("receiver bore after inlet is arrival"),T.Classify({2.77f,0,2.682f,0})==EPlantMassRegion::Receiver);
+    TestTrue(TEXT("receiver filter core/bore is not arrived powder"),T.Classify({3,0,3.1f,0})==EPlantMassRegion::Outside);
+    TestTrue(TEXT("storage annulus outside filter is receiver"),T.Classify({3.15f,0,3.1f,0})==EPlantMassRegion::Receiver);
+    TestTrue(TEXT("tube sheet and clean-air module excluded"),T.Classify({3.15f,0,3.39f,0})==EPlantMassRegion::Outside&&T.Classify({3.15f,0,3.5f,0})==EPlantMassRegion::Outside);
+    T.Begin(F.P,1,10,false);const auto Start=Read(T).Transfer;const double M=T.ParticleMassKg;
+    F.P[0]={3,0,2.6f,0};T.Observe(F.P,1.1,true,false);
+    T.Begin(F.P,1.1,11,false);
+    TestTrue(TEXT("repeated open preserves original cohort and first arrival"),Read(T).Transfer.Id==Start.Id&&Read(T).Transfer.BaselineKg==Start.BaselineKg&&Read(T).Transfer.ArrivedKg==M);
+    T.Observe(F.P,1.2,false,false); // early close / full stop
+    for(int I=0;I<10;++I)T.Observe(F.P,1.2,false,false);
+    T.Begin(F.P,1.2,20,false);
+    TestTrue(TEXT("resume keeps initial baseline and revision"),Read(T).Transfer.Id==Start.Id&&Read(T).Transfer.OpeningControlRevision==10&&Read(T).Transfer.ArrivedKg==M);
+    F.P[1]={0,0,.55f,0};T.Observe(F.P,1.3,true,false);
+    TestTrue(TEXT("pipe residue prevents completion"),Read(T).Transfer.InTransitKg==M&&Read(T).Transfer.State==EPlantTransferState::Moving);
+    F.P[1]={3.05f,0,2.6f,0};T.Observe(F.P,1.4,true,false);T.Observe(F.P,1.4,false,false);
+    TestEqual(TEXT("paused stability does not advance"),Read(T).Transfer.StableSeconds,0.0);
+    T.Observe(F.P,2,false,false);
+    TestTrue(TEXT("separate fixture reaches mass+simulation-time completion"),Read(T).Transfer.State==EPlantTransferState::Complete&&Read(T).Transfer.ArrivedKg==2*M&&Read(T).Transfer.InitialReceiverKg==M);
+    F.P[0]={0,0,.55f,0};T.Observe(F.P,2.1,true,false);T.Begin(F.P,2.1,30,false);
+    TestTrue(TEXT("backflow/reopen never double counts"),Read(T).Transfer.Id==Start.Id&&Read(T).Transfer.ArrivedKg==M&&Read(T).Transfer.State==EPlantTransferState::Moving);
+    F.P[3]={0,0,1.2f,0};T.Observe(F.P,2.2,true,false);T.Begin(F.P,2.3,31,false);
+    TestTrue(TEXT("inflow fault is not cleared by reopening"),Read(T).Transfer.State==EPlantTransferState::Indeterminate&&Read(T).Transfer.Id==Start.Id);
+    T.ResetConnection(9);T.Observe(F.P,2.3,true,false);
+    TestTrue(TEXT("actor/connection change discards old cohort"),Read(T).Transfer.Id==0&&Read(T).Transfer.BaselineKg==0);
     return true;
 }
 #endif

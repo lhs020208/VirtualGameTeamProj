@@ -24,6 +24,7 @@ private:
     TArray<FTube> Pipes;
     FBox3d PipeBounds{ForceInit};
     double WeighingGateZ = .6, ReceiverGateZ = 2.16;
+    bool LowPolyReceiver = false;
     powder::Grain ReceiverInletEnd{2.77f,0,2.682f,.061f};
     size_t ParticleCount = 0;
     FString GeometryError;

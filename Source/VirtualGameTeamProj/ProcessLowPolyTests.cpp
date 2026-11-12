@@ -25,10 +25,10 @@ bool FProcessLowPolyMappingTest::RunTest(const FString&)
         TestTrue(TEXT("supplier current inventory remains unknown"),E.RegionParticleCount.Validity==EPlantValueValidity::Unknown);
         S.RequestedSuppliers[I]=false;
     }
-    S.InWeighingHopper=123;
+    S.InWeighingHopper=123;S.WeighingMass.Validity=EPlantValueValidity::Valid;S.WeighingMass.Kg=.000123;
     FText Status,Quantity,Valve;
     UProcessUIStateAdapter::Format(UProcessUIStateAdapter::BuildEquipment(TEXT("weigher"),&S,101),Status,Quantity,Valve);
-    TestTrue(TEXT("new level displays region count"),Quantity.ToString().Contains(TEXT("123개")));
+    TestTrue(TEXT("new level displays model mass"),Quantity.ToString().Contains(TEXT("0.123 g")));
     for(auto V:{EPlantValueValidity::Initializing,EPlantValueValidity::Error})
     {
         S.Validity=V;

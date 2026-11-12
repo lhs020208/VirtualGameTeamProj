@@ -126,7 +126,7 @@ void PrepareReadOnlyPanel(UUserWidget* W)
 
 FString TileText(const FProcessEquipmentSnapshot& S)
 {
-    if(S.EquipmentId==TEXT("weigher") && !ProcessPlantBinding::IsLowPoly(S.SourceActorPath))
+    if(S.EquipmentId==TEXT("weigher"))
         return TEXT("현재 담긴 양\n")+UProcessUIStateAdapter::FormatMass(S.CurrentMass)+
             (S.ValveAppliedOpen.Validity==EPlantValueValidity::Valid?(S.ValveAppliedOpen.Value!=0?TEXT("\n밸브 열림"):TEXT("\n밸브 닫힘")):TEXT(""));
 
@@ -140,8 +140,6 @@ FString TileText(const FProcessEquipmentSnapshot& S)
     case EPlantValueValidity::Unknown: return TEXT("상태 미확인");
     default: break;
     }
-    if(ProcessPlantBinding::IsLowPoly(S.SourceActorPath) && (S.EquipmentId==TEXT("weigher")||S.EquipmentId==TEXT("receiver")))
-        return FString::Printf(TEXT("현재 %d개\n밸브 %s"),int32(S.RegionParticleCount.Value),S.ValveAppliedOpen.Value!=0?TEXT("열림"):TEXT("닫힘"));
     if (S.EquipmentId == TEXT("mixer"))
         return S.AppliedRPM.Validity == EPlantValueValidity::Valid ? FString::Printf(TEXT("계산 적용\n%.1f rpm"), S.AppliedRPM.Value) : TEXT("회전수\n확인 대기");
     const TCHAR* Valve = S.ValveAppliedOpen.Value != 0 ? TEXT("열림") : TEXT("닫힘");
@@ -272,7 +270,7 @@ void UProcessUIStateAdapter::Format(const FProcessEquipmentSnapshot& S, FText& S
     default: break;
     }
     Status = FText::FromString(FString::Printf(TEXT("%s\n시뮬레이션 시간 %.4f초"), ExecutionText(S.Execution), S.SimulationTime.Value));
-    if((S.EquipmentId==TEXT("weigher")||S.EquipmentId==TEXT("receiver")) && !ProcessPlantBinding::IsLowPoly(S.SourceActorPath))
+    if(S.EquipmentId==TEXT("weigher")||S.EquipmentId==TEXT("receiver"))
         Quantity=FText::FromString(FormatMass(S.CurrentMass)+TEXT("\n모델 기준 · 배치 환산 없음"));
     else if (S.RegionParticleCount.Validity == EPlantValueValidity::Valid)
         Quantity = FText::FromString(FText::AsNumber(int64(S.RegionParticleCount.Value)).ToString() + TEXT("개\n무게(kg)는 제공하지 않습니다"));
@@ -386,10 +384,9 @@ void UProcessUIStateAdapter::Push(const FString& Id)
     if (Id == ReadString(W, TEXT("SelectedEquipmentId")))
     {
         SetLabel(W, TEXT("ValveLabel"), Id == TEXT("mixer") ? TEXT("혼합기 회전 설정") : TEXT("밸브 상태"));
-        const bool LowPoly = ProcessPlantBinding::IsLowPoly(State.SourceActorPath);
-        SetLabel(W, TEXT("QuantityLabel"), Id.StartsWith(TEXT("supply-")) ? TEXT("처음 넣은 입자 수") : (!LowPoly&&(Id==TEXT("weigher")||Id==TEXT("receiver")))?TEXT("현재 담긴 양"):TEXT("현재 영역의 입자 수"));
+        SetLabel(W, TEXT("QuantityLabel"), Id.StartsWith(TEXT("supply-")) ? TEXT("처음 넣은 입자 수") : (Id==TEXT("weigher")||Id==TEXT("receiver"))?TEXT("현재 담긴 양"):TEXT("현재 영역의 입자 수"));
         const TCHAR* Description = Id.StartsWith(TEXT("supply-")) ? TEXT("칭량호퍼로 원료를 보내는 공급 장비입니다.") :
-            Id == TEXT("weigher") ? (LowPoly?TEXT("칭량호퍼 영역의 입자 수와 출구 밸브의 요청·적용 상태입니다."):TEXT("호퍼 내부 입자의 모델 질량입니다. 출구를 열면 수취호퍼까지 이번 이송분을 관찰합니다.")) :
+            Id == TEXT("weigher") ? TEXT("호퍼 내부 입자의 모델 질량입니다. 출구를 열면 수취호퍼까지 이번 이송분을 관찰합니다.") :
             Id == TEXT("receiver") ? TEXT("혼합기로 보내기 전 원료를 받아두는 호퍼입니다.") : TEXT("원료를 섞는 장비입니다. 아래 회전수는 계산에 사용된 값이며 실측값은 아닙니다.");
         if (State.Validity == EPlantValueValidity::Unsupported) Description = TEXT("공정도에는 표시되지만 이 장비의 시뮬레이션은 아직 구현되지 않았습니다.");
         SetLabel(W, TEXT("PanelDescription"), Description);
@@ -399,7 +396,7 @@ void UProcessUIStateAdapter::Push(const FString& Id)
         if (auto* Label = W->GetWidgetFromName(TEXT("StatusValue"))) Label->SetToolTipText(FText::FromString(State.Error));
         if(auto* Detail=Cast<UTextBlock>(W->GetWidgetFromName(TEXT("TransferTelemetry"))))
         {
-            Detail->SetVisibility(!LowPoly&&(Id==TEXT("weigher")||Id==TEXT("receiver"))?ESlateVisibility::Visible:ESlateVisibility::Collapsed);
+            Detail->SetVisibility((Id==TEXT("weigher")||Id==TEXT("receiver"))?ESlateVisibility::Visible:ESlateVisibility::Collapsed);
             Detail->SetText(FText::FromString(FormatTransfer(State.Transfer)));
             Detail->SetToolTipText(FText::FromString(FString::Printf(TEXT("시뮬레이션 계산값 · 모델 입자 기준 · kg 내부 단위\n이송 %lld · 연결 %lld · 개방 직전 작업자 제어 번호 %lld\n시작 해석 시간 %.6f초 · 관찰 %.6f초\n질량 갱신 UTC %s\n입자 중심은 한 구역에만 집계합니다. 도착량은 이번 ID의 현재 수취호퍼 체류량입니다.\n자동 차단·자동 이송·다음 투입은 실행하지 않습니다."),
                 State.Transfer.Id,State.Transfer.Connection,State.Transfer.OpeningControlRevision,State.Transfer.StartedSimulationSeconds,State.Transfer.ObservedSimulationSeconds,*State.CurrentMass.UpdatedUtc.ToIso8601())));
