@@ -25,6 +25,9 @@ public:
  virtual void EndPlay(const EEndPlayReason::Type Reason) override;
  UPROPERTY(EditAnywhere,Category="Plant|Test",meta=(ClampMin="0",ClampMax="4")) int32 SectionTest=0;
  UPROPERTY(EditAnywhere,Category="Plant|Test") FString DataDirectory=TEXT("SourceAssets/ProcessPlantPhysics");
+ // Observation bounds in solver metres, serialized by each level; legacy defaults are preserved.
+ UPROPERTY(EditAnywhere,Category="Plant|Observation") FVector MixerBoundsMinM=FVector(2.25,-.45,.57);
+ UPROPERTY(EditAnywhere,Category="Plant|Observation") FVector MixerBoundsMaxM=FVector(3.75,.45,1.31);
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Plant|Control") bool Running=true;
  UPROPERTY(meta=(DeprecatedProperty,DeprecationMessage="Simulation now runs without a rate cap; this saved value is ignored.")) double TargetRate=.1;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Plant|Control",meta=(ClampMin="0",ClampMax="3000")) double TestPressureDropPa=1000;
@@ -70,6 +73,7 @@ private:
  int64 SnapshotEpoch=0;
  TArray<int32> InitialSupplierCounts;
  float ParticleRadiusM=.00125f;
+ FVector RotorPivotCm=FVector(300,0,90);
  TArray<bool> SupplierOpen;
  bool WeighingHopperOpen=false,AppliedHopperOpen=false;
  bool ReceiverOpen=false,AppliedReceiverOpen=false,MixerEnabled=false;

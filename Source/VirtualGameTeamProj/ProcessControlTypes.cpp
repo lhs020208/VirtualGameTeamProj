@@ -1,8 +1,9 @@
 #include "ProcessControlTypes.h"
+#include "ProcessPlantBinding.h"
 
 namespace
 {
-bool IsSupplier(const FString& Id) { return Id == TEXT("supply-a") || Id == TEXT("supply-b") || Id == TEXT("supply-c"); }
+bool IsSupplier(const FString& Id) { return ProcessPlantBinding::SupplierIndex(Id) != INDEX_NONE; }
 bool IsValve(const FString& Id) { return IsSupplier(Id) || Id == TEXT("weigher") || Id == TEXT("receiver"); }
 bool IsSafety(EProcessCommand C, double V) { return C == EProcessCommand::StopAll || ((C == EProcessCommand::Valve || C == EProcessCommand::MixerEnabled) && V == 0); }
 }
@@ -47,7 +48,9 @@ FString FProcessControlMachine::UnavailableReason(const FString& Id, EProcessCom
     if ((C == EProcessCommand::Valve && !IsValve(Id)) ||
         ((C == EProcessCommand::MixerEnabled || C == EProcessCommand::MixerRPM) && Id != TEXT("mixer")) ||
         ((C == EProcessCommand::StopAll || C == EProcessCommand::Resume || C == EProcessCommand::Pause) && Id != TEXT("plant")))
-        return TEXT("이 장비에서 지원하지 않는 명령입니다. D~F는 시뮬레이션 미구현입니다.");
+        return TEXT("이 장비에서 지원하지 않는 명령입니다.");
+    if(C == EProcessCommand::Valve && IsSupplier(Id) && !Snapshot.RequestedSuppliers.IsValidIndex(ProcessPlantBinding::SupplierIndex(Id)))
+        return TEXT("이 해석 구성에서는 시뮬레이션 미구현입니다.");
     if ((C == EProcessCommand::Valve || C == EProcessCommand::MixerEnabled) && V != 0 && V != 1)
         return TEXT("열림/닫힘 또는 시작/정지 값만 사용할 수 있습니다.");
     if (C == EProcessCommand::MixerRPM && (V < PlantControl::MinRPM || V > PlantControl::MaxRPM))
@@ -56,7 +59,7 @@ FString FProcessControlMachine::UnavailableReason(const FString& Id, EProcessCom
     if (Snapshot.Validity == EPlantValueValidity::Error || Snapshot.Execution == EPlantExecutionState::Fault)
         return TEXT("계산 오류입니다. 복구·초기화 후 다시 연결해야 합니다.");
     if (!Fresh(Now)) return TEXT("상태가 오래되었거나 준비 중입니다. 최신 확인값을 기다리세요.");
-    if (Snapshot.RequestedSuppliers.Num() != 3) return TEXT("현재 UI는 공급기 A~C 구성만 지원합니다.");
+    if (!ProcessPlantBinding::SupportedCount(Snapshot.RequestedSuppliers.Num())) return TEXT("검증되지 않은 공급기 구성입니다.");
     if (UsesStopSequence(C,V))
     {
         if(!FMath::IsFinite(StopTimeoutSeconds)||StopTimeoutSeconds<=0)return TEXT("전체 정지 제한 시간은 유한한 양수여야 합니다.");
@@ -119,7 +122,7 @@ bool FProcessControlMachine::Matches(const FProcessCommandRecord& R) const
 
 bool FProcessControlMachine::AllClosed() const
 {
-    if (Snapshot.RequestedSuppliers.Num()!=3 || Snapshot.AppliedSupplierMask!=0 || Snapshot.AppliedHopperOpen || Snapshot.AppliedReceiverOpen ||
+    if (!ProcessPlantBinding::SupportedCount(Snapshot.RequestedSuppliers.Num()) || Snapshot.AppliedSupplierMask!=0 || Snapshot.AppliedHopperOpen || Snapshot.AppliedReceiverOpen ||
         Snapshot.RequestedHopperOpen || Snapshot.RequestedReceiverOpen || Snapshot.RequestedMixerEnabled || Snapshot.WorkerMixerEnabled ||
         !Snapshot.AppliedRPMValid || Snapshot.AppliedRPM!=0) return false;
     for (bool Open:Snapshot.RequestedSuppliers) if (Open) return false;
@@ -250,7 +253,7 @@ void FProcessControlMachine::Observe(const FPlantSimulationSnapshot& State, doub
             State.Execution==EPlantExecutionState::Paused && !State.RequestedRunning && AllClosed())
         {
             StopStage=EProcessStopStage::Complete;ManualGranted=true;
-            if(auto* R=History.Find(StopRequest)){R->Status=EProcessCommandStatus::Applied;R->Message=TEXT("시뮬레이션 정지 완료 · 제어 가능한 5개 밸브 닫힘, 계산 적용 RPM 0, 작업자 일시정지 확인");}
+            if(auto* R=History.Find(StopRequest)){R->Status=EProcessCommandStatus::Applied;R->Message=FString::Printf(TEXT("시뮬레이션 정지 완료 · 제어 가능한 %d개 밸브 닫힘, 계산 적용 RPM 0, 작업자 일시정지 확인"),Snapshot.RequestedSuppliers.Num()+2);}
         }
     }
     for(auto& Pair:History)
@@ -271,7 +274,8 @@ void FProcessControlMachine::Observe(const FPlantSimulationSnapshot& State, doub
 FString FProcessControlMachine::UnconfirmedEquipment() const
 {
     TArray<FString> Names;
-    for(int32 I=0;I<3;++I)if(!Snapshot.RequestedSuppliers.IsValidIndex(I)||Snapshot.RequestedSuppliers[I]||(Snapshot.AppliedSupplierMask&(1<<I)))Names.Add(FString::Printf(TEXT("공급 %c"),TCHAR('A'+I)));
+    if(!ProcessPlantBinding::SupportedCount(Snapshot.RequestedSuppliers.Num()))Names.Add(TEXT("공급기 구성 미확인"));
+    for(int32 I=0;I<Snapshot.RequestedSuppliers.Num();++I)if(Snapshot.RequestedSuppliers[I]||(Snapshot.AppliedSupplierMask&(1<<I)))Names.Add(FString::Printf(TEXT("공급 %c"),TCHAR('A'+I)));
     if(Snapshot.AppliedHopperOpen||Snapshot.RequestedHopperOpen)Names.Add(TEXT("칭량호퍼 출구"));
     if(Snapshot.AppliedReceiverOpen||Snapshot.RequestedReceiverOpen)Names.Add(TEXT("수취호퍼 출구"));
     if(!Snapshot.AppliedRPMValid||Snapshot.AppliedRPM!=0||Snapshot.WorkerMixerEnabled||Snapshot.RequestedMixerEnabled)Names.Add(TEXT("혼합기 계산 적용 RPM 0"));

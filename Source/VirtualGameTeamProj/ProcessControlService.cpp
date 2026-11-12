@@ -1,5 +1,6 @@
 #include "ProcessControlService.h"
 #include "PowderPlantTest.h"
+#include "ProcessPlantBinding.h"
 #include "HAL/PlatformTime.h"
 
 bool UProcessControlService::Attach(APowderPlantTest* Actor)
@@ -31,7 +32,7 @@ FProcessControlTransport UProcessControlService::Transport()
         case EProcessCommand::Valve:
             if(Id==TEXT("weigher"))return A->SetWeighingValve(V!=0,Epoch,Revision,Error);
             if(Id==TEXT("receiver"))return A->SetReceiverValve(V!=0,Epoch,Revision,Error);
-            if(Id==TEXT("supply-a")||Id==TEXT("supply-b")||Id==TEXT("supply-c"))return A->SetSupplierValve(Id[7]-TCHAR('a'),V!=0,Epoch,Revision,Error);
+            if(ProcessPlantBinding::SupplierIndex(Id)!=INDEX_NONE)return A->SetSupplierValve(ProcessPlantBinding::SupplierIndex(Id),V!=0,Epoch,Revision,Error);
             break;
         case EProcessCommand::MixerEnabled:return A->SetMixerEnabled(V!=0,Epoch,Revision,Error);
         case EProcessCommand::MixerRPM:return A->SetMixerRPM(V,Epoch,Revision,Error);

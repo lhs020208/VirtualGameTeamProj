@@ -1,4 +1,5 @@
 #include "ProcessControlUI.h"
+#include "ProcessPlantBinding.h"
 #include "ProcessControlService.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetTree.h"
@@ -147,6 +148,8 @@ void UProcessControlUI::Refresh()
         ButtonLabel(B,State.StopStage==EProcessStopStage::Failed?TEXT("전체 정지 다시 시도"):TEXT("수동 조작 · 전체 정지"));
     Label(W,TEXT("RPMLabel"),TEXT("목표 회전속도 · 0~30 rpm"));
     for(const TCHAR* Name:{TEXT("RPMLabel"),TEXT("RPMInput")})if(auto* C=W->GetWidgetFromName(Name))C->SetVisibility(Mixer&&!Observation?ESlateVisibility::Visible:ESlateVisibility::Collapsed);
+    if(auto* Input=W->GetWidgetFromName(TEXT("RPMInput")))
+        Input->SetIsEnabled(Mixer&&!Observation&&State.UnavailableReason(TEXT("mixer"),EProcessCommand::MixerRPM,State.Snapshot.RequestedRPM,Now).IsEmpty());
     for(const TCHAR* Name:{TEXT("TransferStart"),TEXT("TransferStop")})if(auto* B=Cast<UButton>(W->GetWidgetFromName(Name)))
     {B->SetIsEnabled(false);B->SetVisibility(!Mixer&&!Id.IsEmpty()&&!Observation?ESlateVisibility::Visible:ESlateVisibility::Collapsed);B->SetToolTipText(FText::FromString(TEXT("독립적인 이송 제어 API가 없습니다. 밸브 열기는 목표량 이송 완료를 뜻하지 않습니다.")));}
     FString Message=State.UnavailableReason(Id,Mixer?EProcessCommand::MixerEnabled:EProcessCommand::Valve,1,Now);
@@ -164,7 +167,9 @@ void UProcessControlUI::Refresh()
     else if(State.ManualGranted&&State.Snapshot.Execution==EPlantExecutionState::Paused)
         GlobalMessage=TEXT("개방·혼합 시작 전 ‘수동 운전 · 계산 재개’를 선택하세요. 닫기 요청은 전체 정지를 확인합니다.");
     Label(W,TEXT("Help"),State.StopDescription()+TEXT("\n")+GlobalMessage);
-    Label(W,TEXT("DiagramNote"),TEXT("전체 정지는 제어 가능한 밸브·혼합·계산 정지를 확인합니다.\n독립 압력 차단·자동 이송은 미지원입니다. 수동 이송 판정은 모델 질량·시험 기준입니다."));
+    Label(W,TEXT("DiagramNote"),ProcessPlantBinding::IsLowPoly(State.Snapshot.SourceActorPath)?
+        TEXT("전체 정지는 밸브 8개 닫힘·계산 적용 RPM 0·작업자 정지를 확인합니다.\n입자 수·밸브·RPM 조회와 수동 조작을 지원합니다. 자동 시퀀스·질량 기반 투입은 미지원입니다."):
+        TEXT("전체 정지는 제어 가능한 밸브·혼합·계산 정지를 확인합니다.\n독립 압력 차단·자동 이송은 미지원입니다. 수동 이송 판정은 모델 질량·시험 기준입니다."));
     if(auto* Help=W->GetWidgetFromName(TEXT("Help")))Help->SetToolTipText(FText::FromString(FString::Printf(
         TEXT("자동 시퀀스는 연결되어 있지 않습니다. 닫기 요청은 모델의 공급·이송 유량 요청을 0으로 만듭니다. 독립 압력 차단·외부 장비 정지는 지원하지 않습니다.\n수동 일시정지와 일시정지 중 닫기는 전체 정지 절차입니다. 시간 초과 시 계산 동결 응답까지 확인하며 실패 후 명시적 재시도가 필요합니다.\n시험용 제한: 명령·동결 응답 %.1f초 / 전체 정지 %.1f초 (실제 경과 시간)\n%s"),State.CommandTimeoutSeconds,State.StopTimeoutSeconds,*State.UnconfirmedEquipment())));
     if(Latest)if(auto* T=W->GetWidgetFromName(TEXT("Disconnected")))T->SetToolTipText(FText::FromString(FString::Printf(TEXT("요청 %s\n초기화 세대 %lld · 연결 %lld · 작업자 확인 번호 %lld\n요청값 %.9g"),*Latest->RequestId.ToString(),Latest->Epoch,Latest->Connection,Latest->Revision,Latest->Value)));

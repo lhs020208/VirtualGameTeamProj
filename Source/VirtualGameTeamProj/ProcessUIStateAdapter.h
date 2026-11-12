@@ -38,7 +38,7 @@ private:
     void WidgetDestructed(UUserWidget* Removed);
 };
 
-/** Opens the existing UI in FlowTest without changing/saving its shared map asset. */
+/** Opens the existing UI for explicitly registered plant levels without changing shared maps. */
 UCLASS()
 class VIRTUALGAMETEAMPROJ_API UProcessUIStateSubsystem : public UTickableWorldSubsystem
 {
@@ -62,5 +62,6 @@ protected:
     virtual bool DoesSupportWorldType(EWorldType::Type WorldType) const override;
 private:
     bool PendingOpen = false;
+    FString PendingSourcePath;
     double LastRefresh = 0;
 };
