@@ -225,6 +225,22 @@ GranularGasExchange GranularGPU::gas_exchange(){require(p->c.coupled_air&&p->gas
 
 std::vector<Grain> GranularGPU::snapshot(){auto begin=Clock::now();std::vector<Grain> result(p->c.count);cl_event event=nullptr;check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[0],CL_TRUE,0,result.size()*sizeof(Grain),result.data(),0,nullptr,p->c.profile?&event:nullptr),"snapshot");if(event){p->events.push_back({event,7});p->collect();}p->timing.snapshot_wall+=elapsed(begin);return result;}
 std::vector<Grain> GranularGPU::velocity_snapshot(){require(!p->poisoned,"invalid solver");std::vector<Grain> v(p->c.count);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[2],CL_TRUE,0,v.size()*sizeof(Grain),v.data(),0,nullptr,nullptr),"velocity snapshot");return v;}
+std::vector<Grain> GranularGPU::plant_air_snapshot(){
+ require(p->c.plant&&!p->poisoned,"plant air diagnostic requires a valid plant solver");
+ cl_kernel kernel=nullptr;cl_mem output=nullptr;
+ try{
+  cl_int error=0;kernel=p->api.clCreateKernel(p->program,"inspect_plant_air",&error);check(error,"plant air diagnostic kernel");
+  std::vector<Grain> result(p->c.count);const size_t bytes=result.size()*sizeof(Grain),global=result.size();const int n=int(result.size());
+  output=p->api.clCreateBuffer(p->context,CL_MEM_WRITE_ONLY,bytes,nullptr,&error);check(error,"plant air diagnostic allocation");
+  check(p->api.clSetKernelArg(kernel,0,sizeof(cl_mem),&p->buffers[0]),"plant air diagnostic positions");
+  check(p->api.clSetKernelArg(kernel,1,sizeof(int),&n),"plant air diagnostic count");
+  check(p->api.clSetKernelArg(kernel,2,sizeof(cl_mem),&p->buffers[15]),"plant air diagnostic field");
+  check(p->api.clSetKernelArg(kernel,3,sizeof(cl_mem),&output),"plant air diagnostic output");
+  check(p->api.clEnqueueNDRangeKernel(p->queue,kernel,1,nullptr,&global,nullptr,0,nullptr,nullptr),"plant air diagnostic launch");
+  check(p->api.clEnqueueReadBuffer(p->queue,output,CL_TRUE,0,bytes,result.data(),0,nullptr,nullptr),"plant air diagnostic read");
+  p->api.clReleaseMemObject(output);p->api.clReleaseKernel(kernel);return result;
+ }catch(...){if(output)p->api.clReleaseMemObject(output);if(kernel)p->api.clReleaseKernel(kernel);throw;}
+}
  std::vector<Grain> GranularGPU::angular_velocity_snapshot(){require(p->c.rotation&&!p->poisoned,"angular state unavailable");std::vector<Grain> v(p->c.count);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[18],CL_TRUE,0,v.size()*sizeof(Grain),v.data(),0,nullptr,nullptr),"angular snapshot");return v;}
  void GranularGPU::request_snapshot(){
  require(!p->poisoned&&!p->read_event,"snapshot pending or solver invalid");auto begin=Clock::now();p->read_buffer.resize(p->c.count);

@@ -9,6 +9,7 @@ bool UProcessControlService::Attach(APowderPlantTest* Actor)
     Detach();
     if(!IsValid(Actor)||!Actor->ClaimControl(this))return false;
     Source=Actor;State.CommandTimeoutSeconds=CommandTimeoutSeconds;State.StopTimeoutSeconds=StopTimeoutSeconds;
+    State.TransferPreparationTimeoutSeconds=Actor->TransferPreparationTimeoutSeconds;
     State.TimeoutPolicy=StopFailurePolicy==TEXT("Freeze")?EProcessTimeoutPolicy::Freeze:StopFailurePolicy==TEXT("KeepClosing")?EProcessTimeoutPolicy::KeepClosing:EProcessTimeoutPolicy::Unspecified;
     State.PausePolicy=ManualPausePolicy==TEXT("PreserveRequests")?EProcessPausePolicy::PreserveRequests:ManualPausePolicy==TEXT("CloseThenPause")?EProcessPausePolicy::CloseThenPause:EProcessPausePolicy::Unspecified;
     State.PausedClosePolicy=PausedClosePolicy==TEXT("StopAll")?EProcessPausedClosePolicy::StopAll:PausedClosePolicy==TEXT("RequireStopButton")?EProcessPausedClosePolicy::RequireStopButton:EProcessPausedClosePolicy::Unspecified;
@@ -30,12 +31,15 @@ FProcessControlTransport UProcessControlService::Transport()
         if(!A || A->ControlOwner.Get()!=this){Error=TEXT("제어 대상 연결이 끊겼습니다.");return false;}
         switch(C){
         case EProcessCommand::Valve:
-            if(Id==TEXT("weigher"))return A->SetWeighingValve(V!=0,Epoch,Revision,Error);
+            if(Id==TEXT("weigher"))return A->SetWeighingValve(V!=0,Epoch,Revision,Error,State.DispatchDeadline);
             if(Id==TEXT("receiver"))return A->SetReceiverValve(V!=0,Epoch,Revision,Error);
             if(ProcessPlantBinding::SupplierIndex(Id)!=INDEX_NONE)return A->SetSupplierValve(ProcessPlantBinding::SupplierIndex(Id),V!=0,Epoch,Revision,Error);
             break;
         case EProcessCommand::MixerEnabled:return A->SetMixerEnabled(V!=0,Epoch,Revision,Error);
         case EProcessCommand::MixerRPM:return A->SetMixerRPM(V,Epoch,Revision,Error);
+        case EProcessCommand::Pressure:return A->SetGaugePressure(PlantControl::PressureTarget(Id),V,Epoch,Revision,Error);
+        case EProcessCommand::PurgePressure:return A->SetSupplyAPurge(true,V,Epoch,Revision,Error);
+        case EProcessCommand::PurgeEnabled:return A->SetSupplyAPurge(false,V,Epoch,Revision,Error);
         case EProcessCommand::StopAll:return A->RequestAllClosed(Epoch,Revision,Error);
         case EProcessCommand::Resume:return A->SetSimulationRunning(true,Epoch,Revision,Error);
         case EProcessCommand::Pause:return A->SetSimulationRunning(false,Epoch,Revision,Error);
@@ -54,6 +58,18 @@ void UProcessControlService::Tick()
         const auto Snapshot=A->GetSimulationSnapshot();
         const double ObservedAt=FPlatformTime::Seconds();
         State.Observe(Snapshot,ObservedAt,Transport());
+        // A waiting opening needs a fresh service observation, not just a queued bool in the mailbox.
+        // Timeout/stale/reset/disconnect records cannot leave an opening armed for a later resume.
+        for(const auto& Pair:State.History)
+        {
+            const auto& R=Pair.Value;
+            if((R.Command==EProcessCommand::PurgePressure||R.Command==EProcessCommand::PurgeEnabled)&&R.Epoch==Snapshot.Epoch&&R.Connection==State.Connection&&R.Revision>0){
+                const bool Fresh=Snapshot.Validity==EPlantValueValidity::Valid&&ObservedAt>=Snapshot.PublishedWallSeconds&&ObservedAt-Snapshot.PublishedWallSeconds<=2.;
+                A->MaintainSupplyAPurge(R.Revision,Fresh&&State.ManualGranted&&!State.IsStopping()&&(R.IsPending()||R.Status==EProcessCommandStatus::Applied));
+            }
+            if(R.PreparedOpening&&R.Status!=EProcessCommandStatus::Applied&&R.Epoch==Snapshot.Epoch&&R.Connection==State.Connection&&R.Revision>0)
+                A->MaintainPreparedOpening(R.Revision,R.IsPending());
+        }
     }
     else if(State.Connected)State.Disconnect(TEXT("장비 연결이 끊겼습니다. 적용 결과를 확인할 수 없습니다."));
 }

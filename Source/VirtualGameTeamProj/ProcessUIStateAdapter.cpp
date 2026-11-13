@@ -188,13 +188,23 @@ FProcessEquipmentSnapshot UProcessUIStateAdapter::BuildEquipment(const FString& 
     if (R.Validity == EPlantValueValidity::Valid &&
         (S->PublishedWallSeconds <= 0 || Now - S->PublishedWallSeconds > MaxAge)) R.Validity = EPlantValueValidity::Stale;
     const auto Validity = R.Validity;
+    if(Id==TEXT("supply-a")){R.SupplyAPurge=S->SupplyAPurge;if(Validity!=EPlantValueValidity::Valid)R.SupplyAPurge.Valid=false;}
     if(Id==TEXT("weigher")||Id==TEXT("receiver"))
     {
         R.CurrentMass=Id==TEXT("weigher")?S->WeighingMass:S->ReceiverMass;R.Transfer=S->Transfer;
+        if(Validity==EPlantValueValidity::Valid)R.FeedPreparation=S->FeedPreparation;
         if(Validity!=EPlantValueValidity::Valid){R.CurrentMass.Validity=Validity;R.Transfer.Validity=Validity;}
         if(!S->MassDiagnostic.IsEmpty())R.Error+=TEXT("\n")+S->MassDiagnostic;
     }
 
+    const int32 PressureTarget=PlantControl::PressureTarget(Id);
+    if(PressureTarget!=INDEX_NONE&&S->PressureControlEnabled)
+    {
+        R.PressureScope=PressureTarget==0?TEXT("공급 A~F 공통"):PressureTarget==1?TEXT("칭량호퍼"):TEXT("수취호퍼 흡입");
+        R.RequestedPressurePa=Value(S->RequestedGaugePressurePa[PressureTarget],TEXT("Pa(g)"),Validity);
+        R.AppliedPressurePa=Value(S->AppliedGaugePressurePa[PressureTarget],TEXT("Pa(g) boundary setting"),
+            Validity!=EPlantValueValidity::Valid?Validity:S->AppliedPressureValid?Validity:EPlantValueValidity::Unknown);
+    }
     R.SimulationTime = Value(S->PhysicalSeconds, TEXT("s"), Validity);
     if (Id.StartsWith(TEXT("supply-")))
     {
@@ -250,9 +260,25 @@ FString UProcessUIStateAdapter::FormatTransfer(const FPlantTransferSnapshot& T)
         T.Id,State,*Mass(T.BaselineKg),*Mass(T.RemainingKg),*Mass(T.InTransitKg),*Mass(T.ArrivedKg),*Mass(T.InitialReceiverKg),T.StableSeconds,T.Criteria.StableSimulationSeconds,
         T.OutletAppliedOpen?TEXT("열림"):TEXT("닫힘"),*T.Reason,*Mass(T.Criteria.WeighingResidualKg),*Mass(T.Criteria.PipeResidualKg),*Mass(T.Criteria.MassErrorKg));
     if(T.UnclassifiedKg>0)Text+=TEXT("\n미분류 ")+Mass(T.UnclassifiedKg);
+    Text+=FString::Printf(TEXT("\n개방 이후 추가 유입 %d개"),T.AdditionalInflowCount);
+    if(T.CarrierRegulated&&T.CarrierFlowValid)
+        Text+=FString::Printf(TEXT("\n계산 이송 공기 유량 %.6g m³/s%s"),T.CalculatedCarrierFlowM3s,T.CalculatedCarrierFlowM3s<0?TEXT(" · 역방향"):TEXT(""));
     if(T.OutletAppliedOpen&&T.CarrierFlowValid&&T.CalculatedCarrierFlowM3s==0&&T.State!=EPlantTransferState::Complete)
-        Text+=TEXT("\n계산된 이송 공기 유량 0 m³/s · 현재 공기 흐름이 없습니다.\n현재 모델은 공급 밸브를 모두 닫으면 이송 공기도 흐르지 않습니다. 독립 이송 공기 공급은 미지원입니다.");
+        Text+=T.CarrierRegulated?
+            TEXT("\n현재 이송 공기 흐름이 없습니다. 칭량·수취 적용 압력 설정과 출구 요청·적용 상태를 확인하세요. 이 모델의 이송에는 공급 밸브 개방이 필요하지 않습니다."):
+            TEXT("\n계산된 이송 공기 유량 0 m³/s · 현재 공기 흐름이 없습니다.\n현재 모델은 공급 밸브를 모두 닫으면 이송 공기도 흐르지 않습니다. 독립 이송 공기 공급은 미지원입니다.");
     return Text;
+}
+
+FString UProcessUIStateAdapter::FormatPreparation(const FPlantFeedPreparationSnapshot& P)
+{
+    if(!P.Enabled)return FString();
+    if(P.State==EPlantFeedPreparationState::Idle)return TEXT("공급 완료 확인 후 개방\n닫힘 적용·공급 연결부 비움·칭량 구성 안정 확인 후 기준량을 확정합니다.\n");
+    if(P.State==EPlantFeedPreparationState::Opened)return FString::Printf(
+        TEXT("개방 시 공급 연결부 %d개 · 안정 %.3f초 확인\n기준량 확정 %.6f초 / 출구 열림 %.6f초\n"),
+        P.SupplyResidualCount,P.StableSeconds,P.BaselineCapturedSimulationSeconds,P.OutletAppliedSimulationSeconds);
+    return FString::Printf(TEXT("공급 준비 · %s\n공급 연결부 %d개 / %.3f g\n칭량 구성 안정 %.3f / %.3f초 (해석 시간)\n"),
+        *P.Reason,P.SupplyResidualCount,P.SupplyResidualKg*1000,P.StableSeconds,P.RequiredStableSeconds);
 }
 
 void UProcessUIStateAdapter::Format(const FProcessEquipmentSnapshot& S, FText& Status, FText& Quantity, FText& Valve)
@@ -397,7 +423,7 @@ void UProcessUIStateAdapter::Push(const FString& Id)
         if(auto* Detail=Cast<UTextBlock>(W->GetWidgetFromName(TEXT("TransferTelemetry"))))
         {
             Detail->SetVisibility((Id==TEXT("weigher")||Id==TEXT("receiver"))?ESlateVisibility::Visible:ESlateVisibility::Collapsed);
-            Detail->SetText(FText::FromString(FormatTransfer(State.Transfer)));
+            Detail->SetText(FText::FromString((Id==TEXT("weigher")?FormatPreparation(State.FeedPreparation):FString())+FormatTransfer(State.Transfer)));
             Detail->SetToolTipText(FText::FromString(FString::Printf(TEXT("시뮬레이션 계산값 · 모델 입자 기준 · kg 내부 단위\n이송 %lld · 연결 %lld · 개방 직전 작업자 제어 번호 %lld\n시작 해석 시간 %.6f초 · 관찰 %.6f초\n질량 갱신 UTC %s\n입자 중심은 한 구역에만 집계합니다. 도착량은 이번 ID의 현재 수취호퍼 체류량입니다.\n자동 차단·자동 이송·다음 투입은 실행하지 않습니다."),
                 State.Transfer.Id,State.Transfer.Connection,State.Transfer.OpeningControlRevision,State.Transfer.StartedSimulationSeconds,State.Transfer.ObservedSimulationSeconds,*State.CurrentMass.UpdatedUtc.ToIso8601())));
         }

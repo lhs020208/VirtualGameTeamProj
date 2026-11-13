@@ -446,5 +446,11 @@ __kernel void project_boundary(__global float4* pos,int n,float r,float angle,in
 __kernel void probe_boundary(__global const float4* pos,int n,float r,float angle,int gate,__global float4* normals,__global float4* velocities,__global const float4* bounds){
  int i=get_global_id(0);if(i>=n)return;r=grain_radius(pos[i].w,r);float3 wn,wv;boundaries(pos[i].xyz,r*1.002f,angle,gate,&wn,&wv,bounds);normals[i]=(float4)(wn,0);velocities[i]=(float4)(wv,0);
 }
+#if GRANULAR_PLANT
+// Separate read-only diagnostic; never writes particle state or the plant field.
+__kernel void inspect_plant_air(__global const float4* pos,int n,__global const float4* bounds,__global float4* air){
+ int i=get_global_id(0);if(i<n)air[i]=(float4)(plant_air(pos[i].xyz,bounds),0);
+}
+#endif
 )CLC"
 

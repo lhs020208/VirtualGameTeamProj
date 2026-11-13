@@ -51,6 +51,8 @@ public:
 
  std::vector<Grain> snapshot();
  std::vector<Grain> velocity_snapshot();
+ // Read-only diagnostic: evaluate the current plant field at the current particle positions.
+ std::vector<Grain> plant_air_snapshot();
  std::vector<Grain> angular_velocity_snapshot();
  // Single-threaded owner API. One pending transfer; reset/destruction drain it safely.
  void request_snapshot();

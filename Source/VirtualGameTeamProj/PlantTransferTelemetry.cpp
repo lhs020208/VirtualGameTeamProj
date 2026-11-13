@@ -124,7 +124,7 @@ void FPlantTransferTelemetry::ResetConnection(int64 Connection)
     Transfer=FPlantTransferSnapshot();Transfer.Connection=Connection;Transfer.Criteria=Criteria;
     Transfer.Validity=GeometryError.IsEmpty()?EPlantValueValidity::Valid:EPlantValueValidity::Unsupported;
     Transfer.Reason=GeometryError.IsEmpty()?TEXT("칭량호퍼 출구를 열면 수동 이송 관찰을 시작합니다."):GeometryError;
-    Membership.Empty();StableSince=LastTime=-1;
+    Membership.Empty();AdditionalSeen.Empty();StableSince=LastTime=-1;
 }
 
 bool FPlantTransferTelemetry::Collect(const std::vector<powder::Grain>& Positions)
@@ -167,6 +167,7 @@ void FPlantTransferTelemetry::Begin(const std::vector<powder::Grain>& Positions,
     {Indeterminate(GeometryError.IsEmpty()?TEXT("입자 좌표·개수가 유효하지 않아 시작 기준량을 확보하지 못했습니다."):GeometryError);Transfer.Validity=EPlantValueValidity::Unknown;return;}
     Transfer.InitialReceiverKg=Receiver.Kg;Transfer.BaselineKg=Weighing.Kg;
     Membership.Init(0,Regions.Num());
+    AdditionalSeen.Init(0,Regions.Num());
     for(int32 I=0;I<Regions.Num();++I)Membership[I]=Regions[I]==EPlantMassRegion::Weighing?1:Regions[I]==EPlantMassRegion::Receiver?2:0;
     Transfer.State=Transfer.BaselineKg==0?EPlantTransferState::Empty:EPlantTransferState::Moving;
     if(!ValidCriteria(Criteria))Indeterminate(TEXT("이송 시험 기준이 유효하지 않습니다. 허용치는 0 이상, 안정 시간은 양수여야 합니다."));
@@ -194,6 +195,8 @@ void FPlantTransferTelemetry::Observe(const std::vector<powder::Grain>& Position
     for(int32 I=0;I<Regions.Num();++I)
     {
         const auto R=Regions[I];
+        if(Membership[I]==0&&(R==EPlantMassRegion::Weighing||R==EPlantMassRegion::Pipe||R==EPlantMassRegion::Receiver)&&!AdditionalSeen[I])
+        {AdditionalSeen[I]=1;++Transfer.AdditionalInflowCount;}
         if(Membership[I]==1)
         {
             if(R==EPlantMassRegion::Weighing)++Remaining;

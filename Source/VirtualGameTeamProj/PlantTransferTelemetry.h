@@ -30,6 +30,7 @@ private:
     FString GeometryError;
     TArray<EPlantMassRegion> Regions;
     TArray<uint8> Membership; // 1 = this transfer; 2 = pre-existing receiver inventory.
+    TArray<uint8> AdditionalSeen; // Sticky unique inflow IDs; recrossings never inflate the diagnostic count.
     FPlantMassValue Weighing, Pipe, Receiver;
     FPlantTransferSnapshot Transfer;
     FPlantTransferSettings Criteria;

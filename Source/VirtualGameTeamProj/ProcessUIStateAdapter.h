@@ -26,6 +26,7 @@ public:
     static void Format(const FProcessEquipmentSnapshot& State, FText& Status, FText& Quantity, FText& Valve);
     static FString FormatMass(const FPlantMassValue& Mass);
     static FString FormatTransfer(const FPlantTransferSnapshot& Transfer);
+    static FString FormatPreparation(const FPlantFeedPreparationSnapshot& Preparation);
     UPROPERTY(BlueprintReadOnly, Category="Process UI|Read Only") TMap<FString, FProcessEquipmentSnapshot> Latest;
     bool IsAttached() const;
     TWeakObjectPtr<UProcessControlUI> CommandUI;

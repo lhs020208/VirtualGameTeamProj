@@ -27,6 +27,30 @@ struct FPlantMassValue
     UPROPERTY(BlueprintReadOnly) FString Source = TEXT("시뮬레이션 계산값");
 };
 
+/** Worker-confirmed preparation for one opening revision, scoped to the actor epoch/connection. */
+USTRUCT(BlueprintType)
+struct FPlantFeedPreparationSnapshot
+{
+    GENERATED_BODY()
+    UPROPERTY(BlueprintReadOnly) bool Enabled = false;
+    UPROPERTY(BlueprintReadOnly) int64 RequestRevision = 0;
+    UPROPERTY(BlueprintReadOnly) int64 Connection = 0;
+    UPROPERTY(BlueprintReadOnly) EPlantFeedPreparationState State = EPlantFeedPreparationState::Idle;
+    UPROPERTY(BlueprintReadOnly) FString Reason;
+    UPROPERTY(BlueprintReadOnly) int32 SupplyResidualCount = 0;
+    UPROPERTY(BlueprintReadOnly) TArray<int32> SupplyResidualByPath;
+    UPROPERTY(BlueprintReadOnly) double SupplyResidualKg = 0;
+    UPROPERTY(BlueprintReadOnly) int32 WeighingCount = 0;
+    UPROPERTY(BlueprintReadOnly) double WeighingKg = 0;
+    UPROPERTY(BlueprintReadOnly) double StableSeconds = 0;
+    UPROPERTY(BlueprintReadOnly) double RequiredStableSeconds = 0;
+    UPROPERTY(BlueprintReadOnly) double RequestedSimulationSeconds = 0;
+    UPROPERTY(BlueprintReadOnly) double ObservedSimulationSeconds = 0;
+    UPROPERTY(BlueprintReadOnly) double SupplyConfirmedSimulationSeconds = -1;
+    UPROPERTY(BlueprintReadOnly) double BaselineCapturedSimulationSeconds = -1;
+    UPROPERTY(BlueprintReadOnly) double OutletAppliedSimulationSeconds = -1;
+};
+
 USTRUCT(BlueprintType)
 struct FPlantTransferSnapshot
 {
@@ -47,12 +71,36 @@ struct FPlantTransferSnapshot
     // Current residence of the captured IDs, not a cumulative crossing counter.
     UPROPERTY(BlueprintReadOnly) double ArrivedKg = 0;
     UPROPERTY(BlueprintReadOnly) double UnclassifiedKg = 0;
+    // Unique IDs outside the captured cohort / existing receiver inventory; never added to baseline.
+    UPROPERTY(BlueprintReadOnly) int32 AdditionalInflowCount = 0;
     UPROPERTY(BlueprintReadOnly) double InitialReceiverKg = 0;
     UPROPERTY(BlueprintReadOnly) bool OutletAppliedOpen = false;
     // Carrier flow from the field successfully uploaded to the solver, not a pressure/flow sensor.
     UPROPERTY(BlueprintReadOnly) double CalculatedCarrierFlowM3s = 0;
     UPROPERTY(BlueprintReadOnly) bool CarrierFlowValid = false;
+    UPROPERTY(BlueprintReadOnly) bool CarrierRegulated = false;
     UPROPERTY(BlueprintReadOnly) FPlantTransferSettings Criteria;
+};
+
+/** Ideal gas-only A downstream boundary; applied fields are worker confirmations, not sensors. */
+USTRUCT(BlueprintType)
+struct FPlantSupplyAPurgeSnapshot
+{
+    GENERATED_BODY()
+    UPROPERTY(BlueprintReadOnly) bool Supported = false;
+    UPROPERTY(BlueprintReadOnly) bool Valid = false;
+    UPROPERTY(BlueprintReadOnly) bool RequestedEnabled = false;
+    UPROPERTY(BlueprintReadOnly) double RequestedGaugePa = 0;
+    UPROPERTY(BlueprintReadOnly) bool AppliedEnabled = false;
+    UPROPERTY(BlueprintReadOnly) double AppliedGaugePa = 0;
+    UPROPERTY(BlueprintReadOnly) double FlowM3s = 0;
+    UPROPERTY(BlueprintReadOnly) int64 AppliedRevision = 0;
+    UPROPERTY(BlueprintReadOnly) int64 CancelledRevision = 0;
+    UPROPERTY(BlueprintReadOnly) FString Diagnostic;
+    UPROPERTY(BlueprintReadOnly) int32 ResidualCount = 0;
+    UPROPERTY(BlueprintReadOnly) double ResidualKg = 0;
+    UPROPERTY(BlueprintReadOnly) double ObservedSimulationSeconds = 0;
+    UPROPERTY(BlueprintReadOnly) FVector InletMetres = FVector::ZeroVector;
 };
 
 /** A copy of committed telemetry, never a view into GPU/worker memory. */
@@ -91,12 +139,21 @@ struct FPlantSimulationSnapshot
     UPROPERTY(BlueprintReadOnly) int64 RequestedControlRevision = 0;
     UPROPERTY(BlueprintReadOnly) double WorkerTargetRPM = 15;
     UPROPERTY(BlueprintReadOnly) bool WorkerMixerEnabled = false;
+    UPROPERTY(BlueprintReadOnly) bool PressureControlEnabled = false;
+    UPROPERTY(BlueprintReadOnly) FVector RequestedGaugePressurePa = FVector::ZeroVector;
+    // Boundary settings successfully uploaded by the worker, not measured chamber pressure.
+    UPROPERTY(BlueprintReadOnly) FVector AppliedGaugePressurePa = FVector::ZeroVector;
+    UPROPERTY(BlueprintReadOnly) bool AppliedPressureValid = false;
+    UPROPERTY(BlueprintReadOnly) int64 PressureAppliedRevision = 0;
+    UPROPERTY(BlueprintReadOnly) double WeighingRegulatorM3s = 0;
     UPROPERTY(BlueprintReadOnly) FPlantMassValue WeighingMass;
     UPROPERTY(BlueprintReadOnly) FPlantMassValue PipeMass;
     UPROPERTY(BlueprintReadOnly) FPlantMassValue ReceiverMass;
     UPROPERTY(BlueprintReadOnly) double ModelParticleMassKg = 0;
     UPROPERTY(BlueprintReadOnly) FString MassDiagnostic;
     UPROPERTY(BlueprintReadOnly) FPlantTransferSnapshot Transfer;
+    UPROPERTY(BlueprintReadOnly) FPlantFeedPreparationSnapshot FeedPreparation;
+    UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyAPurge;
 };
 
 USTRUCT(BlueprintType)
@@ -128,8 +185,13 @@ struct FProcessEquipmentSnapshot
     UPROPERTY(BlueprintReadOnly) FProcessStateValue ValveAppliedOpen;
     UPROPERTY(BlueprintReadOnly) FProcessStateValue RequestedRPM;
     UPROPERTY(BlueprintReadOnly) FProcessStateValue AppliedRPM;
+    UPROPERTY(BlueprintReadOnly) FProcessStateValue RequestedPressurePa;
+    UPROPERTY(BlueprintReadOnly) FProcessStateValue AppliedPressurePa;
+    UPROPERTY(BlueprintReadOnly) FString PressureScope;
     UPROPERTY(BlueprintReadOnly) FPlantMassValue CurrentMass;
     UPROPERTY(BlueprintReadOnly) FPlantTransferSnapshot Transfer;
+    UPROPERTY(BlueprintReadOnly) FPlantFeedPreparationSnapshot FeedPreparation;
+    UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyAPurge;
 };
 
 /** Per-binding ordering guard. Reset only when changing the explicit source. */
