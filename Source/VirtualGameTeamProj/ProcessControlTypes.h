@@ -13,7 +13,7 @@ int32 PressureTarget(const FString& EquipmentId); // 0 common supply, 1 WH, 2 RH
 bool SamePressureTarget(const FString& A, const FString& B);
 }
 
-enum class EProcessCommand : uint8 { Valve, MixerEnabled, MixerRPM, StopAll, Resume, Pause, Pressure, PurgePressure, PurgeEnabled };
+enum class EProcessCommand : uint8 { Valve, MixerEnabled, MixerRPM, StopAll, Resume, Pause, Pressure, PurgePressure, PurgeEnabled, CaptureABatch, FinalizeADose, BeginB, CombineAB, BeginAdditive, RecoverBatch };
 enum class EProcessCommandStatus : uint8 { Accepted, Processing, Applied, Rejected, Failed, Unknown };
 enum class EProcessStopStage : uint8 { None, Requested, Closing, Pausing, Complete, Failed };
 enum class EProcessFreezeState : uint8 { None, Awaiting, Confirmed, Unconfirmed };
@@ -43,6 +43,27 @@ struct FPlantControlTargets
 {
     int64 Revision = 0;
     int64 ObservationConnection = 0;
+    int64 BatchCaptureRevision = 0, RequiredABatchRevision = 0;
+    FGuid RecoveryRequestId;
+    int64 RecoveryRevision=0,RecoveryCapture=0;
+    double RecoveryDeadline=0;
+    bool AutomaticMixClock=false;
+    FGuid DoseCutoffRequestId;
+    int64 DoseCutoffRevision=0, DoseCutoffBatch=0, DoseCutoffEpoch=-1;
+    int32 DoseCutoffSupplier=-1;
+    double DoseCutoffTargetKg=0, DoseCutoffToleranceKg=0, DoseCutoffRequestedWall=0, DoseCutoffDeadline=0;
+    int64 DoseFinalizeRevision=0, DoseCaptureRevision=0;
+    int64 BatchTransitionRevision=0, BatchTransitionCapture=0;
+    bool BatchCombine=false;
+    bool BatchAdditive=false, AdditiveScheduled=false;
+    double AdditiveDelaySeconds=0;
+    double BatchTransitionDeadline=0;
+    double DoseTargetKg=0, DoseToleranceKg=0, DoseDeadline=0;
+
+    // Single-use downstream admission, cancelled by the same stop/reset/disconnect mailbox.
+    int64 AutomaticActionRevision=0, AutomaticBatchRevision=0;
+    uint8 AutomaticAction=0; // 1 receiver opening, 2 mixer first start
+    double AutomaticDeadline=0;
     bool Running = true;
     uint32 Suppliers = 0;
     bool WeighingOpen = false, ReceiverOpen = false, MixerEnabled = false;
@@ -51,6 +72,7 @@ struct FPlantControlTargets
     double WeighingOpenDeadline = 0, WeighingOpenLeaseUntil = 0;
     // Explicit service-owned purge token. Reset/stop/release clear it; lease renewal never changes Revision.
     bool SupplyAPurgeEnabled = false;
+    int32 SupplyPurgeSupplier=0;
     double SupplyAPurgeGaugePa = 0, SupplyAPurgeLeaseUntil = 0;
     int64 SupplyAPurgeRevision = 0;
     double RPM = 15, Pressure = 1000;
@@ -76,7 +98,9 @@ public:
     EProcessFreezeState FreezeState = EProcessFreezeState::None;
     FString StopFailureEquipment;
     bool ManualGranted = false, Connected = false;
+    bool AutomationActive = false, AutomationDispatch = false;
     int64 Connection = 0;
+    FGuid DispatchRequestId;
     double DispatchDeadline = 0; // The exact accepted deadline, forwarded to the worker with the opening revision.
 
     void Connect(const FPlantSimulationSnapshot& State);

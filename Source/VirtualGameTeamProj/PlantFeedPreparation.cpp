@@ -147,10 +147,10 @@ void FPlantFeedPreparation::Opened(double BaselineTime,double AppliedTime)
     State.Reason=BaselineTime<State.SupplyConfirmedSimulationSeconds?TEXT("공급 완료 확인 · 기존 이송 기준량 유지 후 출구 재개방 적용 확인"):TEXT("공급 완료·기준량 확보 후 출구 열림 적용 확인");
 }
 
-int32 FPlantFeedPreparation::SupplyAInventory(const std::vector<powder::Grain>& Positions) const
+int32 FPlantFeedPreparation::SupplyAInventory(const std::vector<powder::Grain>& Positions,int32 Supplier) const
 {
     if(!State.Enabled||!GeometryError.IsEmpty()||Positions.size()!=Count)return -1;
     int32 N=0;
-    for(const auto& P:Positions){if(Mass.Classify(P)==EPlantMassRegion::Invalid)return -1;if(SupplyPath(P)==0)++N;}
+    for(const auto& P:Positions){if(Mass.Classify(P)==EPlantMassRegion::Invalid)return -1;if(SupplyPath(P)==Supplier)++N;}
     return N;
 }

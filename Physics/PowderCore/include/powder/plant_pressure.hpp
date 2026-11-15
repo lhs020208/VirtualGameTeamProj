@@ -13,29 +13,29 @@ inline PlantPressureTargets plant_pressure_preset(int stage){
 }
 // A gas-only ideal pressure boundary at the first complete cell below supplier A's shut gate.
 // The existing WH ideal regulator is the exhaust sink; no closed-gate gas bypass is introduced.
-struct PlantSupplyAPurge {bool enabled=false;double gauge_pa=0;};
+struct PlantSupplyAPurge {bool enabled=false;double gauge_pa=0;unsigned supplier=0;};
 struct PlantSupplyAPurgePath {size_t route=0,first_cell=0;Grain inlet{};};
-inline PlantSupplyAPurgePath plant_supply_a_purge_path(const std::vector<Grain>&d,const std::vector<PlantRoute>&routes){
+inline PlantSupplyAPurgePath plant_supply_purge_path(const std::vector<Grain>&d,const std::vector<PlantRoute>&routes,unsigned supplier){
  auto gates=plant_supplier_gates(d);
- if(gates.size()!=6)throw std::invalid_argument("A purge requires verified LowPoly six-supplier topology");
- auto gate=d[gates[0]];
- if(std::abs(gate.x+1.2f)>1e-5f||std::abs(gate.y-1.4f)>1e-5f||std::abs(gate.z-2.23f)>1e-5f)
-  throw std::invalid_argument("A purge gate geometry mismatch");
+ if(gates.size()!=6||supplier>2)throw std::invalid_argument("purge requires verified A/B/C six-supplier topology");
+ const auto gate=d[gates[supplier]];unsigned branch=0;
  for(size_t ri=0;ri<routes.size();++ri)if(routes[ri].phase==0){
+  if(branch++!=supplier)continue;
   for(size_t ci=0;ci<routes[ri].cells.size();++ci){int at=routes[ri].cells[ci];
-   if(at<int(d[0].z)||size_t(at)+2>=d.size())throw std::invalid_argument("A purge route index invalid");
+   if(at<int(d[0].z)||size_t(at)+2>=d.size())throw std::invalid_argument("purge route index invalid");
    auto a=d[at],b=d[at+1];
    if(a.z<gate.z&&b.z<a.z){
-    if(std::abs(a.x-gate.x)>1e-5f||std::abs(a.y-gate.y)>1e-5f||std::abs(a.z-2.2f)>1e-5f)
-     throw std::invalid_argument("A purge inlet geometry mismatch");
+    if(std::abs(a.x-gate.x)>1e-5f||std::abs(a.y-gate.y)>1e-5f||std::abs(b.x-gate.x)>1e-5f||std::abs(b.y-gate.y)>1e-5f)
+     throw std::invalid_argument("purge downstream gate/route mismatch");
     return {ri,ci,a};
    }
   }break;
  }
- throw std::invalid_argument("A purge downstream route unavailable");
+ throw std::invalid_argument("purge downstream route unavailable");
 }
+inline PlantSupplyAPurgePath plant_supply_a_purge_path(const std::vector<Grain>&d,const std::vector<PlantRoute>&routes){return plant_supply_purge_path(d,routes,0);}
 inline void validate_plant_supply_a_purge(PlantSupplyAPurge p){
- if(!std::isfinite(p.gauge_pa)||p.gauge_pa<0||p.gauge_pa>1000)
+ if(p.supplier>2||!std::isfinite(p.gauge_pa)||p.gauge_pa<0||p.gauge_pa>1000)
   throw std::invalid_argument("A purge trial boundary must be finite 0..1000 gauge Pa");
 }
 struct PlantPressureState {
@@ -50,7 +50,7 @@ inline PlantPressureState plant_set_regulated_pressures(std::vector<Grain>&d,con
  auto gates=plant_supplier_gates(d);int wh=plant_weighing_gate(d),rh=plant_receiver_gate(d);
  PlantPressureState state;state.applied=target;if(receiver_open)state.applied.receiver=0; // vented discharge test assumption
  PlantSupplyAPurgePath purge_path;
- if(purge.enabled||purge.gauge_pa!=0)purge_path=plant_supply_a_purge_path(d,routes);
+ if(purge.enabled||purge.gauge_pa!=0)purge_path=plant_supply_purge_path(d,routes,purge.supplier);
  if(purge.enabled&&(suppliers||supplier_air||hopper||purge.gauge_pa<=target.weighing))
   throw std::invalid_argument("A purge requires closed suppliers/WH outlet and inlet pressure above WH");
  state.purge=purge;

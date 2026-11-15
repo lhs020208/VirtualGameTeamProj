@@ -189,6 +189,8 @@ FProcessEquipmentSnapshot UProcessUIStateAdapter::BuildEquipment(const FString& 
         (S->PublishedWallSeconds <= 0 || Now - S->PublishedWallSeconds > MaxAge)) R.Validity = EPlantValueValidity::Stale;
     const auto Validity = R.Validity;
     if(Id==TEXT("supply-a")){R.SupplyAPurge=S->SupplyAPurge;if(Validity!=EPlantValueValidity::Valid)R.SupplyAPurge.Valid=false;}
+    if(Id==TEXT("supply-b")){R.SupplyBPurge=S->SupplyBPurge;if(Validity!=EPlantValueValidity::Valid)R.SupplyBPurge.Valid=false;}
+    if(Id==TEXT("supply-c")){R.SupplyCPurge=S->SupplyCPurge;if(Validity!=EPlantValueValidity::Valid)R.SupplyCPurge.Valid=false;}
     if(Id==TEXT("weigher")||Id==TEXT("receiver"))
     {
         R.CurrentMass=Id==TEXT("weigher")?S->WeighingMass:S->ReceiverMass;R.Transfer=S->Transfer;
@@ -424,7 +426,7 @@ void UProcessUIStateAdapter::Push(const FString& Id)
         {
             Detail->SetVisibility((Id==TEXT("weigher")||Id==TEXT("receiver"))?ESlateVisibility::Visible:ESlateVisibility::Collapsed);
             Detail->SetText(FText::FromString((Id==TEXT("weigher")?FormatPreparation(State.FeedPreparation):FString())+FormatTransfer(State.Transfer)));
-            Detail->SetToolTipText(FText::FromString(FString::Printf(TEXT("시뮬레이션 계산값 · 모델 입자 기준 · kg 내부 단위\n이송 %lld · 연결 %lld · 개방 직전 작업자 제어 번호 %lld\n시작 해석 시간 %.6f초 · 관찰 %.6f초\n질량 갱신 UTC %s\n입자 중심은 한 구역에만 집계합니다. 도착량은 이번 ID의 현재 수취호퍼 체류량입니다.\n자동 차단·자동 이송·다음 투입은 실행하지 않습니다."),
+            Detail->SetToolTipText(FText::FromString(FString::Printf(TEXT("시뮬레이션 계산값 · 모델 입자 기준 · kg 내부 단위\n이송 %lld · 연결 %lld · 개방 직전 작업자 제어 번호 %lld\n시작 해석 시간 %.6f초 · 관찰 %.6f초\n질량 갱신 UTC %s\n입자 중심은 한 구역에만 집계합니다. 도착량은 이번 ID의 현재 수취호퍼 체류량입니다.\nA 단독·A·B 순차 계량은 제어 서비스 상태를 확인하세요. C~F 순차 투입은 후속 단계입니다."),
                 State.Transfer.Id,State.Transfer.Connection,State.Transfer.OpeningControlRevision,State.Transfer.StartedSimulationSeconds,State.Transfer.ObservedSimulationSeconds,*State.CurrentMass.UpdatedUtc.ToIso8601())));
         }
         HideUnavailableControls(W);

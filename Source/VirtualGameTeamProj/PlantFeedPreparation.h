@@ -11,10 +11,11 @@ public:
         const FPlantTransferTelemetry& Telemetry, double RequiredStableSeconds, bool Enabled);
     // A supply residual is downstream of a real supply gate and upstream of WH ownership.
     int32 SupplyPath(const powder::Grain& Position) const;
-    int32 SupplyAInventory(const std::vector<powder::Grain>& Positions) const;
+    int32 SupplyAInventory(const std::vector<powder::Grain>& Positions,int32 Supplier=0) const;
     void SyncIntent(const FPlantControlTargets& Control, double Time, double WallTime);
     bool Evaluate(const std::vector<powder::Grain>& Positions, double Time, double WallTime,
         const FPlantControlTargets& Control, uint32 AppliedSuppliers, bool ContinuingTransfer, bool PurgeApplied=false, double PurgeFlow=0, double PurgePressure=0);
+    bool RejectOpening(const FString& Reason) { return Fail(Reason); }
     void Opened(double BaselineTime, double AppliedTime);
     const FPlantFeedPreparationSnapshot& Snapshot() const { return State; }
 private:
