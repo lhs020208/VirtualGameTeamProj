@@ -10,17 +10,22 @@ class UHorizontalBox;
 class UVerticalBox;
 class UCanvasPanel;
 class UBorder;
+class UProcessNumericField;
 
 /** Runtime-only bindings to the existing widget; no asset graph or physics writes. */
 UCLASS()
 class UProcessControlUI : public UObject
 {
     GENERATED_BODY()
+    friend class FProcessOperatorEditing;
 public:
     bool Attach(UUserWidget* Widget, UProcessControlService* Service);
     void Detach();
     void Refresh();
+    UFUNCTION() void ToggleOperatorDetails();
+    UFUNCTION() void ToggleIndividualSettings();
     UFUNCTION() void ToggleRecipes();
+    UFUNCTION() void OpenRecipeSettings();
     UFUNCTION() void CloseRecipes();
     UFUNCTION() void LoadSelectedRecipe();
     UFUNCTION() void SaveNewRecipe();
@@ -56,6 +61,22 @@ public:
     UFUNCTION() void Resume();
     UFUNCTION() void Pause();
 private:
+    bool OperatorLayoutBuilt=false,OperatorDetailsOpen=false,IndividualSettingsOpen=false;
+    UPROPERTY(Transient) TObjectPtr<UBorder> OperatorDetails;
+    UPROPERTY(Transient) TArray<TObjectPtr<UProcessNumericField>> NumericFields;
+    TMap<FString,FString> LastCompactText;
+    TMap<FString,FString> OriginalDisplayText;
+    void BuildOperatorLayout(UCanvasPanel* Root);
+    void RefreshOperatorLayout();
+    void RefreshOperationGuidance();
+    void RememberRecoveryCheck();
+    bool RecoveryCheckCurrent() const;
+    FGuid CheckedRun,CheckedStop,CheckedCommand;
+    int64 CheckedEpoch=-1,CheckedConnection=-1,CheckedControl=-1;
+    double CheckedSimulationSeconds=-1;
+    FProcessRecipe OriginalRecipeDraft;
+    bool OriginalRecipeValid=false;
+    TMap<FString,FString> OriginalRecipeText;
     UPROPERTY(Transient) TObjectPtr<UBorder> RecipePanel;
     bool RecipeOpen=false,RecipeFilling=false,RecipeDirty=true;
     FString RecipeMessage;

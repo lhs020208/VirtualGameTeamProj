@@ -76,6 +76,8 @@ struct FPlantControlTargets
     double SupplyAPurgeGaugePa = 0, SupplyAPurgeLeaseUntil = 0;
     int64 SupplyAPurgeRevision = 0;
     double RPM = 15, Pressure = 1000;
+    int64 TransferPressureId=0, TransferPressureRevision=0;
+    double TransferPressureDeadline=0;
     FVector GaugePressurePa = FVector::ZeroVector; // supply common / weighing / receiver; reset and stop never restore a profile
 };
 
@@ -107,7 +109,7 @@ public:
     void Disconnect(const FString& Reason);
     void Observe(const FPlantSimulationSnapshot& State, double Now, const FProcessControlTransport& Send);
     FProcessCommandRecord Submit(FGuid Id, int64 Epoch, const FString& Equipment, EProcessCommand Command, double Value,
-        double Now, const FProcessControlTransport& Send);
+        double Now, const FProcessControlTransport& Send, const FString& AdmissionError = FString());
     FString UnavailableReason(const FString& Equipment, EProcessCommand Command, double Value, double Now) const;
     FString StopDescription() const;
     FString UnconfirmedEquipment() const;

@@ -1,5 +1,6 @@
 #include "PowderPlantTest.h"
 #include "powder/plant_pressure.hpp"
+#include "PlantSupplyPressureTelemetry.h"
 #include "powder/plant_feed_brake.hpp"
 #include "ProcessPlantBinding.h"
 #include "PlantVisibilityController.h"
@@ -57,6 +58,7 @@ struct FPlantRuntime {
  FPlantSimulationSnapshot Published;
  std::thread Thread;std::mutex Mutex;std::atomic<bool> Quit{false};
  FPlantControlTargets Mailbox;
+ int64 ScopedPressureUploadedRevision=0;double ScopedPressureUploadedPa=0;
  std::vector<powder::Grain> Points;std::string Error;double Time=0,Wall=0,Angle=0;
  int Phase=0,WH=0,RH=0,MX=0;bool HopperOpen=false,ReceiverOpen=false;uint32 OpenSuppliers=0;uint64 Generation=1;
  FPlantRuntime(powder::GranularConfig C,std::vector<powder::Grain> P,std::vector<powder::PlantRoute> Routes,double Timeout,double Fraction,double TransferWait,bool Start,double Pressure,double Speed,FPlantTransferSettings TransferSettings,FVector CountMin,FVector CountMax,bool Regulated,bool GuardOpening,TArray<int32> SupplierById):Points(P){
@@ -76,6 +78,7 @@ struct FPlantRuntime {
     uint32 Open=0,PreviousRequest=0,All=Gates.size()==32?~uint32(0):(uint32(1)<<Gates.size())-1;
     powder::PlantPressureState PressureState;
     FVector AppliedTargets=Control.GaugePressurePa;int64 PressureRevision=Control.Revision;
+    double PressureAppliedTime=0;int64 RejectedTransferPressure=0;
     const bool PurgeSupported=Regulated&&GuardOpening;
     powder::PlantSupplyAPurgePath PurgePaths[3];
     if(PurgeSupported)for(int I=0;I<3;++I)PurgePaths[I]=powder::plant_supply_purge_path(C.plant_data,Routes,I);
@@ -85,6 +88,8 @@ struct FPlantRuntime {
     if(Regulated)PressureState=powder::plant_set_regulated_pressures(C.plant_data,Routes,
         {AppliedTargets.X,AppliedTargets.Y,AppliedTargets.Z},0,0,false,false,false);
     else {powder::plant_set_manual_valves(C.plant_data,Routes,AppliedPressure,0,0,false,false);powder::plant_set_receiver_valve(C.plant_data,false);}
+    FPlantSupplyPressureTelemetry ValvePressure(C.plant_data,Routes);
+    int64 ValvePressureRevision=-1;TArray<FPlantSupplyValvePressure> ValvePressureValues;
     powder::GranularGPU GPU(C,P,std::vector<powder::Grain>(P.size()));
     FPlantFeedBrakeSnapshot Brakes[3];powder::PlantFeedBrake BrakeControls[3];int64 BrakePendingRevisions[3]{};
     for(int I=0;I<3;++I){auto& Brake=Brakes[I];auto& BrakeControl=BrakeControls[I];Brake.Supported=Regulated&&GuardOpening;
@@ -105,7 +110,7 @@ struct FPlantRuntime {
     const auto WallMemory=GPU.plant_memory_bytes();UE_LOG(LogTemp,Display,TEXT("Plant collision mode=%u particles=%u plant_bytes=%llu acceleration_bytes=%llu cache_bytes=%llu"),C.plant_wall_mode,C.count,(unsigned long long)WallMemory[0],(unsigned long long)WallMemory[1],(unsigned long long)WallMemory[2]);
     int PhaseNow=0;double StageStart=0,Active=0;
     int64 LastPreparationRevision=-1;
-    double LastAppliedRPM=0,LastRPMApplicationTime=-1;int64 LastRPMRevision=0;bool HasAppliedRPM=false,WasPaused=false;
+    double LastRPMStartAngle=0;double LastAppliedRPM=0,LastRPMApplicationTime=-1;int64 LastRPMRevision=0;bool HasAppliedRPM=false,WasPaused=false;
     int TransferFlowCell=-1;for(const auto& Route:Routes)if(Route.phase==1&&!Route.cells.empty())TransferFlowCell=Route.cells.front()+2;
     // Telemetry only: called under Mutex, with results from a completed GPU batch.
     auto Publish=[&](EPlantExecutionState Execution){
@@ -136,7 +141,12 @@ struct FPlantRuntime {
      Published.Transfer.CarrierRegulated=Regulated;
      Published.PressureControlEnabled=Regulated;Published.AppliedPressureValid=Regulated;
      Published.AppliedGaugePressurePa=FVector(PressureState.applied.supply,PressureState.applied.weighing,PressureState.applied.receiver);
-     Published.PressureAppliedRevision=PressureRevision;Published.WeighingRegulatorM3s=PressureState.weighing_regulator_m3s;
+     if(ValvePressureRevision!=Control.Revision){
+      ValvePressureValues=ValvePressure.Observe(C.plant_data,Routes,Published.AppliedGaugePressurePa,Open,Control.Suppliers,Regulated,PressureState.purge.supplier,PressureState.purge.enabled);ValvePressureRevision=Control.Revision;
+     }
+     Published.SupplyValvePressures=ValvePressureValues;Published.MixerAngleRadians=Angle;Published.AppliedRPMStartAngleRadians=LastRPMStartAngle;
+     Published.PressureAppliedRevision=PressureRevision;Published.PressureAppliedSimulationSeconds=PressureAppliedTime;
+     Published.TransferPressureRejectedRevision=RejectedTransferPressure;Published.WeighingRegulatorM3s=PressureState.weighing_regulator_m3s;
      Published.ProcessedControlRevision=Control.Revision;Published.WorkerTargetRPM=Control.RPM;Published.WorkerMixerEnabled=Control.MixerEnabled;
      Published.UpdatedUtc=FDateTime::UtcNow();Published.PublishedWallSeconds=FPlatformTime::Seconds();++Published.Sequence;
      if(Batch.ActiveSupplier()==1&&((Control.Suppliers&2)||(Open&2)))PlantDoseTrace::Snapshot(TEXT("worker_publish"),Published);
@@ -233,7 +243,7 @@ struct FPlantRuntime {
      if(!Control.Running&&(PressureState.purge.enabled||PressureState.purge.gauge_pa!=0)){
       auto Cleared=powder::plant_set_regulated_pressures(C.plant_data,Routes,
           {AppliedTargets.X,AppliedTargets.Y,AppliedTargets.Z},Open,PreviousRequest,OpenHopper,PreviousHopper,OpenReceiver,{});
-      GPU.update_plant_field(C.plant_data);PressureState=Cleared;PurgeAppliedRevision=Control.Revision;
+      GPU.update_plant_field(C.plant_data);PressureState=Cleared;ValvePressureRevision=-1;PurgeAppliedRevision=Control.Revision;
      }
      if(Control.ObservationConnection!=ObservationConnection){ObservationConnection=Control.ObservationConnection;Batch.InvalidateCapture();LastBatchCaptureAttempt=LastDoseAttempt=LastTransitionAttempt=0;AuthorizedMixerRevision=0;Telemetry.ResetConnection(ObservationConnection);Telemetry.Observe(GPU.snapshot(),GPU.time(),OpenHopper,Control.ReceiverOpen||OpenReceiver);}
      if(Control.ReceiverOpen||OpenReceiver)Telemetry.ReceiverDischarging();
@@ -252,6 +262,15 @@ struct FPlantRuntime {
      bool WantHopper=Control.WeighingOpen,WantReceiver=Control.ReceiverOpen;
      const bool Preparing=GuardOpening&&WantHopper&&!OpenHopper;
      const bool PurgeChanged=DesiredPurge.enabled!=PressureState.purge.enabled||DesiredPurge.gauge_pa!=PressureState.purge.gauge_pa||DesiredPurge.supplier!=PressureState.purge.supplier;
+     if(Control.TransferPressureRevision>0&&(Control.TransferPressureRevision>PressureRevision||Control.TransferPressureRevision<=RejectedTransferPressure)){
+      FPlantSimulationSnapshot Current;Telemetry.Publish(Current);
+      const bool Admit=Control.TransferPressureRevision>RejectedTransferPressure&&Control.Running&&
+       FPlatformTime::Seconds()<=Control.TransferPressureDeadline&&OpenHopper&&Control.WeighingOpen&&!OpenReceiver&&!Control.ReceiverOpen&&
+       Open==0&&Control.Suppliers==0&&!DesiredPurge.enabled&&Current.Transfer.Id==Control.TransferPressureId&&
+       Current.Transfer.State!=EPlantTransferState::Complete&&Current.Transfer.State!=EPlantTransferState::Indeterminate&&
+       Current.Transfer.AdditionalInflowCount==0&&Control.GaugePressurePa.X==AppliedTargets.X&&Control.GaugePressurePa.Y==AppliedTargets.Y;
+      if(!Admit){RejectedTransferPressure=FMath::Max(RejectedTransferPressure,Control.TransferPressureRevision);Control.GaugePressurePa.Z=AppliedTargets.Z;}
+     }
      const bool PressureChanged=Regulated ? Control.GaugePressurePa!=AppliedTargets : D!=AppliedPressure;
      uint32 Request=Control.Suppliers&All;
      if((Open&(1u<<Batch.ActiveSupplier()))&&!(Request&(1u<<Batch.ActiveSupplier()))&&Batch.Snapshot().CaptureRevision>0&&Batch.Snapshot().SupplyCloseRequestedRevision==0){
@@ -261,6 +280,12 @@ struct FPlantRuntime {
      if(PurgeChanged||PressureChanged||Request!=PreviousRequest||(!Preparing&&WantHopper!=PreviousHopper)||(Preparing&&Control.WeighingOpenRevision!=LastPreparationRevision)||WantReceiver!=PreviousReceiver||((Preparing||Open!=Request||OpenHopper!=WantHopper||OpenReceiver!=WantReceiver)&&std::chrono::duration<double>(Begin-LastControl).count()>.1)){
       std::vector<powder::Grain> BeforePreparedOpen;
       std::unique_lock<std::mutex> OpeningCommit(Mutex,std::defer_lock);
+      if(Control.TransferPressureRevision>PressureRevision&&Control.TransferPressureRevision>RejectedTransferPressure){
+       OpeningCommit.lock();
+       if(Quit||Mailbox.Revision!=Control.Revision||Mailbox.TransferPressureRevision!=Control.TransferPressureRevision||
+          Mailbox.ObservationConnection!=Control.ObservationConnection||!Mailbox.Running)continue;
+       if(FPlatformTime::Seconds()>Control.TransferPressureDeadline){RejectedTransferPressure=FMath::Max(RejectedTransferPressure,Control.TransferPressureRevision);continue;}
+      }
       if(Preparing){
        BeforePreparedOpen=GPU.snapshot();
        FPlantSimulationSnapshot CurrentTransfer;Telemetry.Publish(CurrentTransfer);
@@ -345,7 +370,9 @@ struct FPlantRuntime {
         UE_LOG(LogTemp,Display,TEXT("MIXER_FEED_CLOSED revision=%lld time=%.9f"),Control.Revision,GPU.time());}
        if(OpeningEdge&&Preparing){Preparation.Opened(CapturedBaselineTime,GPU.time());UE_LOG(LogTemp,Display,TEXT("FEED_READY_OPEN revision=%lld supply_confirmed=%.9f baseline=%.9f applied_open=%.9f residual=%d stable=%.9f"),Control.WeighingOpenRevision,Preparation.Snapshot().SupplyConfirmedSimulationSeconds,CapturedBaselineTime,GPU.time(),Preparation.Snapshot().SupplyResidualCount,Preparation.Snapshot().StableSeconds);}
        // Publish settings only after the entire field upload succeeds. No pressure command bypasses this worker.
-       PressureState=NextPressure;AppliedTargets=Control.GaugePressurePa;PressureRevision=Control.Revision;
+       PressureState=NextPressure;AppliedTargets=Control.GaugePressurePa;PressureRevision=Control.Revision;PressureAppliedTime=GPU.time();ValvePressureRevision=-1;
+       if(Control.TransferPressureRevision>0&&OpeningCommit.owns_lock()){ScopedPressureUploadedRevision=Control.TransferPressureRevision;ScopedPressureUploadedPa=AppliedTargets.Z;}
+       if(Control.TransferPressureRevision>0)UE_LOG(LogTemp,Display,TEXT("TRANSFER_PRESSURE_APPLIED transfer=%lld revision=%lld time=%.9f receiver_pa=%.9g flow=%.12g"),Control.TransferPressureId,Control.TransferPressureRevision,GPU.time(),AppliedTargets.Z,TransferFlowCell>=0?double(C.plant_data[TransferFlowCell].x):0.);
        PurgeAppliedRevision=Control.Revision;
        if(PurgeChanged)UE_LOG(LogTemp,Display,TEXT("SUPPLY_PURGE supplier=%d applied revision=%lld time=%.9f enabled=%d pressure_pa=%.9g flow_m3s=%.12g"),Control.SupplyPurgeSupplier,PurgeAppliedRevision,GPU.time(),PressureState.purge.enabled,PressureState.purge.gauge_pa,PressureState.purge_m3s);
        OpenReceiver=NextReceiver;PreviousReceiver=WantReceiver;Open=NextOpen;OpenHopper=NextHopper;PreviousHopper=WantHopper;PreviousRequest=Request;AppliedPressure=D;
@@ -376,7 +403,7 @@ struct FPlantRuntime {
       UE_LOG(LogTemp,Display,TEXT("FEED_BRAKE_APPLIED supplier=%d revision=%lld time=%.9f enabled=%d lower_z=%.9g tau=%.9g passed_kg=%.12g"),Supplier,Brake.AppliedRevision,GPU.time(),Brake.Applied,Brake.LowerFaceMetres,Brake.ResponseTimeSeconds,Brake.BrakeAppliedPassedKg);
      }
      if(!HasAppliedRPM||LastRPMRevision!=Control.Revision||LastAppliedRPM!=double(float(S))){
-      LastRPMRevision=Control.Revision;LastRPMApplicationTime=GPU.time();
+      LastRPMRevision=Control.Revision;LastRPMApplicationTime=GPU.time();LastRPMStartAngle=GPU.angle();
       if(HasAppliedRPM&&LastAppliedRPM>0&&S==0)
        UE_LOG(LogTemp,Display,TEXT("MIXER_RPM_ZERO_APPLIED revision=%lld time=%.9f"),LastRPMRevision,LastRPMApplicationTime);
      }
@@ -574,6 +601,7 @@ void APowderPlantTest::ReleaseControl(UProcessControlService* ServiceOwner)
 {
  check(IsInGameThread());
  if(ControlOwner.Get()!=ServiceOwner)return;
+ RevokeTransferPressure();
  ControlTargets.RecoveryRevision=0;ControlTargets.AutomaticMixClock=false;
  RevokeDoseCutoff();RevokePreparedOpening();RevokeSupplyAPurge();
  if(ControlTargets.AutomaticAction==1)ReceiverOpen=ControlTargets.ReceiverOpen=false;
@@ -704,7 +732,7 @@ bool APowderPlantTest::SetMixerRPM(double RPM,int64 Epoch,int64& Revision,FStrin
  if(!FMath::IsFinite(RPM)||RPM<PlantControl::MinRPM||RPM>PlantControl::MaxRPM){Reason=TEXT("목표 회전속도는 유한한 0~30 rpm이어야 합니다.");return false;}
  MixerRPM=ControlTargets.RPM=RPM;Revision=++ControlTargets.Revision;PublishControls();return true;
 }
-bool APowderPlantTest::SetGaugePressure(int32 Target,double Pa,int64 Epoch,int64& Revision,FString& Reason)
+bool APowderPlantTest::SetGaugePressure(int32 Target,double Pa,int64 Epoch,int64& Revision,FString& Reason,int64 TransferId,double Deadline)
 {
  if(!ValidateControl(Epoch,Reason))return false;
  const auto S=GetSimulationSnapshot();
@@ -712,15 +740,30 @@ bool APowderPlantTest::SetGaugePressure(int32 Target,double Pa,int64 Epoch,int64
  if(S.Execution!=EPlantExecutionState::Running||!Running){Reason=TEXT("계산 재개 후 새 압력 요청을 적용하세요. 일시정지 중에는 예약하지 않습니다.");return false;}
  if(Target==2&&Pa!=0&&(S.RequestedReceiverOpen||S.AppliedReceiverOpen)){Reason=TEXT("수취 출구 닫힘 확인 후 흡입 압력을 요청하세요.");return false;}
  if(Target==1&&ControlTargets.SupplyAPurgeEnabled&&Pa>=ControlTargets.SupplyAPurgeGaugePa){Reason=TEXT("연결부 공기 주입 압력은 칭량 압력보다 높아야 합니다. 공기 정지 후 변경하세요.");return false;}
+ if(TransferId>0&&(Target!=2||S.Transfer.Id!=TransferId||S.Transfer.State==EPlantTransferState::Complete||
+    S.Transfer.State==EPlantTransferState::Indeterminate||!S.AppliedHopperOpen||!S.RequestedHopperOpen||S.AppliedReceiverOpen||S.RequestedReceiverOpen||
+    !FMath::IsFinite(Deadline)||Deadline<=FPlatformTime::Seconds())){Reason=TEXT("이송 종료·변경 또는 출구 상태 미확인 · 압력 조절 거부");return false;}
  auto Next=ControlTargets.GaugePressurePa;Next[Target]=Pa;
  try{powder::validate_plant_pressure_targets({Next.X,Next.Y,Next.Z});}
  catch(const std::exception&){Reason=TEXT("압력 거부: 공급 공통·칭량 -1~+1, 수취 -1~0 kPa(g)의 유한한 값만 지원합니다.");return false;}
- ControlTargets.GaugePressurePa=Next;Revision=++ControlTargets.Revision;PublishControls();return true;
+ ControlTargets.GaugePressurePa=Next;Revision=++ControlTargets.Revision;
+ ControlTargets.TransferPressureId=TransferId;ControlTargets.TransferPressureRevision=TransferId>0?Revision:0;ControlTargets.TransferPressureDeadline=Deadline;
+ PublishControls();return true;
+}
+void APowderPlantTest::RevokeTransferPressure()
+{
+ if(ControlTargets.TransferPressureRevision<=0||!Runtime)return;
+ // Linearize revocation with the worker field upload. Preserve a confirmed setting, retract an unprocessed target.
+ std::lock_guard<std::mutex> Lock(Runtime->Mutex);
+ if(Runtime->ScopedPressureUploadedRevision==ControlTargets.TransferPressureRevision)ControlTargets.GaugePressurePa.Z=Runtime->ScopedPressureUploadedPa;
+ else if(Runtime->Published.PressureAppliedRevision<ControlTargets.TransferPressureRevision)ControlTargets.GaugePressurePa.Z=Runtime->Published.AppliedGaugePressurePa.Z;
+ ControlTargets.TransferPressureId=ControlTargets.TransferPressureRevision=0;ControlTargets.TransferPressureDeadline=0;
+ ++ControlTargets.Revision;Runtime->Mailbox=ControlTargets;
 }
 bool APowderPlantTest::SetSimulationRunning(bool Run,int64 Epoch,int64& Revision,FString& Reason)
 {
  if(!ValidateControl(Epoch,Reason))return false;
- if(!Run){ControlTargets.RecoveryRevision=0;ControlTargets.AutomaticMixClock=false;RevokeDoseCutoff();RevokePreparedOpening();RevokeSupplyAPurge();
+ if(!Run){RevokeTransferPressure();ControlTargets.RecoveryRevision=0;ControlTargets.AutomaticMixClock=false;RevokeDoseCutoff();RevokePreparedOpening();RevokeSupplyAPurge();
   if(ControlTargets.AutomaticAction==1)ReceiverOpen=ControlTargets.ReceiverOpen=false;
   if(ControlTargets.AutomaticAction==2)MixerEnabled=ControlTargets.MixerEnabled=false;
   ControlTargets.DoseFinalizeRevision=ControlTargets.DoseCaptureRevision=0;ControlTargets.DoseDeadline=0;
@@ -739,6 +782,7 @@ bool APowderPlantTest::RequestAllClosed(int64 Epoch,int64& Revision,FString& Rea
  ControlTargets.BatchTransitionRevision=ControlTargets.BatchTransitionCapture=0;ControlTargets.AutomaticAction=0;ControlTargets.AutomaticActionRevision=ControlTargets.AutomaticBatchRevision=0;ControlTargets.AutomaticDeadline=0;
  for(int32 I=0;I<SupplierOpen.Num();++I)SupplierOpen[I]=false;
  ControlTargets.Suppliers=0;WeighingHopperOpen=ControlTargets.WeighingOpen=false;
+ ControlTargets.TransferPressureId=ControlTargets.TransferPressureRevision=0;ControlTargets.TransferPressureDeadline=0;
  // Cancel every previous pressure target in the same mailbox as closing/stop/resume.
  // The source pressure model already cuts requested-closed flow before the occupied disk can close.
  ControlTargets.GaugePressurePa=FVector::ZeroVector;

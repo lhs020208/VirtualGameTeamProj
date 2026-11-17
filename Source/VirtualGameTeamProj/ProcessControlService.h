@@ -38,6 +38,7 @@ public:
     bool SetAutomaticMixingDuration(double Seconds,FString& Reason);
     void ConfirmAutomaticUI(int64 Epoch,int64 TransferId,double Time) { AutoRun.ConfirmUI(Epoch,TransferId,Time); }
     void CancelAutomatic(const FString& Reason);
+    FProcessCommandRecord RequestTransferReceiverPressure(FGuid Id,int64 Epoch,int64 TransferId,double Pa);
 
     // Development trial limits in monotonic wall seconds; not certified operating limits.
     UPROPERTY(Config) double CommandTimeoutSeconds = 10;

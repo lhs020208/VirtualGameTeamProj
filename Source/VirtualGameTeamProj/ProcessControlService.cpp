@@ -45,7 +45,8 @@ FProcessControlTransport UProcessControlService::Transport()
             break;
         case EProcessCommand::MixerEnabled:return A->SetMixerEnabled(V!=0,Epoch,Revision,Error,State.AutomationDispatch?AutoRun.State.BatchRevision:0,State.DispatchDeadline);
         case EProcessCommand::MixerRPM:return A->SetMixerRPM(V,Epoch,Revision,Error);
-        case EProcessCommand::Pressure:return A->SetGaugePressure(PlantControl::PressureTarget(Id),V,Epoch,Revision,Error);
+        case EProcessCommand::Pressure:return A->SetGaugePressure(PlantControl::PressureTarget(Id),V,Epoch,Revision,Error,
+            State.AutomationDispatch&&AutoRun.State.Stage==EProcessAutoStage::Transferring&&Id==TEXT("receiver")?AutoRun.State.TransferId:0,State.DispatchDeadline);
         case EProcessCommand::FinalizeADose:return A->FinalizeADose(AutoRun.State.TargetMassKg,AutoRun.State.WeighingToleranceKg,AutoRun.State.BatchRevision,Epoch,Revision,Error,State.DispatchDeadline);
         case EProcessCommand::BeginAdditive:return A->BeginAdditive(AutoRun.State.AdditiveScheduled,AutoRun.State.AdditiveDelaySeconds,AutoRun.State.BatchRevision,Epoch,Revision,Error,State.DispatchDeadline);
         case EProcessCommand::BeginB:case EProcessCommand::CombineAB:return A->TransitionBatch(C==EProcessCommand::CombineAB,AutoRun.State.BatchRevision,Epoch,Revision,Error,State.DispatchDeadline);
@@ -95,12 +96,20 @@ void UProcessControlService::Tick()
           *AutoRun.State.RunId.ToString(),*R.RequestId.ToString(),R.Epoch,int32(C),*Id,V,R.Revision,State.Snapshot.PhysicalSeconds,*FProcessControlMachine::StatusText(R.Status),*R.Message);
         return R;
     });
+    if(!AutoRun.State.Active||AutoRun.State.Stage!=EProcessAutoStage::Transferring||!AutoRun.State.ReceiverPressurePending){
+        if(auto* R=State.History.Find(AutoRun.State.ReceiverPressureRequest);R&&R->IsPending()){
+            R->Status=EProcessCommandStatus::Unknown;R->Message=TEXT("현재 이송 종료·정지가 우선되어 압력 요청을 취소했습니다. 자동 재적용하지 않습니다.");
+        }
+        if(auto* A=Source.Get())A->RevokeTransferPressure();
+    }
     if(WasActive&&!AutoRun.State.Active&&AutoRun.State.Stage==EProcessAutoStage::Cancelled)
         if(auto* A=Source.Get())A->CancelAutomaticControls();
 }
 
 FProcessCommandRecord UProcessControlService::Request(const FString& Equipment,EProcessCommand Command,double Value,FGuid Id)
 {
+    if(Command==EProcessCommand::Pressure&&Equipment==TEXT("receiver")&&AutoRun.State.Active)
+        return RequestTransferReceiverPressure(Id.IsValid()?Id:FGuid::NewGuid(),State.Snapshot.Epoch,AutoRun.State.TransferId,Value);
     if(Command==EProcessCommand::StopAll||Command==EProcessCommand::Pause)CancelAutomatic(TEXT("전체 정지 요청으로 자동 실행과 대기 명령을 취소했습니다. 계산 재개만으로 자동 복원하지 않습니다. 배치 상태 확인 후 별도로 재개하세요."));
     Tick();
     return RequestForEpoch(Id.IsValid()?Id:FGuid::NewGuid(),State.Snapshot.Epoch,Equipment,Command,Value);
@@ -108,6 +117,8 @@ FProcessCommandRecord UProcessControlService::Request(const FString& Equipment,E
 
 FProcessCommandRecord UProcessControlService::RequestForEpoch(FGuid Id,int64 Epoch,const FString& Equipment,EProcessCommand Command,double Value)
 {
+    if(Command==EProcessCommand::Pressure&&Equipment==TEXT("receiver")&&AutoRun.State.Active)
+        return RequestTransferReceiverPressure(Id,Epoch,AutoRun.State.TransferId,Value);
     if(Command==EProcessCommand::StopAll||Command==EProcessCommand::Pause)CancelAutomatic(TEXT("전체 정지 요청으로 자동 실행과 대기 명령을 취소했습니다."));
     Tick();
     auto Result=State.Submit(Id,Epoch,Equipment,Command,Value,FPlatformTime::Seconds(),Transport());
@@ -189,3 +200,9 @@ bool UProcessControlService::SetAutomaticAdditive(bool Enabled,int32 Supplier,bo
 bool UProcessControlService::ResumeAutomaticBatch(){Tick();return AutoRun.Recover(State,FPlatformTime::Seconds());}
 FString UProcessControlService::CheckAutomaticBatch(){Tick();auto Why=AutoRun.CanRecover(State,FPlatformTime::Seconds());AutoRun.State.RecoveryReason=Why.IsEmpty()?TEXT("배치 이력 확인 · 명시적인 배치 재개를 기다립니다."):Why;return AutoRun.State.RecoveryReason;}
 void UProcessControlService::AbandonAutomaticBatch(){Request(TEXT("plant"),EProcessCommand::StopAll,0);AutoRun.State.RecoveryAbandoned=true;AutoRun.State.RecoveryPending=false;AutoRun.State.RecoveryReason=TEXT("배치 중단 · 이력 보존 · 새 배치는 초기화 필요");}
+
+FProcessCommandRecord UProcessControlService::RequestTransferReceiverPressure(FGuid Id,int64 Epoch,int64 TransferId,double Pa)
+{
+    Tick(); // Completion/stop observed here wins over the UI's previously displayed stage.
+    return AutoRun.RequestReceiverPressure(Id,Epoch,TransferId,Pa,State,FPlatformTime::Seconds(),Transport());
+}

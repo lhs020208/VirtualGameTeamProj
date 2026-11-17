@@ -64,6 +64,8 @@ struct FPlantTransferSnapshot
     UPROPERTY(BlueprintReadOnly) FString Reason;
     UPROPERTY(BlueprintReadOnly) FDateTime UpdatedUtc;
     UPROPERTY(BlueprintReadOnly) double StartedSimulationSeconds = 0;
+    // First worker-confirmed residence of a captured ID; independent of UI polling.
+    UPROPERTY(BlueprintReadOnly) double FirstArrivalSimulationSeconds = -1;
     UPROPERTY(BlueprintReadOnly) double ObservedSimulationSeconds = 0;
     UPROPERTY(BlueprintReadOnly) double StableSeconds = 0;
     UPROPERTY(BlueprintReadOnly) double BaselineKg = 0;
@@ -287,6 +289,29 @@ struct FPlantDoseCutoffSnapshot
  UPROPERTY(BlueprintReadOnly) FString Reason;
 };
 
+/** Same-publication model estimate at the existing cell bracketing the actual supplier gate. */
+USTRUCT(BlueprintType)
+struct FPlantSupplyValvePressure
+{
+ GENERATED_BODY()
+ UPROPERTY(BlueprintReadOnly) int32 Supplier=-1;
+ UPROPERTY(BlueprintReadOnly) bool Mapped=false;
+ UPROPERTY(BlueprintReadOnly) bool Valid=false;
+ UPROPERTY(BlueprintReadOnly) int32 Route=-1;
+ UPROPERTY(BlueprintReadOnly) int32 GateCell=-1;
+ UPROPERTY(BlueprintReadOnly) int32 GateDataIndex=-1;
+ UPROPERTY(BlueprintReadOnly) FVector BeforeMetres=FVector::ZeroVector;
+ UPROPERTY(BlueprintReadOnly) FVector AfterMetres=FVector::ZeroVector;
+ UPROPERTY(BlueprintReadOnly) double BeforeGaugePa=0;
+ UPROPERTY(BlueprintReadOnly) double AfterGaugePa=0;
+ UPROPERTY(BlueprintReadOnly) double DifferencePa=0;
+ UPROPERTY(BlueprintReadOnly) double HopperDifferencePa=0;
+ UPROPERTY(BlueprintReadOnly) double RouteLossPa=0;
+ UPROPERTY(BlueprintReadOnly) double BoundaryResidualPa=0;
+ UPROPERTY(BlueprintReadOnly) double FlowM3s=0;
+ UPROPERTY(BlueprintReadOnly) FString Reason;
+};
+
 USTRUCT(BlueprintType)
 struct FPlantSimulationSnapshot
 {
@@ -341,7 +366,12 @@ struct FPlantSimulationSnapshot
     UPROPERTY(BlueprintReadOnly) FVector AppliedGaugePressurePa = FVector::ZeroVector;
     UPROPERTY(BlueprintReadOnly) bool AppliedPressureValid = false;
     UPROPERTY(BlueprintReadOnly) int64 PressureAppliedRevision = 0;
+    UPROPERTY(BlueprintReadOnly) double PressureAppliedSimulationSeconds = -1;
+    UPROPERTY(BlueprintReadOnly) int64 TransferPressureRejectedRevision = 0;
     UPROPERTY(BlueprintReadOnly) double WeighingRegulatorM3s = 0;
+    UPROPERTY(BlueprintReadOnly) TArray<FPlantSupplyValvePressure> SupplyValvePressures;
+    UPROPERTY(BlueprintReadOnly) double MixerAngleRadians=0;
+    UPROPERTY(BlueprintReadOnly) double AppliedRPMStartAngleRadians=0;
     UPROPERTY(BlueprintReadOnly) FPlantMassValue WeighingMass;
     UPROPERTY(BlueprintReadOnly) FPlantMassValue PipeMass;
     UPROPERTY(BlueprintReadOnly) FPlantMassValue ReceiverMass;

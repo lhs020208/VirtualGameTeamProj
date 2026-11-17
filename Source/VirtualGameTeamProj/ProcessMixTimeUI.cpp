@@ -47,7 +47,7 @@ void UProcessControlUI::ApplyAutomaticMixTime()
 void UProcessControlUI::RefreshMixTimeControls()
 {
  auto* S=Service.Get();auto* W=Widget.Get();if(!S||!W||!MixTimeControls)return;
- const bool Show=!Is3D()&&Selected()==TEXT("mixer")&&S->State.Snapshot.SupplyABatch.Supported;
+ const bool Show=!Is3D()&&(OperatorLayoutBuilt?IndividualSettingsOpen:Selected()==TEXT("mixer"))&&S->State.Snapshot.SupplyABatch.Supported;
  MixTimeControls->SetVisibility(Show?ESlateVisibility::Visible:ESlateVisibility::Collapsed);if(!Show)return;
  const bool Editable=S->State.Connected&&!S->AutoRun.State.Active&&!S->State.IsStopping();
  for(const TCHAR* N:{TEXT("AutoMixTimeInput"),TEXT("ApplyAutomaticMixTime")})if(auto* C=W->GetWidgetFromName(N))C->SetIsEnabled(Editable);

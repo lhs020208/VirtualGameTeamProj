@@ -24,11 +24,13 @@ struct FProcessRecipe
  UPROPERTY(BlueprintReadOnly) double DelaySeconds=0;
  UPROPERTY(BlueprintReadOnly) double TargetRPM=0;
  UPROPERTY(BlueprintReadOnly) double MixingSeconds=0;
+ UPROPERTY(BlueprintReadOnly) FVector FeedPressurePa=FVector(500,-500,0);
+ UPROPERTY(BlueprintReadOnly) FVector TransferPressurePa=FVector(0,500,-1000);
 };
 
 namespace ProcessRecipe
 {
- constexpr int32 Version=1;
+ constexpr int32 Version=2;
  FString Validate(const FProcessRecipe& R);
  FString Encode(const FProcessRecipe& R);
  // Failed decode never changes Out. Strict version/units/IDs/order and finite numbers.

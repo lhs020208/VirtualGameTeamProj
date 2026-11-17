@@ -1,5 +1,6 @@
 #include "ProcessControlUI.h"
 #include "ProcessControlService.h"
+#include "ProcessDisplay.h"
 #include "ProcessUIStateAdapter.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetTree.h"
@@ -64,7 +65,7 @@ void UProcessControlUI::RefreshPurgeControls()
  auto* Input=Cast<UEditableTextBox>(W->GetWidgetFromName(TEXT("PurgePressureInput")));
  if(PurgeDraftEquipment!=Id||PurgeDraftEpoch!=Snap.Epoch||PurgeDraftConnection!=M.Connection||PurgeDraftStop!=M.StopRequest){
   const bool Stopping=M.StopRequest.IsValid()&&PurgeDraftStop!=M.StopRequest;PurgeDraftEquipment=Id;PurgeDraftEpoch=Snap.Epoch;PurgeDraftConnection=M.Connection;PurgeDraftStop=M.StopRequest;
-  if(Input)Input->SetText(FText::FromString(Stopping?FString(TEXT("0")):P.Valid?FString::Printf(TEXT("%.9g"),P.RequestedGaugePa/1000.):FString()));
+  if(Input)Input->SetText(FText::FromString(Stopping?FString(TEXT("0")):P.Valid?ProcessDisplay::Exact(P.RequestedGaugePa/1000.):FString()));
  }
  auto Update=[&](const TCHAR* Name,EProcessCommand C,double V){FString Why=M.UnavailableReason(Id,C,V,Now);if(auto* B=Cast<UButton>(W->GetWidgetFromName(Name))){B->SetIsEnabled(Why.IsEmpty());B->SetToolTipText(FText::FromString(Why));}return Why;};
  const auto Why=Update(TEXT("PurgeApplyPressure"),EProcessCommand::PurgePressure,P.RequestedGaugePa);if(Input)Input->SetIsEnabled(Why.IsEmpty());

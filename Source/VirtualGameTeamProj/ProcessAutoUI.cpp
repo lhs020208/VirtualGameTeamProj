@@ -10,7 +10,7 @@ void UProcessControlUI::StartAutomaticA()
 {
  if(Is3D())return;if(auto* S=Service.Get()){S->StartAutomaticA();Refresh();}
 }
-void UProcessControlUI::CheckBatchRecovery(){if(!Is3D())if(auto* S=Service.Get()){S->CheckAutomaticBatch();Refresh();}}
+void UProcessControlUI::CheckBatchRecovery(){if(!Is3D())if(auto* S=Service.Get()){S->CheckAutomaticBatch();RememberRecoveryCheck();Refresh();}}
 void UProcessControlUI::ResumeBatchRecovery(){if(!Is3D())if(auto* S=Service.Get()){S->ResumeAutomaticBatch();Refresh();}}
 void UProcessControlUI::AbandonBatchRecovery(){if(!Is3D())if(auto* S=Service.Get()){S->AbandonAutomaticBatch();Refresh();}}
 void UProcessControlUI::RefreshAutomatic()

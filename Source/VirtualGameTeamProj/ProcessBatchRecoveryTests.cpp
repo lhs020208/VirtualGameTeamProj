@@ -24,8 +24,10 @@ bool FRecoveryRemaining::RunTest(const FString&){
  F.A.Tick(F.M,100,Send);TestEqual(TEXT("query does not command"),Calls,0);
  F.M.Snapshot.Execution=EPlantExecutionState::Running;F.M.Snapshot.RequestedRunning=true;F.A.Tick(F.M,100,Send);TestEqual(TEXT("calculation resume never restores automation"),Calls,0);TestFalse(TEXT("must stop again after manual action"),F.A.CanRecover(F.M,100).IsEmpty());
  F.M.Snapshot.Execution=EPlantExecutionState::Paused;F.M.Snapshot.RequestedRunning=false;
+ F.A.State.LockedTransferPressurePa.Z=-500;F.A.Settings.TransferPressurePa.Z=-1000;
  F.A.Settings.TargetMassKg=.009;F.A.Settings.MixingDurationSeconds=123;
  TestTrue(TEXT("explicit resume accepted"),F.A.Recover(F.M,100));TestEqual(TEXT("locked original target retained after next-recipe editing"),F.A.State.TargetMassKg,.006);TestEqual(TEXT("locked mix duration retained"),F.A.State.MixingDurationSeconds,6.);TestTrue(TEXT("passed connector included; no reopen"),F.A.State.RecoveryNext==EProcessAutoStage::RecoveryClearPressure);
+ TestEqual(TEXT("recovery preserves the original pressure recipe"),F.A.State.LockedTransferPressurePa,FVector(0,500,-500));
  TestEqual(TEXT("remaining target from WH plus connector"),F.A.State.RemainingSupplyKg,.001);
  TestFalse(TEXT("duplicate resume no new run"),F.A.Recover(F.M,100));TestEqual(TEXT("one recovery"),F.A.State.RecoveryCount,1);
  FRecoveryFixture TooMuch;TooMuch.M.Snapshot.SupplyABatch.WeighingCount=8;TooMuch.M.Snapshot.SupplyABatch.ConnectorCount=0;TooMuch.M.Snapshot.SupplyABatch.SourceCount=2;

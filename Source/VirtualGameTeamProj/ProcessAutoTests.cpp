@@ -425,4 +425,65 @@ bool FWorkerDoseOpenHistory::RunTest(const FString&){
  return true;
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRecipeLockedPressureCommands,"ProcessUI.PressureRecipe.LockedStageCommands",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FRecipeLockedPressureCommands::RunTest(const FString&)
+{
+ FAutoFixture F;F.A.Settings.TransferPressurePa.Z=-500;TestTrue(TEXT("start with presentation suction"),F.Start());
+ F.A.Settings.TransferPressurePa.Z=-1000; // New configuration must not change the in-flight batch.
+ TestTrue(TEXT("feed begins"),F.Until(EProcessAutoStage::Feeding));F.FeedOut();
+ TestTrue(TEXT("closed then purge"),F.Until(EProcessAutoStage::Clearing));F.Cleared();
+ TestTrue(TEXT("existing sequence reaches transfer"),F.Until(EProcessAutoStage::Transferring));
+ TestEqual(TEXT("worker ack uses locked pressure"),F.M.Snapshot.AppliedGaugePressurePa,FVector(0,500,-500));
+ TestEqual(TEXT("snapshot retains locked transfer condition"),F.A.State.LockedTransferPressurePa,FVector(0,500,-500));
+ int ReceiverRequests=0;for(const auto& C:F.Sent)if(C.C==EProcessCommand::Pressure&&C.Id==TEXT("receiver")){++ReceiverRequests;TestEqual(TEXT("no old hardcoded high suction"),C.V,-500.);}
+ TestEqual(TEXT("one acknowledged receiver command"),ReceiverRequests,1);
+ return true;
+}
+
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAutoLiveReceiverPressure,"ProcessUI.AutoA.LiveReceiverPressureScope",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FAutoLiveReceiverPressure::RunTest(const FString&){
+ FAutoFixture F;F.A.Settings.TransferPressurePa.Z=-500;F.Start();F.Until(EProcessAutoStage::Feeding);F.FeedOut();F.Until(EProcessAutoStage::Clearing);F.Cleared();
+ TestTrue(TEXT("normal transfer ready"),F.Until(EProcessAutoStage::Transferring));
+ auto& S=F.M.Snapshot;const auto Transfer=S.Transfer.Id;const double Baseline=S.Transfer.BaselineKg;const int Calls=F.Sent.Num();
+ const FGuid Request=FGuid::NewGuid();
+ auto Submit=[&](FGuid Id,double V,int64 T){return F.A.RequestReceiverPressure(Id,S.Epoch,T,V,F.M,F.Now,F.Transport);};
+ TestTrue(TEXT("pressure available with actual outlets"),F.A.ReceiverPressureUnavailable(F.M,F.Now).IsEmpty());
+ TestTrue(TEXT("range rejected"),Submit(FGuid::NewGuid(),-1001,Transfer).Status==EProcessCommandStatus::Rejected);
+ TestTrue(TEXT("wrong transfer rejected"),Submit(FGuid::NewGuid(),-1000,Transfer+1).Status==EProcessCommandStatus::Rejected);
+ auto R=Submit(Request,-1000,Transfer);TestTrue(TEXT("accepted pending worker"),R.IsPending());
+ TestEqual(TEXT("one pressure command"),F.Sent.Num(),Calls+1);
+ TestEqual(TEXT("repeated request idempotent"),Submit(Request,-1000,Transfer).RequestId,R.RequestId);
+ TestEqual(TEXT("repeated click coalesced"),Submit(FGuid::NewGuid(),-1000,Transfer).RequestId,R.RequestId);
+ TestTrue(TEXT("different target waits"),Submit(FGuid::NewGuid(),-750,Transfer).Status==EProcessCommandStatus::Rejected);
+ TestEqual(TEXT("no duplicate dispatch"),F.Sent.Num(),Calls+1);
+ FString Why;TestTrue(TEXT("old applied during pending accepted"),F.A.ObserveReceiverPressure(F.M,Why));
+ S.PressureAppliedSimulationSeconds=S.PhysicalSeconds+.01;F.Tick();
+ TestTrue(TEXT("automatic transfer continues"),F.A.State.Active&&F.A.State.Stage==EProcessAutoStage::Transferring);
+ TestFalse(TEXT("fresh response confirms override"),F.A.State.ReceiverPressurePending);
+ TestEqual(TEXT("actual acknowledged setting"),F.A.State.ReceiverPressureConfirmedPa,-1000.);
+ TestEqual(TEXT("same transfer"),F.M.Snapshot.Transfer.Id,Transfer);TestEqual(TEXT("baseline unchanged"),F.M.Snapshot.Transfer.BaselineKg,Baseline);
+ TestEqual(TEXT("locked recipe untouched"),F.A.State.LockedTransferPressurePa.Z,-500.);TestEqual(TEXT("next transfer setting untouched"),F.A.Settings.TransferPressurePa.Z,-500.);
+ F.M.Snapshot.AppliedGaugePressurePa.Y=501;TestFalse(TEXT("other hopper mismatch still forbidden"),F.A.ObserveReceiverPressure(F.M,Why));F.M.Snapshot.AppliedGaugePressurePa.Y=500;
+ F.M.Snapshot.AppliedReceiverOpen=true;TestFalse(TEXT("actual receiver opening blocks"),F.A.ReceiverPressureUnavailable(F.M,F.Now).IsEmpty());F.M.Snapshot.AppliedReceiverOpen=false;
+ F.M.Snapshot.Transfer.State=EPlantTransferState::Complete;TestTrue(TEXT("late command rejected"),Submit(FGuid::NewGuid(),-750,Transfer).Status==EProcessCommandStatus::Rejected);
+ return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAutoLivePressureStop,"ProcessUI.AutoA.LivePressureStopAndReset",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FAutoLivePressureStop::RunTest(const FString&){
+ FAutoFixture F;F.A.Settings.TransferPressurePa.Z=-500;F.Start();F.Until(EProcessAutoStage::Feeding);F.FeedOut();F.Until(EProcessAutoStage::Clearing);F.Cleared();F.Until(EProcessAutoStage::Transferring);
+ auto& S=F.M.Snapshot;auto R=F.A.RequestReceiverPressure(FGuid::NewGuid(),S.Epoch,S.Transfer.Id,-1000,F.M,F.Now,F.Transport);
+ TestTrue(TEXT("override pending"),R.IsPending());F.A.Cancel(TEXT("whole stop"));F.M.AutomationActive=false;
+ F.M.Submit(FGuid::NewGuid(),S.Epoch,TEXT("plant"),EProcessCommand::StopAll,0,F.Now,F.Transport);
+ for(int I=0;I<5;++I)F.Tick();TestFalse(TEXT("stop cancels override"),F.A.State.ReceiverPressurePending);
+ TestEqual(TEXT("stop pressure zero"),F.M.Snapshot.AppliedGaugePressurePa,FVector::ZeroVector);
+ const int Before=F.Sent.Num();F.M.Submit(FGuid::NewGuid(),S.Epoch,TEXT("plant"),EProcessCommand::Resume,0,F.Now,F.Transport);for(int I=0;I<5;++I)F.Tick();
+ TestFalse(TEXT("resume does not reactivate auto"),F.A.State.Active);TestEqual(TEXT("only explicit resume dispatched"),F.Sent.Num(),Before+1);
+ TestTrue(TEXT("cancelled request replay terminal"),!F.A.RequestReceiverPressure(R.RequestId,R.Epoch,F.A.State.TransferId,-1000,F.M,F.Now,F.Transport).IsPending());
+ TestEqual(TEXT("old pressure not restored"),F.M.Snapshot.AppliedGaugePressurePa,FVector::ZeroVector);
+ F.A.State.Active=true;F.M.Snapshot.Epoch++;F.Tick();TestFalse(TEXT("epoch change cancels"),F.A.State.Active);
+ TestTrue(TEXT("old epoch refused"),F.A.RequestReceiverPressure(FGuid::NewGuid(),R.Epoch,F.A.State.TransferId,-1000,F.M,F.Now,F.Transport).Status==EProcessCommandStatus::Rejected);
+ return true;
+}
 #endif

@@ -25,7 +25,7 @@ bool FRecipeRoundTrip::RunTest(const FString&)
   if(Mode==2){R.Scheduled=false;R.DelaySeconds=0;}if(Mode==3)R.DelaySeconds=0;
   FString Why;FProcessRecipe Restored;TestTrue(TEXT("valid explicit recipe"),ProcessRecipe::Validate(R).IsEmpty());TestTrue(TEXT("round trip"),ProcessRecipe::Decode(ProcessRecipe::Encode(R),Restored,Why));
   TestTrue(TEXT("all active settings and names identical"),ProcessRecipe::Same(R,Restored));TestEqual(TEXT("OFF and ON0 boolean retained"),Restored.Scheduled,R.Scheduled);TestEqual(TEXT("N preserved"),Restored.DelaySeconds,R.DelaySeconds);
-  const auto Text=ProcessRecipe::Encode(R);for(const TCHAR* Forbidden:{TEXT("valve"),TEXT("particle_ids"),TEXT("pressure"),TEXT("RequestId"),TEXT("AppliedRPM")})TestFalse(TEXT("execution state not serialized"),Text.Contains(Forbidden));
+  const auto Text=ProcessRecipe::Encode(R);for(const TCHAR* Forbidden:{TEXT("valve"),TEXT("particle_ids"),TEXT("before_gauge"),TEXT("RequestId"),TEXT("AppliedRPM")})TestFalse(TEXT("execution state not serialized"),Text.Contains(Forbidden));
  }
  return true;
 }

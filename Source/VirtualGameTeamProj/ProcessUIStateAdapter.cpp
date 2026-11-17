@@ -1,6 +1,7 @@
 #include "ProcessUIStateAdapter.h"
 #include "ProcessControlService.h"
 #include "ProcessControlUI.h"
+#include "ProcessDisplay.h"
 #include "ProcessPlantBinding.h"
 #include "PowderPlantTest.h"
 #include "PowderCameraController.h"
@@ -141,7 +142,7 @@ FString TileText(const FProcessEquipmentSnapshot& S)
     default: break;
     }
     if (S.EquipmentId == TEXT("mixer"))
-        return S.AppliedRPM.Validity == EPlantValueValidity::Valid ? FString::Printf(TEXT("계산 적용\n%.1f rpm"), S.AppliedRPM.Value) : TEXT("회전수\n확인 대기");
+        return S.AppliedRPM.Validity == EPlantValueValidity::Valid ? TEXT("계산 적용\n")+ProcessDisplay::Number(S.AppliedRPM.Value)+TEXT(" RPM") : TEXT("회전수\n확인 대기");
     const TCHAR* Valve = S.ValveAppliedOpen.Value != 0 ? TEXT("열림") : TEXT("닫힘");
     return S.InitialParticleCount.Validity == EPlantValueValidity::Valid && S.InitialParticleCount.Value == 0 ?
         FString::Printf(TEXT("밸브 %s\n초기 0개"), Valve) : FString::Printf(TEXT("밸브\n%s"), Valve);
@@ -247,8 +248,7 @@ FProcessEquipmentSnapshot UProcessUIStateAdapter::BuildEquipment(const FString& 
 FString UProcessUIStateAdapter::FormatMass(const FPlantMassValue& Mass)
 {
     if(Mass.Validity!=EPlantValueValidity::Valid||!FMath::IsFinite(Mass.Kg)||Mass.Kg<0)return TEXT("데이터 없음");
-    if(Mass.Kg==0)return TEXT("0 g");
-    return Mass.Kg<1?FString::Printf(TEXT("%.3f g"),Mass.Kg*1000):FString::Printf(TEXT("%.4f kg"),Mass.Kg);
+    return ProcessDisplay::Mass(Mass.Kg);
 }
 
 FString UProcessUIStateAdapter::FormatTransfer(const FPlantTransferSnapshot& T)
@@ -307,8 +307,8 @@ void UProcessUIStateAdapter::Format(const FProcessEquipmentSnapshot& S, FText& S
     if (S.EquipmentId == TEXT("mixer"))
     {
         const FString Applied = S.AppliedRPM.Validity == EPlantValueValidity::Valid ?
-            FString::Printf(TEXT("%.1f rpm"), S.AppliedRPM.Value) : TEXT("미확인");
-        Valve = FText::FromString(FString::Printf(TEXT("설정값  %.1f rpm\n최근 계산에 사용  %s"), S.RequestedRPM.Value, *Applied));
+            ProcessDisplay::Number(S.AppliedRPM.Value)+TEXT(" RPM") : TEXT("미확인");
+        Valve = FText::FromString(TEXT("목표 RPM  ")+ProcessDisplay::Number(S.RequestedRPM.Value)+TEXT("\n계산 적용  ")+Applied);
     }
     else if (S.ValveRequestedOpen.Validity == EPlantValueValidity::Valid)
     {
@@ -517,7 +517,6 @@ bool UProcessUIStateSubsystem::OpenForActor(APowderPlantTest* Actor)
     StatusWidget = CreateWidget<UUserWidget>(PC, Class);
     if (!StatusWidget) return false;
     Adapter = NewObject<UProcessUIStateAdapter>(this);
-    StatusWidget->AddToViewport(100);
     if (!Adapter->Attach(StatusWidget, Actor))
     {
         UE_LOG(LogTemp, Error, TEXT("Process UI read-only interface mismatch")); Close(); return false;
@@ -527,6 +526,8 @@ bool UProcessUIStateSubsystem::OpenForActor(APowderPlantTest* Actor)
     ControlUI=NewObject<UProcessControlUI>(this);
     if(!ControlUI->Attach(StatusWidget,ControlService)){Close();return false;}
     Adapter->CommandUI=ControlUI;
+    // Finish the runtime layout before constructing Slate widgets for the viewport.
+    StatusWidget->AddToViewport(100);
     auto* Observation = FindFProperty<FMulticastDelegateProperty>(StatusWidget->GetClass(), TEXT("OnObservationViewRequested"));
     if (!Observation) { Close(); return false; }
     FScriptDelegate Handler; Handler.BindUFunction(this, TEXT("HandleObservationViewRequested"));

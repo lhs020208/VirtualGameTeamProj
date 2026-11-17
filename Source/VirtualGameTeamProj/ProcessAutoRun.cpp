@@ -1,4 +1,5 @@
 #include "ProcessAutoRun.h"
+#include "ProcessStagePressure.h"
 #include "ProcessPlantBinding.h"
 #include "PlantDoseValidation.h"
 #include "PlantDoseTrace.h"
@@ -47,6 +48,7 @@ bool FProcessAutoRun::SetMixingDuration(double Seconds,FString& Reason)
 FString FProcessAutoRun::CanStart(const FProcessControlMachine& M,double Now) const
 {
  if(State.Active)return TEXT("같은 A 배치의 자동 실행 중입니다.");
+ const auto PressureWhy=ProcessStagePressure::Validate(Settings.FeedPressurePa,Settings.TransferPressurePa);if(!PressureWhy.IsEmpty())return PressureWhy;
  const auto& S=M.Snapshot;const auto& B=S.SupplyABatch;
  if(!M.Connected||!Fresh(S,Now)||S.GPUDevice.IsEmpty())return TEXT("실제 GPU 작업자의 최신 확인값을 기다리세요.");
  if(!ProcessPlantBinding::IsLowPoly(S.SourceActorPath)||!B.Supported||!S.SupplyAPurge.Supported||!S.FeedPreparation.Enabled)return TEXT("검증된 LowPoly A 자동 운전 구성이 아닙니다.");
@@ -88,6 +90,7 @@ bool FProcessAutoRun::Start(FGuid Id,FProcessControlMachine& M,double Now)
  if(State.Active||Id==State.RunId)return State.Active; // duplicates never replace the batch or step
  const auto Why=CanStart(M,Now);if(!Why.IsEmpty()){State.Reason=Why;return false;}
  State=FProcessAutoSnapshot();State.RunId=Id;State.Epoch=M.Snapshot.Epoch;State.Connection=M.Connection;
+ State.LockedFeedPressurePa=Settings.FeedPressurePa;State.LockedTransferPressurePa=Settings.TransferPressurePa;
  State.BatchMode=Settings.BatchMode;State.TargetMassKg=Settings.TargetMassKg;State.WeighingToleranceKg=Settings.WeighingToleranceKg;
  State.LockedTargetAKg=Settings.TargetMassKg;State.LockedToleranceAKg=Settings.WeighingToleranceKg;State.LockedTargetBKg=Settings.TargetMassBKg;State.LockedToleranceBKg=Settings.WeighingToleranceBKg;
  State.AdditiveEnabled=Settings.AdditiveEnabled;State.AdditiveSupplier=Settings.AdditiveSupplier;State.AdditiveScheduled=Settings.AdditiveScheduled;
@@ -100,6 +103,7 @@ bool FProcessAutoRun::Start(FGuid Id,FProcessControlMachine& M,double Now)
 }
 void FProcessAutoRun::Enter(EProcessAutoStage Next,const FPlantSimulationSnapshot& S,double Now)
 {
+ if(Next!=EProcessAutoStage::Transferring)EndReceiverPressure();
  State.Stage=Next;State.PendingRequest.Invalidate();State.Reason=StageText(Next);
  EnteredWall=Now;EnteredSim=ProgressSim=S.PhysicalSeconds;ProgressKey.Empty();StableSince=-1;LastSequence=-1;
  UE_LOG(LogTemp,Display,TEXT("AUTO_BATCH run=%s supplier=%d stage=%d time=%.9f batch_kg=%.12g reason=%s"),*State.RunId.ToString(),State.ActiveSupplier,int32(Next),S.PhysicalSeconds,State.BatchKg,*State.Reason);
@@ -107,6 +111,7 @@ void FProcessAutoRun::Enter(EProcessAutoStage Next,const FPlantSimulationSnapsho
 void FProcessAutoRun::Cancel(const FString& Reason)
 {
  if(!State.Active)return;
+ EndReceiverPressure();
  State.RecoveryPending=State.BatchRevision>0;State.InterruptedStage=State.Stage;State.StopConfirmedSeconds=-1;
  State.Active=false;State.Stage=EProcessAutoStage::Cancelled;State.PendingRequest.Invalidate();State.Reason=Reason;State.AdditiveStatus=TEXT("취소 · 재개 후 자동 복원 안 함");
 }
@@ -237,8 +242,8 @@ void FProcessAutoRun::Tick(FProcessControlMachine& M,double Now,const FProcessAu
  case EProcessAutoStage::InitialStop:Go(EProcessCommand::StopAll,TEXT("plant"),0,EProcessAutoStage::CaptureBatch);break;
  case EProcessAutoStage::CaptureBatch:Go(EProcessCommand::CaptureABatch,TEXT("supply-a"),0,EProcessAutoStage::Resume);break;
  case EProcessAutoStage::Resume:Go(EProcessCommand::Resume,TEXT("plant"),1,EProcessAutoStage::SupplyPressure);break;
- case EProcessAutoStage::SupplyPressure:Go(EProcessCommand::Pressure,SupplierId,500,EProcessAutoStage::FeedPressure);break;
- case EProcessAutoStage::FeedPressure:Go(EProcessCommand::Pressure,TEXT("weigher"),-500,EProcessAutoStage::OpenA);break;
+ case EProcessAutoStage::SupplyPressure:Go(EProcessCommand::Pressure,SupplierId,State.LockedFeedPressurePa.X,EProcessAutoStage::FeedPressure);break;
+ case EProcessAutoStage::FeedPressure:Go(EProcessCommand::Pressure,TEXT("weigher"),State.LockedFeedPressurePa.Y,EProcessAutoStage::OpenA);break;
  case EProcessAutoStage::OpenA:Go(EProcessCommand::Valve,SupplierId,1,EProcessAutoStage::Feeding);break;
  case EProcessAutoStage::Feeding:
   if(State.BatchMode!=EProcessBatchMode::Full&&S.DoseCutoff.Supported){
@@ -248,12 +253,12 @@ void FProcessAutoRun::Tick(FProcessControlMachine& M,double Now,const FProcessAu
    State.CutoffEstimatedKg=D.EstimatedKg;State.CutoffDrainableKg=D.SpillKg;State.CutoffLeadKg=D.LeadKg;
    State.Reason=FString::Printf(TEXT("작업자 계량 · 목표 %.6f g · 통과 %.6f g · 차단 추정 %.6f g · 표본 %lld"),State.TargetMassKg*1000,D.PassedKg*1000,D.EstimatedKg*1000,D.Sample);
    if(D.Triggered){Enter(EProcessAutoStage::CloseA,S,Now);Go(EProcessCommand::Valve,SupplierId,0,EProcessAutoStage::SupplyZero);break;}
-   if(!D.Armed||S.AppliedSupplierMask!=(1<<State.ActiveSupplier)||!S.AppliedPressureValid||S.AppliedGaugePressurePa!=FVector(500,-500,0)){
+   if(!D.Armed||S.AppliedSupplierMask!=(1<<State.ActiveSupplier)||!S.AppliedPressureValid||S.AppliedGaugePressurePa!=State.LockedFeedPressurePa){
     Fail(TEXT("작업자 계량 공급·압력 조건 변경"),M,Now,Send);break;
    }
    if(!WatchProgress(S,Settings.FeedSimulationSeconds,Why))Fail(Why,M,Now,Send);break;
   }
-  if(S.AppliedSupplierMask!=(1<<State.ActiveSupplier)||!S.AppliedPressureValid||S.AppliedGaugePressurePa!=FVector(500,-500,0)){Fail(TEXT("현재 공급 밸브·검증 압력의 적용 상태가 바뀌었습니다."),M,Now,Send);break;}
+  if(S.AppliedSupplierMask!=(1<<State.ActiveSupplier)||!S.AppliedPressureValid||S.AppliedGaugePressurePa!=State.LockedFeedPressurePa){Fail(TEXT("현재 공급 밸브·검증 압력의 적용 상태가 바뀌었습니다."),M,Now,Send);break;}
   State.Reason=FString::Printf(TEXT("현재 공급호퍼 잔량 %d / %d개 · 작업자 좌표로 출구 통과 확인 중"),B.SourceCount,State.BatchCount);
   if(State.BatchMode!=EProcessBatchMode::Full&&NewSample){
    const double Passed=(B.WeighingCount+B.ConnectorCount)*S.ModelParticleMassKg;
@@ -292,23 +297,28 @@ void FProcessAutoRun::Tick(FProcessControlMachine& M,double Now,const FProcessAu
   State.Reason=FString::Printf(TEXT("현재 원료 동일 입자·질량 안정 %.3f / %.3f 해석초"),State.PreparationStableSeconds,S.Transfer.Criteria.StableSimulationSeconds);
   if(State.PreparationStableSeconds>=S.Transfer.Criteria.StableSimulationSeconds)Enter(State.BatchMode!=EProcessBatchMode::Full?EProcessAutoStage::FinalizeDose:EProcessAutoStage::TransferPressure,S,Now);break;
  case EProcessAutoStage::FinalizeDose:Go(EProcessCommand::FinalizeADose,SupplierId,0,EProcessAutoStage::TransferPressure);break;
- case EProcessAutoStage::TransferPressure:Go(EProcessCommand::Pressure,TEXT("weigher"),500,EProcessAutoStage::ReceiverPressure);break;
- case EProcessAutoStage::ReceiverPressure:Go(EProcessCommand::Pressure,TEXT("receiver"),-1000,EProcessAutoStage::OpenWeigher);break;
+ case EProcessAutoStage::TransferPressure:Go(EProcessCommand::Pressure,TEXT("weigher"),State.LockedTransferPressurePa.Y,EProcessAutoStage::ReceiverPressure);break;
+ case EProcessAutoStage::ReceiverPressure:Go(EProcessCommand::Pressure,TEXT("receiver"),State.LockedTransferPressurePa.Z,EProcessAutoStage::OpenWeigher);break;
  case EProcessAutoStage::OpenWeigher:
   if(Go(EProcessCommand::Valve,TEXT("weigher"),1,EProcessAutoStage::Transferring)){
    const auto& T=S.Transfer;
    if(T.Id<=0||FMath::Abs(T.BaselineKg-State.BatchKg)>T.Criteria.MassErrorKg){Fail(TEXT("개방 직전 기준량과 확정 계량분 총량 불일치"),M,Now,Send);break;}
+   State.ReceiverPressureTransferId=T.Id;State.ReceiverPressureConfirmedPa=State.LockedTransferPressurePa.Z;
+   State.ReceiverPressurePreviousPa=State.ReceiverPressureRequestedPa=State.LockedTransferPressurePa.Z;
+   State.ReceiverPressureRequest.Invalidate();State.ReceiverPressureRevision=0;State.ReceiverPressureStatus.Empty();
    State.TransferId=T.Id;State.BaselineSimulationSeconds=T.StartedSimulationSeconds;State.OutletOpenSimulationSeconds=S.FeedPreparation.OutletAppliedSimulationSeconds;
   }break;
  case EProcessAutoStage::Transferring:{
   const bool ClosedArrival=State.RecoveryCount>0&&S.Recovery.Ticket>0&&!S.AppliedHopperOpen&&!S.RequestedHopperOpen&&B.WeighingCount==0&&S.Transfer.Id==State.TransferId;
-  if(S.AppliedSupplierMask||!PurgeOff(S)||!S.AppliedPressureValid||(!ClosedArrival&&(!S.AppliedHopperOpen||S.AppliedGaugePressurePa!=FVector(0,500,-1000)))){Fail(TEXT("이송 압력·칭량 출구·공기 차단의 적용 상태가 바뀌었습니다."),M,Now,Send);break;}
+  if(S.AppliedSupplierMask||S.AppliedReceiverOpen||S.RequestedReceiverOpen||!PurgeOff(S)||!S.AppliedPressureValid||
+     (!ClosedArrival&&(!S.AppliedHopperOpen||!ObserveReceiverPressure(M,Why)))){Fail(TEXT("이송 압력·칭량 출구·공기 차단의 적용 상태가 바뀌었습니다. ")+Why,M,Now,Send);break;}
   const auto& T=S.Transfer;State.RemainingKg=T.RemainingKg;State.TransitKg=T.InTransitKg;State.ArrivedKg=T.ArrivedKg;State.AdditionalInflowCount=T.AdditionalInflowCount;
   if(T.ArrivedKg>0&&State.FirstArrivalSimulationSeconds<0)State.FirstArrivalSimulationSeconds=S.PhysicalSeconds;
   if(T.Id!=State.TransferId||T.State==EPlantTransferState::Indeterminate||T.AdditionalInflowCount){Fail(TEXT("이송 판정 불가: ")+T.Reason,M,Now,Send);break;}
   State.Reason=T.Reason;
   if(T.State==EPlantTransferState::Complete&&T.RemainingKg<=T.Criteria.WeighingResidualKg&&T.InTransitKg<=T.Criteria.PipeResidualKg&&
      T.UnclassifiedKg==0&&FMath::Abs(T.ArrivedKg-State.BatchKg)<=T.Criteria.MassErrorKg&&T.StableSeconds>=T.Criteria.StableSimulationSeconds){
+   State.ReceiverPressureConfirmedPa=S.AppliedGaugePressurePa.Z;EndReceiverPressure();
    if(State.UICompleteSimulationSeconds>=0)Enter(EProcessAutoStage::CloseWeigher,S,Now);else State.Reason=TEXT("작업자 전량 도착·안정 확인 · UI 완료 표시 확인 중");
   }else if(!WatchProgress(S,Settings.TransferSimulationSeconds,Why))Fail(Why,M,Now,Send);
   break;}

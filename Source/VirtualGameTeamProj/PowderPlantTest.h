@@ -73,7 +73,8 @@ private:
  bool SetReceiverValve(bool Open, int64 Epoch, int64& Revision, FString& Reason, int64 RequiredBatchRevision=0, double Deadline=0);
  bool SetMixerEnabled(bool Enabled, int64 Epoch, int64& Revision, FString& Reason, int64 RequiredBatchRevision=0, double Deadline=0);
  bool SetMixerRPM(double RPM, int64 Epoch, int64& Revision, FString& Reason);
-    bool SetGaugePressure(int32 Target, double Pa, int64 Epoch, int64& Revision, FString& Reason);
+    bool SetGaugePressure(int32 Target, double Pa, int64 Epoch, int64& Revision, FString& Reason,int64 TransferId=0,double Deadline=0);
+    void RevokeTransferPressure();
  bool FinalizeADose(double TargetKg,double ToleranceKg,int64 CaptureRevision,int64 Epoch,int64& Revision,FString& Reason,double Deadline);
  bool CaptureInitialABatch(int64 Epoch,int64& Revision,FString& Reason);
  void CancelAutomaticControls();

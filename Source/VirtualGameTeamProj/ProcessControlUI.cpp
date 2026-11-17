@@ -1,6 +1,8 @@
 #include "ProcessControlUI.h"
 #include "ProcessPlantBinding.h"
+#include "ProcessNumericField.h"
 #include "ProcessControlService.h"
+#include "ProcessDisplay.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
@@ -66,7 +68,7 @@ bool UProcessControlUI::Attach(UUserWidget* W,UProcessControlService* S)
     if(auto* B=Prepare(TEXT("ManualResume"),TEXT("계산 재개")))B->OnClicked.AddDynamic(this,&UProcessControlUI::Resume);
     if(auto* B=Prepare(TEXT("ManualPause"),TEXT("계산 일시정지")))B->OnClicked.AddDynamic(this,&UProcessControlUI::Pause);
     if(auto* Input=Cast<UEditableTextBox>(W->GetWidgetFromName(TEXT("RPMInput"))))
-    {Input->SetText(FText::AsNumber(S->State.Snapshot.RequestedRPM));Input->SetHintText(FText::FromString(TEXT("0~30 rpm")));}
+    {Input->SetText(FText::FromString(ProcessDisplay::Exact(S->State.Snapshot.RequestedRPM)));Input->SetHintText(FText::FromString(TEXT("0~30 rpm")));}
     if(auto* Help=W->GetWidgetFromName(TEXT("Help")))if(auto* Canvas=Cast<UCanvasPanelSlot>(Help->Slot))
     {Canvas->SetAnchors(FAnchors(0,0,1,0));Canvas->SetOffsets(FMargin(370,112,20,50));}
     // Reuse the existing buttons in compact rows, before the potentially long outcome explanation.
@@ -87,7 +89,8 @@ bool UProcessControlUI::Attach(UUserWidget* W,UProcessControlService* S)
         for(const TCHAR* N:{TEXT("TransferTelemetry"),TEXT("Disconnected"),TEXT("DataSource"),TEXT("CloseButton")})if(auto* C=Controls.FindRef(N))Panel->AddChildToVerticalBox(C)->SetPadding(FMargin(6,3));
     }
     BuildRecipeControls(Root);
-    Label(W,TEXT("Title"),TEXT("원료 투입 · 혼합\n자동·수동 운전 · 상태 확인"));
+    if(ProcessPlantBinding::IsLowPoly(S->State.Snapshot.SourceActorPath))BuildOperatorLayout(Root);
+    if(!OperatorLayoutBuilt)Label(W,TEXT("Title"),TEXT("원료 투입 · 혼합\n자동·수동 운전 · 상태 확인"));
     Refresh();return true;
 }
 
@@ -95,6 +98,9 @@ void UProcessControlUI::Detach()
 {
     if(auto* W=Widget.Get())for(const TCHAR* Name:{TEXT("CheckBatch"),TEXT("ResumeBatch"),TEXT("AbandonBatch"),TEXT("AutoStartA"),TEXT("ApplyAutomaticMixTime"),TEXT("AutoModeFull"),TEXT("AutoModeTarget"),TEXT("AutoModeSequential"),TEXT("ApplyBTargetMass"),TEXT("ApplyTargetMass"),TEXT("ValveOpen"),TEXT("ValveClose"),TEXT("MixerStart"),TEXT("MixerStop"),TEXT("SetRPM"),TEXT("ApplyPressure"),TEXT("PurgeApplyPressure"),TEXT("PurgeStart"),TEXT("PurgeStop"),TEXT("ManualRequest"),TEXT("GlobalStop"),TEXT("ManualResume"),TEXT("ManualPause")})
         if(auto* B=Cast<UButton>(W->GetWidgetFromName(Name)))B->OnClicked.RemoveAll(this);
+    for(auto Field:NumericFields)if(Field)Field->Detach();NumericFields.Empty();
+    OperatorLayoutBuilt=false;OperatorDetailsOpen=false;IndividualSettingsOpen=false;OperatorDetails=nullptr;
+    OriginalRecipeValid=false;OriginalRecipeText.Empty();LastCompactText.Empty();OriginalDisplayText.Empty();
     if(RecipePanel)RecipePanel->RemoveFromParent();RecipePanel=nullptr;RecipeFiles.Empty();RecipeOpen=false;RecipeMessage.Empty();
     if(DoseControls)DoseControls->RemoveFromParent();DoseControls=nullptr;DoseMessage.Empty();
     if(MixTimeControls)MixTimeControls->RemoveFromParent();MixTimeControls=nullptr;MixTimeMessage.Empty();
@@ -189,5 +195,5 @@ void UProcessControlUI::Refresh()
         TEXT("A 자동 실행 중 수동 명령은 차단되며 전체 정지는 즉시 요청할 수 있습니다. 닫기 요청은 모델의 공급·이송 유량 요청을 0으로 만듭니다. 압력 지원 레벨에서는 모든 압력 목표 0의 적용도 확인합니다. 외부 장비 정지·실제 감압·분진 안전 판정은 제공하지 않습니다.\n수동 일시정지와 일시정지 중 닫기는 전체 정지 절차입니다. 시간 초과 시 계산 동결 응답까지 확인하며 실패 후 명시적 재시도가 필요합니다.\n시험용 제한: 명령·동결 응답 %.1f초 / 전체 정지 %.1f초 (실제 경과 시간)\n%s"),State.CommandTimeoutSeconds,State.StopTimeoutSeconds,*State.UnconfirmedEquipment())));
     if(Latest)if(auto* T=W->GetWidgetFromName(TEXT("Disconnected")))T->SetToolTipText(FText::FromString(FString::Printf(TEXT("요청 %s\n초기화 세대 %lld · 연결 %lld · 작업자 확인 번호 %lld\n요청값 %.9g"),*Latest->RequestId.ToString(),Latest->Epoch,Latest->Connection,Latest->Revision,Latest->Value)));
     if(Observation)Label(W,TEXT("ThreeDNotice"),FString::Printf(TEXT("3D 관찰 전용 · %s\n해석 시간 %.4f초\n장비 조작은 공정도에서만 가능합니다.\n우클릭: 회전 · 우클릭+WASD/QE: 이동 · 휠: 확대/축소"),*State.StopDescription(),State.Snapshot.PhysicalSeconds));
-    RefreshDoseControls();RefreshAutomatic();RefreshRecipeControls();
+    RefreshDoseControls();RefreshAutomatic();RefreshRecipeControls();RefreshOperatorLayout();
 }

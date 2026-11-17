@@ -58,7 +58,7 @@ void UProcessControlUI::ApplyTargetMass()
 void UProcessControlUI::RefreshDoseControls()
 {
  auto* S=Service.Get();auto* W=Widget.Get();if(!S||!W||!DoseControls)return;
- const bool Show=!Is3D()&&(Selected()==TEXT("supply-a")||Selected()==TEXT("supply-b")||Selected()==TEXT("weigher"))&&S->State.Snapshot.SupplyABatch.Supported;
+ const bool Show=!Is3D()&&(!OperatorLayoutBuilt||IndividualSettingsOpen)&&(OperatorLayoutBuilt||Selected()==TEXT("supply-a")||Selected()==TEXT("supply-b")||Selected()==TEXT("weigher"))&&S->State.Snapshot.SupplyABatch.Supported;
  DoseControls->SetVisibility(Show?ESlateVisibility::Visible:ESlateVisibility::Collapsed);if(!Show)return;
  RefreshAdditiveControls();
  const bool Editable=S->State.Connected&&!S->AutoRun.State.Active&&!S->State.IsStopping();

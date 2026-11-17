@@ -18,6 +18,8 @@ struct FProcessAutoSettings
 {
  GENERATED_BODY()
  // Trial observation limits, not changes to physics or completion tolerances.
+ UPROPERTY(EditAnywhere) FVector FeedPressurePa=FVector(500,-500,0);
+ UPROPERTY(EditAnywhere) FVector TransferPressurePa=FVector(0,500,-1000);
  UPROPERTY(EditAnywhere) double StageWallSeconds=1800;
  UPROPERTY(EditAnywhere) double FeedSimulationSeconds=3;
  UPROPERTY(EditAnywhere) double PurgeSimulationSeconds=3;
@@ -101,6 +103,19 @@ struct FProcessAutoSnapshot
  UPROPERTY(BlueprintReadOnly) FString RecipeMaterialB;
  UPROPERTY(BlueprintReadOnly) FString RecipeMaterialC;
  UPROPERTY(BlueprintReadOnly) FString LockedRecipeJson;
+ UPROPERTY(BlueprintReadOnly) FVector LockedFeedPressurePa=FVector(500,-500,0);
+ UPROPERTY(BlueprintReadOnly) FVector LockedTransferPressurePa=FVector(0,500,-1000);
+ // Current-transfer approval only; never written into recipe targets or recovery settings.
+ UPROPERTY(BlueprintReadOnly) FGuid ReceiverPressureRequest;
+ UPROPERTY(BlueprintReadOnly) int64 ReceiverPressureTransferId=0;
+ UPROPERTY(BlueprintReadOnly) int64 ReceiverPressureRevision=0;
+ UPROPERTY(BlueprintReadOnly) double ReceiverPressurePreviousPa=0;
+ UPROPERTY(BlueprintReadOnly) double ReceiverPressureRequestedPa=0;
+ UPROPERTY(BlueprintReadOnly) double ReceiverPressureConfirmedPa=0;
+ UPROPERTY(BlueprintReadOnly) double ReceiverPressureRequestedSeconds=-1;
+ UPROPERTY(BlueprintReadOnly) double ReceiverPressureAppliedSeconds=-1;
+ UPROPERTY(BlueprintReadOnly) bool ReceiverPressurePending=false;
+ UPROPERTY(BlueprintReadOnly) FString ReceiverPressureStatus;
  UPROPERTY(BlueprintReadOnly) FGuid RunId;
  UPROPERTY(BlueprintReadOnly) FGuid PendingRequest;
  UPROPERTY(BlueprintReadOnly) int64 Epoch=-1;

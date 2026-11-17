@@ -15,6 +15,10 @@ public:
  bool Start(FGuid Id,FProcessControlMachine& Machine,double Now);
  void Tick(FProcessControlMachine& Machine,double Now,const FProcessAutoCommand& Send);
  void Cancel(const FString& Reason);
+ FString ReceiverPressureUnavailable(const FProcessControlMachine& M,double Now) const;
+ FProcessCommandRecord RequestReceiverPressure(FGuid Id,int64 Epoch,int64 TransferId,double Pa,FProcessControlMachine& M,double Now,const FProcessControlTransport& Send);
+ bool ObserveReceiverPressure(FProcessControlMachine& M,FString& Reason);
+ void EndReceiverPressure();
  EProcessAutoStage RecoveryPlan(const FPlantSimulationSnapshot& S) const;
  FString CanRecover(const FProcessControlMachine& M,double Now) const;
  bool Recover(FProcessControlMachine& M,double Now);

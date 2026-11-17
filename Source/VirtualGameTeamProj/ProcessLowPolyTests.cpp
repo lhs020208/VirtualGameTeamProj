@@ -28,7 +28,7 @@ bool FProcessLowPolyMappingTest::RunTest(const FString&)
     S.InWeighingHopper=123;S.WeighingMass.Validity=EPlantValueValidity::Valid;S.WeighingMass.Kg=.000123;
     FText Status,Quantity,Valve;
     UProcessUIStateAdapter::Format(UProcessUIStateAdapter::BuildEquipment(TEXT("weigher"),&S,101),Status,Quantity,Valve);
-    TestTrue(TEXT("new level displays model mass"),Quantity.ToString().Contains(TEXT("0.123 g")));
+    TestTrue(TEXT("new level displays model mass"),Quantity.ToString().Contains(TEXT("0.12 g")));
     for(auto V:{EPlantValueValidity::Initializing,EPlantValueValidity::Error})
     {
         S.Validity=V;

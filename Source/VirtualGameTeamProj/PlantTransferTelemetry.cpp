@@ -218,6 +218,7 @@ void FPlantTransferTelemetry::Observe(const std::vector<powder::Grain>& Position
     }
     Transfer.RemainingKg=Remaining*ParticleMassKg;Transfer.InTransitKg=Transit*ParticleMassKg;
     Transfer.ArrivedKg=Arrived*ParticleMassKg;Transfer.UnclassifiedKg=Unknown*ParticleMassKg;
+    if(Arrived>0&&Transfer.FirstArrivalSimulationSeconds<0)Transfer.FirstArrivalSimulationSeconds=Time;
     if(!ForeignReason.IsEmpty())Indeterminate(ForeignReason);
     if(Unknown)Indeterminate(TEXT("이번 이송 입자가 칭량호퍼·배관·수취호퍼 밖에 있습니다. 미분류량을 확인하세요."));
     if(ReceiverOpen)ReceiverDischarging();

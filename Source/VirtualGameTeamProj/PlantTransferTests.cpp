@@ -59,6 +59,7 @@ bool FPlantTransferCohortTest::RunTest(const FString&)
     auto S=Read(T);const double M=T.ParticleMassKg;
     TestTrue(TEXT("pre-open baseline includes both initial WH IDs"),FMath::Abs(S.Transfer.BaselineKg-2*M)<1e-12&&S.Transfer.OpeningControlRevision==7&&S.Transfer.StartedSimulationSeconds==10);
     TestEqual(TEXT("old receiver excluded from new arrivals"),S.Transfer.ArrivedKg,0.0);
+    TestEqual(TEXT("old receiver does not establish first cohort arrival"),S.Transfer.FirstArrivalSimulationSeconds,-1.);
     F.P[0]={0,0,.55f,0};T.Observe(F.P,10.1,true,false);S=Read(T);
     TestTrue(TEXT("first movement retained by pre-application capture"),S.Transfer.RemainingKg==M&&S.Transfer.InTransitKg==M);
     F.P[1]={3.05f,0,2.6f,0};T.Observe(F.P,10.2,true,false);S=Read(T);
@@ -75,6 +76,7 @@ bool FPlantTransferCohortTest::RunTest(const FString&)
     TestTrue(TEXT("backflow revokes current completion and resets stable interval"),Read(T).Transfer.State==EPlantTransferState::Moving&&Read(T).Transfer.ArrivedKg==M&&Read(T).Transfer.StableSeconds==0);
     F.P[0]={3,0,2.6f,0};T.Observe(F.P,11.1,true,false);T.Observe(F.P,11.7,false,false);S=Read(T);
     TestTrue(TEXT("recrossing never doubles received mass"),FMath::Abs(S.Transfer.ArrivedKg-2*M)<1e-12&&S.Transfer.State==EPlantTransferState::Complete&&!S.Transfer.OutletAppliedOpen);
+    TestEqual(TEXT("first arrival remains the first worker observation despite recrossing"),S.Transfer.FirstArrivalSimulationSeconds,10.2);
     return true;
 }
 
@@ -112,7 +114,7 @@ bool FPlantMassFormattingTest::RunTest(const FString&)
 {
     FPlantMassValue M;M.Validity=EPlantValueValidity::Valid;
     TestEqual(TEXT("valid empty is 0 g"),UProcessUIStateAdapter::FormatMass(M),FString(TEXT("0 g")));
-    M.Kg=.000040212;TestEqual(TEXT("small mass in grams"),UProcessUIStateAdapter::FormatMass(M),FString(TEXT("0.040 g")));
+    M.Kg=.000040212;TestEqual(TEXT("small mass in grams"),UProcessUIStateAdapter::FormatMass(M),FString(TEXT("0.04 g")));
     M.Validity=EPlantValueValidity::Unknown;TestEqual(TEXT("unknown is never zero"),UProcessUIStateAdapter::FormatMass(M),FString(TEXT("데이터 없음")));
     FPlantTransferSnapshot NoAir;NoAir.Validity=EPlantValueValidity::Valid;NoAir.State=EPlantTransferState::Moving;
     NoAir.OutletAppliedOpen=true;NoAir.CarrierFlowValid=true;

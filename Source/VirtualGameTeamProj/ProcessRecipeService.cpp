@@ -8,6 +8,7 @@ FProcessRecipe UProcessControlService::GetAppliedRecipe() const
  if(R.Mode!=EProcessBatchMode::Full){R.TargetAKg=S.TargetMassKg;R.ToleranceAKg=S.WeighingToleranceKg;}
  if(R.Mode==EProcessBatchMode::SequentialAB){R.TargetBKg=S.TargetMassBKg;R.ToleranceBKg=S.WeighingToleranceBKg;R.AdditiveEnabled=S.AdditiveEnabled;}
  if(R.AdditiveEnabled){R.TargetCKg=S.AdditiveTargetKg;R.ToleranceCKg=S.AdditiveToleranceKg;R.Scheduled=S.AdditiveScheduled;R.DelaySeconds=R.Scheduled?S.AdditiveDelaySeconds:0;}
+ R.FeedPressurePa=S.FeedPressurePa;R.TransferPressurePa=S.TransferPressurePa;
  R.TargetRPM=S.TargetMixerRPM!=0?S.TargetMixerRPM:State.Snapshot.RequestedRPM;R.MixingSeconds=S.MixingDurationSeconds;return R;
 }
 bool UProcessControlService::ApplyRecipe(const FProcessRecipe& R,FString& Reason)
@@ -22,6 +23,7 @@ bool UProcessControlService::ApplyRecipe(const FProcessRecipe& R,FString& Reason
  Next.TargetMassBKg=R.TargetBKg;Next.WeighingToleranceBKg=R.ToleranceBKg;Next.AdditiveEnabled=R.AdditiveEnabled;
  Next.AdditiveSupplier=2;Next.AdditiveTargetKg=R.TargetCKg;Next.AdditiveToleranceKg=R.ToleranceCKg;
  Next.AdditiveScheduled=R.Scheduled;Next.AdditiveDelaySeconds=R.DelaySeconds;Next.TargetMixerRPM=R.TargetRPM;Next.MixingDurationSeconds=R.MixingSeconds;
+ Next.FeedPressurePa=R.FeedPressurePa;Next.TransferPressurePa=R.TransferPressurePa;
  AutoSettings=Next;AutoRun.Settings=Next;RecipeMetadata=R;++RecipeRevision;
  // Inventory and representable particle mass remain checked by the existing CanStart path.
  return true;

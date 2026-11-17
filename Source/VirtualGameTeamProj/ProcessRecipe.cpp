@@ -1,5 +1,6 @@
 #include "ProcessRecipe.h"
 #include "ProcessControlTypes.h"
+#include "ProcessStagePressure.h"
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -29,6 +30,7 @@ FString KeyFor(const FString& Name){FTCHARToUTF8 Bytes(*Name.ToLower());FMD5 Has
 
 FString ProcessRecipe::Validate(const FProcessRecipe& R)
 {
+ const auto PressureWhy=ProcessStagePressure::Validate(R.FeedPressurePa,R.TransferPressurePa);if(!PressureWhy.IsEmpty())return PressureWhy;
  if(!TextOK(R.Name,80))return TEXT("레시피 이름은 공백으로 시작/끝나지 않는 1~80자여야 합니다. 제어 문자는 사용할 수 없습니다.");
  if(R.Mode!=EProcessBatchMode::Full&&R.Mode!=EProcessBatchMode::TargetMass&&R.Mode!=EProcessBatchMode::SequentialAB)return TEXT("지원하지 않는 배치 모드입니다.");
  if(!TextOK(R.MaterialA,80)||(R.Mode==EProcessBatchMode::SequentialAB&&!TextOK(R.MaterialB,80))||(R.AdditiveEnabled&&!TextOK(R.MaterialC,80)))return TEXT("원료 표시명은 제어 문자 없는 1~80자여야 합니다.");
@@ -52,13 +54,16 @@ FString ProcessRecipe::Validate(const FProcessRecipe& R)
 FString ProcessRecipe::Encode(const FProcessRecipe& R)
 {
  Obj O=MakeShared<FJsonObject>();O->SetStringField(TEXT("schema"),TEXT("virtual-game-team.batch-recipe"));O->SetNumberField(TEXT("version"),Version);O->SetStringField(TEXT("name"),R.Name);O->SetStringField(TEXT("mode"),ModeId(R.Mode));
- Obj U=MakeShared<FJsonObject>();U->SetStringField(TEXT("mass"),TEXT("kg"));U->SetStringField(TEXT("time"),TEXT("simulation_s"));U->SetStringField(TEXT("speed"),TEXT("rpm"));O->SetObjectField(TEXT("units"),U);
+ Obj U=MakeShared<FJsonObject>();U->SetStringField(TEXT("mass"),TEXT("kg"));U->SetStringField(TEXT("time"),TEXT("simulation_s"));U->SetStringField(TEXT("speed"),TEXT("rpm"));U->SetStringField(TEXT("pressure"),TEXT("Pa_g"));O->SetObjectField(TEXT("units"),U);
  TArray<TSharedPtr<FJsonValue>> Steps,Materials;auto Ids=Order(R);
  const FString Labels[]={R.MaterialA,R.MaterialB,R.MaterialC};const double Targets[]={R.TargetAKg,R.TargetBKg,R.TargetCKg},Tolerances[]={R.ToleranceAKg,R.ToleranceBKg,R.ToleranceCKg};
  for(int I=0;I<Ids.Num();++I){Steps.Add(MakeShared<FJsonValueString>(Ids[I]));Obj M=MakeShared<FJsonObject>();M->SetStringField(TEXT("hopper_id"),Ids[I]);M->SetStringField(TEXT("display_name"),Labels[I]);M->SetNumberField(TEXT("target_kg"),Targets[I]);M->SetNumberField(TEXT("tolerance_kg"),Tolerances[I]);Materials.Add(MakeShared<FJsonValueObject>(M));}
  O->SetArrayField(TEXT("feed_order"),Steps);O->SetArrayField(TEXT("materials"),Materials);
  Obj Mix=MakeShared<FJsonObject>();Mix->SetNumberField(TEXT("target_rpm"),R.TargetRPM);Mix->SetNumberField(TEXT("duration_s"),R.MixingSeconds);O->SetObjectField(TEXT("mixing"),Mix);
  Obj C=MakeShared<FJsonObject>();C->SetBoolField(TEXT("enabled"),R.AdditiveEnabled);C->SetStringField(TEXT("hopper_id"),TEXT("supply-c"));C->SetBoolField(TEXT("scheduled"),R.Scheduled);C->SetNumberField(TEXT("delay_s"),R.DelaySeconds);O->SetObjectField(TEXT("additive"),C);
+ Obj Press=MakeShared<FJsonObject>();
+ auto Stage=[](const FVector& V){Obj P=MakeShared<FJsonObject>();P->SetNumberField(TEXT("supply-common"),V.X);P->SetNumberField(TEXT("weigher"),V.Y);P->SetNumberField(TEXT("receiver"),V.Z);return P;};
+ Press->SetObjectField(TEXT("supply_to_weighing"),Stage(R.FeedPressurePa));Press->SetObjectField(TEXT("weighing_to_receiver"),Stage(R.TransferPressurePa));O->SetObjectField(TEXT("hopper_pressure_targets"),Press);
  FString Text;FJsonSerializer::Serialize(O.ToSharedRef(),TJsonWriterFactory<>::Create(&Text));return Text;
 }
 
@@ -66,13 +71,22 @@ bool ProcessRecipe::Decode(const FString& Text,FProcessRecipe& Out,FString& Erro
 {
  auto Fail=[&](const TCHAR* Why){Error=Why;return false;};Obj O;
  if(Text.Len()>65536||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),O)||!O)return Fail(TEXT("레시피 JSON이 손상됐거나 크기 제한(64 KiB)을 초과했습니다."));
- if(!Keys(O,{TEXT("schema"),TEXT("version"),TEXT("name"),TEXT("mode"),TEXT("units"),TEXT("feed_order"),TEXT("materials"),TEXT("mixing"),TEXT("additive")}))return Fail(TEXT("레시피 필드가 누락됐거나 지원하지 않는 필드가 있습니다. 실행 상태/명령은 레시피가 아닙니다."));
  FString Schema,Mode;double V=0;FProcessRecipe R;
- if(!Str(O,TEXT("schema"),Schema)||Schema!=TEXT("virtual-game-team.batch-recipe")||!Num(O,TEXT("version"),V)||V!=Version)return Fail(TEXT("지원하지 않는 레시피 형식 또는 버전입니다."));
+ if(!Str(O,TEXT("schema"),Schema)||Schema!=TEXT("virtual-game-team.batch-recipe")||!Num(O,TEXT("version"),V)||(V!=1&&V!=Version))return Fail(TEXT("지원하지 않는 레시피 형식 또는 버전입니다."));
+ const bool Modern=V==Version;
+ const bool RootKeys=Modern?Keys(O,{TEXT("schema"),TEXT("version"),TEXT("name"),TEXT("mode"),TEXT("units"),TEXT("feed_order"),TEXT("materials"),TEXT("mixing"),TEXT("additive"),TEXT("hopper_pressure_targets")}):Keys(O,{TEXT("schema"),TEXT("version"),TEXT("name"),TEXT("mode"),TEXT("units"),TEXT("feed_order"),TEXT("materials"),TEXT("mixing"),TEXT("additive")});
+ if(!RootKeys)return Fail(TEXT("레시피 필드가 누락됐거나 지원하지 않는 필드가 있습니다. 실행 상태/명령은 레시피가 아닙니다."));
  if(!Str(O,TEXT("name"),R.Name)||!Str(O,TEXT("mode"),Mode))return Fail(TEXT("레시피 이름/모드 형식 오류"));
  if(Mode==TEXT("a_full"))R.Mode=EProcessBatchMode::Full;else if(Mode==TEXT("a_target"))R.Mode=EProcessBatchMode::TargetMass;else if(Mode==TEXT("sequential_ab"))R.Mode=EProcessBatchMode::SequentialAB;else return Fail(TEXT("미지원 배치 모드입니다."));
- Obj U=Sub(O,TEXT("units")),Mix=Sub(O,TEXT("mixing")),C=Sub(O,TEXT("additive"));FString Mass,Time,Speed,Hopper;
- if(!Keys(U,{TEXT("mass"),TEXT("time"),TEXT("speed")})||!Str(U,TEXT("mass"),Mass)||Mass!=TEXT("kg")||!Str(U,TEXT("time"),Time)||Time!=TEXT("simulation_s")||!Str(U,TEXT("speed"),Speed)||Speed!=TEXT("rpm"))return Fail(TEXT("레시피 단위는 kg / simulation_s / rpm이어야 합니다."));
+ Obj U=Sub(O,TEXT("units")),Mix=Sub(O,TEXT("mixing")),C=Sub(O,TEXT("additive"));FString Mass,Time,Speed,Hopper,PressureUnit;
+ const bool UnitKeys=Modern?Keys(U,{TEXT("mass"),TEXT("time"),TEXT("speed"),TEXT("pressure")}):Keys(U,{TEXT("mass"),TEXT("time"),TEXT("speed")});
+ if(!UnitKeys||!Str(U,TEXT("mass"),Mass)||Mass!=TEXT("kg")||!Str(U,TEXT("time"),Time)||Time!=TEXT("simulation_s")||!Str(U,TEXT("speed"),Speed)||Speed!=TEXT("rpm"))return Fail(TEXT("레시피 단위는 kg / simulation_s / rpm이어야 합니다."));
+ if(Modern){
+  if(!Str(U,TEXT("pressure"),PressureUnit)||PressureUnit!=TEXT("Pa_g"))return Fail(TEXT("호퍼 목표 압력 저장 단위는 게이지압 Pa_g여야 합니다."));
+  Obj P=Sub(O,TEXT("hopper_pressure_targets"));
+  auto ReadStage=[&](const TCHAR* Id,FVector& OutPressure){Obj T=Sub(P,Id);return Keys(T,{TEXT("supply-common"),TEXT("weigher"),TEXT("receiver")})&&Num(T,TEXT("supply-common"),OutPressure.X)&&Num(T,TEXT("weigher"),OutPressure.Y)&&Num(T,TEXT("receiver"),OutPressure.Z);};
+  if(!Keys(P,{TEXT("supply_to_weighing"),TEXT("weighing_to_receiver")})||!ReadStage(TEXT("supply_to_weighing"),R.FeedPressurePa)||!ReadStage(TEXT("weighing_to_receiver"),R.TransferPressurePa))return Fail(TEXT("단계별 호퍼 목표 압력 형식/ID 오류"));
+ } // v1 has no pressure fields: the struct's original verified stage defaults remain intact.
  if(!Keys(Mix,{TEXT("target_rpm"),TEXT("duration_s")})||!Num(Mix,TEXT("target_rpm"),R.TargetRPM)||!Num(Mix,TEXT("duration_s"),R.MixingSeconds))return Fail(TEXT("혼합 RPM/시간 수치 형식 오류"));
  if(!Keys(C,{TEXT("enabled"),TEXT("hopper_id"),TEXT("scheduled"),TEXT("delay_s")})||!Bool(C,TEXT("enabled"),R.AdditiveEnabled)||!Bool(C,TEXT("scheduled"),R.Scheduled)||!Num(C,TEXT("delay_s"),R.DelaySeconds)||!Str(C,TEXT("hopper_id"),Hopper)||Hopper!=TEXT("supply-c"))return Fail(TEXT("첨가제는 안정 ID supply-c만 지원하며 예약 여부는 boolean이어야 합니다."));
  const TArray<TSharedPtr<FJsonValue>> *Steps=nullptr,*Materials=nullptr;auto Expected=Order(R);
@@ -91,6 +105,7 @@ FString ProcessRecipe::Summary(const FProcessRecipe& R)
  S+=FString::Printf(TEXT("\nA [%s] %s"),*R.MaterialA,R.Mode==EProcessBatchMode::Full?TEXT("전량"):*FString::Printf(TEXT("%.6f g ± %.6f g"),R.TargetAKg*1000,R.ToleranceAKg*1000));
  if(R.Mode==EProcessBatchMode::SequentialAB)S+=FString::Printf(TEXT("\nB [%s] %.6f g ± %.6f g"),*R.MaterialB,R.TargetBKg*1000,R.ToleranceBKg*1000);
  if(R.AdditiveEnabled)S+=FString::Printf(TEXT("\nC [%s] %.6f g ± %.6f g · %s"),*R.MaterialC,R.TargetCKg*1000,R.ToleranceCKg*1000,R.Scheduled?*FString::Printf(TEXT("예약 ON · N=%.6f 해석초"),R.DelaySeconds):TEXT("예약 OFF · 초기 투입"));
+ S+=FString::Printf(TEXT("\n공급→칭량: 공급 A~F 공통 %g / 칭량 %g / 수취 %g kPa(g)\n칭량→수취: 공급 %g / 칭량 %g / 수취 %g kPa(g)"),R.FeedPressurePa.X/1000,R.FeedPressurePa.Y/1000,R.FeedPressurePa.Z/1000,R.TransferPressurePa.X/1000,R.TransferPressurePa.Y/1000,R.TransferPressurePa.Z/1000);
  return S+FString::Printf(TEXT("\n목표 %.6g RPM · 혼합 %.6g 해석초"),R.TargetRPM,R.MixingSeconds);
 }
 

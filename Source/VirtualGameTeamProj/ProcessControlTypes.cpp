@@ -209,7 +209,7 @@ bool FProcessControlMachine::AllClosed() const
 }
 
 FProcessCommandRecord FProcessControlMachine::Submit(FGuid Id, int64 Epoch, const FString& Equipment, EProcessCommand Command, double Value,
-    double Now, const FProcessControlTransport& Send)
+    double Now, const FProcessControlTransport& Send, const FString& AdmissionError)
 {
     if (const auto* Existing=History.Find(Id))
     {
@@ -227,7 +227,7 @@ FProcessCommandRecord FProcessControlMachine::Submit(FGuid Id, int64 Epoch, cons
     // The whole-stop deadline itself is unchanged and always takes precedence.
     const bool ProtectedSupplyClose=Command==EProcessCommand::Valve&&(Equipment==TEXT("supply-a")||Equipment==TEXT("supply-b")||Equipment==TEXT("supply-c"))&&Value==0&&(PlantBrakeFor(Snapshot,ProcessPlantBinding::SupplierIndex(Equipment)).Supported);
     if(ProtectedSupplyClose&&FMath::IsFinite(StopTimeoutSeconds)&&StopTimeoutSeconds>0)R.Deadline=Now+StopTimeoutSeconds;
-    FString Reason = !Id.IsValid() ? TEXT("요청 번호가 필요합니다.") : Epoch!=Snapshot.Epoch ? TEXT("초기화 세대가 변경되었습니다. 새 상태에서 다시 요청하세요.") : UnavailableReason(Equipment,Command,Value,Now);
+    FString Reason = !Id.IsValid() ? TEXT("요청 번호가 필요합니다.") : Epoch!=Snapshot.Epoch ? TEXT("초기화 세대가 변경되었습니다. 새 상태에서 다시 요청하세요.") : !AdmissionError.IsEmpty() ? AdmissionError : UnavailableReason(Equipment,Command,Value,Now);
     if (!Reason.IsEmpty()) { R.Status=EProcessCommandStatus::Rejected; R.Message=Reason; History.Add(Id,R); LastRequest=Id; return R; }
     const bool StopSequence=UsesStopSequence(Command,Value);
     if (StopSequence)
@@ -353,6 +353,8 @@ void FProcessControlMachine::Observe(const FPlantSimulationSnapshot& State, doub
             (R.IsPending()||R.Status==EProcessCommandStatus::Applied))
         {R.Status=EProcessCommandStatus::Failed;R.Message=TEXT("연결부 공기 요청이 작업자에서 취소되었습니다. 최신 상태 확인 후 새 요청으로 재시도하세요.");}
         if(!R.IsPending() || R.UsesStopSequence)continue;
+        if(R.Command==EProcessCommand::Pressure&&R.Revision>0&&State.TransferPressureRejectedRevision==R.Revision)
+        {R.Status=EProcessCommandStatus::Rejected;R.Message=TEXT("현재 이송이 종료·취소되었거나 작업자 조건이 변경되어 압력 조절을 거부했습니다.");continue;}
         if(R.Command==EProcessCommand::RecoverBatch&&R.Revision>0&&State.Recovery.RejectedRevision==R.Revision)
         {R.Status=EProcessCommandStatus::Rejected;R.Message=State.Recovery.Reason;continue;}
         if((R.Command==EProcessCommand::BeginB||R.Command==EProcessCommand::CombineAB||R.Command==EProcessCommand::BeginAdditive)&&R.Revision>0&&State.SequentialBatch.RejectedRevision==R.Revision)

@@ -103,7 +103,7 @@ bool FProcessAutoRun::TickRecovery(FProcessControlMachine& M,double Now,const FP
   if(State.MixingElapsedSeconds>=State.MixingDurationSeconds&&State.MixerAppliedSimulationSeconds>=0)Enter(EProcessAutoStage::StopMixer,S,Now);
   else Enter(State.RecoveryNext,S,Now);break;
  case EProcessAutoStage::RecoveryCloseOutlet:Go(EProcessCommand::Valve,TEXT("weigher"),0,EProcessAutoStage::Transferring);break;
- case EProcessAutoStage::RecoveryClearPressure:Go(EProcessCommand::Pressure,TEXT("weigher"),-500,EProcessAutoStage::PurgePressure);break;
+ case EProcessAutoStage::RecoveryClearPressure:Go(EProcessCommand::Pressure,TEXT("weigher"),State.LockedFeedPressurePa.Y,EProcessAutoStage::PurgePressure);break;
  default:break;
  }
  return true;
