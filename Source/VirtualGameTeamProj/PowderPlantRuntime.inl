@@ -2,7 +2,7 @@
 struct FPlantRuntime {
  std::thread Thread;std::mutex Mutex;std::atomic<bool> Quit{false},Run{true};
  std::atomic<double> Drop{1000},RPM{15};std::atomic<uint32> RequestedSuppliers{0};std::atomic<bool> RequestedHopper{false},RequestedReceiver{false};
- std::vector<powder::Grain> Points;std::string Error;double Time=0,Wall=0,Angle=0;
+ std::vector<powder::Grain> Points;std::string Error,Device;double Time=0,Wall=0,Angle=0;
  int Phase=0,WH=0,RH=0,MX=0;bool HopperOpen=false,ReceiverOpen=false,Ready=false;uint32 OpenSuppliers=0;uint64 Generation=1;
  const bool Regulated;FString LogPath;
  powder::PlantPressureTargets Targets;int RequestedStage;bool RequestedManual;
@@ -25,6 +25,8 @@ struct FPlantRuntime {
     if(Regulated)pressureState=powder::plant_set_regulated_pressures(C.plant_data,Routes,wanted,0,0,false,false,false);
     else {powder::plant_set_manual_valves(C.plant_data,Routes,AppliedPressure,0,0,false,false);powder::plant_set_receiver_valve(C.plant_data,false);}
     powder::GranularGPU GPU(C,P,std::vector<powder::Grain>(P.size()));
+    {std::lock_guard<std::mutex> lock(Mutex);Device=GPU.device();}
+    UE_LOG(LogTemp,Display,TEXT("Plant compute device: %s; backend=%d; particles=%u; dt=%.9g; iterations=%u"),UTF8_TO_TCHAR(GPU.device().c_str()),int(C.backend),C.count,C.dt,C.iterations);
     auto readyAt=Clock::now();double setup=std::chrono::duration<double>(readyAt-prepareStart).count(),Active=0;
     auto LastPublish=readyAt,LastControl=readyAt,LastLog=readyAt;bool logControl=false;
     int PhaseNow=0;uint32 requestedMask=0;bool requestedWH=false,requestedRH=false;

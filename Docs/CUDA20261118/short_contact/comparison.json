@@ -1,0 +1,134 @@
+[
+  {
+    "scene": "transfer",
+    "steps": 1,
+    "comparison": "OpenCL repeat",
+    "position_max_m": 0.0,
+    "velocity_max_m_s": 0.0,
+    "position_rms_m": 0.0,
+    "velocity_rms_m_s": 0.0,
+    "position_changed": 0,
+    "velocity_changed": 0
+  },
+  {
+    "scene": "transfer",
+    "steps": 1,
+    "comparison": "CUDA vs OpenCL",
+    "position_max_m": 6.013344398646774e-08,
+    "velocity_max_m_s": 0.006013344470766521,
+    "position_rms_m": 1.59921183372231e-09,
+    "velocity_rms_m_s": 0.00014973553376847732,
+    "position_changed": 4634,
+    "velocity_changed": 14827
+  },
+  {
+    "scene": "transfer",
+    "steps": 1,
+    "comparison": "graph vs CUDA",
+    "position_max_m": 0.0,
+    "velocity_max_m_s": 0.0,
+    "position_rms_m": 0.0,
+    "velocity_rms_m_s": 0.0,
+    "position_changed": 0,
+    "velocity_changed": 0
+  },
+  {
+    "scene": "transfer",
+    "steps": 16,
+    "comparison": "OpenCL repeat",
+    "position_max_m": 0.0,
+    "velocity_max_m_s": 0.0,
+    "position_rms_m": 0.0,
+    "velocity_rms_m_s": 0.0,
+    "position_changed": 0,
+    "velocity_changed": 0
+  },
+  {
+    "scene": "transfer",
+    "steps": 16,
+    "comparison": "CUDA vs OpenCL",
+    "position_max_m": 1.3035775007206777e-06,
+    "velocity_max_m_s": 0.016648850757122063,
+    "position_rms_m": 5.0008364231104883e-08,
+    "velocity_rms_m_s": 0.0011929802903759025,
+    "position_changed": 16413,
+    "velocity_changed": 19569
+  },
+  {
+    "scene": "transfer",
+    "steps": 16,
+    "comparison": "graph vs CUDA",
+    "position_max_m": 0.0,
+    "velocity_max_m_s": 0.0,
+    "position_rms_m": 0.0,
+    "velocity_rms_m_s": 0.0,
+    "position_changed": 0,
+    "velocity_changed": 0
+  },
+  {
+    "scene": "mixing",
+    "steps": 1,
+    "comparison": "OpenCL repeat",
+    "position_max_m": 0.0,
+    "velocity_max_m_s": 0.0,
+    "position_rms_m": 0.0,
+    "velocity_rms_m_s": 0.0,
+    "position_changed": 0,
+    "velocity_changed": 0
+  },
+  {
+    "scene": "mixing",
+    "steps": 1,
+    "comparison": "CUDA vs OpenCL",
+    "position_max_m": 6.006850114687196e-08,
+    "velocity_max_m_s": 0.005972094721282688,
+    "position_rms_m": 1.5243674455576571e-09,
+    "velocity_rms_m_s": 0.00011922142317137696,
+    "position_changed": 975,
+    "velocity_changed": 5243
+  },
+  {
+    "scene": "mixing",
+    "steps": 1,
+    "comparison": "graph vs CUDA",
+    "position_max_m": 0.0,
+    "velocity_max_m_s": 0.0,
+    "position_rms_m": 0.0,
+    "velocity_rms_m_s": 0.0,
+    "position_changed": 0,
+    "velocity_changed": 0
+  },
+  {
+    "scene": "mixing",
+    "steps": 16,
+    "comparison": "OpenCL repeat",
+    "position_max_m": 0.0,
+    "velocity_max_m_s": 0.0,
+    "position_rms_m": 0.0,
+    "velocity_rms_m_s": 0.0,
+    "position_changed": 0,
+    "velocity_changed": 0
+  },
+  {
+    "scene": "mixing",
+    "steps": 16,
+    "comparison": "CUDA vs OpenCL",
+    "position_max_m": 9.844427641986643e-07,
+    "velocity_max_m_s": 0.0420695603450761,
+    "position_rms_m": 2.7849381987788832e-08,
+    "velocity_rms_m_s": 0.0006497732797296871,
+    "position_changed": 7130,
+    "velocity_changed": 10568
+  },
+  {
+    "scene": "mixing",
+    "steps": 16,
+    "comparison": "graph vs CUDA",
+    "position_max_m": 0.0,
+    "velocity_max_m_s": 0.0,
+    "position_rms_m": 0.0,
+    "velocity_rms_m_s": 0.0,
+    "position_changed": 0,
+    "velocity_changed": 0
+  }
+]

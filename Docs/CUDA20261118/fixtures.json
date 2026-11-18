@@ -1,0 +1,28 @@
+[
+  {
+    "name": "transfer",
+    "path": "Docs\\CUDA20261118\\fixtures\\transfer.bin",
+    "sha256": "d7d078c3fb87d7323d7f942decf10d9f1f31de773e999fa10242446445962016",
+    "source": "Docs\\ProcessPlant_20261111_LowPoly\\FullProcess\\20261111_181306\\00081_WH_to_RH.csv",
+    "source_sha256": "961defd92cf1a9090b40f19d53622d08f298cc9d2439b29961b4b389da850141",
+    "source_sim_s": 3.09423992183,
+    "phase": 1,
+    "rpm": 0,
+    "velocities": "zero: historical velocities unavailable",
+    "rotor_angle_rad": 0,
+    "interpretation": "Controlled restart fixture, not a complete historical checkpoint"
+  },
+  {
+    "name": "mixing",
+    "path": "Docs\\CUDA20261118\\fixtures\\mixing.bin",
+    "sha256": "8c13ffbaf76497212f40286fd03d866a590fefd37f9e10b3fc3c4faa7f482de2",
+    "source": "Docs\\ProcessPlant_20261111_LowPoly\\FullProcess\\20261111_181306\\00153_mix_15RPM.csv",
+    "source_sha256": "44f83ffb84ee116eb22b95d17e767dc22f27d82c0428006a35fe233c200882a7",
+    "source_sim_s": 8.53023978451,
+    "phase": 2,
+    "rpm": 15,
+    "velocities": "zero: historical velocities unavailable",
+    "rotor_angle_rad": 0,
+    "interpretation": "Controlled restart fixture, not a complete historical checkpoint"
+  }
+]

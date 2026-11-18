@@ -1,0 +1,32 @@
+{
+  "command": [
+    "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\Intermediate\\CUDA\\cuda_plant_bench.exe",
+    "4",
+    "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\SourceAssets\\ProcessPlant_20261111_LowPoly\\Simulation",
+    "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\Docs\\CUDA20261118\\fixtures\\transfer.bin",
+    "1",
+    "16",
+    "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\Docs\\CUDA20261118\\short_contact_final\\transfer_n16_s2_r0",
+    "0",
+    "1e-05"
+  ],
+  "executable_sha256": "6c93099ac69968a59108982b2b459ec53ea4776ae3c0aed38d8e4ce8e885f86d",
+  "start_unix_s": 1794998303.162522,
+  "finish_unix_s": 1794998304.0378814,
+  "stdout": "backend=4 sim_s=0.00016 wall_s=0.171319 rate=0.00093393\n",
+  "stderr": "",
+  "returncode": 0,
+  "telemetry": [
+    {
+      "unix_s": 1794998303.2115598,
+      "returncode": 0,
+      "csv": "2026/11/18 19:38:23.204, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P0, 100, 3, 2820, 9001, 40, 48.29, 2974"
+    },
+    {
+      "unix_s": 1794998303.7591188,
+      "returncode": 0,
+      "csv": "2026/11/18 19:38:23.752, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 13, 2, 2820, 8751, 36, 42.19, 3186"
+    }
+  ],
+  "telemetry_window": "entire process, including initialization; other GPU users not stopped"
+}

@@ -1,0 +1,10 @@
+{
+  "level": "/Game/ProcessPlant_CUDA_20261118/L_ProcessPlant_CUDA_1118",
+  "actor": "Plant_Pressure_Grains_LowPoly",
+  "backend": "<PlantComputeBackend.CUDA_PTX_GRAPH: 4>",
+  "data_directory": "SourceAssets/ProcessPlant_20261111_LowPoly/Simulation",
+  "fixed_dt": 1e-05,
+  "iterations": 8,
+  "original_sha256": "a7d2b0bfaa42804ab0e2e4d63dcb4dd7907673d4fae4c7bc587aa3aab0b220a4",
+  "level_sha256": "918c0ee3c725c2d881d3be4db821ce65dddefb216f392a1a88b53affc9f7d39e"
+}

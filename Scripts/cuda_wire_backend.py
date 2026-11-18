@@ -1,0 +1,41 @@
+import pathlib
+root=pathlib.Path(__file__).resolve().parents[1];base=root/'Physics/PowderCore'
+def replace_once(s,a,b):
+    if s.count(a)!=1: raise RuntimeError('nonunique patch '+a[:100])
+    return s.replace(a,b,1)
+p=base/'include/powder/granular.hpp';s=p.read_text()
+s=replace_once(s,'struct GranularConfig {','enum class GranularBackend { OpenCL=0, Cuda=1, CudaGraph=2 };\nstruct GranularConfig {GranularBackend backend=GranularBackend::OpenCL;')
+p.write_text(s)
+p=base/'src/granular.cpp';s=p.read_text()
+s=replace_once(s,'#include "powder/granular.hpp"','#include "powder/granular.hpp"\n#ifdef POWDER_WITH_CUDA\n#include "powder/plant_cuda.hpp"\n#endif')
+s=replace_once(s,'Api(){module=','Api(bool enabled=true){if(!enabled)return;module=')
+s=replace_once(s,'struct GranularGPU::Impl {','struct GranularGPU::Impl {\n#ifdef POWDER_WITH_CUDA\n std::unique_ptr<PlantCuda> cuda;\n#endif')
+s=replace_once(s,'):c(cfg){try{','):api(cfg.backend==GranularBackend::OpenCL),c(cfg){try{\n if(c.backend!=GranularBackend::OpenCL){\n#ifdef POWDER_WITH_CUDA\n require(external&&velocity,"CUDA requires explicit plant state");cuda=std::make_unique<PlantCuda>(c,*external,*velocity);return;\n#else\n throw std::runtime_error("CUDA backend was not built");\n#endif\n }')
+def guard(body):return '\n#ifdef POWDER_WITH_CUDA\n '+body+'\n#endif\n'
+s=replace_once(s,'void advance(unsigned steps,float rpm,bool gate){','void advance(unsigned steps,float rpm,bool gate){'+guard('if(cuda){cuda->advance(steps,rpm,gate);return;}'))
+s=replace_once(s,'void set(const std::vector<Grain>& state,const std::vector<Grain>& vel){','void set(const std::vector<Grain>& state,const std::vector<Grain>& vel){'+guard('if(cuda){cuda->set(state,vel);return;}'))
+s=replace_once(s,'std::vector<Grain> GranularGPU::snapshot(){','std::vector<Grain> GranularGPU::snapshot(){'+guard('if(p->cuda)return p->cuda->snapshot();'))
+s=replace_once(s,'std::vector<Grain> GranularGPU::velocity_snapshot(){','std::vector<Grain> GranularGPU::velocity_snapshot(){'+guard('if(p->cuda)return p->cuda->snapshot(true);'))
+s=replace_once(s,'void GranularGPU::request_snapshot(){','void GranularGPU::request_snapshot(){'+guard('require(!p->cuda,"CUDA asynchronous snapshot API not implemented; use snapshot");'))
+s=replace_once(s,'std::vector<GranularBoundarySample> GranularGPU::inspect_boundaries(const std::vector<Grain>& points,float angle,bool gate,bool shell){','std::vector<GranularBoundarySample> GranularGPU::inspect_boundaries(const std::vector<Grain>& points,float angle,bool gate,bool shell){'+guard('if(p->cuda)return p->cuda->inspect(points,angle,gate,shell);'))
+s=replace_once(s,'std::array<std::uint64_t,3> GranularGPU::plant_memory_bytes()const{','std::array<std::uint64_t,3> GranularGPU::plant_memory_bytes()const{'+guard('if(p->cuda)return p->cuda->memory();'))
+s=replace_once(s,'std::array<std::uint64_t,4> GranularGPU::plant_wall_stats(){','std::array<std::uint64_t,4> GranularGPU::plant_wall_stats(){'+guard('if(p->cuda)return p->cuda->stats();'))
+for method,typ,expr in [('timing','GranularTiming','timing()'),('time','double','time()'),('angle','float','angle()'),('device','std::string','device()')]:
+    a=f'{typ} GranularGPU::{method}()const{{';s=replace_once(s,a,a+guard('if(p->cuda)return p->cuda->'+expr+';'))
+s=replace_once(s,'void GranularGPU::update_plant_field(const std::vector<Grain>& data){','void GranularGPU::update_plant_field(const std::vector<Grain>& data){'+guard('if(p->cuda){p->cuda->update(data);return;}'))
+p.write_text(s)
+p=base/'CMakeLists.txt'
+s=p.read_text()+'''\noption(POWDER_ENABLE_CUDA "Build the native CUDA plant backend" OFF)
+if(POWDER_ENABLE_CUDA)
+ enable_language(CUDA)
+ find_package(CUDAToolkit REQUIRED)
+ add_library(powder_plant_cuda STATIC src/plant_cuda.cu)
+ target_include_directories(powder_plant_cuda PUBLIC include)
+ set_target_properties(powder_plant_cuda PROPERTIES CUDA_STANDARD 17 CUDA_ARCHITECTURES 89 CUDA_RUNTIME_LIBRARY Static)
+ target_compile_options(powder_plant_cuda PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;-Xcompiler=/MD>)
+ target_compile_definitions(powder_granular PRIVATE POWDER_WITH_CUDA=1)
+ target_link_libraries(powder_granular PUBLIC powder_plant_cuda CUDA::cudart_static)
+endif()
+'''
+p.write_text(s)
+print('CUDA backend wired')

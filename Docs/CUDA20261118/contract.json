@@ -1,0 +1,60 @@
+{
+  "source_commit": "fa028b18d8ce8fb3498bf921fa20167eed541925",
+  "original_project": "D:/GitHub/VirtualGameTeamProj",
+  "isolated_project": "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118",
+  "original_level": "Content\\ProcessPlant_20261111_LowPoly\\L_ProcessPlant_LowPoly_1111.umap",
+  "original_level_sha256": "a7d2b0bfaa42804ab0e2e4d63dcb4dd7907673d4fae4c7bc587aa3aab0b220a4",
+  "priority": [
+    "physical_validity",
+    "numerical_accuracy",
+    "performance"
+  ],
+  "no_commits": true,
+  "no_other_process_control": true,
+  "measurement": {
+    "stages": [
+      "OpenCL baseline",
+      "CUDA only",
+      "CUDA optimized"
+    ],
+    "count": 20000,
+    "radius_m": 0.002,
+    "density_kg_m3": 1200,
+    "dt_s": 1e-05,
+    "iterations": 8,
+    "batch_steps": 16,
+    "wall_mode": 5,
+    "local_size": 128,
+    "repeats": 3,
+    "initial_state_identical": true,
+    "physics_changes_separate": true,
+    "startup_and_warmup_excluded": true,
+    "GPU_profile_off_for_throughput": true
+  },
+  "validation": {
+    "missing_or_duplicate_ids": 0,
+    "missed_contact_candidates": 0,
+    "nonfinite_values": 0,
+    "boundary_position_abs_m": 2e-06,
+    "boundary_normal_abs": 0.002,
+    "single_step_position_abs_m": 2e-06,
+    "single_step_velocity_abs_m_s": 0.002,
+    "note": "Provisional numerical migration gates, not experimental accuracy certification. Long-run tolerances require convergence and baseline-repeat evidence; no post-hoc relaxation."
+  },
+  "real_measurements_available": false,
+  "states": {
+    "1": "pending",
+    "2": "pending",
+    "3": "pending",
+    "4": "pending",
+    "5": "pending",
+    "6": "pending",
+    "7": "pending",
+    "8": "pending",
+    "9": "pending",
+    "10": "pending",
+    "11": "pending",
+    "12": "pending",
+    "13": "pending"
+  }
+}

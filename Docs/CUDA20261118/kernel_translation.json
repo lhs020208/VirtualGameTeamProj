@@ -1,0 +1,14 @@
+{
+  "defines": {
+    "GRANULAR_PLANT": 1,
+    "GRANULAR_BOUNDS_FAST": 1,
+    "GRANULAR_KERNEL_OPTIMIZE": 1,
+    "PLANT_WALL_MODE": 5,
+    "PLANT_THREADED": 1
+  },
+  "input_sha256": {
+    "granular_plant_cl.inc": "4bcd9b4b1054ed8d5b35e62b3379a67fe30aa7be91f4ff79daf7d0aaa93259d6",
+    "granular_kernels.inc": "31305f18ace82a05fdba2d6f8974b156212554a2543df5bd8c16b4a0e01d4a17"
+  },
+  "output_sha256": "766260bb98c101e8237a2199cfd977c59dc1449d6d741e57240427ecf0f6d180"
+}

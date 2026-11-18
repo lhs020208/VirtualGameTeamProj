@@ -1,0 +1,181 @@
+[1/1] Cleaning all built files...
+Cleaning... 8 files.
+[1/8] Building CXX object CMakeFiles\powder_granular.dir\src\granular.cpp.obj
+[2/8] Building CXX object CMakeFiles\cuda_plant_bench.dir\tests\cuda_plant_bench.cpp.obj
+[3/8] Building CXX object CMakeFiles\cuda_plant_validation.dir\tests\cuda_plant_validation.cpp.obj
+[4/8] Building CUDA object CMakeFiles\powder_plant_cuda.dir\src\plant_cuda.cu.obj
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\bin/../include\cuda.h(846): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\bin/../include\cuda.h(8133): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\bin/../include\cuda.h(16897): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\bin/../include\cuda.h(20496): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\bin/../include\cuda.h(23382): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\bin/../include\cuda.h(23937): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\cuda_runtime_api.h(12266): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\bin/../include\cuda.h(846): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\bin/../include\cuda.h(8133): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\bin/../include\cuda.h(16897): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\bin/../include\cuda.h(20496): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\bin/../include\cuda.h(23382): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\bin/../include\cuda.h(23937): warning C4819: ���� �ڵ� ������(949)���� ǥ���� �� ���� ���ڰ� ���Ͽ� ��� �ֽ��ϴ�. �����Ͱ� �սǵ��� �ʰ� �Ϸ��� �ش� ������ �����ڵ� �������� �����Ͻʽÿ�.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Physics\PowderCore\src\cuda_plant_kernels.cuh(50): warning #221-D: floating-point value does not fit in required floating-point type
+   int start=(int)d[9].x,count=(int)d[9].y;float best=((float)(1e+300));float3 closest=p;
+                                                       ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Physics\PowderCore\src\cuda_plant_kernels.cuh(86): warning #221-D: floating-point value does not fit in required floating-point type
+    int edges=(int)d[k+4].x,count=(int)d[k+4].y,inside=0,bestId=2147483647;float best=((float)(1e+300));float2 nearest=q.xy();
+                                                                                       ^
+
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Physics\PowderCore\src\cuda_plant_kernels.cuh(309): warning #221-D: floating-point value does not fit in required floating-point type
+   int start=(int)d[0].z,count=(int)d[0].w,phase=(int)d[4].x;float best=((float)(1e+300));float3 velocity=float3(0);
+                                                                         ^
+
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Physics\PowderCore\src\cuda_plant_kernels.cuh(50): warning #221-D: floating-point value does not fit in required floating-point type
+   int start=(int)d[9].x,count=(int)d[9].y;float best=((float)(1e+300));float3 closest=p;
+                                                       ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Physics\PowderCore\src\cuda_plant_kernels.cuh(86): warning #221-D: floating-point value does not fit in required floating-point type
+    int edges=(int)d[k+4].x,count=(int)d[k+4].y,inside=0,bestId=2147483647;float best=((float)(1e+300));float2 nearest=q.xy();
+                                                                                       ^
+
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Physics\PowderCore\src\cuda_plant_kernels.cuh(309): warning #221-D: floating-point value does not fit in required floating-point type
+   int start=(int)d[0].z,count=(int)d[0].w,phase=(int)d[4].x;float best=((float)(1e+300));float3 velocity=float3(0);
+                                                                         ^
+
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Physics\PowderCore\src\cuda_plant_kernels.cuh(309): warning #177-D: variable "start" was declared but never referenced
+   int start=(int)d[0].z,count=(int)d[0].w,phase=(int)d[4].x;float best=((float)(1e+300));float3 velocity=float3(0);
+       ^
+
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Physics\PowderCore\src\cuda_plant_kernels.cuh(309): warning #177-D: variable "count" was declared but never referenced
+   int start=(int)d[0].z,count=(int)d[0].w,phase=(int)d[4].x;float best=((float)(1e+300));float3 velocity=float3(0);
+                         ^
+
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Physics\PowderCore\src\cuda_plant_kernels.cuh(499): warning #177-D: variable "start" was declared but never referenced
+   float3 start=p;*wallnormal=float3(0);*wallvelocity=float3(0);
+          ^
+
+plant_cuda.cu
+tmpxft_00008c68_00000000-7_plant_cuda.cudafe1.cpp
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(1331): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+D:\GitHub\VirtualGameTeamProj_CUDA_20261118\Intermediate\CUDAToolkit\include\driver_types.h(3131): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+[5/8] Linking CUDA static library powder_plant_cuda.lib
+[6/8] Linking CXX static library powder_granular.lib
+[7/8] Linking CXX executable cuda_plant_bench.exe
+[8/8] Linking CXX executable cuda_plant_validation.exe

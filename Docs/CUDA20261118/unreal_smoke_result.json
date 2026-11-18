@@ -1,0 +1,50 @@
+{
+  "command": [
+    "C:/Program Files/Epic Games/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe",
+    "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\VirtualGameTeamProj.uproject",
+    "/Game/ProcessPlant_CUDA_20261118/L_ProcessPlant_CUDA_1118",
+    "-game",
+    "-RenderOffscreen",
+    "-windowed",
+    "-ResX=1280",
+    "-ResY=720",
+    "-unattended",
+    "-nosound",
+    "-nosplash",
+    "-NoLiveCoding",
+    "-NoMessaging",
+    "-notrace",
+    "-DisablePlugins=ModelContextProtocol",
+    "-PlantSmokeSeconds=0.05",
+    "-PlantWallLimit=90",
+    "-stdout",
+    "-FullStdOutLogOutput",
+    "-abslog=D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\Docs\\CUDA20261118\\unreal_smoke.log"
+  ],
+  "own_pid": 15344,
+  "exit_code": 0,
+  "process_wall_s": 13.466979026794434,
+  "benchmark": false,
+  "interpretation": "Offscreen Unreal integration smoke; not the equal-duration solver benchmark",
+  "PlantSmoke.json": {
+    "bytes": 107,
+    "sha256": "191a1e91cb49a9e0988bfc00bd84ee1dc50b312a1b995ee47581e0dc589312cf"
+  },
+  "PlantSnapshot.csv": {
+    "bytes": 596630,
+    "sha256": "9b15832a03e096441d7203091e89d2265d5233a9d9fdf4b0d8fdb7115d9678cf"
+  },
+  "PlantFlowPreview.png": {
+    "bytes": 358490,
+    "sha256": "2b9ad6d98d3190294e628573cf6fe556414474dece6afe15e6f31225ddfe260a"
+  },
+  "result": {
+    "count": 20000,
+    "physical_s": 0.0526399987,
+    "actual_rate": 0.0282145152,
+    "wh": 0,
+    "rh": 0,
+    "mixer": 0,
+    "failed": false
+  }
+}

@@ -1,0 +1,252 @@
+{
+  "results": [
+    {
+      "scene": "initial",
+      "stages": [
+        {
+          "stage": 0,
+          "wall_s": [
+            1.1327207,
+            1.1194616,
+            1.1179419
+          ],
+          "median_wall_s": 1.1194616,
+          "min_wall_s": 1.1179419,
+          "max_wall_s": 1.1327207,
+          "median_rate": 0.02858516914881225
+        },
+        {
+          "stage": 1,
+          "wall_s": [
+            1.1025314,
+            1.1061119,
+            1.0999426
+          ],
+          "median_wall_s": 1.1025314,
+          "min_wall_s": 1.0999426,
+          "max_wall_s": 1.1061119,
+          "median_rate": 0.029024115949532144
+        },
+        {
+          "stage": 2,
+          "wall_s": [
+            1.0119894,
+            1.006031,
+            1.0042677
+          ],
+          "median_wall_s": 1.006031,
+          "min_wall_s": 1.0042677,
+          "max_wall_s": 1.0119894,
+          "median_rate": 0.0318081641535897
+        }
+      ],
+      "cuda_time_reduction_pct": 1.512352009215856,
+      "cuda_throughput_gain_pct": 1.5355753133198702,
+      "optimization_time_reduction_pct": 8.752621467288824,
+      "optimization_throughput_gain_pct": 9.592189505094773,
+      "overall_throughput_gain_pct": 11.275060112461755,
+      "state_comparisons": [
+        {
+          "label": "OpenCL repeat",
+          "position_max_m": 0.0,
+          "position_rms_m": 0.0,
+          "velocity_max_m_s": 0.0,
+          "velocity_rms_m_s": 0.0,
+          "group_changes": 0,
+          "center_of_mass_difference_m": 0.0,
+          "mean_speed_a": 0.3139300048351288,
+          "mean_speed_b": 0.3139300048351288
+        },
+        {
+          "label": "CUDA vs OpenCL",
+          "position_max_m": 0.0,
+          "position_rms_m": 0.0,
+          "velocity_max_m_s": 0.0,
+          "velocity_rms_m_s": 0.0,
+          "group_changes": 0,
+          "center_of_mass_difference_m": 0.0,
+          "mean_speed_a": 0.3139300048351288,
+          "mean_speed_b": 0.3139300048351288
+        },
+        {
+          "label": "graph vs CUDA",
+          "position_max_m": 0.0,
+          "position_rms_m": 0.0,
+          "velocity_max_m_s": 0.0,
+          "velocity_rms_m_s": 0.0,
+          "group_changes": 0,
+          "center_of_mass_difference_m": 0.0,
+          "mean_speed_a": 0.3139300048351288,
+          "mean_speed_b": 0.3139300048351288
+        }
+      ]
+    },
+    {
+      "scene": "transfer",
+      "stages": [
+        {
+          "stage": 0,
+          "wall_s": [
+            33.1253278,
+            33.1640499,
+            33.1784253
+          ],
+          "median_wall_s": 33.1640499,
+          "min_wall_s": 33.1253278,
+          "max_wall_s": 33.1784253,
+          "median_rate": 0.000964900224432481
+        },
+        {
+          "stage": 1,
+          "wall_s": [
+            33.0175989,
+            33.2635328,
+            33.1128695
+          ],
+          "median_wall_s": 33.1128695,
+          "min_wall_s": 33.0175989,
+          "max_wall_s": 33.2635328,
+          "median_rate": 0.0009663916076980281
+        },
+        {
+          "stage": 2,
+          "wall_s": [
+            33.0780908,
+            32.962091,
+            32.9363203
+          ],
+          "median_wall_s": 32.962091,
+          "min_wall_s": 32.9363203,
+          "max_wall_s": 33.0780908,
+          "median_rate": 0.0009708121730384156
+        }
+      ],
+      "cuda_time_reduction_pct": 0.15432493966908156,
+      "cuda_throughput_gain_pct": 0.1545634696503706,
+      "optimization_time_reduction_pct": 0.45534712719476067,
+      "optimization_throughput_gain_pct": 0.4574300216573013,
+      "overall_throughput_gain_pct": 0.6127005110203809,
+      "state_comparisons": [
+        {
+          "label": "OpenCL repeat",
+          "position_max_m": 0.0006725381802489896,
+          "position_rms_m": 5.0304677337184304e-05,
+          "velocity_max_m_s": 0.277325393745121,
+          "velocity_rms_m_s": 0.01660962223136845,
+          "group_changes": 0,
+          "center_of_mass_difference_m": 7.896784910128382e-06,
+          "mean_speed_a": 0.6096228876685519,
+          "mean_speed_b": 0.6075222137463663
+        },
+        {
+          "label": "CUDA vs OpenCL",
+          "position_max_m": 0.004890173021032264,
+          "position_rms_m": 0.00023232245363063146,
+          "velocity_max_m_s": 0.8999122223994729,
+          "velocity_rms_m_s": 0.0389659373022497,
+          "group_changes": 0,
+          "center_of_mass_difference_m": 4.332404445084946e-05,
+          "mean_speed_a": 0.6096228876685519,
+          "mean_speed_b": 0.6108496553358735
+        },
+        {
+          "label": "graph vs CUDA",
+          "position_max_m": 0.004542403301411584,
+          "position_rms_m": 0.00023384612830818624,
+          "velocity_max_m_s": 0.9500103676319218,
+          "velocity_rms_m_s": 0.0410811030176272,
+          "group_changes": 0,
+          "center_of_mass_difference_m": 2.6727970523787424e-05,
+          "mean_speed_a": 0.6108496553358735,
+          "mean_speed_b": 0.6115071685082069
+        }
+      ]
+    },
+    {
+      "scene": "mixing",
+      "stages": [
+        {
+          "stage": 0,
+          "wall_s": [
+            3.2703131,
+            3.2840043,
+            3.2771828
+          ],
+          "median_wall_s": 3.2771828,
+          "min_wall_s": 3.2703131,
+          "max_wall_s": 3.2840043,
+          "median_rate": 0.009764484053681717
+        },
+        {
+          "stage": 1,
+          "wall_s": [
+            3.2820777,
+            3.2970152,
+            3.2904663
+          ],
+          "median_wall_s": 3.2904663,
+          "min_wall_s": 3.2820777,
+          "max_wall_s": 3.2970152,
+          "median_rate": 0.009725065165262444
+        },
+        {
+          "stage": 2,
+          "wall_s": [
+            3.1892278,
+            3.1870001,
+            3.1909491
+          ],
+          "median_wall_s": 3.1892278,
+          "min_wall_s": 3.1870001,
+          "max_wall_s": 3.1909491,
+          "median_rate": 0.01003377657488123
+        }
+      ],
+      "cuda_time_reduction_pct": -0.4053328975118564,
+      "cuda_throughput_gain_pct": -0.4036965824570249,
+      "optimization_time_reduction_pct": 3.0767219831426273,
+      "optimization_throughput_gain_pct": 3.1743891107433697,
+      "overall_throughput_gain_pct": 2.7578776279323813,
+      "state_comparisons": [
+        {
+          "label": "OpenCL repeat",
+          "position_max_m": 0.013128953078806174,
+          "position_rms_m": 0.0002403011268314302,
+          "velocity_max_m_s": 0.5198875780898307,
+          "velocity_rms_m_s": 0.024763409332395684,
+          "group_changes": 0,
+          "center_of_mass_difference_m": 3.66898974559513e-06,
+          "mean_speed_a": 0.009172131749588027,
+          "mean_speed_b": 0.009287903009612594
+        },
+        {
+          "label": "CUDA vs OpenCL",
+          "position_max_m": 0.0,
+          "position_rms_m": 0.0,
+          "velocity_max_m_s": 0.0,
+          "velocity_rms_m_s": 0.0,
+          "group_changes": 0,
+          "center_of_mass_difference_m": 0.0,
+          "mean_speed_a": 0.009172131749588027,
+          "mean_speed_b": 0.009172131749588027
+        },
+        {
+          "label": "graph vs CUDA",
+          "position_max_m": 0.0,
+          "position_rms_m": 0.0,
+          "velocity_max_m_s": 0.0,
+          "velocity_rms_m_s": 0.0,
+          "group_changes": 0,
+          "center_of_mass_difference_m": 0.0,
+          "mean_speed_a": 0.009172131749588027,
+          "mean_speed_b": 0.009172131749588027
+        }
+      ]
+    }
+  ],
+  "rendering_included": false,
+  "startup_included": false,
+  "measurement": "Serial physics solver wall time; equal state, count, dt, iterations, duration and hardware",
+  "shared_gpu": "Existing user processes left running. Raw telemetry and order are retained.",
+  "physical_model": "Unmodified position-based plant contacts; no experimental validation"
+}

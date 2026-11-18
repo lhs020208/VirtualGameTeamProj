@@ -1,6 +1,9 @@
 #include <cstring>
 #define CL_TARGET_OPENCL_VERSION 120
 #include "powder/granular.hpp"
+#ifdef POWDER_WITH_CUDA
+#include "powder/plant_cuda.hpp"
+#endif
 #include "powder/plant.hpp"
 #include "powder/plant_candidates.hpp"
 #include <CL/cl.h>
@@ -38,7 +41,7 @@ struct Api {
  #define DECLARE(name) decltype(&::name) name=nullptr;
  GPU_API(DECLARE)
  #undef DECLARE
- Api(){module=LoadLibraryExW(L"OpenCL.dll",nullptr,LOAD_LIBRARY_SEARCH_SYSTEM32);if(!module)throw std::runtime_error("system OpenCL runtime unavailable");
+ Api(bool enabled=true){if(!enabled)return;module=LoadLibraryExW(L"OpenCL.dll",nullptr,LOAD_LIBRARY_SEARCH_SYSTEM32);if(!module)throw std::runtime_error("system OpenCL runtime unavailable");
  #define LOAD(name) name=reinterpret_cast<decltype(name)>(GetProcAddress(module,#name));if(!name){FreeLibrary(module);module=nullptr;throw std::runtime_error("missing OpenCL entry " #name);}
  GPU_API(LOAD)
  #undef LOAD
@@ -70,12 +73,22 @@ void validate_granular_initial(GranularConfig c,const std::vector<Grain>& p){
  }
 }
 struct GranularGPU::Impl {
+#ifdef POWDER_WITH_CUDA
+ std::unique_ptr<PlantCuda> cuda;
+#endif
  Api api;cl_device_id device=nullptr;cl_context context=nullptr;cl_command_queue queue=nullptr;cl_program program=nullptr;
  std::array<std::array<std::vector<unsigned char>,24>,17> argument_cache;
  cl_event read_event=nullptr;std::vector<Grain> read_buffer;
  std::array<cl_kernel,17> kernels{};std::array<cl_mem,27> buffers{};GranularGasField gas_field;bool cohesive=false;bool gas_ready=false;unsigned gas_steps=0;
  size_t plant_buffer_bytes=0,plant_extra_bytes=0;std::vector<std::pair<size_t,Grain>> plant_upload_patches;Grain plant_thread_header{},plant_cache_header{};size_t plant_cache_offset=0,plant_cache_particles=0;GranularConfig c;int nx=0,ny=0,nz=0,cells=0;float cell=0,angle=0;double time=0;std::string name;bool poisoned=false;GranularTiming timing;std::vector<std::pair<cl_event,unsigned>> events;
- Impl(GranularConfig cfg,const std::vector<Grain>* external=nullptr,const std::vector<Grain>* velocity=nullptr):c(cfg){try{
+ Impl(GranularConfig cfg,const std::vector<Grain>* external=nullptr,const std::vector<Grain>* velocity=nullptr):api(cfg.backend==GranularBackend::OpenCL),c(cfg){try{
+ if(c.backend!=GranularBackend::OpenCL){
+#ifdef POWDER_WITH_CUDA
+ require(external&&velocity,"CUDA requires explicit plant state");cuda=std::make_unique<PlantCuda>(c,*external,*velocity);return;
+#else
+ throw std::runtime_error("CUDA backend was not built");
+#endif
+ }
  require(!c.plant||(external&&!c.binary_materials&&!c.rotation&&!c.candidates&&!c.coupled_air&&!c.air.enabled&&!c.boundary_candidates&&c.plant_data.size()>=16&&c.plant_data.size()<4000000),"unsupported plant configuration");
  require(c.plant_wall_mode<=6,"invalid plant wall mode");
  if(c.plant)validate_plant_data(c.plant_data);
@@ -165,7 +178,11 @@ struct GranularGPU::Impl {
  }
  void run(unsigned k,std::size_t n){std::size_t local=c.diagnostic_local_size,global=(n+local-1)/local*local;cl_event event=nullptr;check(api.clEnqueueNDRangeKernel(queue,kernels[k],1,nullptr,&global,&local,0,nullptr,c.profile?&event:nullptr),"dispatch");if(event)events.push_back({event,k});}
  void clear_plant_cache(){if(plant_cache_offset){std::vector<Grain> zero(plant_cache_particles*139);check(api.clEnqueueWriteBuffer(queue,buffers[15],CL_TRUE,plant_cache_offset*sizeof(Grain),zero.size()*sizeof(Grain),zero.data(),0,nullptr,nullptr),"reset plant wall cache");}}
- void set(const std::vector<Grain>& state,const std::vector<Grain>& vel){require(state.size()==c.count&&vel.size()==c.count,"state count mismatch");for(unsigned i=0;i<c.count;i++)for(float v:{state[i].x,state[i].y,state[i].z,state[i].w,vel[i].x,vel[i].y,vel[i].z})require(std::isfinite(v),"nonfinite input state");
+ void set(const std::vector<Grain>& state,const std::vector<Grain>& vel){
+#ifdef POWDER_WITH_CUDA
+ if(cuda){cuda->set(state,vel);return;}
+#endif
+require(state.size()==c.count&&vel.size()==c.count,"state count mismatch");for(unsigned i=0;i<c.count;i++)for(float v:{state[i].x,state[i].y,state[i].z,state[i].w,vel[i].x,vel[i].y,vel[i].z})require(std::isfinite(v),"nonfinite input state");
  for(const auto& a:state)require(c.plant?(a.w>=0&&a.w<32&&std::floor(a.w)==a.w):(a.w==0||a.w==1),"invalid group ID");
  gas_ready=false;gas_steps=0;drain_read();clear_plant_cache();check(api.clEnqueueWriteBuffer(queue,buffers[0],CL_TRUE,0,state.size()*sizeof(Grain),state.data(),0,nullptr,nullptr),"state write");check(api.clEnqueueWriteBuffer(queue,buffers[2],CL_TRUE,0,vel.size()*sizeof(Grain),vel.data(),0,nullptr,nullptr),"velocity write");time=0;angle=0;poisoned=false;for(auto e:events)if(e.first)api.clReleaseEvent(e.first);events.clear();timing={};timing.profiling_enabled=c.profile;timing.split_boundaries=c.profile_split;timing.candidates_enabled=c.candidates;timing.candidate_capacity=c.candidates?c.candidate_capacity:0;timing.boundary_candidates_enabled=c.boundary_candidates;timing.kernel_optimize_enabled=c.kernel_optimize;timing.candidate_reuse_enabled=c.candidate_reuse;timing.candidate_audit_enabled=c.candidate_audit;timing.candidate_skin_m=c.candidate_reuse?c.radius*c.candidate_skin_ratio:0;
  if(c.rotation){std::vector<Grain> zeros(c.count);for(unsigned b=16;b<19;++b)check(api.clEnqueueWriteBuffer(queue,buffers[b],CL_TRUE,0,zeros.size()*sizeof(Grain),zeros.data(),0,nullptr,nullptr),"reset angular state");}
@@ -180,7 +197,11 @@ struct GranularGPU::Impl {
  void audit_candidates(){int n=static_cast<int>(c.count),capacity=static_cast<int>(c.candidate_capacity);
  arg(11,0,buffers[0]);arg(11,1,n);arg(11,2,c.radius);arg(11,3,buffers[10]);arg(11,4,buffers[11]);arg(11,5,capacity);arg(11,6,buffers[4]);arg(11,7,buffers[5]);arg(11,8,cell);arg(11,9,nx);arg(11,10,ny);arg(11,11,nz);arg(11,12,buffers[6]);run(11,c.count);
  }
- void advance(unsigned steps,float rpm,bool gate){auto begin=Clock::now();const double cpuBegin=thread_cpu_seconds();require(!poisoned,"reset required after rejected GPU batch");require(!c.simple_box||!gate,"simple box is closed; gate is unsupported");require(!c.coupled_air||gas_ready,"coupled gas field must be supplied before advance");require(steps>0&&steps<=1000&&std::isfinite(rpm)&&std::abs(rpm)<=60,"invalid granular control");int zero=0;check(api.clEnqueueWriteBuffer(queue,buffers[6],CL_FALSE,0,sizeof(int),&zero,0,nullptr,nullptr),"clear error");cl_ulong zeroOverflow=0;if(c.candidates)check(api.clEnqueueWriteBuffer(queue,buffers[12],CL_FALSE,0,sizeof(zeroOverflow),&zeroOverflow,0,nullptr,nullptr),"clear candidate overflow");if(c.candidate_reuse)check(api.clEnqueueWriteBuffer(queue,buffers[14],CL_FALSE,3*sizeof(cl_uint),2*sizeof(cl_uint),&zeroOverflow,0,nullptr,nullptr),"clear reuse counters");int n=static_cast<int>(c.count),g=gate?1:0;float omega=rpm*.104719755f;
+ void advance(unsigned steps,float rpm,bool gate){
+#ifdef POWDER_WITH_CUDA
+ if(cuda){cuda->advance(steps,rpm,gate);return;}
+#endif
+auto begin=Clock::now();const double cpuBegin=thread_cpu_seconds();require(!poisoned,"reset required after rejected GPU batch");require(!c.simple_box||!gate,"simple box is closed; gate is unsupported");require(!c.coupled_air||gas_ready,"coupled gas field must be supplied before advance");require(steps>0&&steps<=1000&&std::isfinite(rpm)&&std::abs(rpm)<=60,"invalid granular control");int zero=0;check(api.clEnqueueWriteBuffer(queue,buffers[6],CL_FALSE,0,sizeof(int),&zero,0,nullptr,nullptr),"clear error");cl_ulong zeroOverflow=0;if(c.candidates)check(api.clEnqueueWriteBuffer(queue,buffers[12],CL_FALSE,0,sizeof(zeroOverflow),&zeroOverflow,0,nullptr,nullptr),"clear candidate overflow");if(c.candidate_reuse)check(api.clEnqueueWriteBuffer(queue,buffers[14],CL_FALSE,3*sizeof(cl_uint),2*sizeof(cl_uint),&zeroOverflow,0,nullptr,nullptr),"clear reuse counters");int n=static_cast<int>(c.count),g=gate?1:0;float omega=rpm*.104719755f;
  for(unsigned s=0;s<steps;s++){
   angle+=omega*c.dt;if(c.coupled_air){arg(14,0,buffers[23]);int count=int(gas_field.velocity_density.size());arg(14,1,count);run(14,count);}
   if(cohesive){if(c.cohesion_gamma_j_m2>0){if(c.candidate_reuse)check_reuse();arg(0,0,buffers[4]);arg(0,1,cells);run(0,cells);arg(1,0,buffers[0]);arg(1,1,buffers[4]);arg(1,2,buffers[5]);arg(1,3,n);arg(1,4,cell);arg(1,5,nx);arg(1,6,ny);arg(1,7,nz);arg(1,8,buffers[6]);run(1,c.count);if(c.candidates)build_candidates();}arg(16,0,buffers[0]);arg(16,1,buffers[4]);arg(16,2,buffers[5]);arg(16,3,n);arg(16,4,c.radius);arg(16,5,cell);arg(16,6,nx);arg(16,7,ny);arg(16,8,nz);arg(16,9,buffers[25]);arg(16,10,buffers[6]);if(c.candidates){int cap=int(c.candidate_capacity);arg(16,11,buffers[10]);arg(16,12,buffers[11]);arg(16,13,cap);}run(16,c.count);}
@@ -223,10 +244,22 @@ void GranularGPU::set_gas_field(const GranularGasField& f){
 }
 GranularGasExchange GranularGPU::gas_exchange(){require(p->c.coupled_air&&p->gas_ready&&!p->poisoned,"valid coupled exchange unavailable");GranularGasExchange result;result.steps=p->gas_steps;std::size_t n=p->gas_field.velocity_density.size();std::vector<Grain> raw(n*2);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[21],CL_TRUE,0,raw.size()*sizeof(Grain),raw.data(),0,nullptr,nullptr),"gas exchange readback");result.impulse_volume.assign(raw.begin(),raw.begin()+n);result.drag_rate_kg_s.resize(n);for(std::size_t i=0;i<n;++i){result.drag_rate_kg_s[i]=result.steps?raw[i+n].x/result.steps:0;if(result.steps)result.impulse_volume[i].w/=result.steps;}return result;}
 
-std::vector<Grain> GranularGPU::snapshot(){auto begin=Clock::now();std::vector<Grain> result(p->c.count);cl_event event=nullptr;check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[0],CL_TRUE,0,result.size()*sizeof(Grain),result.data(),0,nullptr,p->c.profile?&event:nullptr),"snapshot");if(event){p->events.push_back({event,7});p->collect();}p->timing.snapshot_wall+=elapsed(begin);return result;}
-std::vector<Grain> GranularGPU::velocity_snapshot(){require(!p->poisoned,"invalid solver");std::vector<Grain> v(p->c.count);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[2],CL_TRUE,0,v.size()*sizeof(Grain),v.data(),0,nullptr,nullptr),"velocity snapshot");return v;}
+std::vector<Grain> GranularGPU::snapshot(){
+#ifdef POWDER_WITH_CUDA
+ if(p->cuda)return p->cuda->snapshot();
+#endif
+auto begin=Clock::now();std::vector<Grain> result(p->c.count);cl_event event=nullptr;check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[0],CL_TRUE,0,result.size()*sizeof(Grain),result.data(),0,nullptr,p->c.profile?&event:nullptr),"snapshot");if(event){p->events.push_back({event,7});p->collect();}p->timing.snapshot_wall+=elapsed(begin);return result;}
+std::vector<Grain> GranularGPU::velocity_snapshot(){
+#ifdef POWDER_WITH_CUDA
+ if(p->cuda)return p->cuda->snapshot(true);
+#endif
+require(!p->poisoned,"invalid solver");std::vector<Grain> v(p->c.count);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[2],CL_TRUE,0,v.size()*sizeof(Grain),v.data(),0,nullptr,nullptr),"velocity snapshot");return v;}
  std::vector<Grain> GranularGPU::angular_velocity_snapshot(){require(p->c.rotation&&!p->poisoned,"angular state unavailable");std::vector<Grain> v(p->c.count);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[18],CL_TRUE,0,v.size()*sizeof(Grain),v.data(),0,nullptr,nullptr),"angular snapshot");return v;}
  void GranularGPU::request_snapshot(){
+#ifdef POWDER_WITH_CUDA
+ require(!p->cuda,"CUDA asynchronous snapshot API not implemented; use snapshot");
+#endif
+
  require(!p->poisoned&&!p->read_event,"snapshot pending or solver invalid");auto begin=Clock::now();p->read_buffer.resize(p->c.count);
  check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[0],CL_FALSE,0,p->read_buffer.size()*sizeof(Grain),p->read_buffer.data(),0,nullptr,&p->read_event),"async snapshot");
  check(p->api.clFlush(p->queue),"snapshot flush");p->timing.snapshot_wall+=elapsed(begin);
@@ -255,6 +288,10 @@ GranularCandidates GranularGPU::inspect_candidates(){
  return result;
 }
 std::vector<GranularBoundarySample> GranularGPU::inspect_boundaries(const std::vector<Grain>& points,float angle,bool gate,bool shell){
+#ifdef POWDER_WITH_CUDA
+ if(p->cuda)return p->cuda->inspect(points,angle,gate,shell);
+#endif
+
  require(!p->poisoned&&!points.empty()&&points.size()<=65536&&std::isfinite(angle),"invalid boundary diagnostic request");
  for(auto a:points)for(float v:{a.x,a.y,a.z,a.w})require(std::isfinite(v),"nonfinite boundary diagnostic point");
  std::array<cl_mem,4> temp{};try{
@@ -269,13 +306,37 @@ std::vector<GranularBoundarySample> GranularGPU::inspect_boundaries(const std::v
  for(auto b:temp)p->api.clReleaseMemObject(b);return result;
  }catch(...){for(auto b:temp)if(b)p->api.clReleaseMemObject(b);throw;}
 }
-std::array<std::uint64_t,3> GranularGPU::plant_memory_bytes()const{return {p->plant_buffer_bytes,p->plant_extra_bytes,p->plant_cache_particles*139*sizeof(Grain)};}
-std::array<std::uint64_t,4> GranularGPU::plant_wall_stats(){std::array<std::uint64_t,4> result{};if(!p->plant_cache_offset)return result;std::vector<Grain> cache(p->plant_cache_particles*139);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[15],CL_TRUE,p->plant_cache_offset*sizeof(Grain),cache.size()*sizeof(Grain),cache.data(),0,nullptr,nullptr),"plant cache statistics");for(size_t i=0;i<p->plant_cache_particles;++i){std::uint32_t counts[4];std::memcpy(counts,&cache[i*139+138],sizeof(counts));for(int j=0;j<4;++j)result[j]+=counts[j];}return result;}
-GranularTiming GranularGPU::timing()const{return p->timing;}
-double GranularGPU::time()const{return p->time;}
+std::array<std::uint64_t,3> GranularGPU::plant_memory_bytes()const{
+#ifdef POWDER_WITH_CUDA
+ if(p->cuda)return p->cuda->memory();
+#endif
+return {p->plant_buffer_bytes,p->plant_extra_bytes,p->plant_cache_particles*139*sizeof(Grain)};}
+std::array<std::uint64_t,4> GranularGPU::plant_wall_stats(){
+#ifdef POWDER_WITH_CUDA
+ if(p->cuda)return p->cuda->stats();
+#endif
+std::array<std::uint64_t,4> result{};if(!p->plant_cache_offset)return result;std::vector<Grain> cache(p->plant_cache_particles*139);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[15],CL_TRUE,p->plant_cache_offset*sizeof(Grain),cache.size()*sizeof(Grain),cache.data(),0,nullptr,nullptr),"plant cache statistics");for(size_t i=0;i<p->plant_cache_particles;++i){std::uint32_t counts[4];std::memcpy(counts,&cache[i*139+138],sizeof(counts));for(int j=0;j<4;++j)result[j]+=counts[j];}return result;}
+GranularTiming GranularGPU::timing()const{
+#ifdef POWDER_WITH_CUDA
+ if(p->cuda)return p->cuda->timing();
+#endif
+return p->timing;}
+double GranularGPU::time()const{
+#ifdef POWDER_WITH_CUDA
+ if(p->cuda)return p->cuda->time();
+#endif
+return p->time;}
 float GranularGPU::radius()const{return p->c.radius;}
-float GranularGPU::angle()const{return p->angle;}
-std::string GranularGPU::device()const{return p->name;}
+float GranularGPU::angle()const{
+#ifdef POWDER_WITH_CUDA
+ if(p->cuda)return p->cuda->angle();
+#endif
+return p->angle;}
+std::string GranularGPU::device()const{
+#ifdef POWDER_WITH_CUDA
+ if(p->cuda)return p->cuda->device();
+#endif
+return p->name;}
 void write_granular_timing(std::ostream& out,const GranularTiming& t){
  out<<std::setprecision(12)<<"{\"schema\":6,\"profiling_enabled\":"<<(t.profiling_enabled?"true":"false")<<",\"split_boundaries\":"<<(t.split_boundaries?"true":"false")
  <<",\"advance_wall_s\":"<<t.advance_wall<<",\"snapshot_wall_s\":"<<t.snapshot_wall<<",\"submit_wall_s\":"<<t.submit_wall<<",\"guard_wait_wall_s\":"<<t.guard_wait_wall<<",\"profile_collect_wall_s\":"<<t.profile_collect_wall;
@@ -291,4 +352,8 @@ void write_granular_timing(std::ostream& out,const GranularTiming& t){
 
 }
 
-namespace powder {void GranularGPU::update_plant_field(const std::vector<Grain>& data){require(p->c.plant&&!p->poisoned&&data.size()==p->c.plant_data.size(),"plant field size mismatch");validate_plant_data(data);for(size_t i=0;i<data.size();++i){auto a=data[i],b=p->c.plant_data[i];if(i==4){a=b;}else if(i>=size_t(data[5].x)&&i<size_t(data[5].x+2*data[5].y)&&(i-size_t(data[5].x))%2==1&&b.x<=2){a.y=b.y;a.z=b.z;}else if(i>=size_t(data[0].z)&&i<size_t(data[0].z+3*data[0].w)&&(i-size_t(data[0].z))%3==2)a.x=b.x;require(std::memcmp(&a,&b,sizeof(Grain))==0,"plant geometry is immutable during simulation");}p->drain_read();auto upload=data;for(auto patch:p->plant_upload_patches)upload[patch.first]=patch.second;if(p->c.plant_threaded)upload[8]=p->plant_thread_header;upload[10]=p->plant_cache_header;p->clear_plant_cache();check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,0,upload.size()*sizeof(Grain),upload.data(),0,nullptr,nullptr),"plant field update");}}
+namespace powder {void GranularGPU::update_plant_field(const std::vector<Grain>& data){
+#ifdef POWDER_WITH_CUDA
+ if(p->cuda){p->cuda->update(data);return;}
+#endif
+require(p->c.plant&&!p->poisoned&&data.size()==p->c.plant_data.size(),"plant field size mismatch");validate_plant_data(data);for(size_t i=0;i<data.size();++i){auto a=data[i],b=p->c.plant_data[i];if(i==4){a=b;}else if(i>=size_t(data[5].x)&&i<size_t(data[5].x+2*data[5].y)&&(i-size_t(data[5].x))%2==1&&b.x<=2){a.y=b.y;a.z=b.z;}else if(i>=size_t(data[0].z)&&i<size_t(data[0].z+3*data[0].w)&&(i-size_t(data[0].z))%3==2)a.x=b.x;require(std::memcmp(&a,&b,sizeof(Grain))==0,"plant geometry is immutable during simulation");}p->drain_read();auto upload=data;for(auto patch:p->plant_upload_patches)upload[patch.first]=patch.second;if(p->c.plant_threaded)upload[8]=p->plant_thread_header;upload[10]=p->plant_cache_header;p->clear_plant_cache();check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,0,upload.size()*sizeof(Grain),upload.data(),0,nullptr,nullptr),"plant field update");}}

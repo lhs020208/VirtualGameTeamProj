@@ -1,0 +1,327 @@
+{
+  "command": [
+    "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\Intermediate\\CUDA\\cuda_plant_bench.exe",
+    "4",
+    "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\SourceAssets\\ProcessPlant_20261111_LowPoly\\Simulation",
+    "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\Docs\\CUDA20261118\\fixtures\\transfer.bin",
+    "1",
+    "3200",
+    "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\Docs\\CUDA20261118\\benchmark_final\\transfer_r2_s2",
+    "0",
+    "1e-05"
+  ],
+  "executable_sha256": "6c93099ac69968a59108982b2b459ec53ea4776ae3c0aed38d8e4ce8e885f86d",
+  "start_unix_s": 1794998555.0155408,
+  "finish_unix_s": 1794998588.609557,
+  "stdout": "backend=4 sim_s=0.032 wall_s=32.8802 rate=0.000973231\n",
+  "stderr": "",
+  "returncode": 0,
+  "telemetry": [
+    {
+      "unix_s": 1794998555.0550826,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:35.048, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 44, 63.89, 2970"
+    },
+    {
+      "unix_s": 1794998555.603751,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:35.596, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P0, 4, 2, 2820, 9001, 40, 60.77, 3189"
+    },
+    {
+      "unix_s": 1794998556.1546454,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:36.148, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 90, 5, 2820, 8751, 42, 49.62, 3189"
+    },
+    {
+      "unix_s": 1794998556.7166615,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:36.710, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 44, 63.82, 3189"
+    },
+    {
+      "unix_s": 1794998557.2835324,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:37.277, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.86, 3185"
+    },
+    {
+      "unix_s": 1794998557.850826,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:37.844, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 63.67, 3183"
+    },
+    {
+      "unix_s": 1794998558.414474,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:38.407, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 63.45, 3183"
+    },
+    {
+      "unix_s": 1794998558.9974754,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:38.990, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 44, 63.32, 3183"
+    },
+    {
+      "unix_s": 1794998559.559455,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:39.552, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 44, 63.37, 3189"
+    },
+    {
+      "unix_s": 1794998560.1071496,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:40.100, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 44, 63.56, 3189"
+    },
+    {
+      "unix_s": 1794998560.6518614,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:40.645, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 44, 63.71, 3189"
+    },
+    {
+      "unix_s": 1794998561.2145717,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:41.208, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 63.90, 3187"
+    },
+    {
+      "unix_s": 1794998561.7591405,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:41.752, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 44, 63.90, 3183"
+    },
+    {
+      "unix_s": 1794998562.324504,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:42.317, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 44, 64.01, 3183"
+    },
+    {
+      "unix_s": 1794998562.8717084,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:42.865, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 44, 63.95, 3183"
+    },
+    {
+      "unix_s": 1794998563.420841,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:43.414, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 44, 63.96, 3189"
+    },
+    {
+      "unix_s": 1794998563.969857,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:43.963, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 44, 64.16, 3189"
+    },
+    {
+      "unix_s": 1794998564.5313618,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:44.524, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 44, 64.28, 3189"
+    },
+    {
+      "unix_s": 1794998565.0910323,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:45.083, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 64.12, 3193"
+    },
+    {
+      "unix_s": 1794998565.6519337,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:45.645, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 44, 64.07, 3193"
+    },
+    {
+      "unix_s": 1794998566.21689,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:46.210, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 44, 64.18, 3183"
+    },
+    {
+      "unix_s": 1794998566.76186,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:46.755, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 44, 64.21, 3185"
+    },
+    {
+      "unix_s": 1794998567.3097916,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:47.303, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 44, 64.06, 3190"
+    },
+    {
+      "unix_s": 1794998567.858895,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:47.852, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 64.21, 3190"
+    },
+    {
+      "unix_s": 1794998568.4078236,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:48.401, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 44, 64.13, 3191"
+    },
+    {
+      "unix_s": 1794998568.9715338,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:48.964, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 44, 64.02, 3191"
+    },
+    {
+      "unix_s": 1794998569.5212333,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:49.514, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.90, 3185"
+    },
+    {
+      "unix_s": 1794998570.0679197,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:50.061, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.76, 3185"
+    },
+    {
+      "unix_s": 1794998570.6152034,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:50.608, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.99, 3185"
+    },
+    {
+      "unix_s": 1794998571.1635177,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:51.157, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 44, 64.22, 3188"
+    },
+    {
+      "unix_s": 1794998571.72552,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:51.719, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 64.08, 3189"
+    },
+    {
+      "unix_s": 1794998572.2871268,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:52.280, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 64.03, 3189"
+    },
+    {
+      "unix_s": 1794998572.8472886,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:52.840, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.92, 3189"
+    },
+    {
+      "unix_s": 1794998573.4124148,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:53.405, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.83, 3183"
+    },
+    {
+      "unix_s": 1794998573.9579053,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:53.951, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.80, 3183"
+    },
+    {
+      "unix_s": 1794998574.4993992,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:54.493, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.76, 3183"
+    },
+    {
+      "unix_s": 1794998575.061021,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:55.054, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 63.66, 3183"
+    },
+    {
+      "unix_s": 1794998575.6213524,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:55.614, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 63.53, 3189"
+    },
+    {
+      "unix_s": 1794998576.1864622,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:56.179, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 64.05, 3189"
+    },
+    {
+      "unix_s": 1794998576.730535,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:56.724, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 64.03, 3189"
+    },
+    {
+      "unix_s": 1794998577.2947543,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:57.288, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 63.99, 3187"
+    },
+    {
+      "unix_s": 1794998577.8571224,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:57.850, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.96, 3183"
+    },
+    {
+      "unix_s": 1794998578.403754,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:58.397, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 63.82, 3183"
+    },
+    {
+      "unix_s": 1794998578.9658215,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:58.959, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.68, 3183"
+    },
+    {
+      "unix_s": 1794998579.5121188,
+      "returncode": 0,
+      "csv": "2026/11/18 19:42:59.506, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.61, 3188"
+    },
+    {
+      "unix_s": 1794998580.0736334,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:00.067, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.83, 3189"
+    },
+    {
+      "unix_s": 1794998580.6336212,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:00.626, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 63.84, 3189"
+    },
+    {
+      "unix_s": 1794998581.1801236,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:01.173, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.92, 3185"
+    },
+    {
+      "unix_s": 1794998581.7405345,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:01.734, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 64.04, 3183"
+    },
+    {
+      "unix_s": 1794998582.3016787,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:02.294, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 64.05, 3183"
+    },
+    {
+      "unix_s": 1794998582.8655195,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:02.859, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 64.06, 3183"
+    },
+    {
+      "unix_s": 1794998583.41689,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:03.408, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.83, 3189"
+    },
+    {
+      "unix_s": 1794998583.9598734,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:03.953, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 63.93, 3189"
+    },
+    {
+      "unix_s": 1794998584.5394046,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:04.532, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 64.05, 3189"
+    },
+    {
+      "unix_s": 1794998585.0979025,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:05.091, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 64.01, 3188"
+    },
+    {
+      "unix_s": 1794998585.663653,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:05.657, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.88, 3183"
+    },
+    {
+      "unix_s": 1794998586.2218587,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:06.215, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.62, 3183"
+    },
+    {
+      "unix_s": 1794998586.7714486,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:06.764, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 63.72, 3183"
+    },
+    {
+      "unix_s": 1794998587.3183606,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:07.312, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 63.68, 3189"
+    },
+    {
+      "unix_s": 1794998587.8763735,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:07.870, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 43, 63.81, 3189"
+    },
+    {
+      "unix_s": 1794998588.4282668,
+      "returncode": 0,
+      "csv": "2026/11/18 19:43:08.421, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 43, 63.95, 3189"
+    }
+  ],
+  "telemetry_window": "entire process, including initialization; other GPU users not stopped"
+}

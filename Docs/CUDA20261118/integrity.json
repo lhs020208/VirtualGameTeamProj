@@ -1,0 +1,17 @@
+{
+  "pass_integrity": true,
+  "failures": [],
+  "frozen_core_files_checked": 184,
+  "original_level_sha256": "a7d2b0bfaa42804ab0e2e4d63dcb4dd7907673d4fae4c7bc587aa3aab0b220a4",
+  "source_commit": "fa028b18d8ce8fb3498bf921fa20167eed541925",
+  "artifact_sha256": {
+    "baseline_executable": "d15e0742258ad1dbdf945e73edd6144f74f5ff0f6f215db6028b05e1ee271cb9",
+    "cuda_only_executable": "17291b0e1836c2866389970274468d51c37a0f3adab1fc6ecb60cb1225ff1f8f",
+    "optimized_executable": "6c93099ac69968a59108982b2b459ec53ea4776ae3c0aed38d8e4ce8e885f86d",
+    "cuda_library": "05611fd644fa989f416b1a8c27d9896ebf3fee917935c038461681c1c00c1094",
+    "ptx": "b819909d43a4cbe88000c29f342e9e821fafc080928f7048a6a03caf57be5f37",
+    "runtime_geometry": "e54e9385b4f9f40d94ef84aeeda43b547979910fe9f4db82d0ae348d9cf2e5ff",
+    "runtime_routes": "862c020bb91a267b2b7974761d5299224ef8186533141667259f9d47991d965d",
+    "initial_charge": "cc3e9211a4e40a90952cfcafd575d8579d788192eb83a2ca6bb6c6e8ed18b3d6"
+  }
+}

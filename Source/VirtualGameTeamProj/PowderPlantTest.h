@@ -6,6 +6,14 @@ class UInstancedStaticMeshComponent;
 class APlantVisibilityController;
 struct FPlantRuntime;
 class SWidget;
+UENUM(BlueprintType)
+enum class EPlantComputeBackend : uint8 {
+ OpenCL UMETA(DisplayName="OpenCL"),
+ Cuda UMETA(Hidden),
+ CudaGraph UMETA(Hidden),
+ CudaPtx UMETA(DisplayName="CUDA (preserved arithmetic)"),
+ CudaPtxGraph UMETA(DisplayName="CUDA Graph (preserved arithmetic)")
+};
 USTRUCT()
 struct FPlantRotorVisual {
  GENERATED_BODY()
@@ -22,6 +30,9 @@ public:
  virtual void EndPlay(const EEndPlayReason::Type Reason) override;
  UPROPERTY(EditAnywhere,Category="Plant|Test",meta=(ClampMin="0",ClampMax="4")) int32 SectionTest=0;
  UPROPERTY(EditAnywhere,Category="Plant|Test") FString DataDirectory=TEXT("SourceAssets/ProcessPlantPhysics");
+ // Existing levels keep OpenCL. The isolated CUDA level opts in explicitly.
+ UPROPERTY(EditAnywhere,Category="Plant|Compute") EPlantComputeBackend ComputeBackend=EPlantComputeBackend::OpenCL;
+ UPROPERTY(VisibleAnywhere,Category="Plant|Status") FString ComputeDevice;
  // Blender-world metres. Per-level geometry settings; legacy levels retain defaults.
  UPROPERTY(EditAnywhere,Category="Plant|Geometry") FVector MixerPivotM=FVector(3,0,.9);
  UPROPERTY(EditAnywhere,Category="Plant|Geometry") FVector MixerBoundsMinM=FVector(2.25,-.45,.57);
@@ -81,6 +92,7 @@ private:
  FPlantRuntime* Runtime=nullptr;
  double LastShow=0;uint64 Generation=0;
  double SmokeSeconds=0,SmokeWallLimit=120,SmokeStart=0;bool SmokeShot=false;
+ int32 SmokeWarmFrames=0;
  float PreviousMaxFPS=0;
  void Stop();void Show();void CacheRotor();
  TSharedRef<SWidget> BuildPressurePanel();
