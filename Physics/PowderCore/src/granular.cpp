@@ -291,16 +291,4 @@ void write_granular_timing(std::ostream& out,const GranularTiming& t){
 
 }
 
-namespace powder {void GranularGPU::update_plant_field(const std::vector<Grain>& data){require(p->c.plant&&!p->poisoned&&data.size()==p->c.plant_data.size(),"plant field size mismatch");validate_plant_data(data);for(size_t i=0;i<data.size();++i){auto a=data[i],b=p->c.plant_data[i];if(i==4){a=b;}else if(i>=size_t(data[5].x)&&i<size_t(data[5].x+2*data[5].y)&&(i-size_t(data[5].x))%2==1&&b.x<=2){a.y=b.y;a.z=b.z;}else if(i>=size_t(data[0].z)&&i<size_t(data[0].z+3*data[0].w)&&(i-size_t(data[0].z))%3==2)a.x=b.x;require(std::memcmp(&a,&b,sizeof(Grain))==0,"plant geometry is immutable during simulation");}p->drain_read();auto upload=data;for(auto patch:p->plant_upload_patches)upload[patch.first]=patch.second;if(p->c.plant_threaded)upload[8]=p->plant_thread_header;upload[10]=p->plant_cache_header;
- // With every streamtube at zero flow, plant_air can return zero before its
- // spatial lookup. Only the uploaded air-grid extent changes. A later valve
- // update starts from the original extent, including when suction resumes.
- bool stillAir = true;
- for (size_t cell = 0; cell < size_t(data[0].w); ++cell) {
-  if (data[size_t(data[0].z) + 3 * cell + 2].x != 0.f) {
-   stillAir = false;
-   break;
-  }
- }
- if (stillAir) upload[6].y = 0.f;
- p->clear_plant_cache();check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,0,upload.size()*sizeof(Grain),upload.data(),0,nullptr,nullptr),"plant field update");}}
+namespace powder {void GranularGPU::update_plant_field(const std::vector<Grain>& data){require(p->c.plant&&!p->poisoned&&data.size()==p->c.plant_data.size(),"plant field size mismatch");validate_plant_data(data);for(size_t i=0;i<data.size();++i){auto a=data[i],b=p->c.plant_data[i];if(i==4){a=b;}else if(i>=size_t(data[5].x)&&i<size_t(data[5].x+2*data[5].y)&&(i-size_t(data[5].x))%2==1&&b.x<=2){a.y=b.y;a.z=b.z;}else if(i>=size_t(data[0].z)&&i<size_t(data[0].z+3*data[0].w)&&(i-size_t(data[0].z))%3==2)a.x=b.x;require(std::memcmp(&a,&b,sizeof(Grain))==0,"plant geometry is immutable during simulation");}p->drain_read();auto upload=data;for(auto patch:p->plant_upload_patches)upload[patch.first]=patch.second;if(p->c.plant_threaded)upload[8]=p->plant_thread_header;upload[10]=p->plant_cache_header;p->clear_plant_cache();check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,0,upload.size()*sizeof(Grain),upload.data(),0,nullptr,nullptr),"plant field update");}}
