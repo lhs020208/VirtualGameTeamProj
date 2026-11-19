@@ -1,0 +1,6 @@
+{
+  "module": "D:\\GitHub\\VirtualGameTeamProj\\Binaries\\Win64\\Demo20261119_VirtualGameTeamProj_5ed1827b08.dll",
+  "sha256": "5ed1827b08a5c6cbd52c2e06e6fb09bc62dbaae5430e26585d5efa63a67610fc",
+  "manifest": "D:\\GitHub\\VirtualGameTeamProj\\Binaries\\Win64\\UnrealEditor.modules",
+  "takes_effect": "next editor/game launch; already running editor is not hot reloaded"
+}

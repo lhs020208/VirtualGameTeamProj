@@ -1,0 +1,130 @@
+{
+  "trials": [
+    {
+      "model": "demo constrained routes and coarse soft contacts",
+      "rendered": true,
+      "wall_s": 120.0293645,
+      "sim_s": 120.02500626,
+      "rate": 0.99996369,
+      "frames": 3578,
+      "fps": 29.809372189,
+      "p95_ms": 33.388402313,
+      "p99_ms": 33.4446989,
+      "display_particles": 20000,
+      "solver_particles": 2500,
+      "WH": 0,
+      "RH": 0,
+      "MX": 20000,
+      "performance_pass": true,
+      "error": false,
+      "width": 1920,
+      "height": 1080,
+      "ten_second_rate_min": 0.997681609800046,
+      "ten_second_rate_max": 1.0024843735446474,
+      "max_observed_lag_s": 0.061630438999998205,
+      "snapshot_sizes": [
+        [
+          1920,
+          1080
+        ],
+        [
+          1920,
+          1080
+        ],
+        [
+          1920,
+          1080
+        ]
+      ],
+      "window_pass": true,
+      "resolution_pass": true,
+      "lag_pass": true
+    },
+    {
+      "model": "demo constrained routes and coarse soft contacts",
+      "rendered": true,
+      "wall_s": 120.002395999,
+      "sim_s": 119.991672925,
+      "rate": 0.999910643,
+      "frames": 3578,
+      "fps": 29.816071339,
+      "p95_ms": 33.384498209,
+      "p99_ms": 33.441800624,
+      "display_particles": 20000,
+      "solver_particles": 2500,
+      "WH": 0,
+      "RH": 0,
+      "MX": 20000,
+      "performance_pass": true,
+      "error": false,
+      "width": 1920,
+      "height": 1080,
+      "ten_second_rate_min": 0.9980666672171269,
+      "ten_second_rate_max": 1.001964031672064,
+      "max_observed_lag_s": 0.053826326000006475,
+      "snapshot_sizes": [
+        [
+          1920,
+          1080
+        ],
+        [
+          1920,
+          1080
+        ],
+        [
+          1920,
+          1080
+        ]
+      ],
+      "window_pass": true,
+      "resolution_pass": true,
+      "lag_pass": true
+    },
+    {
+      "model": "demo constrained routes and coarse soft contacts",
+      "rendered": true,
+      "wall_s": 120.013418403,
+      "sim_s": 120.000006258,
+      "rate": 0.999888245,
+      "frames": 3578,
+      "fps": 29.813332939,
+      "p95_ms": 33.382702619,
+      "p99_ms": 33.430699259,
+      "display_particles": 20000,
+      "solver_particles": 2500,
+      "WH": 0,
+      "RH": 0,
+      "MX": 20000,
+      "performance_pass": true,
+      "error": false,
+      "width": 1920,
+      "height": 1080,
+      "ten_second_rate_min": 0.9974771255349352,
+      "ten_second_rate_max": 1.0022126682602122,
+      "max_observed_lag_s": 0.05861001799999954,
+      "snapshot_sizes": [
+        [
+          1920,
+          1080
+        ],
+        [
+          1920,
+          1080
+        ],
+        [
+          1920,
+          1080
+        ]
+      ],
+      "window_pass": true,
+      "resolution_pass": true,
+      "lag_pass": true
+    }
+  ],
+  "original_levels_and_inputs_preserved": true,
+  "complete": true,
+  "scope": "3 x 120 s, 1920x1080 output viewport, offscreen standalone game, original renderer resolution scaling (observed 1400x788), 30fps cap, camera tour; excludes startup/90 warmup frames. Own hidden child honors Unreal timer resolution. Other editor left running. Not physical accuracy certification.",
+  "display_particles": 20000,
+  "solver_particles": 2500,
+  "model": "CPU soft coarse contacts + prescribed pipe coordinates + conservative rotor swept envelope and circulation field; original OpenCL/CUDA levels opt out"
+}

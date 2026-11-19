@@ -1,0 +1,178 @@
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" VirtualGameTeamProjEditor Win64 Development D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\VirtualGameTeamProj.uproject -WaitMutex -NoHotReloadFromIDE -NoLiveCoding -MaxParallelActions=2 -NoUBA
+Log file: C:\Users\lpet2\AppData\Local\UnrealBuildTool\Log.txt
+Executing up to 2 actions based on MaxProcessorCount override
+UbaSessionServer - Disable remote execution (remote sessions will finish current processes)
+Path D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PerModuleInline.gen.cpp.dep.json is not under intermediate build folder
+Path D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PowderCameraController.cpp.dep.json is not under intermediate build folder
+Path D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\VirtualGameTeamProj.cpp.dep.json is not under intermediate build folder
+Path D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PlantVisibilityController.cpp.dep.json is not under intermediate build folder
+Path D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PowderDropTest.cpp.dep.json is not under intermediate build folder
+Path D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Intermediate\Build\Win64\x64\UnrealEditor\Development\VirtualGameTeamProj\PowderSessionControlCommandlet.cpp.dep.json is not under intermediate build folder
+Path D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Plugins\DEMPrototype\Intermediate\Build\Win64\x64\UnrealEditor\Development\DEMPrototype\DEMPrototype.cpp.dep.json is not under intermediate build folder
+Path D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Intermediate\Build\Win64\x64\VirtualGameTeamProjEditor\Development\UnrealEd\SharedPCH.UnrealEd.Project.ValApi.ValExpApi.Cpp20.h.dep.json is not under intermediate build folder
+Path D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Plugins\DEMPrototype\Intermediate\Build\Win64\x64\UnrealEditor\Development\DEMPrototype\DEMEmitter.cpp.dep.json is not under intermediate build folder
+Path D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Plugins\DEMPrototype\Intermediate\Build\Win64\x64\UnrealEditor\Development\DEMPrototype\Module.DEMPrototype.cpp.dep.json is not under intermediate build folder
+Path D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Plugins\DEMPrototype\Intermediate\Build\Win64\x64\UnrealEditor\Development\DEMPrototype\DEMParticleSettings.cpp.dep.json is not under intermediate build folder
+Building VirtualGameTeamProjEditor...
+===== Toolchain Information =====
+Using ISPC compiler (C:\Program Files\Epic Games\UE_5.8\Engine\Source\ThirdParty\Intel\ISPC\bin\Windows\ispc.exe)
+  Intel(r) Implicit SPMD Program Compiler (Intel(r) ISPC), 1.24.0 (build commit  @ 20250404, LLVM 18.1.2) 
+Using Visual Studio 14.44.35217 toolchain (C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+[Adaptive Build] Excluded from DEMPrototype unity file: DEMEmitter.cpp, DEMParticleSettings.cpp, DEMPrototype.cpp
+=================================
+Using Unreal Build Accelerator local executor to run 49 action(s)
+  CPU 20 physical cores, 28 logical cores
+  Memory 31.85 GB physical, 30.82 GB/69.85 GB committed
+  UBA Storage capacity 40 GB
+[1/49] Compile [x64] BulkPrototypeTests.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\PowderBulkPrototype.h(5,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/bulk_prototype.hpp': No such file or directory
+#include "powder/bulk_prototype.hpp"
+^
+[2/49] Compile [x64] DEMBridgeTests.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\DEMBridgeTests.cpp(15,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/geometry.hpp': No such file or directory
+#include "powder/geometry.hpp"
+^
+[3/49] Compile [x64] DEMCore_clump.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\clump.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/clump.hpp': No such file or directory
+#include "powder/clump.hpp"
+^
+[4/49] Compile [x64] DEMCore_clump_worker.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\clump_worker.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/clump_worker.hpp': No such file or directory
+#include "powder/clump_worker.hpp"
+^
+[5/49] Compile [x64] DEMCore_core.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\core.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/core.hpp': No such file or directory
+#include "powder/core.hpp"
+^
+[6/49] Compile [x64] DEMCore_coupled.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\coupled.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/coupled.hpp': No such file or directory
+#include "powder/coupled.hpp"
+^
+[7/49] Compile [x64] DEMCore_elastic.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\elastic.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/elastic.hpp': No such file or directory
+#include "powder/elastic.hpp"
+^
+[8/49] Compile [x64] DEMCore_friction.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\friction.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/friction.hpp': No such file or directory
+#include "powder/friction.hpp"
+^
+[9/49] Compile [x64] DEMCore_geometry.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\geometry.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/geometry.hpp': No such file or directory
+#include "powder/geometry.hpp"
+^
+[10/49] Compile [x64] DEMCore_gpu_clump.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\gpu_clump.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/gpu_clump.hpp': No such file or directory
+#include "powder/gpu_clump.hpp"
+^
+[11/49] Compile [x64] DEMCore_gpu_opencl.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\gpu_opencl.cpp(2,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/gpu.hpp': No such file or directory
+#include "powder/gpu.hpp"
+^
+[12/49] Compile [x64] DEMCore_granular.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\granular.cpp(3,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/granular.hpp': No such file or directory
+#include "powder/granular.hpp"
+^
+[13/49] Compile [x64] DEMCore_granular_coupled.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\granular_coupled.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/granular_coupled.hpp': No such file or directory
+#include "powder/granular_coupled.hpp"
+^
+[14/49] Compile [x64] DEMCore_mesh.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\mesh.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/mesh.hpp': No such file or directory
+#include "powder/mesh.hpp"
+^
+[15/49] Compile [x64] DEMCore_motion.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\motion.cpp(2,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/motion.hpp': No such file or directory
+#include "powder/motion.hpp"
+^
+[16/49] Compile [x64] DEMCore_results.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\results.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/results.hpp': No such file or directory
+#include "powder/results.hpp"
+^
+[17/49] Compile [x64] DEMCore_settings.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\settings.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/settings.hpp': No such file or directory
+#include "powder/settings.hpp"
+^
+[18/49] Compile [x64] DEMCore_supply.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\supply.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/supply.hpp': No such file or directory
+#include "powder/supply.hpp"
+^
+[19/49] Compile [x64] DEMCore_tracking.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\tracking.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/tracking.hpp': No such file or directory
+#include "powder/tracking.hpp"
+^
+[20/49] Compile [x64] DEMCore_worker.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\worker.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/worker.hpp': No such file or directory
+#include "powder/worker.hpp"
+^
+[21/49] Compile [x64] DEMCore_world.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Physics\PowderCore\src\world.cpp(1,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/world.hpp': No such file or directory
+#include "powder/world.hpp"
+^
+[22/49] Compile [x64] EmitterIntegrationTests.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\PowderGranularMixer.h(4,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/granular.hpp': No such file or directory
+#include "powder/granular.hpp"
+^
+[23/49] Compile [x64] Module.VirtualGameTeamProj.gen.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\PowderBulkPrototype.h(5,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/bulk_prototype.hpp': No such file or directory
+#include "powder/bulk_prototype.hpp"
+^
+[24/49] Compile [x64] PerModuleInline.gen.cpp [NoUba]
+[25/49] Compile [x64] PlantVisibilityController.cpp [NoUba]
+[26/49] Compile [x64] SharedPCH.UnrealEd.Project.ValApi.ValExpApi.Cpp20.cpp [NoUba]
+[27/49] Compile [x64] PowderBulkPrototype.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\PowderBulkPrototype.h(5,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/bulk_prototype.hpp': No such file or directory
+#include "powder/bulk_prototype.hpp"
+^
+[28/49] Compile [x64] DEMEmitter.cpp [NoUba]
+[29/49] Compile [x64] DEMParticleSettings.cpp [NoUba]
+[30/49] Compile [x64] DEMPrototype.cpp [NoUba]
+[31/49] Compile [x64] Module.DEMPrototype.cpp [NoUba]
+[32/49] Link [x64] UnrealEditor-DEMPrototype.lib [NoUba]
+   D:/GitHub/VirtualGameTeamProj/Intermediate/Demo20261119/EditorHost/Plugins/DEMPrototype/Intermediate/Build/Win64/x64/UnrealEditor/Development/DEMPrototype/UnrealEditor-DEMPrototype.lib ざ??でず?しくじぎ すば D:/GitHub/VirtualGameTeamProj/Intermediate/Demo20261119/EditorHost/Plugins/DEMPrototype/Intermediate/Build/Win64/x64/UnrealEditor/Development/DEMPrototype/UnrealEditor-DEMPrototype.exp ぐこだぜじう せ?ぜずつなぐ? ?はそ?ごなご?.
+[33/49] Link [x64] UnrealEditor-DEMPrototype.dll [NoUba]
+[34/49] Compile [x64] PowderClumpTest.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\PowderClumpTest.cpp(3,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/clump.hpp': No such file or directory
+#include "powder/clump.hpp"
+^
+[35/49] Compile [x64] PowderCoupledTest.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\PowderCoupledTest.cpp(2,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/coupled.hpp': No such file or directory
+#include "powder/coupled.hpp"
+^
+[36/49] Compile [x64] PowderCameraController.cpp [NoUba]
+[37/49] Compile [x64] PowderDEMTest.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\PowderDEMTest.cpp(3,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/worker.hpp': No such file or directory
+#include "powder/worker.hpp"
+^
+[38/49] Compile [x64] PowderGranularMixer.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\PowderGranularMixer.h(4,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/granular.hpp': No such file or directory
+#include "powder/granular.hpp"
+^
+[39/49] Compile [x64] PowderMeshGeometry.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\PowderMeshGeometry.h(3,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/mesh.hpp': No such file or directory
+#include "powder/mesh.hpp"
+^
+[40/49] Compile [x64] PowderDropTest.cpp [NoUba]
+[41/49] Compile [x64] PowderPlantPressure.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\PowderPlantPressure.cpp(2,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/plant_pressure.hpp': No such file or directory
+#include "powder/plant_pressure.hpp"
+^
+[42/49] Compile [x64] PowderPlantTest.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\PowderPlantTest.cpp(4,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/plant_pressure.hpp': No such file or directory
+#include "powder/plant_pressure.hpp"
+^
+[43/49] Compile [x64] PowderProcessTwin.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\PowderProcessTwin.h(4,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/bulk_process.hpp': No such file or directory
+#include "powder/bulk_process.hpp"
+^
+[44/49] Compile [x64] PowderSessionControlCommandlet.cpp [NoUba]
+[45/49] Compile [x64] ProcessTwinTests.cpp [NoUba]
+D:\GitHub\VirtualGameTeamProj\Intermediate\Demo20261119\EditorHost\Source\VirtualGameTeamProj\PowderProcessTwin.h(4,1): fatal error C1083: っ?つね っち?な?せ ?き ぜ? ぞ?そ?ごなご?. 'powder/bulk_process.hpp': No such file or directory
+#include "powder/bulk_process.hpp"
+^
+[46/49] Compile [x64] VirtualGameTeamProj.cpp [NoUba]
+Total time in Unreal Build Accelerator local executor: 49.13 seconds
+
+Result: Failed (OtherCompilationError)
+Total execution time: 49.88 seconds
+Trace written to file C:\Users\lpet2\AppData\Local\UnrealBuildTool\Trace.uba with size 22.9kb

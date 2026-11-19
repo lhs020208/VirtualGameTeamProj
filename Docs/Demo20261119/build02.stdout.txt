@@ -1,0 +1,15 @@
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" VirtualGameTeamProjEditor Win64 Development D:\GitHub\VirtualGameTeamProj\VirtualGameTeamProj.uproject -WaitMutex -NoHotReloadFromIDE -NoLiveCoding -MaxParallelActions=2 -NoUBA
+Log file: C:\Users\lpet2\AppData\Local\UnrealBuildTool\Log.txt
+Executing up to 2 actions based on MaxProcessorCount override
+Using 'git status' to determine working set for adaptive non-unity build (D:\GitHub\VirtualGameTeamProj).
+UbaSessionServer - Disable remote execution (remote sessions will finish current processes)
+Creating makefile for VirtualGameTeamProjEditor (command line arguments changed)
+UHT compiled-in object format Default
+Deleted hot-reload file: D:\GitHub\VirtualGameTeamProj\Binaries\Win64\UnrealEditor-VirtualGameTeamProj-1113.dll
+Deleted hot-reload file: D:\GitHub\VirtualGameTeamProj\Binaries\Win64\UnrealEditor-VirtualGameTeamProj-1113.pdb
+Unable to delete hot-reload file: D:\GitHub\VirtualGameTeamProj\Binaries\Win64\UnrealEditor-VirtualGameTeamProj-1114.dll
+
+Result: Failed (OtherCompilationError)
+Total execution time: 6.81 seconds
+Trace written to file C:\Users\lpet2\AppData\Local\UnrealBuildTool\Trace.uba with size 2.7kb

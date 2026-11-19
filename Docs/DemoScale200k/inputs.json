@@ -1,0 +1,52 @@
+{
+  "original": "D:\\GitHub\\VirtualGameTeamProj\\SourceAssets\\ProcessPlant_20261111_LowPoly\\Simulation\\test_charge.csv",
+  "scaled": "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\DemoScale200k\\charge_200k.csv",
+  "scaled_sha256": "59ea591d0a1672fefcd3dae6e3336a2e5df6240607dd78b859be55f91aa8035d",
+  "count": 200000,
+  "radius_m": 0.002,
+  "density": 1200,
+  "nominal_mass_kg": 8.042477193189871,
+  "method": "Ten non-overlapping x/y translated tiles within each original source hopper; species ratio and radius unchanged",
+  "tiles": [
+    [
+      -0.056,
+      -0.112
+    ],
+    [
+      0.056,
+      -0.112
+    ],
+    [
+      0.168,
+      -0.112
+    ],
+    [
+      -0.168,
+      0
+    ],
+    [
+      -0.056,
+      0
+    ],
+    [
+      0.056,
+      0
+    ],
+    [
+      0.168,
+      0
+    ],
+    [
+      -0.168,
+      0.112
+    ],
+    [
+      -0.056,
+      0.112
+    ],
+    [
+      0.056,
+      0.112
+    ]
+  ]
+}

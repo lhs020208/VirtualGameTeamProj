@@ -1,0 +1,29 @@
+{
+  "pid": 43952,
+  "exit_code": 0,
+  "wall_s": 18.572958946228027,
+  "command": [
+    "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor-Cmd.exe",
+    "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\Demo20261119\\EditorHost\\VirtualGameTeamProj.uproject",
+    "/Game/ProcessPlant_20261111_LowPoly/L_ProcessPlant_LowPoly_1111",
+    "-game",
+    "-RenderOffscreen",
+    "-windowed",
+    "-ForceRes",
+    "-ResX=1280",
+    "-ResY=720",
+    "-PlantSmokeSeconds=0.00032",
+    "-PlantWallLimit=30",
+    "-unattended",
+    "-nosound",
+    "-nosplash",
+    "-NoLiveCoding",
+    "-NoMessaging",
+    "-notrace",
+    "-DisablePlugins=ModelContextProtocol",
+    "-stdout",
+    "-FullStdOutLogOutput",
+    "-abslog=D:\\GitHub\\VirtualGameTeamProj\\Docs\\Demo20261119\\original_opencl_smoke.log"
+  ],
+  "timer_policy": null
+}

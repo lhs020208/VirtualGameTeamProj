@@ -1,0 +1,6 @@
+{
+  "rotor_triangles": 8956,
+  "rotor_components": 1,
+  "rotor_boxes": 1,
+  "source": "Original rotor triangle BVH, connected-component PCA boxes; conservative demo proxies"
+}

@@ -1,4 +1,15 @@
-// Included only by PowderPlantTest.cpp. Owns all GPU work on one worker thread.
+// Included only by PowderPlantTest.cpp. Each solver has one owning worker.
+struct FPlantSolver {
+ std::unique_ptr<powder::GranularGPU> GPU;
+ std::unique_ptr<powder::DemoPlant> Demo;
+ FPlantSolver(const powder::GranularConfig&C,const std::vector<powder::Grain>&P,const std::vector<powder::PlantRoute>&R,bool demo){if(demo)Demo=std::make_unique<powder::DemoPlant>(C,P,R,TCHAR_TO_UTF8(*(FPaths::ProjectDir()/TEXT("SourceAssets/ProcessPlant_Demo20261119/rotor_boxes.txt"))));else GPU=std::make_unique<powder::GranularGPU>(C,P,std::vector<powder::Grain>(P.size()));}
+ auto snapshot(){return Demo?Demo->snapshot():GPU->snapshot();}
+ double time()const{return Demo?Demo->time():GPU->time();}
+ float angle()const{return Demo?Demo->angle():GPU->angle();}
+ std::string device()const{return Demo?Demo->device():GPU->device();}
+ void update_plant_field(const std::vector<powder::Grain>&d){if(Demo)Demo->update_plant_field(d);else GPU->update_plant_field(d);}
+ void advance(unsigned n,float rpm,bool gate){if(Demo)Demo->advance(n,rpm,gate);else GPU->advance(n,rpm,gate);}
+};
 struct FPlantRuntime {
  std::thread Thread;std::mutex Mutex;std::atomic<bool> Quit{false},Run{true};
  std::atomic<double> Drop{1000},RPM{15};std::atomic<uint32> RequestedSuppliers{0};std::atomic<bool> RequestedHopper{false},RequestedReceiver{false};
@@ -9,10 +20,10 @@ struct FPlantRuntime {
  powder::PlantPressureState AppliedState;
  static bool Same(powder::PlantPressureTargets a,powder::PlantPressureTargets b){return a.supply==b.supply&&a.weighing==b.weighing&&a.receiver==b.receiver;}
  void RequestPressure(powder::PlantPressureTargets p,int stage,bool manual){powder::validate_plant_pressure_targets(p);powder::plant_pressure_preset(stage);std::lock_guard<std::mutex> lock(Mutex);Targets=p;RequestedStage=stage;RequestedManual=manual;}
- FPlantRuntime(powder::GranularConfig C,std::vector<powder::Grain> P,std::vector<powder::PlantRoute> Routes,double Timeout,double Fraction,double TransferWait,bool Start,double Pressure,double Speed,FVector MixerMin,FVector MixerMax,bool regulated,powder::PlantPressureTargets targets,int stage,bool manual):Points(P),Regulated(regulated),Targets(targets),RequestedStage(stage),RequestedManual(manual){
+ FPlantRuntime(powder::GranularConfig C,std::vector<powder::Grain> P,std::vector<powder::PlantRoute> Routes,double Timeout,double Fraction,double TransferWait,bool Start,double Pressure,double Speed,FVector MixerMin,FVector MixerMax,bool regulated,powder::PlantPressureTargets targets,int stage,bool manual,bool demo=false):Points(P),Regulated(regulated),Targets(targets),RequestedStage(stage),RequestedManual(manual){
   Run=Start;Drop=Pressure;RPM=Speed;
   if(Regulated){FString folder=FPaths::ProjectSavedDir()/TEXT("PlantPressureRuns");IFileManager::Get().MakeDirectory(*folder,true);LogPath=FPaths::ConvertRelativePathToFull(folder/(FDateTime::UtcNow().ToString(TEXT("%Y%m%dT%H%M%SZ_"))+FGuid::NewGuid().ToString(EGuidFormats::Digits)+TEXT(".csv")));}
-  Thread=std::thread([this,C=std::move(C),P=std::move(P),Routes=std::move(Routes),MixerMin,MixerMax]()mutable{
+  Thread=std::thread([this,C=std::move(C),P=std::move(P),Routes=std::move(Routes),MixerMin,MixerMax,demo]()mutable{
    try{
     using Clock=std::chrono::steady_clock;auto prepareStart=Clock::now();
     double AppliedPressure=Drop;auto Gates=powder::plant_supplier_gates(C.plant_data);
@@ -24,11 +35,12 @@ struct FPlantRuntime {
     powder::PlantPressureState pressureState;
     if(Regulated)pressureState=powder::plant_set_regulated_pressures(C.plant_data,Routes,wanted,0,0,false,false,false);
     else {powder::plant_set_manual_valves(C.plant_data,Routes,AppliedPressure,0,0,false,false);powder::plant_set_receiver_valve(C.plant_data,false);}
-    powder::GranularGPU GPU(C,P,std::vector<powder::Grain>(P.size()));
+    FPlantSolver GPU(C,P,Routes,demo);
     {std::lock_guard<std::mutex> lock(Mutex);Device=GPU.device();}
     UE_LOG(LogTemp,Display,TEXT("Plant compute device: %s; backend=%d; particles=%u; dt=%.9g; iterations=%u"),UTF8_TO_TCHAR(GPU.device().c_str()),int(C.backend),C.count,C.dt,C.iterations);
     auto readyAt=Clock::now();double setup=std::chrono::duration<double>(readyAt-prepareStart).count(),Active=0;
-    auto LastPublish=readyAt,LastControl=readyAt,LastLog=readyAt;bool logControl=false;
+    auto LastPublish=readyAt,LastControl=readyAt,LastLog=readyAt,LastPace=readyAt;bool logControl=false;
+    double Budget=0;
     int PhaseNow=0;uint32 requestedMask=0;bool requestedWH=false,requestedRH=false;
     std::ofstream log;if(Regulated){log.open(TCHAR_TO_UTF8(*LogPath));if(!log)throw std::runtime_error("cannot create pressure run log");log<<std::setprecision(12)<<"event,utc,sim_s,active_wall_s,elapsed_since_ready_s,setup_s,pressure_stage,manual,supply_set_Pa_g,WH_set_Pa_g,RH_set_Pa_g,supply_applied_Pa_g,WH_applied_Pa_g,RH_applied_Pa_g,supplier_requested_mask,supplier_applied_mask,WH_requested_open,WH_applied_open,RH_requested_open,RH_applied_open,mixer_RPM,WH_regulator_m3_s,transfer_m3_s";for(const char* zone:{"SupplyA","SupplyB","SupplyC","SupplyD","SupplyE","SupplyF","WH","RH","MX","Other"})log<<','<<zone<<"_speciesA,"<<zone<<"_speciesB";log<<'\n';}
     auto publish=[&](const char* event,bool force){
@@ -46,15 +58,18 @@ struct FPlantRuntime {
     };
     publish("ready",true);
     while(!Quit){
+     if(demo){auto now=Clock::now();if(Run)Budget+=std::chrono::duration<double>(now-LastPace).count();LastPace=now;Active=Budget;}
      {std::lock_guard<std::mutex> lock(Mutex);wanted=Targets;stageNow=RequestedStage;manualNow=RequestedManual;}
      requestedMask=RequestedSuppliers.load()&All;requestedWH=RequestedHopper.load();requestedRH=RequestedReceiver.load();
      if(!Run){if(std::chrono::duration<double>(Clock::now()-LastLog).count()>5)publish("paused_pending",false);std::this_thread::sleep_for(std::chrono::milliseconds(5));continue;}
+     if(demo&&GPU.time()+C.dt>Budget){std::this_thread::sleep_for(std::chrono::milliseconds(1));continue;}
      auto begin=Clock::now();double speed=RPM,drop=Drop;
      if(!std::isfinite(speed)||speed<0||speed>30)throw std::runtime_error("invalid live RPM");
      bool pressureChanged=Regulated?(!Same(wanted,previousTargets)||stageNow!=previousStage||manualNow!=previousManual):drop!=AppliedPressure;
      if(pressureChanged||requestedMask!=PreviousRequest||requestedWH!=PreviousHopper||requestedRH!=PreviousReceiver||((Open!=requestedMask||OpenHopper!=requestedWH||OpenReceiver!=requestedRH)&&std::chrono::duration<double>(begin-LastControl).count()>.1)){
       uint32 nextOpen=Open|requestedMask,closing=Open&~requestedMask;bool nextWH=OpenHopper||requestedWH,nextRH=OpenReceiver||requestedRH;
-      if(closing||(OpenHopper&&!requestedWH)||(OpenReceiver&&!requestedRH)){auto current=GPU.snapshot();if(OpenReceiver&&!requestedRH&&powder::plant_supplier_closure_clear(C.plant_data[ReceiverGate],current,C.radius))nextRH=false;if(OpenHopper&&!requestedWH&&powder::plant_supplier_closure_clear(C.plant_data[HopperGate],current,C.radius))nextWH=false;for(size_t i=0;i<Gates.size();++i)if((closing&(uint32(1)<<i))&&powder::plant_supplier_closure_clear(C.plant_data[Gates[i]],current,C.radius))nextOpen&=~(uint32(1)<<i);}
+      if(demo){nextOpen=requestedMask;nextWH=requestedWH;nextRH=requestedRH;}
+      else if(closing||(OpenHopper&&!requestedWH)||(OpenReceiver&&!requestedRH)){auto current=GPU.snapshot();if(OpenReceiver&&!requestedRH&&powder::plant_supplier_closure_clear(C.plant_data[ReceiverGate],current,C.radius))nextRH=false;if(OpenHopper&&!requestedWH&&powder::plant_supplier_closure_clear(C.plant_data[HopperGate],current,C.radius))nextWH=false;for(size_t i=0;i<Gates.size();++i)if((closing&(uint32(1)<<i))&&powder::plant_supplier_closure_clear(C.plant_data[Gates[i]],current,C.radius))nextOpen&=~(uint32(1)<<i);}
       if(pressureChanged||nextOpen!=Open||requestedMask!=PreviousRequest||nextWH!=OpenHopper||requestedWH!=PreviousHopper||nextRH!=OpenReceiver||requestedRH!=PreviousReceiver){
        PhaseNow=nextWH?1:0;C.plant_data[4].x=float(PhaseNow);
        if(Regulated)pressureState=powder::plant_set_regulated_pressures(C.plant_data,Routes,wanted,nextOpen,requestedMask,nextWH,requestedWH,nextRH);
@@ -62,8 +77,8 @@ struct FPlantRuntime {
        GPU.update_plant_field(C.plant_data);Open=nextOpen;OpenHopper=nextWH;OpenReceiver=nextRH;PreviousRequest=requestedMask;PreviousHopper=requestedWH;PreviousReceiver=requestedRH;AppliedPressure=drop;previousTargets=wanted;previousStage=stageNow;previousManual=manualNow;logControl=true;
       }LastControl=begin;
      }
-     GPU.advance(16,float(speed),false);Active+=std::chrono::duration<double>(Clock::now()-begin).count();
-     if(std::chrono::duration<double>(Clock::now()-LastPublish).count()>.1)publish(logControl?"control_applied":"sample",false);
+     GPU.advance(demo?1:16,float(speed),false);if(!demo)Active+=std::chrono::duration<double>(Clock::now()-begin).count();
+     if(std::chrono::duration<double>(Clock::now()-LastPublish).count()>(demo?1./60:.1))publish(logControl?"control_applied":"sample",false);
     }
     publish("stopped_not_completion",true);
    }catch(const std::exception& e){if(Regulated)FFileHelper::SaveStringToFile(UTF8_TO_TCHAR(e.what()),*(LogPath+TEXT(".error.txt")));std::lock_guard<std::mutex> lock(Mutex);Error=e.what();Run=false;}

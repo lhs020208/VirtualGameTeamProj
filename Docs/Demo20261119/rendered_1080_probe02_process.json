@@ -1,0 +1,28 @@
+{
+  "pid": 45920,
+  "exit_code": 0,
+  "wall_s": 105.7977831363678,
+  "command": [
+    "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor-Cmd.exe",
+    "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\Demo20261119\\EditorHost\\VirtualGameTeamProj.uproject",
+    "/Game/ProcessPlant_Demo20261119/L_ProcessPlant_Demo30FPS_1119",
+    "-game",
+    "-RenderOffscreen",
+    "-windowed",
+    "-ForceRes",
+    "-ResX=1920",
+    "-ResY=1080",
+    "-DemoBenchmarkSeconds=90",
+    "-DemoBenchmarkOutput=D:\\GitHub\\VirtualGameTeamProj\\Docs\\Demo20261119\\rendered_1080_probe02",
+    "-unattended",
+    "-nosound",
+    "-nosplash",
+    "-NoLiveCoding",
+    "-NoMessaging",
+    "-notrace",
+    "-DisablePlugins=ModelContextProtocol",
+    "-stdout",
+    "-FullStdOutLogOutput",
+    "-abslog=D:\\GitHub\\VirtualGameTeamProj\\Docs\\Demo20261119\\rendered_1080_probe02.log"
+  ]
+}

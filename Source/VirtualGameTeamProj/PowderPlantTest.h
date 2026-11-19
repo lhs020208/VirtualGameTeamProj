@@ -33,6 +33,13 @@ public:
  // Existing levels keep OpenCL. The isolated CUDA level opts in explicitly.
  UPROPERTY(EditAnywhere,Category="Plant|Compute") EPlantComputeBackend ComputeBackend=EPlantComputeBackend::OpenCL;
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") FString ComputeDevice;
+ // Opt-in only: old OpenCL/CUDA maps retain their original solver.
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Plant|Demo") bool DemoRealtime=false;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Plant|Demo") bool DemoAutoCycle=false;
+ // Presentation only. Apply changes with ResetSimulation; physical input stays unchanged.
+ UPROPERTY(EditAnywhere,Category="Plant|Demo",meta=(ClampMin="1",ClampMax="10")) int32 DemoVisualCopies=10;
+ UPROPERTY(VisibleAnywhere,Category="Plant|Status") int32 DisplayedParticleCount=0;
+ UPROPERTY(VisibleAnywhere,Category="Plant|Status") int32 SolverParticleCount=0;
  // Blender-world metres. Per-level geometry settings; legacy levels retain defaults.
  UPROPERTY(EditAnywhere,Category="Plant|Geometry") FVector MixerPivotM=FVector(3,0,.9);
  UPROPERTY(EditAnywhere,Category="Plant|Geometry") FVector MixerBoundsMinM=FVector(2.25,-.45,.57);
@@ -89,11 +96,19 @@ private:
  UPROPERTY() TArray<FPlantRotorVisual> Rotor;
  UPROPERTY() TArray<TObjectPtr<AActor>> ValveVisuals;
  UPROPERTY() TObjectPtr<APlantVisibilityController> Display;
+ TArray<FVector> VisualOffsets;
+ FVector VisualScale=FVector::OneVector;
+ TArray<TArray<FTransform>> InstanceTransforms;
  FPlantRuntime* Runtime=nullptr;
  double LastShow=0;uint64 Generation=0;
  double SmokeSeconds=0,SmokeWallLimit=120,SmokeStart=0;bool SmokeShot=false;
  int32 SmokeWarmFrames=0;
  float PreviousMaxFPS=0;
+ double DemoTestSeconds=0,DemoTestStart=0,DemoLastFrame=0,DemoNextSample=0;
+ int32 DemoWarmFrames=0,DemoAutoStage=-1,DemoShotStage=0,DemoCameraStage=0;
+ TArray<double> DemoFrames;
+ FString DemoOutput,DemoTrace;
+ void TickDemo(double DeltaSeconds);
  void Stop();void Show();void CacheRotor();
  TSharedRef<SWidget> BuildPressurePanel();
 };

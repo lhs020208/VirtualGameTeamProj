@@ -1,0 +1,14 @@
+#include "powder/demo_plant.hpp"
+#include "powder/plant_pressure.hpp"
+#include <iostream>
+#include <limits>
+void require(bool b,const char*m){if(!b)throw std::runtime_error(m);}
+int main(int argc,char**argv){try{std::string root=argv[1],data=root+"/SourceAssets/ProcessPlant_20261111_LowPoly/Simulation/",boxes=root+"/SourceAssets/ProcessPlant_Demo20261119/rotor_boxes.txt";powder::GranularConfig c;c.plant_data=powder::read_plant_data(data+"runtime.plant");c.dt=1.f/120;c.radius=.002f;c.iterations=1;auto rs=powder::read_plant_routes(data+"runtime.routes");auto gate=c.plant_data[powder::plant_supplier_gates(c.plant_data)[0]];std::vector<powder::Grain> p(8,{gate.x,gate.y,gate.z+.004f,0});unsigned passed=0;
+ {powder::plant_set_manual_valves(c.plant_data,rs,1000,0,0,false,false);powder::DemoPlant s(c,p,rs,boxes);s.advance(240,0,false);auto n=s.counts();require(n[0]==8&&n[9]==0,"closed valve leak");++passed;powder::plant_set_manual_valves(c.plant_data,rs,1000,1,1,false,false);s.update_plant_field(c.plant_data);s.advance(360,0,false);require(s.counts()[6]==8,"resting source failed to wake and discharge");++passed;}
+ {powder::plant_set_manual_valves(c.plant_data,rs,0,1,1,false,false);powder::DemoPlant s(c,p,rs,boxes);s.advance(120,0,false);require(s.counts()[0]==8,"zero pressure invented transport");++passed;}
+ {powder::plant_set_regulated_pressures(c.plant_data,rs,{-1000,1000,0},1,1,false,false,false);powder::DemoPlant s(c,p,rs,boxes);s.advance(120,0,false);require(s.counts()[0]==8,"negative pressure moved source forward");++passed;}
+ {powder::plant_set_manual_valves(c.plant_data,rs,1000,1,1,false,false);powder::DemoPlant s(c,p,rs,boxes);s.advance(360,0,false);require(s.counts()[6]==8,"positive pressure failed to reach WH");auto snap=s.snapshot();require(snap.size()==8,"count changed");for(auto q:snap)require(q.w==0,"species changed");++passed;}
+ {powder::plant_set_manual_valves(c.plant_data,rs,1000,1,1,false,false);powder::DemoPlant s(c,p,rs,boxes);s.advance(12,0,false);auto before=s.snapshot();powder::plant_set_manual_valves(c.plant_data,rs,1000,0,0,false,false);s.update_plant_field(c.plant_data);s.advance(120,0,false);auto after=s.snapshot();for(unsigned i=0;i<8;++i)require(powder::demo::length(powder::demo::xyz(after[i])-powder::demo::xyz(before[i]))<1e-5,"closed route continued transport");++passed;double t=s.time();bool rejected=false;try{s.advance(1,std::numeric_limits<float>::quiet_NaN(),false);}catch(const std::invalid_argument&){rejected=true;}require(rejected&&s.time()==t,"invalid RPM changed time");++passed;}
+ {auto bad=c;bad.dt=std::numeric_limits<float>::quiet_NaN();bool rejected=false;try{powder::DemoPlant s(bad,p,rs,boxes);}catch(const std::invalid_argument&){rejected=true;}require(rejected,"nonfinite timestep accepted");++passed;}
+ std::cout<<"{\"passed\":"<<passed<<",\"failed\":0}\n";return 0;
+ }catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}

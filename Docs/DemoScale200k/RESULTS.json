@@ -1,0 +1,396 @@
+{
+  "date": "2026-11-19",
+  "question": "200,000 displayed particles: elapsed simulation time and optimization headroom",
+  "hardware": {
+    "cpu": "i7-14700KF",
+    "gpu": "RTX 4060 Ti 16 GB",
+    "driver": "610.88",
+    "engine": "UE 5.8"
+  },
+  "conditions": {
+    "output_resolution": [
+      1920,
+      1080
+    ],
+    "internal_resolution_observed": [
+      1400,
+      788
+    ],
+    "wall_seconds_per_rendered_test": 150,
+    "cap_fps": 30,
+    "time_step_s": 0.008333333333333333,
+    "contact_iterations": 1,
+    "simultaneous_benchmarks": false,
+    "original_editor_left_running": true,
+    "offscreen_timer_request_honored": true
+  },
+  "interpretations": {
+    "scaled": "200k display / 25k compute; unchanged 2mm radius and 1200 kg/m3 density -> nominal 8.04248kg, ten times material.",
+    "visual": "200k display / 2500 compute; each original visual grain subdivided into ten smaller visual grains (0.928318mm radius). Original physical quantity and 20k input grains remain unchanged.",
+    "prototype_ui": "Test harness retains the old static UI header; counts in JSON are instrumented instance counts, not that label."
+  },
+  "rendered": [
+    {
+      "model": "demo constrained routes and coarse soft contacts",
+      "rendered": true,
+      "wall_s": 150.0168745,
+      "sim_s": 150.000007823,
+      "rate": 0.999887568,
+      "frames": 4476,
+      "fps": 29.836643477,
+      "p95_ms": 33.381201327,
+      "p99_ms": 33.451199532,
+      "display_particles": 20000,
+      "solver_particles": 2500,
+      "WH": 0,
+      "RH": 0,
+      "MX": 20000,
+      "performance_pass": true,
+      "error": false,
+      "width": 1920,
+      "height": 1080,
+      "show_mean_ms": 1.685203,
+      "worker_step_mean_ms": 0.798462,
+      "worker_publish_mean_ms": 0.427595,
+      "physical_input_particles": 20000,
+      "visual_radius_m": 0.002,
+      "label": "baseline_r0",
+      "wall_seconds_to_sim_60": 60.055491613246595,
+      "last_30_wall_seconds_rate": 1.0004965684641787,
+      "estimated_wall_seconds_per_minute_in_late_stage": 59.97022067962067,
+      "max_sampled_sim_lag_s": 0.058973565000000505
+    },
+    {
+      "model": "demo constrained routes and coarse soft contacts",
+      "rendered": true,
+      "wall_s": 150.021087002,
+      "sim_s": 62.683336603,
+      "rate": 0.417830172,
+      "frames": 2671,
+      "fps": 17.804163757,
+      "p95_ms": 63.958801329,
+      "p99_ms": 75.366903096,
+      "display_particles": 200000,
+      "solver_particles": 25000,
+      "WH": 0,
+      "RH": 0,
+      "MX": 200000,
+      "performance_pass": false,
+      "error": false,
+      "width": 1920,
+      "height": 1080,
+      "show_mean_ms": 19.682058,
+      "worker_step_mean_ms": 16.53674,
+      "worker_publish_mean_ms": 4.234484,
+      "physical_input_particles": 200000,
+      "visual_radius_m": 0.002,
+      "label": "scaled_r0",
+      "wall_seconds_to_sim_60": 132.16778953374705,
+      "last_30_wall_seconds_rate": 0.15240694281931574,
+      "estimated_wall_seconds_per_minute_in_late_stage": 393.6828525661872,
+      "max_sampled_sim_lag_s": 87.346083733
+    },
+    {
+      "model": "demo constrained routes and coarse soft contacts",
+      "rendered": true,
+      "wall_s": 150.015097201,
+      "sim_s": 149.991674489,
+      "rate": 0.999843864,
+      "frames": 2402,
+      "fps": 16.011721785,
+      "p95_ms": 63.436202705,
+      "p99_ms": 65.735898912,
+      "display_particles": 200000,
+      "solver_particles": 2500,
+      "WH": 0,
+      "RH": 0,
+      "MX": 20000,
+      "performance_pass": false,
+      "error": false,
+      "width": 1920,
+      "height": 1080,
+      "show_mean_ms": 16.605772,
+      "worker_step_mean_ms": 0.814942,
+      "worker_publish_mean_ms": 0.424469,
+      "physical_input_particles": 20000,
+      "visual_radius_m": 0.000928318,
+      "label": "visual_r0",
+      "wall_seconds_to_sim_60": 60.07137982001485,
+      "last_30_wall_seconds_rate": 1.000394786666826,
+      "estimated_wall_seconds_per_minute_in_late_stage": 59.97632214769084,
+      "max_sampled_sim_lag_s": 0.08860918999999967
+    },
+    {
+      "model": "demo constrained routes and coarse soft contacts",
+      "rendered": true,
+      "wall_s": 150.035423502,
+      "sim_s": 150.008341157,
+      "rate": 0.999819494,
+      "frames": 3839,
+      "fps": 25.587290724,
+      "p95_ms": 41.218202561,
+      "p99_ms": 44.284999371,
+      "display_particles": 200000,
+      "solver_particles": 2500,
+      "WH": 0,
+      "RH": 0,
+      "MX": 20000,
+      "performance_pass": false,
+      "error": false,
+      "width": 1920,
+      "height": 1080,
+      "show_mean_ms": 15.924637,
+      "worker_step_mean_ms": 0.566248,
+      "worker_publish_mean_ms": 0.264558,
+      "physical_input_particles": 20000,
+      "visual_radius_m": 0.000928318,
+      "label": "visual_incremental_r0",
+      "wall_seconds_to_sim_60": 60.053864517446556,
+      "last_30_wall_seconds_rate": 0.9997437491594413,
+      "estimated_wall_seconds_per_minute_in_late_stage": 60.01537899131297,
+      "max_sampled_sim_lag_s": 0.06645729299999914
+    }
+  ],
+  "native_serial": {
+    "display_particles": 200000,
+    "solver_particles": 25000,
+    "sim_s": 72.3083371045,
+    "wall_s": 180.0325161,
+    "rate": 0.401640429579,
+    "completed": false,
+    "snapshot_mean_ms": 2.82232666667,
+    "max_containment_m": 2.41914506205e-07,
+    "phases": [
+      {
+        "phase": 0,
+        "steps": 240,
+        "compute_s": 7.9865921,
+        "step_mean_ms": 33.2774670833
+      },
+      {
+        "phase": 1,
+        "steps": 2400,
+        "compute_s": 7.992601,
+        "step_mean_ms": 3.33025041667
+      },
+      {
+        "phase": 2,
+        "steps": 3120,
+        "compute_s": 10.4675659,
+        "step_mean_ms": 3.35498907051
+      },
+      {
+        "phase": 3,
+        "steps": 2917,
+        "compute_s": 153.5266378,
+        "step_mean_ms": 52.6316893384
+      }
+    ],
+    "zones": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      200000,
+      0
+    ]
+  },
+  "native_baseline": {
+    "display_particles": 20000,
+    "solver_particles": 2500,
+    "sim_s": 90.0000046939,
+    "wall_s": 3.9908222,
+    "rate": 22.5517450248,
+    "completed": true,
+    "snapshot_mean_ms": 0.133015789474,
+    "max_containment_m": 2.41914506205e-07,
+    "phases": [
+      {
+        "phase": 0,
+        "steps": 240,
+        "compute_s": 0.0943876,
+        "step_mean_ms": 0.393281666667
+      },
+      {
+        "phase": 1,
+        "steps": 2400,
+        "compute_s": 0.1409826,
+        "step_mean_ms": 0.05874275
+      },
+      {
+        "phase": 2,
+        "steps": 3120,
+        "compute_s": 0.1998306,
+        "step_mean_ms": 0.0640482692308
+      },
+      {
+        "phase": 3,
+        "steps": 5040,
+        "compute_s": 3.5479952,
+        "step_mean_ms": 0.703967301587
+      }
+    ],
+    "zones": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      20000,
+      0
+    ]
+  },
+  "incremental_renderer": {
+    "change": "BatchUpdateInstancesTransforms bMarkRenderStateDirty=false. UE 5.8 TransformChanged already requests instance-data updates; avoid recreating entire scene proxies.",
+    "physics_changed": false,
+    "display_count_changed": false,
+    "fps_gain_percent": 59.80349313819906,
+    "frame_p95_reduction_percent": 35.024164745991,
+    "source": "UE_5.8/Engine/Source/Runtime/Engine/Private/InstancedStaticMesh/ISMInstanceDataManager.cpp:TransformChanged and MarkComponentRenderInstancesDirty; InstancedStaticMesh.cpp:BatchUpdateInstancesTransformsInternal"
+  },
+  "parallel_contact_experiment": {
+    "threads": 12,
+    "result": {
+      "display_particles": 200000,
+      "solver_particles": 25000,
+      "sim_s": 90.0000046939,
+      "wall_s": 35.7979433,
+      "rate": 2.51411104654,
+      "completed": true,
+      "snapshot_mean_ms": 2.17276315789,
+      "max_containment_m": 2.41914506205e-07,
+      "phases": [
+        {
+          "phase": 0,
+          "steps": 240,
+          "compute_s": 0.9586682,
+          "step_mean_ms": 3.99445083333
+        },
+        {
+          "phase": 1,
+          "steps": 2400,
+          "compute_s": 1.9336084,
+          "step_mean_ms": 0.805670166667
+        },
+        {
+          "phase": 2,
+          "steps": 3120,
+          "compute_s": 2.6528408,
+          "step_mean_ms": 0.850269487179
+        },
+        {
+          "phase": 3,
+          "steps": 5040,
+          "compute_s": 30.1167475,
+          "step_mean_ms": 5.97554513889
+        }
+      ],
+      "zones": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        200000,
+        0
+      ]
+    },
+    "reference_50s": {
+      "display_particles": 200000,
+      "solver_particles": 25000,
+      "sim_s": 50.0000026077,
+      "wall_s": 26.5351611,
+      "rate": 1.88429240807,
+      "completed": true,
+      "snapshot_mean_ms": 1.61427272727,
+      "max_containment_m": 2.41914506205e-07,
+      "phases": [
+        {
+          "phase": 0,
+          "steps": 240,
+          "compute_s": 5.7867951,
+          "step_mean_ms": 24.11164625
+        },
+        {
+          "phase": 1,
+          "steps": 2400,
+          "compute_s": 4.8741861,
+          "step_mean_ms": 2.030910875
+        },
+        {
+          "phase": 2,
+          "steps": 3120,
+          "compute_s": 6.3706525,
+          "step_mean_ms": 2.04187580128
+        },
+        {
+          "phase": 3,
+          "steps": 240,
+          "compute_s": 9.437363,
+          "step_mean_ms": 39.3223458333
+        }
+      ],
+      "zones": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        200000,
+        0
+      ]
+    },
+    "validation": {
+      "threads": 12,
+      "same_equations": true,
+      "reference_hash": "13480736430539112723",
+      "parallel_hash": "13480736430539112723",
+      "bitwise_identical_at_50s": true,
+      "installed": false
+    },
+    "matched_simulation_interval_s": [
+      0,
+      50
+    ],
+    "serial_wall_s": 26.5351611,
+    "parallel_wall_s": 7.3255916,
+    "speedup": 3.622255040807899,
+    "elapsed_reduction_percent": 72.39288816678788,
+    "limitation": "Standalone solver experiment, not whole-application fps. Timings compare the same 0-50 s simulation interval, with bitwise-identical positions at its end. The 90 s candidate additionally measures steady mixing. Combined rendered 200k/25k + parallel physics + incremental rendering has not been tested."
+  },
+  "original_project_unchanged": {
+    "Source\\VirtualGameTeamProj\\PowderPlantDemo.inl": true,
+    "Source\\VirtualGameTeamProj\\PowderPlantPressure.cpp": true,
+    "Source\\VirtualGameTeamProj\\PowderPlantRuntime.inl": true,
+    "Source\\VirtualGameTeamProj\\PowderPlantTest.cpp": true,
+    "Source\\VirtualGameTeamProj\\PowderPlantTest.h": true,
+    "Physics\\PowderCore\\include\\powder\\demo_plant.hpp": true,
+    "Binaries\\Win64\\UnrealEditor.modules": true,
+    "Binaries\\Win64\\Demo20261119_VirtualGameTeamProj_5ed1827b08.dll": true,
+    "Content\\ProcessPlant_Demo20261119\\L_ProcessPlant_Demo30FPS_1119.umap": true,
+    "SourceAssets\\ProcessPlant_20261111_LowPoly\\Simulation\\test_charge.csv": true
+  },
+  "installed_changes": false,
+  "commits_created": false,
+  "new_worktrees": false,
+  "limits": [
+    "One 150s rendered trial per condition, not a statistical guarantee",
+    "A displayed frame can advance less than one frame of physical time; FPS and simulation rate must be read separately",
+    "Native solver throughput excludes rendering and wall-clock pacing",
+    "20k -> 200k same-size particles changes both count and material mass",
+    "Visual subdivision increases apparent detail without increasing independent physical degrees of freedom"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "level": "/Game/ProcessPlant_Demo20261119/L_ProcessPlant_Demo30FPS_1119",
+  "visual_copies": 10,
+  "display_particles": 200000,
+  "solver_particles": 2500,
+  "originals_preserved": true,
+  "backup": "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\Demo20261119\\EditorHost\\Intermediate\\Demo200kSetup\\L_ProcessPlant_Demo30FPS_before_200k.umap"
+}
