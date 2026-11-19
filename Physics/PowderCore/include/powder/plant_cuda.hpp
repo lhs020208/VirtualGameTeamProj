@@ -7,6 +7,8 @@ class PlantCuda {
 public:
  PlantCuda(GranularConfig,const std::vector<Grain>&,const std::vector<Grain>&);
  ~PlantCuda();
+ void set_feed_brake(const PlantFeedBrake&,unsigned);
+ std::vector<Grain> air_snapshot();
  void advance(unsigned,float,bool);
  void set(const std::vector<Grain>&,const std::vector<Grain>&);
  void update(const std::vector<Grain>&);

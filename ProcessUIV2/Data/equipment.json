@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "equipment": [
+    {
+      "id": "supply-a",
+      "name": "공급 호퍼 A",
+      "kind": "supply",
+      "description": "지정한 원료나 첨가제를 보관하고 칭량호퍼로 보냅니다.",
+      "referenceTag": "",
+      "material": "물질 미지정"
+    },
+    {
+      "id": "supply-b",
+      "name": "공급 호퍼 B",
+      "kind": "supply",
+      "description": "지정한 원료나 첨가제를 보관하고 칭량호퍼로 보냅니다.",
+      "referenceTag": "",
+      "material": "물질 미지정"
+    },
+    {
+      "id": "supply-c",
+      "name": "공급 호퍼 C",
+      "kind": "supply",
+      "description": "지정한 원료나 첨가제를 보관하고 칭량호퍼로 보냅니다.",
+      "referenceTag": "",
+      "material": "물질 미지정"
+    },
+    {
+      "id": "supply-d",
+      "name": "공급 호퍼 D",
+      "kind": "supply",
+      "description": "지정한 원료나 첨가제를 보관하고 칭량호퍼로 보냅니다.",
+      "referenceTag": "",
+      "material": "물질 미지정"
+    },
+    {
+      "id": "supply-e",
+      "name": "공급 호퍼 E",
+      "kind": "supply",
+      "description": "지정한 원료나 첨가제를 보관하고 칭량호퍼로 보냅니다.",
+      "referenceTag": "",
+      "material": "물질 미지정"
+    },
+    {
+      "id": "supply-f",
+      "name": "공급 호퍼 F",
+      "kind": "supply",
+      "description": "지정한 원료나 첨가제를 보관하고 칭량호퍼로 보냅니다.",
+      "referenceTag": "",
+      "material": "물질 미지정"
+    },
+    {
+      "id": "weigher",
+      "name": "칭량호퍼",
+      "kind": "weigher",
+      "description": "원료를 하나씩 받아 투입할 양을 확인합니다.",
+      "referenceTag": "WH101"
+    },
+    {
+      "id": "receiver",
+      "name": "수취호퍼",
+      "kind": "receiver",
+      "description": "칭량된 원료를 받아 혼합기에 넣을 때까지 보관합니다.",
+      "referenceTag": "RH-201"
+    },
+    {
+      "id": "mixer",
+      "name": "혼합기",
+      "kind": "mixer",
+      "description": "받은 원료와 첨가제를 골고루 섞습니다.",
+      "referenceTag": "MX-301"
+    }
+  ],
+  "connections": [
+    [
+      "supply-a",
+      "weigher"
+    ],
+    [
+      "supply-b",
+      "weigher"
+    ],
+    [
+      "supply-c",
+      "weigher"
+    ],
+    [
+      "supply-d",
+      "weigher"
+    ],
+    [
+      "supply-e",
+      "weigher"
+    ],
+    [
+      "supply-f",
+      "weigher"
+    ],
+    [
+      "weigher",
+      "receiver"
+    ],
+    [
+      "receiver",
+      "mixer"
+    ]
+  ],
+  "actorMappings": {},
+  "mode": "disconnected"
+}

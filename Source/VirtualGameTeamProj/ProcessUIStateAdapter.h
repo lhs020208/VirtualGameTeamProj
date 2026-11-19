@@ -1,0 +1,68 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "PlantSimulationSnapshot.h"
+#include "Subsystems/WorldSubsystem.h"
+#include "ProcessUIStateAdapter.generated.h"
+
+class APowderPlantTest;
+class UUserWidget;
+class UProcessControlService;
+class UProcessControlUI;
+
+/** The only state supplier for one UI instance. It has no simulation command API. */
+UCLASS(BlueprintType)
+class VIRTUALGAMETEAMPROJ_API UProcessUIStateAdapter : public UObject
+{
+    GENERATED_BODY()
+public:
+    bool Attach(UUserWidget* InWidget, APowderPlantTest* InSource);
+    void Detach();
+    void Refresh();
+    UFUNCTION() void HandleStateRequested(FString EquipmentId);
+    UFUNCTION(BlueprintCallable, Category="Process UI|Read Only")
+    FProcessEquipmentSnapshot ReadEquipment(const FString& EquipmentId);
+    static FProcessEquipmentSnapshot BuildEquipment(const FString& Id, const FPlantSimulationSnapshot* State, double Now, double MaxAge = 2.0);
+    static void Format(const FProcessEquipmentSnapshot& State, FText& Status, FText& Quantity, FText& Valve);
+    static FString FormatMass(const FPlantMassValue& Mass);
+    static FString FormatTransfer(const FPlantTransferSnapshot& Transfer);
+    static FString FormatPreparation(const FPlantFeedPreparationSnapshot& Preparation);
+    UPROPERTY(BlueprintReadOnly, Category="Process UI|Read Only") TMap<FString, FProcessEquipmentSnapshot> Latest;
+    bool IsAttached() const;
+    TWeakObjectPtr<UProcessControlUI> CommandUI;
+private:
+    TWeakObjectPtr<APowderPlantTest> SourceActor;
+    TWeakObjectPtr<UUserWidget> Widget;
+    FProcessSnapshotCursor Cursor;
+    FDelegateHandle DestructHandle;
+    void Push(const FString& Id);
+    void WidgetDestructed(UUserWidget* Removed);
+};
+
+/** Opens the existing UI for explicitly registered plant levels without changing shared maps. */
+UCLASS()
+class VIRTUALGAMETEAMPROJ_API UProcessUIStateSubsystem : public UTickableWorldSubsystem
+{
+    GENERATED_BODY()
+public:
+    virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+    virtual void Tick(float DeltaTime) override;
+    virtual TStatId GetStatId() const override;
+    virtual void Deinitialize() override;
+    // Explicit actor reference only; never selects the first actor of a class.
+    UFUNCTION(BlueprintCallable, Category="Process UI|Read Only") bool OpenForActor(APowderPlantTest* Actor);
+    UFUNCTION(BlueprintCallable, Category="Process UI|Read Only") void Close();
+    bool IsReadOnlyScreenActive() const;
+    bool IsObservationViewActive() const;
+    UFUNCTION() void HandleObservationViewRequested(bool ShowObservation);
+    UPROPERTY(BlueprintReadOnly, Transient) TObjectPtr<UProcessUIStateAdapter> Adapter;
+    UPROPERTY(BlueprintReadOnly, Transient) TObjectPtr<UUserWidget> StatusWidget;
+    UPROPERTY(Transient) TObjectPtr<UProcessControlService> ControlService;
+    UPROPERTY(Transient) TObjectPtr<UProcessControlUI> ControlUI;
+protected:
+    virtual bool DoesSupportWorldType(EWorldType::Type WorldType) const override;
+private:
+    bool PendingOpen = false;
+    FString PendingSourcePath;
+    double LastRefresh = 0;
+};

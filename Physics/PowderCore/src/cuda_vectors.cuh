@@ -6,13 +6,13 @@ namespace powder { namespace cuda_detail {
 // float4 is the sole global-memory vector ABI (16 bytes, matching Grain).
 template<class T,int N> struct Vec {
  T x,y,z,w;
- __device__ Vec():x(0),y(0),z(0),w(0){}
- __device__ explicit Vec(T a):x(a),y(a),z(a),w(a){}
- __device__ Vec(T a,T b):x(a),y(b),z(0),w(0){}
- __device__ Vec(T a,T b,T c):x(a),y(b),z(c),w(0){}
- __device__ Vec(T a,T b,T c,T d):x(a),y(b),z(c),w(d){}
- __device__ Vec(Vec<T,2> a,T b):x(a.x),y(a.y),z(b),w(0){}
- __device__ Vec(Vec<T,3> a,T b):x(a.x),y(a.y),z(a.z),w(b){}
+ __host__ __device__ Vec():x(0),y(0),z(0),w(0){}
+ __host__ __device__ explicit Vec(T a):x(a),y(a),z(a),w(a){}
+ __host__ __device__ Vec(T a,T b):x(a),y(b),z(0),w(0){}
+ __host__ __device__ Vec(T a,T b,T c):x(a),y(b),z(c),w(0){}
+ __host__ __device__ Vec(T a,T b,T c,T d):x(a),y(b),z(c),w(d){}
+ __host__ __device__ Vec(Vec<T,2> a,T b):x(a.x),y(a.y),z(b),w(0){}
+ __host__ __device__ Vec(Vec<T,3> a,T b):x(a.x),y(a.y),z(a.z),w(b){}
  __device__ T& operator[](int i){return (&x)[i];}
  __device__ T operator[](int i)const{return (&x)[i];}
  __device__ Vec<T,2> xy()const{return Vec<T,2>(x,y);}

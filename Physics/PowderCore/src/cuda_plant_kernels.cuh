@@ -46,14 +46,14 @@ __device__ float3 plant_box_local(float3 p,int k,const float4* d){
  float3 q=p-d[k].xyz();return float3(dot(q,d[k+1].xyz()),dot(q,d[k+2].xyz()),dot(q,d[k+3].xyz()));
 }
 __device__ float3 plant_box_world(float3 q,int k,const float4* d){return d[k].xyz()+q.x*d[k+1].xyz()+q.y*d[k+2].xyz()+q.z*d[k+3].xyz();}
-__device__ float3 plant_obb_walls(float3 p,float r,const float4* d){
+__device__ float3 plant_obb_walls(float3 p,float r,const float4* d,float3* correction){
  int start=(int)d[9].x,count=(int)d[9].y;float best=INFINITY;float3 closest=p;
- 
+
  for(int i=0;i<count;++i){int k=start+4*i;float3 h=float3(d[k+1].w,d[k+2].w,d[k+3].w)-r;
   float3 q=plant_box_local(p,k,d),c=clamp(q,-h,h),delta=q-c;float distance=dot(delta,delta);
   if(distance<best){best=distance;closest=plant_box_world(c,k,d);}if(distance<1.e-16f){closest=p;break;}
  }
- p=closest;start=(int)d[9].z;count=(int)d[9].w;
+ *correction+=closest-p;p=closest;start=(int)d[9].z;count=(int)d[9].w;
  for(int i=0;i<count;++i){int k=start+4*i;float3 h=float3(d[k+1].w,d[k+2].w,d[k+3].w),q=plant_box_local(p,k,d);
   float3 gap=cl_fabs(q)-h,outside=cl_fmax(gap,float3(0));float l=length(outside),distance=l+cl_fmin(cl_fmax(gap.x,cl_fmax(gap.y,gap.z)),0.f);
   if(distance<r){float3 n;
@@ -61,7 +61,7 @@ __device__ float3 plant_obb_walls(float3 p,float r,const float4* d){
    else if(gap.x>=gap.y&&gap.x>=gap.z)n=float3(cl_copysign(1.f,q.x),0,0);
    else if(gap.y>=gap.z)n=float3(0,cl_copysign(1.f,q.y),0);
    else n=float3(0,0,cl_copysign(1.f,q.z));
-   p=plant_box_world(q+n*(r-distance),k,d);
+   float3 moved=plant_box_world(q+n*(r-distance),k,d);*correction+=moved-p;p=moved;
   }
  }return p;
 }
@@ -72,7 +72,7 @@ __device__ float3 plant_hybrid_shape(float3 p,float r,int k,int type,const float
   float3 q=plant_closest(p,a,b,c),delta=p-q;float len=length(delta);
   if(len<r){float3 move=(len>1.e-9f?delta/len:normalize(cross(b-a,c-a)))*(r-len);*correction+=move;p+=move;}return p;
  }
- 
+
  if(type==4){float3 axis=d[k+1].xyz(),q=p-d[k].xyz();float z=dot(q,axis);float3 radial=q-z*axis;float rho=length(radial);
   float inner=d[k+2].x-rho,outer=rho-d[k+2].y,dr=cl_fmax(inner,outer),dz=cl_fabs(z)-d[k+1].w;
   float2 out=cl_fmax(float2(dr,dz),float2(0));float len=length(out),distance=len+cl_fmin(cl_fmax(dr,dz),0.f);
@@ -85,12 +85,12 @@ __device__ float3 plant_hybrid_shape(float3 p,float r,int k,int type,const float
  if(type==3){
   int edges=(int)d[k+4].x,count=(int)d[k+4].y,inside=0,bestId=2147483647;float best=INFINITY;float2 nearest=q.xy();
   int node=(int)d[k+4].z,end=(int)d[k+4].w;
-  
-  
-  
+
+
+
   if(end){float reach=cl_fmax(r,h.z)+1.e-6f;best=reach*reach;}
-  
-  
+
+
   int linear=0;
   while(node<end||(!end&&linear<count)){
    int first=linear,n=1,next=0;
@@ -119,7 +119,7 @@ __device__ float3 plant_hybrid_shape(float3 p,float r,int k,int type,const float
   else if(gap.x>=gap.y&&gap.x>=gap.z)n=float3(cl_copysign(1.f,q.x),0,0);
   else if(gap.y>=gap.z)n=float3(0,cl_copysign(1.f,q.y),0);
   else n=float3(0,0,cl_copysign(1.f,q.z));
-  
+
   float3 delta=n*(r-distance);float3 move=delta.x*d[k+1].xyz()+delta.y*d[k+2].xyz()+delta.z*d[k+3].xyz();*correction+=move;p+=move;
  }return p;
 }
@@ -204,7 +204,7 @@ __device__ float3 plant_hybrid_cached(float3 p,float r,int root,int end,int head
 
   cache[1].x=count;anchor=cache[0];meta=cache[1];
  }else plant_cache_count(d,1);
- 
+
  if(meta.x<0)return plant_hybrid_linear(p,r,root,end,d,correction);
  for(int i=0;i<(int)meta.x;++i){int at=(int)cache[2+i].x;
   if(any(p<d[at].xyz()-r)||any(p>d[at+1].xyz()+r))continue;
@@ -214,16 +214,16 @@ __device__ float3 plant_hybrid_cached(float3 p,float r,int root,int end,int head
 
    float4 ref=d[(int)d[at+1].w+j];p=plant_hybrid_ref(p,r,ref,d,correction);
 
-   
-   
+
+
    if(any(cl_fabs(p-anchor.xyz())+r>anchor.w-1.e-6f)){
     cache[1].w=0;for(int rest=j+1;rest<(int)(-d[at].w);++rest)p=plant_hybrid_ref(p,r,d[(int)d[at+1].w+rest],d,correction);
     return plant_hybrid_linear(p,r,at+2,end,d,correction);
    }
 
   }
-  
-  
+
+
   if(any(cl_fabs(p-anchor.xyz())+r>anchor.w-1.e-6f)){cache[1].w=0;return plant_hybrid_linear(p,r,at+2,end,d,correction);}
  }return p;
 }
@@ -262,16 +262,16 @@ __device__ int plant_hybrid_reference_zone(float3 p,float r,const float4* d){
  return p.z<d[14].z+pad&&cl_fabs(p.y)<d[14].w+pad&&((p.x>d[14].x-pad&&p.x<d[14].y+pad)||(p.x>d[15].x-pad&&p.x<d[15].y+pad));
 }
 __device__ float3 plant_boundary_ref_uncached(float3 p,float r,float angle,const float4* d,float3* wn,float3* wv,float3 reference){
- 
+
  float3 displacement=float3(0);float3* correction=&displacement;
- float3 initial=p;int referenceZone=d[10].x==2.f&&plant_hybrid_reference_zone(p,r,d);p=d[10].x==2.f&&!referenceZone?plant_hybrid(p,r,(int)d[12].x,(int)d[13].x,d,correction):(d[10].x==1.f?plant_obb_walls(p,r,d):plant_mesh(p,r,(int)d[0].x,d,correction));if(d[10].x==2.f&&!referenceZone&&plant_hybrid_reference_zone(p,r,d)){referenceZone=1;displacement=float3(0);p=plant_mesh(initial,r,(int)d[0].x,d,correction);}int phase=(int)d[4].x;
+ float3 initial=p;int referenceZone=d[10].x==2.f&&plant_hybrid_reference_zone(p,r,d);p=d[10].x==2.f&&!referenceZone?plant_hybrid(p,r,(int)d[12].x,(int)d[13].x,d,correction):(d[10].x==1.f?plant_obb_walls(p,r,d,correction):plant_mesh(p,r,(int)d[0].x,d,correction));if(d[10].x==2.f&&!referenceZone&&plant_hybrid_reference_zone(p,r,d)){referenceZone=1;displacement=float3(0);p=plant_mesh(initial,r,(int)d[0].x,d,correction);}int phase=(int)d[4].x;
  if(d[10].x==1.f)displacement=p-initial;
- 
+
  int gates=(int)d[5].x,gatecount=(int)d[5].y;
  for(int j=0;j<gatecount;++j){int k=gates+2*j;int open=phase==(int)d[k+1].x;if(d[k+1].z==1.f)open=d[k+1].y==1.f;
   float4 gate=d[k];if(!open){
-   
-   
+
+
    float2 xy=p.xy()-gate.xy();float radial=length(xy);float2 axis=radial>1.e-9f?xy/radial:float2(1,0);
    float z=p.z-gate.z,dr=radial-gate.w,dz=cl_fabs(z)-.003f;
    float2 outside=cl_fmax(float2(dr,dz),float2(0));float distance=length(outside)+cl_fmin(cl_fmax(dr,dz),0.f);
@@ -311,14 +311,14 @@ __device__ float3 plant_air(float3 p,const float4* d){
  float4 bucket=d[(int)d[6].x+(key.z*dims.y+key.y)*dims.x+key.x];
  for(int i=0;i<(int)bucket.y;++i){int at=(int)d[(int)bucket.x+i].x;float4 a=d[at],b=d[at+1],q=d[at+2];if((d[4].y!=1.f&&(int)q.w!=phase)||q.x==0.f)continue;
   float3 ab=b.xyz()-a.xyz();float l2=dot(ab,ab),t=dot(p-a.xyz(),ab)/l2;
-  
-  
+
+
   if(t<0.f||t>1.f)continue;float radius=mix(a.w,b.w,t);
   if(q.z==1.f){float3 axis=normalize(ab),side=float3(-axis.y,axis.x,0),delta=p-(a.xyz()+ab*t);float lateral=dot(delta,side);float metric=cl_fmax(cl_fabs(lateral)/a.w,cl_fabs(delta.z)/b.w);
    if(dot(p-a.xyz(),axis)>=0&&dot(p-b.xyz(),axis)<=0&&metric<1&&metric<best){best=metric;velocity=axis*q.x/(4*a.w*b.w);}continue;}
   float3 radial=p-(a.xyz()+ab*t);float dist=length(radial);if(dist<radius&&dist/radius<best){best=dist/radius;
-   
-   
+
+
    velocity=(normalize(ab)+radial*((b.w-a.w)/(cl_sqrt(l2)*radius)))*q.x/(3.14159265359f*radius*radius);}
  }return velocity;
 }
@@ -426,7 +426,7 @@ extern "C" __global__ void grid(const float4* pos,int* head,int* link,int n,floa
 
 extern "C" __global__ void predict(float4* pos,float4* old,float4* vel,int n,float dt,float r,int* error,float4* predicted
 
- ,const float4* plant
+ ,const float4* plant,float4 feed_brake,float brake_rate,float4 feed_brake_b,float brake_rate_b,float4 feed_brake_c,float brake_rate_c
 
 
 
@@ -462,6 +462,16 @@ extern "C" __global__ void predict(float4* pos,float4* old,float4* vel,int n,flo
 
 
  float3 air=plant_air(pos[i].xyz(),plant);float rho=plant[1].w,re=1.2f*(2*r)*length(air-vel[i].xyz())/1.81e-5f;float cdre=re<1000?24*(1+.15f*cl_pow(re,.687f)):.44f*re;float beta=3*1.81e-5f*cdre/(16*rho*r*r);v=(vel[i].xyz()+dt*(external+beta*air))/(1+dt*beta);
+
+
+ if(brake_rate>0.f&&pos[i].z>=feed_brake.z&&dot(pos[i].xy()-feed_brake.xy(),pos[i].xy()-feed_brake.xy())<=feed_brake.w*feed_brake.w){
+  v=(vel[i].xyz()+dt*(external+float3(0,0,9.81f)+beta*air))/(1.f+dt*(beta+brake_rate));
+ } if(brake_rate_b>0.f&&pos[i].z>=feed_brake_b.z&&dot(pos[i].xy()-feed_brake_b.xy(),pos[i].xy()-feed_brake_b.xy())<=feed_brake_b.w*feed_brake_b.w){
+  v=(vel[i].xyz()+dt*(external+float3(0,0,9.81f)+beta*air))/(1.f+dt*(beta+brake_rate_b));
+ }
+ if(brake_rate_c>0.f&&pos[i].z>=feed_brake_c.z&&dot(pos[i].xy()-feed_brake_c.xy(),pos[i].xy()-feed_brake_c.xy())<=feed_brake_c.w*feed_brake_c.w){
+  v=(vel[i].xyz()+dt*(external+float3(0,0,9.81f)+beta*air))/(1.f+dt*(beta+brake_rate_c));
+ }
  if(!isfinite(beta)||length(air-vel[i].xyz())>100.f||re>200000.f||beta*dt>.1f){atomic_or(error,32);return;}
  if(any(pos[i].xyz()<plant[2].xyz())||any(pos[i].xyz()>plant[3].xyz())){atomic_or(error,1);return;}
 
@@ -572,6 +582,7 @@ __device__ float3 boundaries(float3 p,float r,float angle,int gate,float3* wn,fl
 
 
 
+
 extern "C" __global__ void inspect_boundaries(const float4* points,int n,float r,float angle,int gate,const float4* bounds,
  float4* projected,float4* normals,float4* velocities){
  int i=get_global_id(0);if(i>=n)return;
@@ -611,7 +622,7 @@ extern "C" __global__ void solve(const float4* pos,const float4* old,float4* nex
 
 
 
- { 
+ {
  for(int z=-1;z<=1;z++)for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
   int3 c=q+int3(x,y,z);
 
@@ -666,10 +677,10 @@ extern "C" __global__ void velocity(float4* pos,const float4* old,float4* vel,in
 
  ){
  int i=get_global_id(0);if(i>=n)return;r=grain_radius(pos[i].w,r);mu=grain_wall_mu(pos[i].w,mu);float3 p=pos[i].xyz();float3 v=vel[i].xyz()+(p-predicted[i].xyz())/dt,wn,wv;
- 
 
 
- 
+
+
 
 
 
@@ -685,7 +696,7 @@ extern "C" __global__ void velocity(float4* pos,const float4* old,float4* vel,in
 
  if(length(wn)>0){float3 relative=v-wv;float vn=dot(relative,wn);float3 tangent=relative-vn*wn;float tl=length(tangent);float normalImpulse;
 
- 
+
  normalImpulse=cl_fmax(0.f,-dot(vel[i].xyz()-wv,wn));
 
 
@@ -710,6 +721,12 @@ extern "C" __global__ void velocity(float4* pos,const float4* old,float4* vel,in
 
 
 
+
+extern "C" __global__ void inspect_plant_air(const float4* pos,int n,const float4* bounds,float4* air){
+ int i=get_global_id(0);if(i<n)air[i]=float4(plant_air(pos[i].xyz(),bounds),0);
+}
+
+
 extern "C" __global__ void solve_graph(const float4* pos,const float4* old,float4* next,const int* head,const int* link,int n,float r,float cell,int nx,int ny,int nz,const float* angles,unsigned angle_index,int gate,float mu
 
 
@@ -731,7 +748,7 @@ extern "C" __global__ void solve_graph(const float4* pos,const float4* old,float
 
 
 
- { 
+ {
  for(int z=-1;z<=1;z++)for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
   int3 c=q+int3(x,y,z);
 
@@ -787,10 +804,10 @@ extern "C" __global__ void velocity_graph(float4* pos,const float4* old,float4* 
 
  ){float angle=angles[angle_index];
  int i=get_global_id(0);if(i>=n)return;r=grain_radius(pos[i].w,r);mu=grain_wall_mu(pos[i].w,mu);float3 p=pos[i].xyz();float3 v=vel[i].xyz()+(p-predicted[i].xyz())/dt,wn,wv;
- 
 
 
- 
+
+
 
 
 
@@ -806,7 +823,7 @@ extern "C" __global__ void velocity_graph(float4* pos,const float4* old,float4* 
 
  if(length(wn)>0){float3 relative=v-wv;float vn=dot(relative,wn);float3 tangent=relative-vn*wn;float tl=length(tangent);float normalImpulse;
 
- 
+
  normalImpulse=cl_fmax(0.f,-dot(vel[i].xyz()-wv,wn));
 
 

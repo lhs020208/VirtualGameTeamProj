@@ -34,6 +34,9 @@ struct GranularGasField {
 struct GranularGasExchange {std::vector<Grain> impulse_volume;std::vector<float> drag_rate_kg_s;unsigned steps=0;}; // xyz gas N*s, w time-mean deposited m3
 enum class GranularBackend { OpenCL=0, Cuda=1, CudaGraph=2, CudaPtx=3, CudaPtxGraph=4 };
 struct GranularConfig {GranularBackend backend=GranularBackend::OpenCL;std::string cuda_ptx_file="SourceAssets/PowderCUDA/plant_sm89.ptx";unsigned plant_wall_mode=0;bool plant_boundary_audit=false;bool plant_triangle_fast=false;bool plant_threaded=false;bool plant=false;std::vector<Grain> plant_data;float cohesion_gamma_j_m2=0,wall_adhesion_gamma_j_m2=0;bool simple_box=false;bool coupled_air=false;GranularAir air;unsigned diagnostic_local_size=128;bool rotation=false;float rolling_friction=0;bool binary_materials=false;std::array<GranularMaterial,2> materials{};float cross_friction=.4f;unsigned count=30000,iterations=16;bool fast_bounds=true,profile=false,test_mixer=false,profile_split=false,candidates=false,candidate_reuse=false,candidate_audit=false,boundary_candidates=false,kernel_optimize=false;float candidate_skin_ratio=.5f;unsigned candidate_capacity=64;float radius=0,dt=.00025f,friction=.4f;};
+// Idealized braked feeder: finite distributed support and viscous resistance in an
+// upstream control volume. Not a pressure setting, wall insertion, or particle reset.
+struct PlantFeedBrake { Grain region{}; float response_time_s=.001f; bool enabled=false; }; // xy centre, z lower face, w radius
 struct GranularBoundarySample {Grain position,normal,velocity;unsigned plane_tests=0,rotor_tests=0;};
 struct GranularCandidates {std::vector<std::vector<unsigned>> neighbors;unsigned overflow_particles=0;};
 void validate_granular_initial(GranularConfig config,const std::vector<Grain>& positions);
@@ -47,11 +50,14 @@ public:
  GranularGPU(const GranularGPU&)=delete;GranularGPU& operator=(const GranularGPU&)=delete;
  void advance(unsigned steps,float rpm,bool gate_open);
  void update_plant_field(const std::vector<Grain>&);
+ void set_plant_feed_brake(const PlantFeedBrake&, unsigned supplier=0);
  void set_gas_field(const GranularGasField&); // Required before coupled advance. Clears exchange ledger.
  GranularGasExchange gas_exchange(); // Same CIC weights for applied particle impulse and gas reaction.
 
  std::vector<Grain> snapshot();
  std::vector<Grain> velocity_snapshot();
+ // Read-only diagnostic: evaluate the current plant field at the current particle positions.
+ std::vector<Grain> plant_air_snapshot();
  std::vector<Grain> angular_velocity_snapshot();
  // Single-threaded owner API. One pending transfer; reset/destruction drain it safely.
  void request_snapshot();

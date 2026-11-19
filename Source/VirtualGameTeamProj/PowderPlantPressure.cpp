@@ -14,8 +14,10 @@ const TCHAR* Names[]{TEXT("대기"),TEXT("충전"),TEXT("칭량"),TEXT("이송")
 const TCHAR* Hints[]{TEXT("권장: 모든 밸브 닫힘·혼합기 정지"),TEXT("권장: 선택 공급기 열기, 칭량·수취 출구 닫기"),TEXT("권장: 공급기·칭량 출구 닫기"),TEXT("권장: 공급기 닫기, 칭량 열기, 수취 출구 닫기"),TEXT("권장: 칭량 닫기, 수취→혼합기 열기"),TEXT("권장: 수취 출구 닫고 혼합기 시작")};
 }
 bool APowderPlantTest::SetPressureTargets(double s,double w,double r){
+ if(!LegacyControlsAllowed()){PressureMessage=TEXT("UI v2 제어 화면에서 압력을 설정하세요.");return false;}
  if(!RegulatedPressureEnabled){PressureMessage=TEXT("이 레벨은 기존 압력 모드입니다.");return false;}
  try{powder::validate_plant_pressure_targets({s,w,r});}catch(const std::exception&){PressureMessage=TEXT("거부: 유한한 공급/칭량 -1.0~+1.0, 수취 -1.0~0 kPa(g)만 입력하세요.");return false;}
+ if(!DemoRealtime){ControlTargets.GaugePressurePa=FVector(s,w,r);++ControlTargets.Revision;PublishControls();}
  SupplyGaugePa=s;WeighingGaugePa=w;ReceiverGaugePa=r;PressureManualOverride=true;PressureMessage=TEXT("수동값 유지. 계산 중 다음 배치에 적용; 일시정지 중에는 대기합니다.");return true;
 }
 bool APowderPlantTest::ApplyPressurePreset(int32 stage){
@@ -30,12 +32,14 @@ bool APowderPlantTest::SavePressureProfile(){
  FString text;auto writer=TJsonWriterFactory<>::Create(&text);bool ok=FJsonSerializer::Serialize(obj,writer)&&FFileHelper::SaveStringToFile(text,*ProfilePath());PressureMessage=ok?TEXT("압력 프로필 저장 완료 (다음 시작에 자동 로드하지 않음)"):TEXT("압력 프로필 저장 실패");return ok;
 }
 bool APowderPlantTest::LoadPressureProfile(){
+ if(!LegacyControlsAllowed())return false;
  if(!RegulatedPressureEnabled)return false;
  FString text;TSharedPtr<FJsonObject> obj;double schema,s,w,r,stage;bool manual;
  bool valid=FFileHelper::LoadFileToString(text,*ProfilePath())&&FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(text),obj)&&obj.IsValid();
  if(valid)valid=obj->TryGetNumberField(TEXT("schema"),schema)&&schema==1&&obj->TryGetNumberField(TEXT("supply_gauge_Pa"),s)&&obj->TryGetNumberField(TEXT("weighing_gauge_Pa"),w)&&obj->TryGetNumberField(TEXT("receiver_gauge_Pa"),r)&&obj->TryGetNumberField(TEXT("stage"),stage)&&std::isfinite(stage)&&stage>=0&&stage<=5&&std::floor(stage)==stage&&obj->TryGetBoolField(TEXT("manual"),manual);
  if(valid){try{powder::validate_plant_pressure_targets({s,w,r});auto preset=powder::plant_pressure_preset(int(stage));if(!manual&&(s!=preset.supply||w!=preset.weighing||r!=preset.receiver))valid=false;}catch(const std::exception&){valid=false;}}
  if(!valid){PressureMessage=TEXT("불러오기 거부: 파일 없음/형식·범위 오류. 현재 설정을 유지합니다.");return false;}
+ if(!SetPressureTargets(s,w,r))return false;
  SupplyGaugePa=s;WeighingGaugePa=w;ReceiverGaugePa=r;PressureStage=int32(stage);PressureManualOverride=manual;PressureMessage=TEXT("압력 프로필 불러옴. 밸브·입자는 변경하지 않았습니다.");return true;
 }
 TSharedRef<SWidget> APowderPlantTest::BuildPressurePanel(){

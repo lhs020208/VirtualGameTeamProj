@@ -20,8 +20,9 @@ void checkbool(bool b,const char*s){if(!b)throw std::invalid_argument(s);}
 void drivercheck(CUresult e,const char*s){if(e!=CUDA_SUCCESS){const char*msg=nullptr;cuGetErrorString(e,&msg);throw std::runtime_error(std::string(s)+": "+(msg?msg:"CUDA driver error"));}}
 }
 struct PlantCuda::Impl {
+ std::array<PlantFeedBrake,3> brakes{};
  GranularConfig c;cudaStream_t stream=nullptr;std::array<void*,16>b{};
- CUmodule module=nullptr;std::array<CUfunction,8>functions{};
+ CUmodule module=nullptr;std::array<CUfunction,9>functions{};
  std::vector<Grain> upload;std::vector<std::pair<size_t,Grain>> patches;
  size_t cache_offset=0,cache_count=0,extra=0;Grain threaded_header{},cache_header{};
  GranularTiming profile;double sim=0;float phase=0;bool poisoned=false;std::string name;
@@ -38,7 +39,7 @@ struct PlantCuda::Impl {
    cucheck(cudaStreamCreateWithFlags(&stream,cudaStreamNonBlocking),"CUDA stream");
    if(c.backend==GranularBackend::CudaPtx||c.backend==GranularBackend::CudaPtxGraph){
     drivercheck(cuModuleLoad(&module,c.cuda_ptx_file.c_str()),"CUDA PTX module load");
-    const char*names[]={"predict","cleargrid","grid","solve","velocity","inspect_boundaries","solve_graph","velocity_graph"};
+    const char*names[]={"predict","cleargrid","grid","solve","velocity","inspect_boundaries","solve_graph","velocity_graph","inspect_plant_air"};
     for(unsigned i=0;i<functions.size();++i)drivercheck(cuModuleGetFunction(&functions[i],module,names[i]),"CUDA PTX kernel");
     name=std::string(prop.name)+" / CUDA Driver frozen PTX";
    }
@@ -54,6 +55,7 @@ struct PlantCuda::Impl {
  void release(){if(stream)cudaStreamSynchronize(stream);for(auto&e:events){cudaEventDestroy(e.first);cudaEventDestroy(e.last);}events.clear();if(executable)cudaGraphExecDestroy(executable);if(graph)cudaGraphDestroy(graph);for(auto&x:b)if(x){cudaFree(x);x=nullptr;}if(device_angles)cudaFree(device_angles);if(host_angles)cudaFreeHost(host_angles);if(module)cuModuleUnload(module);if(stream)cudaStreamDestroy(stream);stream=nullptr;}
  void clear_cache(){cucheck(cudaMemsetAsync(static_cast<Grain*>(b[15])+cache_offset,0,cache_count*139*sizeof(Grain),stream),"CUDA cache clear");}
  void set(const std::vector<Grain>&p,const std::vector<Grain>&v){checkbool(p.size()==c.count&&v.size()==c.count,"CUDA state count mismatch");for(size_t i=0;i<p.size();++i){for(float x:{p[i].x,p[i].y,p[i].z,p[i].w,v[i].x,v[i].y,v[i].z})checkbool(std::isfinite(x),"CUDA nonfinite state");checkbool(p[i].w>=0&&p[i].w<32&&std::floor(p[i].w)==p[i].w,"CUDA invalid group");}
+  for(auto& brake:brakes)brake.enabled=false;if(executable){cudaGraphExecDestroy(executable);executable=nullptr;}
   clear_cache();cucheck(cudaMemcpyAsync(b[0],p.data(),p.size()*sizeof(Grain),cudaMemcpyHostToDevice,stream),"CUDA positions reset");cucheck(cudaMemcpyAsync(b[2],v.data(),v.size()*sizeof(Grain),cudaMemcpyHostToDevice,stream),"CUDA velocity reset");cucheck(cudaStreamSynchronize(stream),"CUDA reset sync");sim=0;phase=0;poisoned=false;profile={};profile.profiling_enabled=c.profile;
  }
  template<class F> void launch(unsigned cat,F f){if(c.profile){Event e{};e.category=cat;cucheck(cudaEventCreate(&e.first),"CUDA event");cucheck(cudaEventCreate(&e.last),"CUDA event");cucheck(cudaEventRecord(e.first,stream),"CUDA event start");f();cucheck(cudaEventRecord(e.last,stream),"CUDA event stop");events.push_back(e);}else f();cucheck(cudaGetLastError(),"CUDA kernel launch");++profile.calls[cat];}
@@ -62,9 +64,11 @@ struct PlantCuda::Impl {
   using namespace cuda_detail;const unsigned blocks=(c.count+127)/128;int n=int(c.count);float cell=2*c.radius;
   auto f=[&](int i){return reinterpret_cast<cuda_detail::float4*>(b[i]);};
   auto h=static_cast<int*>(b[4]),link=static_cast<int*>(b[5]),err=static_cast<int*>(b[6]);
+  auto br=[&](unsigned i){auto r=brakes[i].region;return float4(r.x,r.y,r.z,r.w);};
+  auto rate=[&](unsigned i){return brakes[i].enabled?1.f/brakes[i].response_time_s:0.f;};
   for(unsigned s=0;s<steps;++s){
    float a=host_angles[s];
-   launch(2,[&]{if(module)ptx(0,blocks,b[0],b[1],b[2],n,c.dt,c.radius,err,b[7],b[15]);else cuda_detail::predict<<<blocks,128,0,stream>>>(f(0),f(1),f(2),n,c.dt,c.radius,err,f(7),f(15));});
+   launch(2,[&]{if(module)ptx(0,blocks,b[0],b[1],b[2],n,c.dt,c.radius,err,b[7],b[15],br(0),rate(0),br(1),rate(1),br(2),rate(2));else cuda_detail::predict<<<blocks,128,0,stream>>>(f(0),f(1),f(2),n,c.dt,c.radius,err,f(7),f(15),br(0),rate(0),br(1),rate(1),br(2),rate(2));});
    for(unsigned it=0;it<c.iterations;++it){
     // All bits set is the same -1 sentinel as cleargrid. Graph dependencies still
     // complete this full reset before grid insertion; no cells or contacts skipped.
@@ -113,4 +117,24 @@ GranularTiming PlantCuda::timing()const{return p->profile;}
 double PlantCuda::time()const{return p->sim;}float PlantCuda::angle()const{return p->phase;}std::string PlantCuda::device()const{return p->name;}
 std::array<std::uint64_t,3> PlantCuda::memory()const{return {p->upload.size()*sizeof(Grain),p->extra,p->cache_count*139*sizeof(Grain)};}
 std::array<std::uint64_t,4> PlantCuda::stats(){std::vector<Grain> cache(p->cache_count*139);cucheck(cudaMemcpyAsync(cache.data(),static_cast<Grain*>(p->b[15])+p->cache_offset,cache.size()*sizeof(Grain),cudaMemcpyDeviceToHost,p->stream),"CUDA cache read");cucheck(cudaStreamSynchronize(p->stream),"CUDA cache sync");std::array<std::uint64_t,4>r{};for(size_t i=0;i<p->cache_count;++i){std::uint32_t values[4];std::memcpy(values,&cache[i*139+138],16);for(unsigned j=0;j<4;++j)r[j]+=values[j];}return r;}
+}
+
+namespace powder {
+void PlantCuda::set_feed_brake(const PlantFeedBrake& brake,unsigned supplier){
+ checkbool(supplier<3&&!p->poisoned,"invalid CUDA brake");
+ const auto& prev=p->brakes[supplier];
+ if(prev.enabled==brake.enabled&&prev.response_time_s==brake.response_time_s&&!std::memcmp(&prev.region,&brake.region,sizeof(Grain)))return;
+ cucheck(cudaStreamSynchronize(p->stream),"CUDA brake sync");
+ if(p->executable){cucheck(cudaGraphExecDestroy(p->executable),"CUDA brake graph invalidate");p->executable=nullptr;}
+ p->brakes[supplier]=brake;
+}
+std::vector<Grain> PlantCuda::air_snapshot(){
+ checkbool(!p->poisoned,"invalid CUDA air snapshot");void* output=nullptr;
+ try{std::vector<Grain> r(p->c.count);cucheck(cudaMalloc(&output,r.size()*sizeof(Grain)),"CUDA air allocation");
+ unsigned blocks=(p->c.count+127)/128;
+ if(p->module)p->ptx(8,blocks,p->b[0],int(p->c.count),p->b[15],output);
+ else cuda_detail::inspect_plant_air<<<blocks,128,0,p->stream>>>(reinterpret_cast<cuda_detail::float4*>(p->b[0]),int(p->c.count),reinterpret_cast<cuda_detail::float4*>(p->b[15]),reinterpret_cast<cuda_detail::float4*>(output));
+ cucheck(cudaGetLastError(),"CUDA air launch");cucheck(cudaMemcpyAsync(r.data(),output,r.size()*sizeof(Grain),cudaMemcpyDeviceToHost,p->stream),"CUDA air read");cucheck(cudaStreamSynchronize(p->stream),"CUDA air sync");cudaFree(output);return r;
+ }catch(...){if(output)cudaFree(output);throw;}
+}
 }

@@ -100,7 +100,7 @@ __kernel void reduce_gas(__global const int* head,__global const int* link,__glo
 #endif
 __kernel void predict(__global float4* pos,__global float4* old,__global float4* vel,int n,float dt,float r,__global int* error,__global float4* predicted
 #if GRANULAR_PLANT
- ,__global const float4* plant
+ ,__global const float4* plant,float4 feed_brake,float brake_rate,float4 feed_brake_b,float brake_rate_b,float4 feed_brake_c,float brake_rate_c
 #endif
 #if GRANULAR_ROTATION
  ,__global float4* angular,__global const float4* spin
@@ -136,6 +136,16 @@ __kernel void predict(__global float4* pos,__global float4* old,__global float4*
  int3 bucket=clamp(base,(int3)(0),gas_size.xyz-1);int bin=(bucket.z*gas_size.y+bucket.y)*gas_size.x+bucket.x;gas_link[i]=atomic_xchg(gas_head+bin,i);
 #elif GRANULAR_PLANT
  float3 air=plant_air(pos[i].xyz,plant);float rho=plant[1].w,re=1.2f*(2*r)*length(air-vel[i].xyz)/1.81e-5f;float cdre=re<1000?24*(1+.15f*pow(re,.687f)):.44f*re;float beta=3*1.81e-5f*cdre/(16*rho*r*r);v=(vel[i].xyz+dt*(external+beta*air))/(1+dt*beta);
+ // Finite implicit feeder reaction: support weight and resist motion toward zero
+ // feed speed. Positions and IDs are updated only by the ordinary integrator/contact solver.
+ if(brake_rate>0.f&&pos[i].z>=feed_brake.z&&dot(pos[i].xy-feed_brake.xy,pos[i].xy-feed_brake.xy)<=feed_brake.w*feed_brake.w){
+  v=(vel[i].xyz+dt*(external+(float3)(0,0,9.81f)+beta*air))/(1.f+dt*(beta+brake_rate));
+ } if(brake_rate_b>0.f&&pos[i].z>=feed_brake_b.z&&dot(pos[i].xy-feed_brake_b.xy,pos[i].xy-feed_brake_b.xy)<=feed_brake_b.w*feed_brake_b.w){
+  v=(vel[i].xyz+dt*(external+(float3)(0,0,9.81f)+beta*air))/(1.f+dt*(beta+brake_rate_b));
+ }
+ if(brake_rate_c>0.f&&pos[i].z>=feed_brake_c.z&&dot(pos[i].xy-feed_brake_c.xy,pos[i].xy-feed_brake_c.xy)<=feed_brake_c.w*feed_brake_c.w){
+  v=(vel[i].xyz+dt*(external+(float3)(0,0,9.81f)+beta*air))/(1.f+dt*(beta+brake_rate_c));
+ }
  if(!isfinite(beta)||length(air-vel[i].xyz)>100.f||re>200000.f||beta*dt>.1f){atomic_or(error,32);return;}
  if(any(pos[i].xyz<plant[2].xyz)||any(pos[i].xyz>plant[3].xyz)){atomic_or(error,1);return;}
 #elif GRANULAR_AIR
@@ -252,6 +262,8 @@ __kernel void adhesive_loads(__global const float4* pos,__global const int* head
  float3 result=force/mi;if(!all(isfinite(result))){atomic_or(error,4);return;}acceleration[i]=(float4)(result,0);
 }
 #endif
+)CLC"
+R"CLC(
 __kernel void inspect_boundaries(__global const float4* points,int n,float r,float angle,int gate,__global const float4* bounds,
  __global float4* projected,__global float4* normals,__global float4* velocities){
  int i=get_global_id(0);if(i>=n)return;
@@ -446,5 +458,11 @@ __kernel void project_boundary(__global float4* pos,int n,float r,float angle,in
 __kernel void probe_boundary(__global const float4* pos,int n,float r,float angle,int gate,__global float4* normals,__global float4* velocities,__global const float4* bounds){
  int i=get_global_id(0);if(i>=n)return;r=grain_radius(pos[i].w,r);float3 wn,wv;boundaries(pos[i].xyz,r*1.002f,angle,gate,&wn,&wv,bounds);normals[i]=(float4)(wn,0);velocities[i]=(float4)(wv,0);
 }
+#if GRANULAR_PLANT
+// Separate read-only diagnostic; never writes particle state or the plant field.
+__kernel void inspect_plant_air(__global const float4* pos,int n,__global const float4* bounds,__global float4* air){
+ int i=get_global_id(0);if(i<n)air[i]=(float4)(plant_air(pos[i].xyz,bounds),0);
+}
+#endif
 )CLC"
 

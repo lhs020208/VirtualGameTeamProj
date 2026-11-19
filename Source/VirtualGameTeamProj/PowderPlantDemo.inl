@@ -11,7 +11,7 @@ void APowderPlantTest::TickDemo(double DeltaSeconds){
  int Shot=Wall>=70?3:Wall>=35?2:Wall>=10?1:0;
  if(Shot>DemoShotStage){DemoShotStage=Shot;FString Name=DemoOutput+FString::Printf(TEXT("_%d.png"),Shot);FScreenshotRequest::RequestScreenshot(Name,true,false);}
  if(Wall<DemoTestSeconds&&Error.IsEmpty())return;
- Running=false;if(Runtime)Runtime->Run=false;Show();double Sim=PhysicalSeconds;Stop();
+ Running=false;if(DemoRuntime)DemoRuntime->Run=false;Show();double Sim=PhysicalSeconds;Stop();
  DemoFrames.Sort();auto Percentile=[&](double q){return DemoFrames.IsEmpty()?0.:DemoFrames[FMath::Clamp(int(q*(DemoFrames.Num()-1)),0,DemoFrames.Num()-1)]*1000;};
  double FPS=DemoFrames.Num()/Wall,Rate=Sim/Wall;
  FIntPoint Pixels=GEngine&&GEngine->GameViewport&&GEngine->GameViewport->Viewport?GEngine->GameViewport->Viewport->GetSizeXY():FIntPoint::ZeroValue;

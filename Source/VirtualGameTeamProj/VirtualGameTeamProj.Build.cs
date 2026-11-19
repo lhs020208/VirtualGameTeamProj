@@ -24,7 +24,7 @@ public class VirtualGameTeamProj : ModuleRules
             RuntimeDependencies.Add(System.IO.Path.Combine(ProjectRoot, "SourceAssets/PowderCUDA/plant_sm89.ptx"));
         }
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "PhysicsCore", "RenderCore", "DEMPrototype" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "PhysicsCore", "RenderCore", "DEMPrototype", "UMG" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "Json" });
         PrivateDependencyModuleNames.AddRange(new string[] { "Messaging", "MessagingCommon", "EngineMessages", "SessionMessages" });
