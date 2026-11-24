@@ -16,7 +16,7 @@ public:
     bool RecoveryValid() const {return Recovery.Ticket>0&&Recovery.Valid&&Recovery.ForeignIds.IsEmpty();}
     void ObserveMix(double Time,bool Automatic,double AppliedRPM);
 
-    bool BeginAdditive(const std::vector<powder::Grain>& P,double Time,int64 CaptureRevision,int64 Revision,bool Scheduled,double Delay);
+    bool BeginAdditive(const std::vector<powder::Grain>& P,double Time,int64 CaptureRevision,int64 Revision,bool Scheduled,double Delay,int32 Supplier=2);
     void ObserveAdditiveReady(double Time,bool ClosedAndVented);
     bool AdditiveActive() const {return Sequential.AdditiveActive;}
     bool AdditiveScheduled() const {return Sequential.AdditiveActive&&Sequential.AdditiveScheduled;}
@@ -24,10 +24,10 @@ public:
     const FPlantMixerFeedSnapshot& InitialMixerSnapshot() const {return InitialFeed;}
     int32 ActiveSupplier() const {return Sequential.ActiveSupplier;}
     const FPlantSequentialBatchSnapshot& SequentialSnapshot() const {return Sequential;}
-    bool Transition(const std::vector<powder::Grain>& P,double Time,int64 CaptureRevision,int64 Revision,bool Combine);
+    bool Transition(const std::vector<powder::Grain>& P,double Time,int64 CaptureRevision,int64 Revision,bool Combine,int32 Supplier=1);
     void RejectTransition(int64 Revision,const FString& Reason){Sequential.RejectedRevision=Revision;Sequential.Reason=Reason;}
 
-    bool Capture(const std::vector<powder::Grain>& Positions, double Time, int64 Revision);
+    bool Capture(const std::vector<powder::Grain>& Positions, double Time, int64 Revision,int32 Supplier=0);
     bool VerifyOpening(const std::vector<powder::Grain>& Positions, double Time, int64 Revision);
     bool FinalizeDose(const std::vector<powder::Grain>& P,double Time,int64 CaptureRevision,int64 Revision,double TargetKg,double ToleranceKg);
     void RejectDose(int64 Revision,const FString& Reason);
@@ -44,8 +44,10 @@ private:
     FPlantABatchSnapshot State;
     FPlantSequentialBatchSnapshot Sequential;
     TArray<int32> Labels;
-    TArray<uint8> CohortA,CohortB,CohortC;
-    double GateHeights[3]{};
+    bool LayoutValid=false;
+    TArray<uint8> Cohorts[6];
+    void SelectSource(int32 Supplier);
+
 
     FPlantMixerGeometry Geometry;
     FPlantMixerFeedSnapshot Feed,InitialFeed;
@@ -58,7 +60,7 @@ private:
 
     const FPlantTransferTelemetry& Mass;
     const FPlantFeedPreparation& Preparation;
-    double GateZ=0;
+
     TArray<uint8> ForeignSeen;
     double ReadyMixSeconds=-1;
     double MixLastTime=-1;

@@ -32,6 +32,12 @@ struct FProcessCommandRecord
     EProcessCommandStatus Status = EProcessCommandStatus::Accepted;
     FString Message;
     double AcceptedAt = 0, Deadline = 0;
+    bool IndividualPressure=false;
+    FGuid PressureStage,PressureBatch;
+    int32 PressureSupplier=INDEX_NONE;
+    int64 PressureTransfer=0;
+    FGuid SpeedBatch;
+    int64 SpeedRun=0;
     int64 BaselineSequence = 0, Revision = 0;
     bool UsesStopSequence = false;
     bool PreparedOpening = false;
@@ -43,6 +49,7 @@ struct FPlantControlTargets
 {
     int64 Revision = 0;
     int64 ObservationConnection = 0;
+    int32 BatchSupplier=0;
     int64 BatchCaptureRevision = 0, RequiredABatchRevision = 0;
     FGuid RecoveryRequestId;
     int64 RecoveryRevision=0,RecoveryCapture=0;
@@ -75,9 +82,15 @@ struct FPlantControlTargets
     int32 SupplyPurgeSupplier=0;
     double SupplyAPurgeGaugePa = 0, SupplyAPurgeLeaseUntil = 0;
     int64 SupplyAPurgeRevision = 0;
+    // Speed has a separate serial so a trim cannot change a valve/pressure command's acknowledgement.
+    int64 MixRun=0, SpeedSerial=0, SpeedRevision=0;
+    double SpeedRPM=0, SpeedDeadline=0, MixEndSeconds=0;
     double RPM = 15, Pressure = 1000;
     int64 TransferPressureId=0, TransferPressureRevision=0;
     double TransferPressureDeadline=0;
+    TArray<double> SupplierPa; // Empty is the legacy common boundary.
+    int32 PressureSource=INDEX_NONE, PressureAxis=2;
+    int64 PressureCapture=0, GaugePressureRevision=0;
     FVector GaugePressurePa = FVector::ZeroVector; // supply common / weighing / receiver; reset and stop never restore a profile
 };
 
@@ -101,6 +114,8 @@ public:
     FString StopFailureEquipment;
     bool ManualGranted = false, Connected = false;
     bool AutomationActive = false, AutomationDispatch = false;
+    int64 DispatchMixRun=0;
+    bool StagePressureDispatch=false;
     int64 Connection = 0;
     FGuid DispatchRequestId;
     double DispatchDeadline = 0; // The exact accepted deadline, forwarded to the worker with the opening revision.

@@ -100,7 +100,8 @@ __kernel void reduce_gas(__global const int* head,__global const int* link,__glo
 #endif
 __kernel void predict(__global float4* pos,__global float4* old,__global float4* vel,int n,float dt,float r,__global int* error,__global float4* predicted
 #if GRANULAR_PLANT
- ,__global const float4* plant,float4 feed_brake,float brake_rate,float4 feed_brake_b,float brake_rate_b,float4 feed_brake_c,float brake_rate_c
+ ,__global const float4* plant,float4 feed_brake,float brake_rate,float4 feed_brake_b,float brake_rate_b,float4 feed_brake_c,float brake_rate_c,
+ float4 feed_brake_d,float brake_rate_d,float4 feed_brake_e,float brake_rate_e,float4 feed_brake_f,float brake_rate_f
 #endif
 #if GRANULAR_ROTATION
  ,__global float4* angular,__global const float4* spin
@@ -138,13 +139,14 @@ __kernel void predict(__global float4* pos,__global float4* old,__global float4*
  float3 air=plant_air(pos[i].xyz,plant);float rho=plant[1].w,re=1.2f*(2*r)*length(air-vel[i].xyz)/1.81e-5f;float cdre=re<1000?24*(1+.15f*pow(re,.687f)):.44f*re;float beta=3*1.81e-5f*cdre/(16*rho*r*r);v=(vel[i].xyz+dt*(external+beta*air))/(1+dt*beta);
  // Finite implicit feeder reaction: support weight and resist motion toward zero
  // feed speed. Positions and IDs are updated only by the ordinary integrator/contact solver.
- if(brake_rate>0.f&&pos[i].z>=feed_brake.z&&dot(pos[i].xy-feed_brake.xy,pos[i].xy-feed_brake.xy)<=feed_brake.w*feed_brake.w){
-  v=(vel[i].xyz+dt*(external+(float3)(0,0,9.81f)+beta*air))/(1.f+dt*(beta+brake_rate));
- } if(brake_rate_b>0.f&&pos[i].z>=feed_brake_b.z&&dot(pos[i].xy-feed_brake_b.xy,pos[i].xy-feed_brake_b.xy)<=feed_brake_b.w*feed_brake_b.w){
-  v=(vel[i].xyz+dt*(external+(float3)(0,0,9.81f)+beta*air))/(1.f+dt*(beta+brake_rate_b));
- }
- if(brake_rate_c>0.f&&pos[i].z>=feed_brake_c.z&&dot(pos[i].xy-feed_brake_c.xy,pos[i].xy-feed_brake_c.xy)<=feed_brake_c.w*feed_brake_c.w){
-  v=(vel[i].xyz+dt*(external+(float3)(0,0,9.81f)+beta*air))/(1.f+dt*(beta+brake_rate_c));
+ const float4 brakes[6]={feed_brake,feed_brake_b,feed_brake_c,feed_brake_d,feed_brake_e,feed_brake_f};
+ const float rates[6]={brake_rate,brake_rate_b,brake_rate_c,brake_rate_d,brake_rate_e,brake_rate_f};
+ for(int b=0;b<6;++b){
+  const float2 offset=pos[i].xy-brakes[b].xy;
+  if(rates[b]>0.f && pos[i].z>=brakes[b].z && dot(offset,offset)<=brakes[b].w*brakes[b].w){
+   v=(vel[i].xyz+dt*(external+(float3)(0,0,9.81f)+beta*air))/(1.f+dt*(beta+rates[b]));
+   break;
+  }
  }
  if(!isfinite(beta)||length(air-vel[i].xyz)>100.f||re>200000.f||beta*dt>.1f){atomic_or(error,32);return;}
  if(any(pos[i].xyz<plant[2].xyz)||any(pos[i].xyz>plant[3].xyz)){atomic_or(error,1);return;}

@@ -29,7 +29,7 @@ void UProcessControlUI::BuildAdditiveControls(UVerticalBox* Panel)
  auto Check=[&](const TCHAR* N,const TCHAR* Label){auto* C=W->WidgetTree->ConstructWidget<UCheckBox>(UCheckBox::StaticClass(),N);C->AddChild(Text(TEXT(""),Label));AdditiveControls->AddChildToVerticalBox(C)->SetPadding(FMargin(0,4));};
  Check(TEXT("AdditiveEnabledInput"),TEXT("첨가제 사용"));
  auto* Source=W->WidgetTree->ConstructWidget<UComboBoxString>(UComboBoxString::StaticClass(),TEXT("AdditiveSupplierInput"));
- for(const TCHAR* Value:{TEXT("C"),TEXT("D · 미지원"),TEXT("E · 미지원"),TEXT("F · 미지원")})Source->AddOption(Value);
+ for(const TCHAR* Value:{TEXT("C"),TEXT("D"),TEXT("E"),TEXT("F")})Source->AddOption(Value);
  Source->SetSelectedOption(TEXT("C"));AdditiveControls->AddChildToVerticalBox(Source)->SetPadding(FMargin(0,4));
  auto Input=[&](const TCHAR* N,const TCHAR* Label){AdditiveControls->AddChildToVerticalBox(Text(TEXT(""),Label));auto* I=W->WidgetTree->ConstructWidget<UEditableTextBox>(UEditableTextBox::StaticClass(),N);auto S=I->GetWidgetStyle();auto Font=S.TextStyle.Font;Font.Size=17;S.SetFont(Font);S.SetForegroundColor(FLinearColor(.025f,.055f,.09f));I->SetWidgetStyle(S);AdditiveControls->AddChildToVerticalBox(I)->SetPadding(FMargin(0,3));};
  Input(TEXT("AdditiveTargetInput"),TEXT("첨가제 목표량 (g)"));Input(TEXT("AdditiveToleranceInput"),TEXT("첨가제 계량 오차 ± (g)"));
@@ -56,7 +56,7 @@ void UProcessControlUI::RefreshAdditiveControls()
  for(const TCHAR* N:{TEXT("AdditiveEnabledInput"),TEXT("AdditiveSupplierInput"),TEXT("AdditiveTargetInput"),TEXT("AdditiveToleranceInput"),TEXT("AdditiveScheduledInput"),TEXT("AdditiveDelayInput"),TEXT("ApplyAdditiveSettings")})if(auto* C=W->GetWidgetFromName(N))C->SetIsEnabled(Editable);
  const auto& V=S->AutoSettings;const auto& Snapshot=S->State.Snapshot;
  if(auto* T=Cast<UTextBlock>(W->GetWidgetFromName(TEXT("AdditiveSummary"))))T->SetText(FText::FromString(
-  FString::Printf(TEXT("적용: %s · C %.6f g ± %.6f g · %s N=%.6f초\n현재 C 상류 %.6f g · 입자당 %.9f g\n예약 시각에 준비 미완료면 출구 닫힘·전체 정지. 혼합 시간 자동 연장 없음.\n%s"),
-   V.AdditiveEnabled?TEXT("첨가제 사용"):TEXT("첨가제 미사용"),V.AdditiveTargetKg*1000,V.AdditiveToleranceKg*1000,V.AdditiveScheduled?TEXT("예약 ON"):TEXT("예약 OFF"),V.AdditiveDelaySeconds,
-   Snapshot.SequentialBatch.Additive.SourceCount*Snapshot.ModelParticleMassKg*1000,Snapshot.ModelParticleMassKg*1000,*AdditiveMessage)));
+  FString::Printf(TEXT("적용: %s · %c %.6f g ± %.6f g · %s N=%.6f초\n현재 첨가제 상류 %s · 입자당 %.9f g\n예약 시각에 준비 미완료면 출구 닫힘·전체 정지. 혼합 시간 자동 연장 없음.\n%s"),
+   V.AdditiveEnabled?TEXT("첨가제 사용"):TEXT("첨가제 미사용"),TCHAR('A'+V.AdditiveSupplier),V.AdditiveTargetKg*1000,V.AdditiveToleranceKg*1000,V.AdditiveScheduled?TEXT("예약 ON"):TEXT("예약 OFF"),V.AdditiveDelaySeconds,
+   Snapshot.Recovery.Valid&&Snapshot.Recovery.Materials.IsValidIndex(V.AdditiveSupplier)&&Snapshot.Validity==EPlantValueValidity::Valid?*FString::Printf(TEXT("%g g"),Snapshot.Recovery.Materials[V.AdditiveSupplier].Source*Snapshot.ModelParticleMassKg*1000):TEXT("미확인"),Snapshot.ModelParticleMassKg*1000,*AdditiveMessage)));
 }

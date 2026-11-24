@@ -10,7 +10,9 @@ public:
     FPlantFeedPreparation(const powder::GranularConfig& Config, const std::vector<powder::PlantRoute>& Routes,
         const FPlantTransferTelemetry& Telemetry, double RequiredStableSeconds, bool Enabled);
     // A supply residual is downstream of a real supply gate and upstream of WH ownership.
+    bool InSupplier(int32 Supplier,const powder::Grain& Position) const;
     int32 SupplyPath(const powder::Grain& Position) const;
+    void CountSupplyConnectors(const std::vector<powder::Grain>& Positions,int32 (&Counts)[6]) const;
     int32 SupplyAInventory(const std::vector<powder::Grain>& Positions,int32 Supplier=0) const;
     void SyncIntent(const FPlantControlTargets& Control, double Time, double WallTime);
     bool Evaluate(const std::vector<powder::Grain>& Positions, double Time, double WallTime,
@@ -20,7 +22,7 @@ public:
     const FPlantFeedPreparationSnapshot& Snapshot() const { return State; }
 private:
     struct FCell { FVector3d A, B; double RA, RB; bool Rectangular; };
-    struct FSupply { TArray<FCell> Cells; FBox3d Bounds{ForceInit}; powder::Grain Gate{}; };
+    struct FSupply { TArray<FCell> Cells,Upstream; FBox3d Bounds{ForceInit}; powder::Grain Gate{}; };
     TArray<FSupply> Supplies;
     const FPlantTransferTelemetry& Mass;
     size_t Count;

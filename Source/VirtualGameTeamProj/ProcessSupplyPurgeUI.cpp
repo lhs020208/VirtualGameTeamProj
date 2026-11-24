@@ -1,3 +1,4 @@
+#include "ProcessPlantBinding.h"
 #include "ProcessControlUI.h"
 #include "ProcessControlService.h"
 #include "ProcessDisplay.h"
@@ -36,7 +37,7 @@ void UProcessControlUI::BuildPurgeControls(UVerticalBox* Panel)
  Actions->AddChildToHorizontalBox(Start)->SetSize(FSlateChildSize(ESlateSizeRule::Fill));Actions->AddChildToHorizontalBox(Stop)->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
  Start->OnClicked.AddDynamic(this,&UProcessControlUI::StartPurge);Stop->OnClicked.AddDynamic(this,&UProcessControlUI::StopPurge);
  PurgeControls->AddChildToVerticalBox(Text(TEXT("PurgeSummary"),TEXT("확인 대기")));
- PurgeControls->AddChildToVerticalBox(Text(TEXT("PurgeHelp"),TEXT("선택한 A/B 밸브 하류 전용 · 공급 밸브와 칭량 출구 닫힘 필요. 모델 시험 범위 0~1 kPa(g), 0=대기압. 적용 압력은 경계 설정이며 센서값이 아닙니다. 칭량 압력보다 높게 설정하세요.")));
+ PurgeControls->AddChildToVerticalBox(Text(TEXT("PurgeHelp"),TEXT("선택한 공급 밸브 하류 전용 · 공급 밸브와 칭량 출구 닫힘 필요. 모델 시험 범위 0~1 kPa(g), 0=대기압. 적용 압력은 경계 설정이며 센서값이 아닙니다. 칭량 압력보다 높게 설정하세요.")));
  PurgeControls->AddChildToVerticalBox(Text(TEXT("PurgeCommandStatus"),TEXT("")));
 }
 void UProcessControlUI::ApplyPurgePressure()
@@ -52,8 +53,8 @@ void UProcessControlUI::RefreshPurgeControls()
 {
  auto* W=Widget.Get();auto* S=Service.Get();if(!W||!S||!PurgeControls)return;
  const auto& M=S->State;const auto& Snap=M.Snapshot;const FString Id=Selected();const double Now=FPlatformTime::Seconds();
- const bool Show=((Id==TEXT("supply-a")&&Snap.SupplyAPurge.Supported)||(Id==TEXT("supply-b")&&Snap.SupplyBPurge.Supported)||(Id==TEXT("supply-c")&&Snap.SupplyCPurge.Supported))&&!Is3D();PurgeControls->SetVisibility(Show?ESlateVisibility::Visible:ESlateVisibility::Collapsed);if(!Show)return;
- const auto E=UProcessUIStateAdapter::BuildEquipment(Id,M.Connected?&Snap:nullptr,Now);const auto& P=Id==TEXT("supply-c")?E.SupplyCPurge:(Id==TEXT("supply-b")?E.SupplyBPurge:E.SupplyAPurge);
+ const bool Show=(ProcessPlantBinding::SupplierIndex(Id)>=0&&PlantPurgeFor(Snap,ProcessPlantBinding::SupplierIndex(Id)).Supported)&&!Is3D();PurgeControls->SetVisibility(Show?ESlateVisibility::Visible:ESlateVisibility::Collapsed);if(!Show)return;
+ const auto E=UProcessUIStateAdapter::BuildEquipment(Id,M.Connected?&Snap:nullptr,Now);const auto& P=PlantPurgeFor(Snap,ProcessPlantBinding::SupplierIndex(Id));
  auto Label=[&](const TCHAR* N,const FString& T){if(auto* L=Cast<UTextBlock>(W->GetWidgetFromName(N)))L->SetText(FText::FromString(T));};
  FString Status;
  if(E.Validity==EPlantValueValidity::SourceMissing)Status=TEXT("미연결");

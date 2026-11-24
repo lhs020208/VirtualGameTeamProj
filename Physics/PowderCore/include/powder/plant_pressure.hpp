@@ -3,21 +3,27 @@
 #include <array>
 namespace powder {
 // Ideal regulated reservoirs, gauge Pa relative to 101325 Pa. Test limits only.
-struct PlantPressureTargets {double supply=0,weighing=0,receiver=0;};
+struct PlantPressureTargets {double supply=0,weighing=0,receiver=0;
+ bool individual=false;
+ std::array<double,6> sources{};
+ double source(size_t index) const {return individual?sources.at(index):supply;}
+};
 inline void validate_plant_pressure_targets(PlantPressureTargets p){
+ if(p.individual)for(double pa:p.sources)if(!std::isfinite(pa)||pa < -1000||pa>1000)
+  throw std::invalid_argument("supplier gauge pressure outside [-1000,1000] Pa");
  if(!std::isfinite(p.supply)||!std::isfinite(p.weighing)||!std::isfinite(p.receiver)||p.supply < -1000||p.supply>1000||p.weighing < -1000||p.weighing>1000||p.receiver < -1000||p.receiver>0)
   throw std::invalid_argument("test gauge pressure outside supply/WH [-1000,1000], receiver [-1000,0] Pa");
 }
 inline PlantPressureTargets plant_pressure_preset(int stage){
  switch(stage){case 0:case 2:case 4:case 5:return {};case 1:return {500,-500,0};case 3:return {0,500,-1000};default:throw std::invalid_argument("invalid pressure stage");}
 }
-// A gas-only ideal pressure boundary at the first complete cell below supplier A's shut gate.
+// A gas-only ideal pressure boundary at the first complete cell below the selected supplier's shut gate.
 // The existing WH ideal regulator is the exhaust sink; no closed-gate gas bypass is introduced.
 struct PlantSupplyAPurge {bool enabled=false;double gauge_pa=0;unsigned supplier=0;};
 struct PlantSupplyAPurgePath {size_t route=0,first_cell=0;Grain inlet{};};
 inline PlantSupplyAPurgePath plant_supply_purge_path(const std::vector<Grain>&d,const std::vector<PlantRoute>&routes,unsigned supplier){
  auto gates=plant_supplier_gates(d);
- if(gates.size()!=6||supplier>2)throw std::invalid_argument("purge requires verified A/B/C six-supplier topology");
+ if(gates.size()!=6||supplier>=6)throw std::invalid_argument("purge requires six-supplier topology");
  const auto gate=d[gates[supplier]];unsigned branch=0;
  for(size_t ri=0;ri<routes.size();++ri)if(routes[ri].phase==0){
   if(branch++!=supplier)continue;
@@ -35,7 +41,7 @@ inline PlantSupplyAPurgePath plant_supply_purge_path(const std::vector<Grain>&d,
 }
 inline PlantSupplyAPurgePath plant_supply_a_purge_path(const std::vector<Grain>&d,const std::vector<PlantRoute>&routes){return plant_supply_purge_path(d,routes,0);}
 inline void validate_plant_supply_a_purge(PlantSupplyAPurge p){
- if(p.supplier>2||!std::isfinite(p.gauge_pa)||p.gauge_pa<0||p.gauge_pa>1000)
+ if(p.supplier>=6||!std::isfinite(p.gauge_pa)||p.gauge_pa<0||p.gauge_pa>1000)
   throw std::invalid_argument("A purge trial boundary must be finite 0..1000 gauge Pa");
 }
 struct PlantPressureState {
@@ -58,7 +64,7 @@ inline PlantPressureState plant_set_regulated_pressures(std::vector<Grain>&d,con
  for(const auto&r:routes){
   if(r.cells.empty()||(r.phase!=0&&r.phase!=1))throw std::invalid_argument("invalid regulated route");
   bool enabled;double dp;
-  if(r.phase==0){if(branch>=gates.size())throw std::invalid_argument("too many supplier routes");enabled=(suppliers&supplier_air&(std::uint32_t(1)<<branch))!=0;++branch;dp=target.supply-target.weighing;}
+  if(r.phase==0){if(branch>=gates.size())throw std::invalid_argument("too many supplier routes");enabled=(suppliers&supplier_air&(std::uint32_t(1)<<branch))!=0;dp=target.source(branch)-target.weighing;++branch;}
   else{++outputs;enabled=hopper&&hopper_air;dp=target.weighing-state.applied.receiver;}
   const bool purging=purge.enabled&&route_index==purge_path.route;
   const size_t first=purging?purge_path.first_cell:0;

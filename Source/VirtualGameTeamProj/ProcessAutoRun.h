@@ -15,6 +15,15 @@ public:
  bool Start(FGuid Id,FProcessControlMachine& Machine,double Now);
  void Tick(FProcessControlMachine& Machine,double Now,const FProcessAutoCommand& Send);
  void Cancel(const FString& Reason);
+ const FProcessCommandRecord* LatestStagePressure(const FProcessControlMachine& Machine,const FString& Equipment) const;
+ FString MixSpeedReason(const FProcessControlMachine& M,double Now) const;
+ bool MixSpeedMatches(const FProcessControlMachine& M) const;
+ void ConfirmMixStart();
+ FString PressureSection() const;
+ bool PressureFlow(const FPlantSimulationSnapshot& Snapshot,double& Flow) const;
+ FVector StageBaseline() const;
+ FString PressureUnavailable(const FProcessControlMachine& M,double Now,const FString& Equipment,bool CheckPending=true) const;
+ FProcessCommandRecord RequestStagePressure(FGuid Id,int64 Epoch,int64 TransferId,double Pa,FProcessControlMachine& M,double Now,const FProcessControlTransport& Send,const FString& Equipment);
  FString ReceiverPressureUnavailable(const FProcessControlMachine& M,double Now) const;
  FProcessCommandRecord RequestReceiverPressure(FGuid Id,int64 Epoch,int64 TransferId,double Pa,FProcessControlMachine& M,double Now,const FProcessControlTransport& Send);
  bool ObserveReceiverPressure(FProcessControlMachine& M,FString& Reason);

@@ -22,6 +22,10 @@ FPlantFeedPreparation::FPlantFeedPreparation(const powder::GranularConfig& C,con
             auto A=C.plant_data[At],B=C.plant_data[At+1],Meta=C.plant_data[At+2];
             if(!Downstream)
             {
+                if(A.z>B.z&&A.z>=Supply.Gate.z&&Meta.z==0&&Meta.w==0){
+                    // The phase-zero route describes the hopper barrel, cone and gate throat.
+                    Supply.Upstream.Add({FVector3d(A.x,A.y,A.z),FVector3d(B.x,B.y,B.z),A.w,B.w,false});
+                }
                 if(!(A.z>=Supply.Gate.z&&B.z<Supply.Gate.z))continue;
                 const double T=(A.z-Supply.Gate.z)/(A.z-B.z);
                 A={float(A.x+(B.x-A.x)*T),float(A.y+(B.y-A.y)*T),Supply.Gate.z,float(A.w+(B.w-A.w)*T)};
@@ -42,6 +46,18 @@ FPlantFeedPreparation::FPlantFeedPreparation(const powder::GranularConfig& C,con
         Supplies.Add(MoveTemp(Supply));
     }
     if(Index!=6)GeometryError=TEXT("LowPoly 공급 6개 연결부를 모두 확인해야 합니다.");
+}
+
+bool FPlantFeedPreparation::InSupplier(int32 Supplier,const powder::Grain& P) const
+{
+    if(!Supplies.IsValidIndex(Supplier)||P.z<Supplies[Supplier].Gate.z)return false;
+    for(const auto& Cell:Supplies[Supplier].Upstream){
+        if(P.z>Cell.A.Z+Radius||P.z<Cell.B.Z-Radius)continue;
+        const double T=FMath::Clamp((Cell.A.Z-P.z)/(Cell.A.Z-Cell.B.Z),0.,1.);
+        const auto Centre=FMath::Lerp(Cell.A,Cell.B,T);
+        if(FMath::Square(P.x-Centre.X)+FMath::Square(P.y-Centre.Y)<=FMath::Square(FMath::Lerp(Cell.RA,Cell.RB,T)+Radius))return true;
+    }
+    return false;
 }
 
 int32 FPlantFeedPreparation::SupplyPath(const powder::Grain& P) const
@@ -147,6 +163,18 @@ void FPlantFeedPreparation::Opened(double BaselineTime,double AppliedTime)
     State.Reason=BaselineTime<State.SupplyConfirmedSimulationSeconds?TEXT("공급 완료 확인 · 기존 이송 기준량 유지 후 출구 재개방 적용 확인"):TEXT("공급 완료·기준량 확보 후 출구 열림 적용 확인");
 }
 
+void FPlantFeedPreparation::CountSupplyConnectors(const std::vector<powder::Grain>& Positions,int32 (&Counts)[6]) const
+{
+    int32 CountsAtSource[6]{};
+    for(int32& N:Counts)N=-1;
+    if(!State.Enabled||!GeometryError.IsEmpty()||Positions.size()!=Count)return;
+    for(const auto& P:Positions){
+        if(Mass.Classify(P)==EPlantMassRegion::Invalid)return;
+        const int32 Source=SupplyPath(P);
+        if(Source>=0&&Source<6)++CountsAtSource[Source];
+    }
+    for(int I=0;I<6;++I)Counts[I]=CountsAtSource[I];
+}
 int32 FPlantFeedPreparation::SupplyAInventory(const std::vector<powder::Grain>& Positions,int32 Supplier) const
 {
     if(!State.Enabled||!GeometryError.IsEmpty()||Positions.size()!=Count)return -1;

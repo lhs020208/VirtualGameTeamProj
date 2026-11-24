@@ -7,7 +7,7 @@ bool FProcessAutoRun::TickAdditiveClock(FProcessControlMachine& M,double Now,con
  if(!State.AdditiveEnabled||State.MixerAppliedSimulationSeconds<0||State.Stage==EProcessAutoStage::StopMixer)return false;
  const auto& S=M.Snapshot;
  if(!S.AppliedRPMValid||!S.WorkerMixerEnabled||!S.RequestedMixerEnabled||
-    S.AppliedRPM!=double(float(State.TargetMixerRPM))||S.WorkerTargetRPM!=State.TargetMixerRPM||S.RequestedRPM!=State.TargetMixerRPM){
+    !MixSpeedMatches(M)){
   Fail(TEXT("첨가제 준비/투입 중 목표 혼합 RPM 이탈 또는 적용값 미확인"),M,Now,Send);return true;
  }
  if(S.Sequence>LastClockSequence&&S.Execution==EPlantExecutionState::Running){
@@ -19,7 +19,7 @@ bool FProcessAutoRun::TickAdditiveClock(FProcessControlMachine& M,double Now,con
   State.MixingTargetReachedSimulationSeconds=S.PhysicalSeconds;
   const auto& B=S.SupplyABatch;const auto& F=S.MixerFeed;const auto& AB=S.SequentialBatch;
   const bool Intact=B.Valid&&B.CaptureRevision==State.BatchRevision&&B.TotalCount==State.BatchCount&&B.MixerCount==State.BatchCount&&
-   B.ForeignCount==0&&B.UnknownCount==0&&AB.A.MixerCount==AB.A.SelectedCount&&AB.B.MixerCount==AB.B.SelectedCount&&
+   B.ForeignCount==0&&B.UnknownCount==0&&AB.RegularsInMixer()&&
    AB.Additive.MixerCount==AB.Additive.SelectedCount&&F.Valid&&F.State==EPlantTransferState::Complete&&F.AdditionalInflowCount==0&&
    F.ReceiverKg==0&&F.ConnectorKg==0&&F.CloseRevision==State.ReceiverCloseRevision&&F.CloseRevision>F.OpeningRevision;
   if(!State.AdditiveDelivered||!Intact||S.AppliedReceiverOpen||S.RequestedReceiverOpen){

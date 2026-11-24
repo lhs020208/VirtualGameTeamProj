@@ -3,9 +3,9 @@
 namespace {
 bool Stopped(const FPlantSimulationSnapshot& S){
  if(S.Execution!=EPlantExecutionState::Paused||S.RequestedRunning||S.AppliedSupplierMask||S.AppliedHopperOpen||S.AppliedReceiverOpen||S.RequestedHopperOpen||S.RequestedReceiverOpen||
-    !S.AppliedRPMValid||S.AppliedRPM!=0||S.RequestedMixerEnabled||S.WorkerMixerEnabled||!S.AppliedPressureValid||S.AppliedGaugePressurePa!=FVector::ZeroVector||S.RequestedGaugePressurePa!=FVector::ZeroVector)return false;
+    !S.AppliedRPMValid||S.AppliedRPM!=0||S.RequestedMixerEnabled||S.WorkerMixerEnabled||!S.AppliedPressureValid||!S.SuppliersVented()||S.AppliedGaugePressurePa!=FVector::ZeroVector||S.RequestedGaugePressurePa!=FVector::ZeroVector)return false;
  for(bool Open:S.RequestedSuppliers)if(Open)return false;
- for(const auto& P:{S.SupplyAPurge,S.SupplyBPurge,S.SupplyCPurge})if(P.Supported&&(!P.Valid||P.RequestedEnabled||P.AppliedEnabled||P.RequestedGaugePa||P.AppliedGaugePa||P.FlowM3s))return false;
+ for(int32 I=0;I<6;++I){const auto& P=PlantPurgeFor(S,I);if(P.Supported&&(!P.Valid||P.RequestedEnabled||P.AppliedEnabled||P.RequestedGaugePa||P.AppliedGaugePa||P.FlowM3s))return false;}
  return true;
 }
 }
@@ -36,15 +36,21 @@ FString FProcessAutoRun::CanRecover(const FProcessControlMachine& M,double Now) 
  if(S.Validity!=EPlantValueValidity::Valid||Now<S.PublishedWallSeconds||Now-S.PublishedWallSeconds>2.||!R.Supported||!R.Valid||!B.Valid||!S.Error.IsEmpty())return TEXT("최신 작업자 좌표·원료 출처·배치 이력 미확인");
  if(!Stopped(S)||M.IsStopping()||M.StopStage!=EProcessStopStage::Complete)return TEXT("수동 조치 후 전체 정지를 완료하고 상태를 다시 확인하세요.");
  for(const auto& P:M.History)if(P.Value.IsPending())return TEXT("남아 있는 수동 요청의 적용 확인 중");
- if(B.CaptureRevision<=0||B.ForeignCount||B.UnknownCount||R.Materials.Num()!=3)return TEXT("배치 출처·입자 누락 또는 미분류 위치 확인 필요");
- for(const auto& Material:R.Materials)if(Material.Unknown)return TEXT("원료별 현재 위치 미확인 · 재개 보류");
+ if(B.CaptureRevision<=0||B.ForeignCount||B.UnknownCount||!R.Materials.IsValidIndex(S.SequentialBatch.ActiveSupplier))return TEXT("배치 출처·입자 누락 또는 미분류 위치 확인 필요");
+ for(const auto& Material:R.Materials){
+  if(Material.Unknown)return TEXT("원료별 현재 위치 미확인 · 재개 보류");
+  if(State.StopInventory.Materials.IsValidIndex(Material.Supplier)){
+   const auto& AtStop=State.StopInventory.Materials[Material.Supplier];
+   if(AtStop.Supplier!=Material.Supplier||AtStop.SelectedIds!=Material.SelectedIds)return TEXT("정지 확인 시점과 현재 확정 계량분의 공급원 또는 입자 목록 불일치");
+  }
+ }
  if(B.DoseFinalized&&(B.WeighingCount||B.PipeCount)&&S.Transfer.Id>0&&S.Transfer.State==EPlantTransferState::Indeterminate)return TEXT("기존 수취 이송 기록 판정 불가 · 재개 보류");
  if((B.MixerCount||B.MixerConnectorCount)&&(S.MixerFeed.State==EPlantTransferState::Indeterminate||S.MixerFeed.OpeningRevision<=0))return TEXT("혼합 투입의 승인·기준량 기록 미확인 · 재개 보류");
  if(B.DoseFinalized&&(B.WeighingCount||B.PipeCount)&&S.Transfer.Id>0&&FMath::Abs(S.Transfer.BaselineKg-B.TotalKg)>S.Transfer.Criteria.MassErrorKg)return TEXT("기존 이송 기준량과 확정 계량분 불일치");
  const int32 Supplier=S.SequentialBatch.ActiveSupplier;
- if(Supplier<0||Supplier>2)return TEXT("지원하지 않는 공급원 이력");
- const double Target=Supplier==2?State.AdditiveTargetKg:Supplier==1?State.LockedTargetBKg:State.LockedTargetAKg;
- const double Tol=Supplier==2?State.AdditiveToleranceKg:Supplier==1?State.LockedToleranceBKg:State.LockedToleranceAKg;
+ if(!State.UsesSupplier(Supplier)||Supplier<0||Supplier>=6)return TEXT("지원하지 않는 공급원 이력");
+ const double Target=State.DoseFor(Supplier,false);
+ const double Tol=State.DoseFor(Supplier,true);
  if(!B.DoseFinalized){
   const double Passed=(B.ConnectorCount+B.WeighingCount)*S.ModelParticleMassKg;
   if(State.StopInventory.Materials.IsValidIndex(Supplier)){
@@ -66,8 +72,12 @@ bool FProcessAutoRun::Recover(FProcessControlMachine& M,double Now)
  ObserveRecovery(M);const auto Why=CanRecover(M,Now);if(!Why.IsEmpty()){State.RecoveryReason=Why;return false;}
  const auto& S=M.Snapshot;const auto& B=S.SupplyABatch;const auto& Q=S.SequentialBatch;
  State.BatchRevision=B.CaptureRevision;State.BatchCount=B.TotalCount;State.BatchKg=B.TotalKg;State.ActiveSupplier=Q.ActiveSupplier;
- State.TargetMassKg=State.ActiveSupplier==2?State.AdditiveTargetKg:State.ActiveSupplier==1?State.LockedTargetBKg:State.LockedTargetAKg;
- State.WeighingToleranceKg=State.ActiveSupplier==2?State.AdditiveToleranceKg:State.ActiveSupplier==1?State.LockedToleranceBKg:State.LockedToleranceAKg;
+ State.TargetMassKg=State.DoseFor(State.ActiveSupplier,false);
+ State.WeighingToleranceKg=State.DoseFor(State.ActiveSupplier,true);
+ if(!State.Entries.IsEmpty()){
+  State.FinalBySupplierKg.Init(-1,6);
+  for(int32 I=0;I<Q.Materials.Num()&&I<6;++I)if(Q.Materials[I].FinalSimulationSeconds>=0)State.FinalBySupplierKg[I]=Q.Materials[I].FinalKg;
+ }
  State.FinalAKg=Q.A.FinalKg;State.FinalBKg=Q.B.FinalKg;State.FinalAdditiveKg=Q.Additive.FinalKg;
  State.DoseFinalized=B.DoseFinalized;State.DoseFinalizeRevision=B.DoseFinalizeRevision;State.FinalDoseKg=B.DoseFinalKg;State.FinalDoseSimulationSeconds=B.DoseFinalSimulationSeconds;
  const double Passed=(B.ConnectorCount+B.WeighingCount)*S.ModelParticleMassKg;
@@ -83,7 +93,7 @@ bool FProcessAutoRun::Recover(FProcessControlMachine& M,double Now)
 }
 bool FProcessAutoRun::TickRecovery(FProcessControlMachine& M,double Now,const FProcessAutoCommand& Send)
 {
- if(State.Stage<EProcessAutoStage::RecoveryAdmit)return false;
+ if(State.Stage<EProcessAutoStage::RecoveryAdmit||State.Stage>EProcessAutoStage::RecoveryCloseOutlet)return false;
  const auto& S=M.Snapshot;
  if(Now-EnteredWall>Settings.StageWallSeconds){Fail(TEXT("배치 재개 작업자 응답 시간 초과"),M,Now,Send);return true;}
  if(!S.Recovery.ForeignIds.IsEmpty()||S.SupplyABatch.ForeignCount||S.SupplyABatch.UnknownCount){Fail(TEXT("재개 준비 중 원료 이력/현재 위치 변경 · 전체 정지"),M,Now,Send);return true;}
@@ -96,6 +106,7 @@ bool FProcessAutoRun::TickRecovery(FProcessControlMachine& M,double Now,const FP
   if(Go(EProcessCommand::MixerEnabled,TEXT("mixer"),1,EProcessAutoStage::RecoveryRoute)){
    const auto& F=S.SequentialBatch.AdditiveScheduled?S.InitialBatchMixerFeed:S.MixerFeed;
    if(!S.AppliedRPMValid||S.AppliedRPM!=double(float(State.TargetMixerRPM))||F.MixerAppliedRevision!=State.MixerRequestRevision){Fail(TEXT("재개 혼합의 새 요청 RPM 적용 미확인"),M,Now,Send);break;}
+   ConfirmMixStart();
    State.MixingElapsedSeconds=MixElapsed(S);State.MixingDeadlineSimulationSeconds=S.PhysicalSeconds+State.MixingDurationSeconds-State.MixingElapsedSeconds;
    if(State.AdditiveEnabled&&State.AdditiveScheduled&&State.AdditiveOpenRevision==0)State.AdditiveDueSeconds=S.PhysicalSeconds+State.AdditiveDelaySeconds-State.MixingElapsedSeconds;
   }break;
@@ -103,7 +114,7 @@ bool FProcessAutoRun::TickRecovery(FProcessControlMachine& M,double Now,const FP
   if(State.MixingElapsedSeconds>=State.MixingDurationSeconds&&State.MixerAppliedSimulationSeconds>=0)Enter(EProcessAutoStage::StopMixer,S,Now);
   else Enter(State.RecoveryNext,S,Now);break;
  case EProcessAutoStage::RecoveryCloseOutlet:Go(EProcessCommand::Valve,TEXT("weigher"),0,EProcessAutoStage::Transferring);break;
- case EProcessAutoStage::RecoveryClearPressure:Go(EProcessCommand::Pressure,TEXT("weigher"),State.LockedFeedPressurePa.Y,EProcessAutoStage::PurgePressure);break;
+ case EProcessAutoStage::RecoveryClearPressure:Go(EProcessCommand::Pressure,TEXT("weigher"),-500,EProcessAutoStage::PurgePressure);break;
  default:break;
  }
  return true;
@@ -111,8 +122,8 @@ bool FProcessAutoRun::TickRecovery(FProcessControlMachine& M,double Now,const FP
 EProcessAutoStage FProcessAutoRun::RecoveryPlan(const FPlantSimulationSnapshot& S) const
 {
  const auto& B=S.SupplyABatch;const auto& Q=S.SequentialBatch;
- const double Target=Q.ActiveSupplier==2?State.AdditiveTargetKg:Q.ActiveSupplier==1?State.LockedTargetBKg:State.LockedTargetAKg;
- const double Tol=Q.ActiveSupplier==2?State.AdditiveToleranceKg:Q.ActiveSupplier==1?State.LockedToleranceBKg:State.LockedToleranceAKg;
+ const double Target=State.DoseFor(Q.ActiveSupplier,false);
+ const double Tol=State.DoseFor(Q.ActiveSupplier,true);
  if(!B.DoseFinalized){
   const double Passed=(B.WeighingCount+B.ConnectorCount)*S.ModelParticleMassKg;
   const bool Enough=State.BatchMode==EProcessBatchMode::Full?B.SourceCount==0:Passed>=Target-Tol;

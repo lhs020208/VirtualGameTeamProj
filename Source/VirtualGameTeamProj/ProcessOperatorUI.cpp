@@ -36,7 +36,7 @@ void Style(UButton* B,int32 Size=22,bool Primary=false,bool Stop=false){
  auto S=B->GetStyle();S.Normal=FSlateRoundedBoxBrush(Fill,8.f);S.Hovered=FSlateRoundedBoxBrush(Fill*.9f,8.f);S.Pressed=FSlateRoundedBoxBrush(Fill*.8f,8.f);S.Disabled=FSlateRoundedBoxBrush(FLinearColor(.60f,.67f,.71f),8.f);S.NormalPadding=S.PressedPadding=FMargin(16,12);B->SetStyle(S);B->SetBackgroundColor(FLinearColor::White);
 }
 FString Stage(const FProcessAutoSnapshot& A){
- const FString Source=A.ActiveSupplier==1?TEXT("B"):A.ActiveSupplier==2?TEXT("C"):TEXT("A");
+ const FString Source=FString::Chr(TCHAR('A'+A.ActiveSupplier));
  switch(A.Stage){
  case EProcessAutoStage::Complete:return TEXT("배치 완료");
  case EProcessAutoStage::Feeding:case EProcessAutoStage::OpenA:return Source+TEXT(" 계량 중");
@@ -45,8 +45,8 @@ FString Stage(const FProcessAutoSnapshot& A){
  case EProcessAutoStage::WeighingStable:case EProcessAutoStage::FinalizeDose:return Source+TEXT(" 계량 안정 확인 중");
  case EProcessAutoStage::OpenWeigher:return Source+TEXT(" 공급 완료 재확인 중");
  case EProcessAutoStage::Transferring:return Source+TEXT(" 수취호퍼로 이송 중");
- case EProcessAutoStage::FeedingMixer:return A.ActiveSupplier==2?TEXT("C 첨가제 투입 중"):(A.BatchMode==EProcessBatchMode::SequentialAB?TEXT("A·B 혼합기로 투입 중"):TEXT("A 혼합기로 투입 중"));
- case EProcessAutoStage::WaitAdditive:return TEXT("C 예약 투입 대기");
+ case EProcessAutoStage::FeedingMixer:return A.IsAdditive()?Source+TEXT(" 첨가제 투입 중"):(A.BatchMode==EProcessBatchMode::SequentialAB?TEXT("합산 원료 혼합기로 투입 중"):TEXT("A 혼합기로 투입 중"));
+ case EProcessAutoStage::WaitAdditive:return Source+TEXT(" 예약 투입 대기");
  case EProcessAutoStage::Mixing:return TEXT("혼합 중");
  case EProcessAutoStage::StopMixer:return TEXT("혼합기 정지 확인 중");
  case EProcessAutoStage::Cancelled:return TEXT("배치 중단 · 상태 확인 필요");
@@ -90,13 +90,16 @@ void UProcessControlUI::BuildOperatorLayout(UCanvasPanel* Root)
  auto* Side=Tree->ConstructWidget<UScrollBox>(UScrollBox::StaticClass(),TEXT("OperatorSideScroll"));Side->SetScrollbarThickness(FVector2D(12,12));
  auto* SideSlot=Columns->AddChildToHorizontalBox(Side);SideSlot->SetSize(FSlateChildSize(ESlateSizeRule::Fill));SideSlot->SetPadding(FMargin(20,0,0,0));
  auto* Right=Tree->ConstructWidget<UVerticalBox>();Side->AddChild(Right);
+ Right->AddChildToVerticalBox(Text(TEXT("SelectedOverview"),TEXT(""),24))->SetPadding(FMargin(0,0,0,5));
+ Move(PressureControls,Right);
+ for(const TCHAR* N:{TEXT("RPMLabel"),TEXT("RPMInput"),TEXT("SetRPM")})Move(Get(N),Right);
+ Right->AddChildToVerticalBox(Panel);
  Right->AddChildToVerticalBox(Text(TEXT("OperatorSummary"),TEXT("질량 확인 중"),25))->SetPadding(FMargin(0,0,0,16));
  auto* CalcRow=Tree->ConstructWidget<UHorizontalBox>();Right->AddChildToVerticalBox(CalcRow)->SetPadding(FMargin(0,5));
  for(const TCHAR* N:{TEXT("ManualResume"),TEXT("ManualPause")})if(auto* X=Get(N)){X->RemoveFromParent();auto* S=CalcRow->AddChildToHorizontalBox(X);S->SetSize(FSlateChildSize(ESlateSizeRule::Fill));S->SetPadding(FMargin(3,0));}
  auto* RecoveryRow=Tree->ConstructWidget<UHorizontalBox>();Right->AddChildToVerticalBox(RecoveryRow)->SetPadding(FMargin(0,5));
  for(const TCHAR* N:{TEXT("CheckBatch"),TEXT("AbandonBatch")})if(auto* X=Get(N)){X->RemoveFromParent();auto* S=RecoveryRow->AddChildToHorizontalBox(X);S->SetSize(FSlateChildSize(ESlateSizeRule::Fill));S->SetPadding(FMargin(3,0));}
  Right->AddChildToVerticalBox(Text(TEXT("OperatorSelectHint"),TEXT("공정도에서 장비를 클릭하면 관련 수동 조작을 볼 수 있습니다."),20))->SetPadding(FMargin(0,16));
- Right->AddChildToVerticalBox(Panel);
  for(const TCHAR* N:{TEXT("PanelBlocker"),TEXT("HoverCard"),TEXT("SelectHint"),TEXT("DiagramNote")})if(auto* X=Get(N))X->SetVisibility(ESlateVisibility::Collapsed);
  for(int I=0;I<9;++I){Font(Cast<UTextBlock>(Get(*FString::Printf(TEXT("Name%d"),I))),25);Font(Cast<UTextBlock>(W->GetWidgetFromName(FName(*FString::Printf(TEXT("Equipment%dText"),I)))),24);}
 
@@ -125,8 +128,8 @@ void UProcessControlUI::BuildOperatorLayout(UCanvasPanel* Root)
  auto Section=[&](const TCHAR* N,const TCHAR* Caption){auto* T=Text(N,Caption,26);Font(T,26,Blue);Settings->AddChildToVerticalBox(T)->SetPadding(FMargin(0,18,0,8));};
  for(auto* Child:Children){
   if(Child==FileRow)Section(TEXT("RecipeSection1"),TEXT("01  레시피"));
-  if(Child==Get(TEXT("RecipeARow")))Section(TEXT("RecipeSection2"),TEXT("02  A·B 목표량 · 순서 고정"));
-  if(Child==Get(TEXT("RecipeAdditiveEnabled")))Section(TEXT("RecipeSection3"),TEXT("03  C 첨가제 · 투입 시점"));
+  if(Child==Get(TEXT("FeedSlot0")))Section(TEXT("RecipeSection2"),TEXT("02  공급호퍼 · 목표량과 투입 순서"));
+  if(Child==Get(TEXT("RecipeAdditiveEnabled")))Section(TEXT("RecipeSection3"),TEXT("03  첨가제 · 투입 시점"));
   if(Child==MixRow){Settings->AddChildToVerticalBox(DelayColumn)->SetPadding(FMargin(4,8));Section(TEXT("RecipeSection4"),TEXT("04  혼합 설정"));}
   Settings->AddChildToVerticalBox(Child)->SetPadding(FMargin(2,5));
  }
@@ -163,6 +166,12 @@ void UProcessControlUI::BuildOperatorLayout(UCanvasPanel* Root)
  for(const TCHAR* N:{TEXT("RecipeToleranceA"),TEXT("RecipeToleranceB"),TEXT("RecipeToleranceC"),TEXT("WeighToleranceInput"),TEXT("BWeighToleranceInput"),TEXT("AdditiveToleranceInput")})Numeric(N,TEXT("g"),.1);
  for(const TCHAR* N:{TEXT("RecipeDelay"),TEXT("AdditiveDelayInput")})Numeric(N,TEXT("초"),.1);
  for(const TCHAR* N:{TEXT("RecipeMixSeconds"),TEXT("AutoMixTimeInput")})Numeric(N,TEXT("초"),1,0,Unlimited,true);
+ for(int I=0;I<6;++I){
+  const FString Slot=FString::Printf(TEXT("FeedSlot%d"),I);
+  Numeric(*(Slot+TEXT("Target")),TEXT("g"),1,0,Unlimited,true);
+  Numeric(*(Slot+TEXT("Tolerance")),TEXT("g"),.1);
+  Numeric(*FString::Printf(TEXT("RecipeSourcePressure%d"),I),TEXT("kPa(g)"),.1,-1,1);
+ }
  Numeric(TEXT("RecipeRPM"),TEXT("RPM"),1,0,30,true);Numeric(TEXT("RPMInput"),TEXT("RPM"),1,0,30);
  Numeric(TEXT("RecipeReceiverPressure"),TEXT("kPa(g)"),.1,-1,0);
  Numeric(TEXT("PressureInput"),TEXT("kPa(g)"),.1,-1,1);Numeric(TEXT("PurgePressureInput"),TEXT("kPa(g)"),.1,0,1);
@@ -204,12 +213,13 @@ void UProcessControlUI::RefreshOperatorLayout()
  if(!DataTitle.IsEmpty()){if(ProtectedReason)Why+=TEXT(" · ")+DataTitle+TEXT(": ")+DataWhy;else{Title=DataTitle;Why=DataWhy;}Error=true;}
  if(Complete&&!Error&&!M.IsStopping())Why=TEXT("확정 원료 전량 도착 · 혼합 시간 충족 · 계산 적용 RPM 0 확인");
  if(A.Active&&A.AdditiveScheduled&&!A.AdditiveDelivered&&A.AdditiveDueSeconds>=0&&A.AdditiveOpenAppliedSeconds<0)
-  Why=TEXT("C 투입까지 ")+ProcessDisplay::Number(FMath::Max(0.,A.AdditiveDueSeconds-Snap.PhysicalSeconds))+TEXT("초 · ")+Why;
+  Why=FString::Chr(TCHAR('A'+A.AdditiveSupplier))+TEXT(" 투입까지 ")+ProcessDisplay::Number(FMath::Max(0.,A.AdditiveDueSeconds-Snap.PhysicalSeconds))+TEXT("초 · ")+Why;
  Put(W,TEXT("OperatorStage"),Title);Put(W,TEXT("OperatorReason"),ProcessDisplay::CompactText(Why));
  if(auto* P=Cast<UBorder>(W->GetWidgetFromName(TEXT("OperatorStatePanel"))))P->SetBrushColor(Error?FLinearColor(1,.86f,.85f):Complete?FLinearColor(.80f,.94f,.85f):FLinearColor(.86f,.93f,.98f));
  if(auto* T=Cast<UTextBlock>(W->GetWidgetFromName(TEXT("OperatorStage"))))T->SetColorAndOpacity(Error?Red:Complete?FLinearColor(.02f,.32f,.14f):Blue);
  FString Summary;
- if(Complete){
+ if(Complete&&!A.Entries.IsEmpty())Summary=TEXT("배치 완료\n최종 혼합기 도착량\n")+ProcessDisplay::CompactText(A.FinalSummary());
+ else if(Complete){
   const double AKg=A.BatchMode==EProcessBatchMode::SequentialAB?A.FinalAKg:A.BatchKg;
   Summary=TEXT("배치 완료\n최종 혼합기 도착량\nA  ")+ProcessDisplay::Mass(AKg);
   if(A.BatchMode==EProcessBatchMode::SequentialAB)Summary+=TEXT("\nB  ")+ProcessDisplay::Mass(A.FinalBKg);
@@ -229,8 +239,27 @@ void UProcessControlUI::RefreshOperatorLayout()
  Exact+=TEXT("적용 레시피 원본 설정\n")+ProcessRecipe::Encode(R)+TEXT("\n\n단계별 진단 / 이력\n");
  if(auto* T=Cast<UTextBlock>(W->GetWidgetFromName(TEXT("PurgeSummary"))))Exact+=TEXT("\n선택 공급 공기 정밀 수치\n")+T->GetText().ToString();
  Put(W,TEXT("OperatorExactValues"),Exact);
- if(Selected()==TEXT("supply-a")||Selected()==TEXT("supply-b")||Selected()==TEXT("supply-c")){
-  const auto& P=Selected()==TEXT("supply-c")?Snap.SupplyCPurge:Selected()==TEXT("supply-b")?Snap.SupplyBPurge:Snap.SupplyAPurge;
+ const bool SupplierSelected=ProcessPlantBinding::SupplierIndex(Selected())>=0;
+ Show(TEXT("SelectedOverview"),SupplierSelected);
+ if(SupplierSelected){
+  const auto& P=PlantPurgeFor(Snap,ProcessPlantBinding::SupplierIndex(Selected()));
+  const int32 Supplier=ProcessPlantBinding::SupplierIndex(Selected());
+  const bool HasBatch=Same&&A.RunId.IsValid();
+  const auto* Plan=HasBatch?A.EntryFor(Supplier):R.Entries.FindByPredicate([Supplier](const auto& E){return E.Enabled&&E.Supplier==Supplier;});
+  FString Dose;
+  const bool Legacy=HasBatch?A.Entries.IsEmpty():R.Entries.IsEmpty();
+  const bool LegacyUsed=Legacy&&(HasBatch?A.UsesSupplier(Supplier):
+    (S->RecipeRevision>0&&(Supplier==0||(Supplier==1&&R.Mode==EProcessBatchMode::SequentialAB)||(Supplier==2&&R.AdditiveEnabled))));
+  if(Plan||LegacyUsed){
+   const auto* Mat=Fresh&&HasBatch&&Snap.SequentialBatch.Materials.IsValidIndex(Supplier)?&Snap.SequentialBatch.Materials[Supplier]:nullptr;
+   const FString Name=Plan?Plan->DisplayName:Supplier==0?R.MaterialA:Supplier==1?R.MaterialB:R.MaterialC;
+   const bool Additive=Plan?Plan->Additive:Supplier==2;
+   const bool Full=LegacyUsed&&(HasBatch?A.BatchMode:R.Mode)==EProcessBatchMode::Full;
+   const double Target=Plan?Plan->TargetKg:HasBatch?A.DoseFor(Supplier,false):Supplier==0?R.TargetAKg:Supplier==1?R.TargetBKg:R.TargetCKg;
+   Dose=FString::Printf(TEXT("%c %s · %s · %s\n목표 %s · 확정 %s"),'A'+Supplier,*Name,Additive?TEXT("첨가제"):TEXT("일반 원료"),*Title,
+    Full?TEXT("전량"):*ProcessDisplay::Mass(Target),Mat&&Mat->FinalSimulationSeconds>=0?*ProcessDisplay::Mass(Mat->FinalKg):TEXT("미확인"));
+  }
+  Put(W,TEXT("SelectedOverview"),Dose.IsEmpty()?FString::Printf(TEXT("공급 %c · 이번 레시피의 계량 설정 없음"),'A'+Supplier):Dose.TrimEnd());
   if(Fresh&&P.Valid)Put(W,TEXT("PurgeSummary"),TEXT("공기 적용 ")+FString(P.AppliedEnabled?TEXT("켜짐"):TEXT("꺼짐"))+TEXT(" · 적용 압력 설정 ")+ProcessDisplay::Number(P.AppliedGaugePa/1000)+TEXT(" kPa(g)\n연결부 남은 양 ")+ProcessDisplay::Mass(P.ResidualKg,true,P.ResidualCount));
  }
  for(const TCHAR* N:{TEXT("PressureSummary"),TEXT("PressureCommandStatus"),TEXT("PurgeSummary"),TEXT("PurgeCommandStatus"),TEXT("AutoDoseSummary"),TEXT("AutoMixTimeSummary"),TEXT("AdditiveSummary"),TEXT("RecipeAppliedSummary"),TEXT("StatusValue"),TEXT("QuantityValue"),TEXT("ValveValue"),TEXT("Disconnected"),TEXT("ThreeDNotice")}){
@@ -249,9 +278,19 @@ void UProcessControlUI::RefreshOperatorLayout()
  }
  Font(Cast<UTextBlock>(W->GetWidgetFromName(TEXT("SupplyValvePressureSummary"))),21);
  RefreshOperationGuidance();
+ // Always visible after operator guidance has selected the current stage, including 3D.
+ if(auto* T=Cast<UTextBlock>(W->GetWidgetFromName(TEXT("OperatorReason"))))T->SetText(FText::FromString((S->WebOwnsControl()?S->LocalOperatorReason():FString(TEXT("현재 조작 주체: 언리얼 · 전체 정지는 양쪽에서 가능")))+TEXT("\n")+T->GetText().ToString()));
+ if(S->WebOwnsControl())for(const TCHAR* Name:{TEXT("AutoStartA"),TEXT("ResumeBatch"),TEXT("ValveOpen"),TEXT("ValveClose"),TEXT("MixerStart"),TEXT("MixerStop"),TEXT("SetRPM"),TEXT("ManualResume"),TEXT("ManualPause"),TEXT("ApplyPressure"),TEXT("PurgeApplyPressure"),TEXT("PurgeStart"),TEXT("PurgeStop")})if(auto* B=Cast<UButton>(W->GetWidgetFromName(Name))){B->SetIsEnabled(false);B->SetToolTipText(FText::FromString(S->LocalOperatorReason()));}
  for(auto F:NumericFields){
   const FString N=F->Name;double Applied=0;bool Known=true;FString Cross;
-  if(N==TEXT("RecipeTargetA")||N==TEXT("TargetMassInput"))Applied=R.TargetAKg*1000;
+  if(N.StartsWith(TEXT("FeedSlot"))){
+   const int Slot=N[7]-TCHAR('0');
+   Known=R.Entries.IsValidIndex(Slot);
+   if(Known)Applied=1000*(N.EndsWith(TEXT("Target"))?R.Entries[Slot].TargetKg:R.Entries[Slot].ToleranceKg);
+  }else if(N.StartsWith(TEXT("RecipeSourcePressure"))){
+   const int Supplier=N[N.Len()-1]-TCHAR('0');
+   Applied=(R.SupplierFeedPa.IsValidIndex(Supplier)?R.SupplierFeedPa[Supplier]:R.FeedPressurePa.X)/1000.;
+  }else if(N==TEXT("RecipeTargetA")||N==TEXT("TargetMassInput"))Applied=R.TargetAKg*1000;
   else if(N==TEXT("RecipeToleranceA")||N==TEXT("WeighToleranceInput"))Applied=R.ToleranceAKg*1000;
   else if(N==TEXT("RecipeTargetB")||N==TEXT("BTargetMassInput"))Applied=R.TargetBKg*1000;
   else if(N==TEXT("RecipeToleranceB")||N==TEXT("BWeighToleranceInput"))Applied=R.ToleranceBKg*1000;
@@ -259,11 +298,16 @@ void UProcessControlUI::RefreshOperatorLayout()
   else if(N==TEXT("RecipeToleranceC")||N==TEXT("AdditiveToleranceInput"))Applied=R.ToleranceCKg*1000;
   else if(N==TEXT("RecipeReceiverPressure"))Applied=R.TransferPressurePa.Z/1000.;
   else if(N==TEXT("RecipeRPM"))Applied=R.TargetRPM;
-  else if(N==TEXT("RPMInput")){Applied=Snap.RequestedRPM;Known=Fresh;}
+  else if(N==TEXT("RPMInput")){
+   Applied=A.Active?Snap.AppliedRPM:Snap.RequestedRPM;Known=Fresh&&(!A.Active||Snap.AppliedRPMValid);
+   double Draft=0;
+   if(A.Active&&ProcessDisplay::Parse(F->Input->GetText().ToString(),Draft)&&Draft==0)
+    Cross=TEXT("정지하려면 전체 정지를 사용하세요. 운전 중에는 양수 RPM을 입력하세요.");
+  }
   else if(N==TEXT("RecipeMixSeconds")||N==TEXT("AutoMixTimeInput"))Applied=R.MixingSeconds;
   else if(N==TEXT("RecipeDelay")||N==TEXT("AdditiveDelayInput"))Applied=R.DelaySeconds;
-  else if(N==TEXT("PressureInput")){const int32 Target=PlantControl::PressureTarget(Selected());Known=Fresh&&Target!=INDEX_NONE;Applied=Known?Snap.RequestedGaugePressurePa[Target]/1000:0;F->Maximum=Target==2?0:1;}
-  else if(N==TEXT("PurgePressureInput")){const auto& P=Selected()==TEXT("supply-b")?Snap.SupplyBPurge:Selected()==TEXT("supply-c")?Snap.SupplyCPurge:Snap.SupplyAPurge;Applied=P.RequestedGaugePa/1000;Known=Fresh&&P.Valid;}
+  else if(N==TEXT("PressureInput")){const int32 Target=PlantControl::PressureTarget(Selected());Known=Fresh&&Target!=INDEX_NONE&&Snap.AppliedPressureValid;Applied=Known?(Target==0?Snap.SupplierPressure(ProcessPlantBinding::SupplierIndex(Selected()),true):Snap.AppliedGaugePressurePa[Target])/1000:0;F->Maximum=Target==2?0:1;}
+  else if(N==TEXT("PurgePressureInput")&&ProcessPlantBinding::SupplierIndex(Selected())>=0){const auto& P=PlantPurgeFor(Snap,ProcessPlantBinding::SupplierIndex(Selected()));Applied=P.AppliedGaugePa/1000;Known=Fresh&&P.Valid;}
   auto Compare=[&](const FString& Other,bool Less){if(auto* X=Cast<UEditableTextBox>(W->GetWidgetFromName(FName(*Other)))){double V=0,T=0;if(ProcessDisplay::Parse(F->Input->GetText().ToString(),V)&&ProcessDisplay::Parse(X->GetText().ToString(),T)&&V>=T)Cross=Less?TEXT("계량 오차는 목표량보다 작아야 합니다."):TEXT("예약 시각은 혼합 종료보다 앞서야 합니다.");}};
   if(N.StartsWith(TEXT("RecipeTolerance")))Compare(N.Replace(TEXT("Tolerance"),TEXT("Target")),true);
   if(N==TEXT("RecipeDelay"))Compare(TEXT("RecipeMixSeconds"),false);

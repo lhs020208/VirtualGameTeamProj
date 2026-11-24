@@ -189,6 +189,14 @@ USTRUCT(BlueprintType)
 struct FPlantSequentialBatchSnapshot
 {
  GENERATED_BODY()
+ UPROPERTY(BlueprintReadOnly) TArray<FPlantMaterialBatchSnapshot> Materials;
+ bool RegularsInMixer() const
+ {
+  if(Materials.IsEmpty())return A.SelectedCount==A.MixerCount&&B.SelectedCount==B.MixerCount;
+  for(int32 I=0;I<Materials.Num();++I)
+   if((!AdditiveActive||I!=ActiveSupplier)&&Materials[I].SelectedCount!=Materials[I].MixerCount)return false;
+  return true;
+ }
  UPROPERTY(BlueprintReadOnly) FPlantMaterialBatchSnapshot A;
  UPROPERTY(BlueprintReadOnly) FPlantMaterialBatchSnapshot B;
  UPROPERTY(BlueprintReadOnly) FPlantMaterialBatchSnapshot Additive;
@@ -308,6 +316,7 @@ struct FPlantSupplyValvePressure
  UPROPERTY(BlueprintReadOnly) double HopperDifferencePa=0;
  UPROPERTY(BlueprintReadOnly) double RouteLossPa=0;
  UPROPERTY(BlueprintReadOnly) double BoundaryResidualPa=0;
+ UPROPERTY(BlueprintReadOnly) bool FlowValid=false;
  UPROPERTY(BlueprintReadOnly) double FlowM3s=0;
  UPROPERTY(BlueprintReadOnly) FString Reason;
 };
@@ -322,6 +331,9 @@ struct FPlantSimulationSnapshot
     UPROPERTY(BlueprintReadOnly) FPlantFeedBrakeSnapshot SupplyABrake;
     UPROPERTY(BlueprintReadOnly) FPlantFeedBrakeSnapshot SupplyBBrake;
     UPROPERTY(BlueprintReadOnly) FPlantFeedBrakeSnapshot SupplyCBrake;
+    UPROPERTY(BlueprintReadOnly) FPlantFeedBrakeSnapshot SupplyDBrake;
+    UPROPERTY(BlueprintReadOnly) FPlantFeedBrakeSnapshot SupplyEBrake;
+    UPROPERTY(BlueprintReadOnly) FPlantFeedBrakeSnapshot SupplyFBrake;
     UPROPERTY(BlueprintReadOnly) FPlantSequentialBatchSnapshot SequentialBatch;
     UPROPERTY(BlueprintReadOnly) FPlantMixerFeedSnapshot MixerFeed;
     UPROPERTY(BlueprintReadOnly) FPlantMixerFeedSnapshot InitialBatchMixerFeed;
@@ -361,6 +373,17 @@ struct FPlantSimulationSnapshot
     UPROPERTY(BlueprintReadOnly) double WorkerTargetRPM = 15;
     UPROPERTY(BlueprintReadOnly) bool WorkerMixerEnabled = false;
     UPROPERTY(BlueprintReadOnly) bool PressureControlEnabled = false;
+    UPROPERTY(BlueprintReadOnly) TArray<double> RequestedSupplierPa;
+    UPROPERTY(BlueprintReadOnly) TArray<double> AppliedSupplierPa;
+    double SupplierPressure(int32 I,bool Applied) const {
+        const auto& Values=Applied?AppliedSupplierPa:RequestedSupplierPa;
+        return Values.IsValidIndex(I)?Values[I]:(Applied?AppliedGaugePressurePa.X:RequestedGaugePressurePa.X);
+    }
+    bool SuppliersVented() const {
+        for(double Pa:RequestedSupplierPa)if(Pa!=0)return false;
+        for(double Pa:AppliedSupplierPa)if(Pa!=0)return false;
+        return true;
+    }
     UPROPERTY(BlueprintReadOnly) FVector RequestedGaugePressurePa = FVector::ZeroVector;
     // Boundary settings successfully uploaded by the worker, not measured chamber pressure.
     UPROPERTY(BlueprintReadOnly) FVector AppliedGaugePressurePa = FVector::ZeroVector;
@@ -371,6 +394,8 @@ struct FPlantSimulationSnapshot
     UPROPERTY(BlueprintReadOnly) double WeighingRegulatorM3s = 0;
     UPROPERTY(BlueprintReadOnly) TArray<FPlantSupplyValvePressure> SupplyValvePressures;
     UPROPERTY(BlueprintReadOnly) double MixerAngleRadians=0;
+    int64 MixRun=0, SpeedAppliedRevision=0, SpeedRejectedRevision=0;
+    double SpeedAppliedSeconds=-1, SpeedStartAngleRadians=0;
     UPROPERTY(BlueprintReadOnly) double AppliedRPMStartAngleRadians=0;
     UPROPERTY(BlueprintReadOnly) FPlantMassValue WeighingMass;
     UPROPERTY(BlueprintReadOnly) FPlantMassValue PipeMass;
@@ -382,6 +407,9 @@ struct FPlantSimulationSnapshot
     UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyAPurge;
     UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyBPurge;
     UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyCPurge;
+    UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyDPurge;
+    UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyEPurge;
+    UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyFPurge;
 };
 
 USTRUCT(BlueprintType)
@@ -422,6 +450,9 @@ struct FProcessEquipmentSnapshot
     UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyAPurge;
     UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyBPurge;
     UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyCPurge;
+    UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyDPurge;
+    UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyEPurge;
+    UPROPERTY(BlueprintReadOnly) FPlantSupplyAPurgeSnapshot SupplyFPurge;
 };
 
 /** Per-binding ordering guard. Reset only when changing the explicit source. */
@@ -438,6 +469,13 @@ struct FProcessSnapshotCursor
 };
 
 // A/B/C are the verified metering branches. Callers reject other indices before dispatch.
-inline const FPlantSupplyAPurgeSnapshot& PlantPurgeFor(const FPlantSimulationSnapshot& S,int32 I){return I==2?S.SupplyCPurge:(I==1?S.SupplyBPurge:S.SupplyAPurge);}
-inline FPlantSupplyAPurgeSnapshot& PlantPurgeFor(FPlantSimulationSnapshot& S,int32 I){return I==2?S.SupplyCPurge:(I==1?S.SupplyBPurge:S.SupplyAPurge);}
-inline const FPlantFeedBrakeSnapshot& PlantBrakeFor(const FPlantSimulationSnapshot& S,int32 I){return I==2?S.SupplyCBrake:(I==1?S.SupplyBBrake:S.SupplyABrake);}
+inline const FPlantSupplyAPurgeSnapshot& PlantPurgeFor(const FPlantSimulationSnapshot& S,int32 I){check(I>=0&&I<6); switch(I){case 0:return S.SupplyAPurge;case 1:return S.SupplyBPurge;case 2:return S.SupplyCPurge;case 3:return S.SupplyDPurge;case 4:return S.SupplyEPurge;default:return S.SupplyFPurge;}}
+inline FPlantSupplyAPurgeSnapshot& PlantPurgeFor(FPlantSimulationSnapshot& S,int32 I){check(I>=0&&I<6); switch(I){case 0:return S.SupplyAPurge;case 1:return S.SupplyBPurge;case 2:return S.SupplyCPurge;case 3:return S.SupplyDPurge;case 4:return S.SupplyEPurge;default:return S.SupplyFPurge;}}
+inline const FPlantFeedBrakeSnapshot& PlantBrakeFor(const FPlantSimulationSnapshot& S,int32 I){check(I>=0&&I<6); switch(I){case 0:return S.SupplyABrake;case 1:return S.SupplyBBrake;case 2:return S.SupplyCBrake;case 3:return S.SupplyDBrake;case 4:return S.SupplyEBrake;default:return S.SupplyFBrake;}}
+
+template<typename Predicate>
+inline bool AnyPlantPurge(const FPlantSimulationSnapshot& S,Predicate Matches)
+{
+ for(int32 I=0;I<6;++I)if(Matches(PlantPurgeFor(S,I)))return true;
+ return false;
+}

@@ -1,81 +1,139 @@
 #include "ProcessAutoRun.h"
+#include "ProcessPlantBinding.h"
 
-FString FProcessAutoRun::ReceiverPressureUnavailable(const FProcessControlMachine& M,double Now) const
+namespace {
+FVector Boundary(const FPlantSimulationSnapshot& S,int32 Supplier,bool Applied)
+{
+ FVector Pa=Applied?S.AppliedGaugePressurePa:S.RequestedGaugePressurePa;
+ Pa.X=S.SupplierPressure(Supplier,Applied);
+ return Pa;
+}
+}
+const FProcessCommandRecord* FProcessAutoRun::LatestStagePressure(const FProcessControlMachine& M,const FString& Equipment) const
+{
+ if(!State.Active||!State.PressureStageToken.IsValid())return nullptr;
+ const FProcessCommandRecord* Latest=nullptr;
+ for(const auto& Pair:M.History){
+  const auto& R=Pair.Value;
+  if(R.PressureStage==State.PressureStageToken&&R.PressureBatch==State.RunId&&R.EquipmentId==Equipment&&
+     R.Epoch==State.Epoch&&R.Connection==M.Connection&&R.Revision>0&&(!Latest||R.Revision>Latest->Revision))Latest=&R;
+ }
+ return Latest;
+}
+FVector FProcessAutoRun::StageBaseline() const
+{
+ return State.Stage==EProcessAutoStage::Feeding?State.FeedBaseline():State.LockedTransferPressurePa;
+}
+FString FProcessAutoRun::PressureSection() const
+{
+ if(State.Active&&State.Stage==EProcessAutoStage::Feeding)return FString::Printf(TEXT("%c 공급 → 칭량 중"),'A'+State.ActiveSupplier);
+ if(State.Active&&State.Stage==EProcessAutoStage::Transferring)return TEXT("칭량 → 수취 이송 중");
+ return StageText(State.Stage);
+}
+bool FProcessAutoRun::PressureFlow(const FPlantSimulationSnapshot& S,double& Flow) const
+{
+ if(!State.Active||State.Epoch!=S.Epoch)return false;
+ if(State.Stage==EProcessAutoStage::Feeding&&S.SupplyValvePressures.IsValidIndex(State.ActiveSupplier)){
+  const auto& Valve=S.SupplyValvePressures[State.ActiveSupplier];
+  if(Valve.FlowValid||Valve.Valid){Flow=Valve.FlowM3s;return true;}
+ }
+ if(State.Stage==EProcessAutoStage::Transferring&&State.TransferId==S.Transfer.Id&&S.Transfer.Validity==EPlantValueValidity::Valid&&
+    S.AppliedHopperOpen&&!S.AppliedReceiverOpen&&S.Transfer.CarrierFlowValid){Flow=S.Transfer.CalculatedCarrierFlowM3s;return true;}
+ return false;
+}
+FString FProcessAutoRun::PressureUnavailable(const FProcessControlMachine& M,double Now,const FString& Equipment,bool CheckPending) const
 {
  const auto& S=M.Snapshot;
- if(!State.Active||State.Stage!=EProcessAutoStage::Transferring||M.IsStopping())
-  return TEXT("칭량→수취 자동 이송 중에만 조절할 수 있습니다. 계량 확정과 출구 열림을 기다리세요.");
- if(!M.Connected||State.Connection!=M.Connection||State.Epoch!=S.Epoch||S.Validity!=EPlantValueValidity::Valid||
-    !S.Error.IsEmpty()||Now<S.PublishedWallSeconds||Now-S.PublishedWallSeconds>2.)return TEXT("최신 작업자 이송 상태 확인 중입니다.");
- if(S.Execution!=EPlantExecutionState::Running||!S.RequestedRunning)return TEXT("계산이 진행 중일 때만 현재 이송 압력을 조절할 수 있습니다.");
- if(State.TransferId<=0||S.Transfer.Id!=State.TransferId||S.Transfer.Validity!=EPlantValueValidity::Valid||
-    S.Transfer.State==EPlantTransferState::Complete||S.Transfer.State==EPlantTransferState::Indeterminate||S.Transfer.AdditionalInflowCount)
-  return TEXT("현재 이송이 완료되었거나 이송 기준을 확인할 수 없습니다.");
- if(!S.AppliedHopperOpen||!S.RequestedHopperOpen||S.AppliedReceiverOpen||S.RequestedReceiverOpen)
-  return TEXT("칭량 출구 실제 열림과 수취 출구 실제 닫힘을 확인해야 합니다.");
- if(State.BatchMode!=EProcessBatchMode::Full&&!S.SupplyABatch.DoseFinalized)return TEXT("작업자의 최종 계량 확정이 필요합니다.");
- if(!S.AppliedPressureValid||S.AppliedGaugePressurePa.X!=State.LockedTransferPressurePa.X||S.AppliedGaugePressurePa.Y!=State.LockedTransferPressurePa.Y||S.AppliedSupplierMask)
-  return TEXT("공급·칭량 압력 또는 공급 밸브 적용 조건이 일치하지 않습니다.");
- for(bool Open:S.RequestedSuppliers)if(Open)return TEXT("공급 밸브 닫힘 요청을 확인해야 합니다.");
- for(const auto& P:{S.SupplyAPurge,S.SupplyBPurge,S.SupplyCPurge})if(P.Supported&&(!P.Valid||P.AppliedEnabled||P.RequestedEnabled||P.FlowM3s!=0||P.RequestedGaugePa!=0||P.AppliedGaugePa!=0))
-  return TEXT("연결부 공기 차단 확인이 필요합니다.");
- if(State.ReceiverPressurePending)return TEXT("적용 확인 중 · 현재 요청의 작업자 응답을 기다리세요.");
+ if(M.IsStopping())return TEXT("전체 정지 확인 중 · 압력은 자동으로 대기압으로 복귀합니다.");
+ const bool Feed=State.Stage==EProcessAutoStage::Feeding;
+ if(!State.Active||(!Feed&&State.Stage!=EProcessAutoStage::Transferring))return StageText(State.Stage)+TEXT(" · 공급 또는 칭량→수취 이송 중에만 조절 가능합니다.");
+ if(!M.Connected||State.Connection!=M.Connection||State.Epoch!=S.Epoch||S.Validity!=EPlantValueValidity::Valid||!S.Error.IsEmpty()||
+    Now<S.PublishedWallSeconds||Now-S.PublishedWallSeconds>2.||!S.AppliedPressureValid)return TEXT("최신 작업자 압력과 유로 상태 확인 중");
+ if(S.Execution!=EPlantExecutionState::Running||!S.RequestedRunning)return TEXT("계산 실행 확인 중");
+ if(S.AppliedReceiverOpen||S.RequestedReceiverOpen)return TEXT("수취 출구 실제 닫힘 확인 중");
+ if(AnyPlantPurge(S,[](const auto& P){return P.Supported&&(!P.Valid||P.AppliedEnabled||P.RequestedEnabled||P.FlowM3s!=0||P.RequestedGaugePa!=0||P.AppliedGaugePa!=0);}))return TEXT("연결부 공기 차단 확인 중");
+ if(Feed){
+  if(Equipment!=TEXT("weigher")&&Equipment!=ProcessPlantBinding::SupplierId(State.ActiveSupplier))return PressureSection()+TEXT(" · 현재 공급원과 칭량호퍼만 조절 가능합니다.");
+  if(!S.RequestedSuppliers.IsValidIndex(State.ActiveSupplier)||!S.RequestedSuppliers[State.ActiveSupplier]||
+     S.AppliedSupplierMask!=(1<<State.ActiveSupplier)||S.RequestedHopperOpen||S.AppliedHopperOpen||
+     (State.BatchMode==EProcessBatchMode::Full&&S.SupplyABatch.SourceCount==0)||
+     (S.DoseCutoff.Supported&&State.BatchMode!=EProcessBatchMode::Full&&(!S.DoseCutoff.Armed||S.DoseCutoff.Triggered||S.DoseCutoff.Cancelled)))
+   return TEXT("공급 종료 또는 게이트 보호 닫힘 · 압력 조절 잠김");
+ }else{
+  if(Equipment!=TEXT("weigher")&&Equipment!=TEXT("receiver"))return TEXT("칭량→수취 이송 · 칭량·수취 압력만 조절 가능합니다.");
+  if(State.TransferId<=0||S.Transfer.Id!=State.TransferId||S.Transfer.Validity!=EPlantValueValidity::Valid||
+     S.Transfer.State==EPlantTransferState::Complete||S.Transfer.State==EPlantTransferState::Indeterminate||S.Transfer.AdditionalInflowCount)
+   return TEXT("이송 완료 또는 이송 기준 미확인");
+  if(!S.AppliedHopperOpen||!S.RequestedHopperOpen||S.AppliedSupplierMask)return TEXT("칭량 출구 열림과 공급 밸브 닫힘 확인 중");
+  for(bool Open:S.RequestedSuppliers)if(Open)return TEXT("공급 밸브 닫힘 요청 확인 중");
+  if(State.BatchMode!=EProcessBatchMode::Full&&!S.SupplyABatch.DoseFinalized)return TEXT("작업자 최종 계량 확정 확인 중");
+ }
+ if(State.ReceiverPressurePending)return CheckPending?FString(TEXT("적용 확인 중 · 작업자 응답을 기다리세요.")):FString();
+ const FVector Expected=State.PressureStageToken.IsValid()?State.ExpectedPressurePa:StageBaseline();
+ if(Boundary(S,State.ActiveSupplier,true)!=Expected)return TEXT("단계 압력 적용 확인 중");
  return FString();
 }
-
+FString FProcessAutoRun::ReceiverPressureUnavailable(const FProcessControlMachine& M,double Now) const
+{
+ return PressureUnavailable(M,Now,TEXT("receiver"));
+}
 FProcessCommandRecord FProcessAutoRun::RequestReceiverPressure(FGuid Id,int64 Epoch,int64 TransferId,double Pa,FProcessControlMachine& M,double Now,const FProcessControlTransport& Send)
 {
- // The generic history owns idempotency. Do not mint a second worker command for a repeated click.
- if(const auto* R=M.History.Find(Id)){
-  if(R->Epoch==Epoch&&R->Connection==M.Connection&&R->EquipmentId==TEXT("receiver")&&R->Command==EProcessCommand::Pressure&&R->Value==Pa)return *R;
-  return M.Submit(Id,Epoch,TEXT("receiver"),EProcessCommand::Pressure,Pa,Now,Send,TEXT("동일 요청 번호의 내용이 달라졌습니다."));
+ return RequestStagePressure(Id,Epoch,TransferId,Pa,M,Now,Send,TEXT("receiver"));
+}
+FProcessCommandRecord FProcessAutoRun::RequestStagePressure(FGuid Id,int64 Epoch,int64 TransferId,double Pa,FProcessControlMachine& M,double Now,const FProcessControlTransport& Send,const FString& Equipment)
+{
+ if(M.History.Contains(Id))return M.Submit(Id,Epoch,Equipment,EProcessCommand::Pressure,Pa,Now,Send);
+ const bool Feed=State.Stage==EProcessAutoStage::Feeding;
+ FString Why=PressureUnavailable(M,Now,Equipment);
+ if(State.ReceiverPressurePending&&PressureUnavailable(M,Now,Equipment,false).IsEmpty()&&
+    State.PressureEquipment==Equipment&&State.ReceiverPressureRequestedPa==Pa&&Epoch==State.Epoch&&TransferId==State.ReceiverPressureTransferId){
+  if(const auto* Prior=M.History.Find(State.ReceiverPressureRequest))return *Prior;
  }
- const bool SameTransfer=State.Active&&State.Stage==EProcessAutoStage::Transferring&&State.TransferId==TransferId&&State.Epoch==Epoch&&State.Connection==M.Connection;
- if(SameTransfer&&State.ReceiverPressurePending&&State.ReceiverPressureRequestedPa==Pa)
-  if(const auto* R=M.History.Find(State.ReceiverPressureRequest))return *R;
- FString Why=ReceiverPressureUnavailable(M,Now);
- if(!SameTransfer)Why=TEXT("이송 단계·초기화 세대가 변경되었습니다. 종료된 단계의 압력 요청은 재사용하지 않습니다.");
- if(!FMath::IsFinite(Pa)||Pa<-1000||Pa>0)Why=TEXT("수취 압력은 유한한 −1.0~0 kPa(g)만 입력하세요. 범위 밖 값은 적용하지 않습니다.");
+ if(TransferId!=(Feed?0:State.TransferId)||Epoch!=State.Epoch)Why=TEXT("이송 또는 초기화 세대 변경");
+ const int32 Axis=PlantControl::PressureTarget(Equipment);
+ if(Axis==INDEX_NONE||!FMath::IsFinite(Pa)||Pa < -1000||Pa>(Axis==2?0:1000))Why=TEXT("잘못된 압력 대상 또는 모델 범위 밖 입력");
  TGuardValue<bool> Dispatch(M.AutomationDispatch,true);
- const auto R=M.Submit(Id,Epoch,TEXT("receiver"),EProcessCommand::Pressure,Pa,Now,Send,Why);
- if(R.IsPending()||R.Status==EProcessCommandStatus::Applied){
-  State.ReceiverPressureRequest=R.RequestId;State.ReceiverPressureTransferId=TransferId;State.ReceiverPressureRevision=R.Revision;
-  State.ReceiverPressurePreviousPa=M.Snapshot.AppliedGaugePressurePa.Z;State.ReceiverPressureRequestedPa=Pa;
-  State.ReceiverPressureRequestedSeconds=M.Snapshot.PhysicalSeconds;State.ReceiverPressureAppliedSeconds=-1;
-  State.ReceiverPressurePending=R.IsPending();State.ReceiverPressureStatus=R.IsPending()?TEXT("적용 확인 중"):TEXT("적용 완료 · 이미 같은 설정");
-  if(!R.IsPending()){State.ReceiverPressureConfirmedPa=Pa;State.ReceiverPressureAppliedSeconds=M.Snapshot.PhysicalSeconds;}
-  UE_LOG(LogTemp,Display,TEXT("TRANSFER_PRESSURE_REQUEST request=%s epoch=%lld transfer=%lld revision=%lld sequence=%lld time=%.9f old_pa=%.9g requested_pa=%.9g"),*R.RequestId.ToString(),Epoch,TransferId,R.Revision,M.Snapshot.Sequence,M.Snapshot.PhysicalSeconds,State.ReceiverPressurePreviousPa,Pa);
+ TGuardValue<bool> WorkerAck(M.StagePressureDispatch,true);
+ const auto R=M.Submit(Id,Epoch,Equipment,EProcessCommand::Pressure,Pa,Now,Send,Why);
+ if(auto* Record=M.History.Find(Id)){
+  Record->PressureStage=State.PressureStageToken;Record->PressureBatch=State.RunId;
+  Record->PressureSupplier=State.ActiveSupplier;Record->PressureTransfer=TransferId;
  }
+ if(!R.IsPending()&&R.Status!=EProcessCommandStatus::Applied)return R;
+ if(!State.PressureStageToken.IsValid())State.ExpectedPressurePa=StageBaseline();
+ State.PressureEquipment=Equipment;
+ State.ReceiverPressureRequest=R.RequestId;State.ReceiverPressureTransferId=TransferId;State.ReceiverPressureRevision=R.Revision;
+ State.ReceiverPressurePreviousPa=Boundary(M.Snapshot,State.ActiveSupplier,true)[Axis];State.ReceiverPressureRequestedPa=Pa;
+ State.ReceiverPressureRequestedSeconds=M.Snapshot.PhysicalSeconds;State.ReceiverPressurePending=R.IsPending();
+ State.ReceiverPressureAppliedSeconds=R.IsPending()?-1:M.Snapshot.PhysicalSeconds;
+ State.ReceiverPressureStatus=R.IsPending()?TEXT("적용 확인 중"):TEXT("적용 완료 · 작업자 설정 일치");
+ if(!R.IsPending()){State.ReceiverPressureConfirmedPa=Pa;State.ExpectedPressurePa[Axis]=Pa;}
  return R;
 }
-
 bool FProcessAutoRun::ObserveReceiverPressure(FProcessControlMachine& M,FString& Why)
 {
  const auto& S=M.Snapshot;
- if(S.AppliedGaugePressurePa.X!=State.LockedTransferPressurePa.X||S.AppliedGaugePressurePa.Y!=State.LockedTransferPressurePa.Y)return false;
- const bool Scoped=State.ReceiverPressureTransferId>0&&State.ReceiverPressureTransferId==State.TransferId;
- const double Expected=Scoped?State.ReceiverPressureConfirmedPa:State.LockedTransferPressurePa.Z;
- if(!State.ReceiverPressurePending)return S.AppliedGaugePressurePa.Z==Expected;
+ const FVector Actual=Boundary(S,State.ActiveSupplier,true);
+ if(!State.ReceiverPressurePending)return Actual==(State.PressureStageToken.IsValid()||State.ReceiverPressureRequest.IsValid()?State.ExpectedPressurePa:StageBaseline());
  const auto* R=M.History.Find(State.ReceiverPressureRequest);
- if(!Scoped||!R||R->Epoch!=State.Epoch||R->Connection!=State.Connection){Why=TEXT("압력 요청 이송·세대·연결 불일치");return false;}
- if(S.Transfer.State==EPlantTransferState::Complete){
-  // Arrival and closure take precedence; no waiting for a late adjustment.
-  return S.AppliedGaugePressurePa.Z==State.ReceiverPressurePreviousPa||S.AppliedGaugePressurePa.Z==State.ReceiverPressureRequestedPa;
- }
- if(R->Status==EProcessCommandStatus::Applied&&S.Sequence>R->BaselineSequence&&S.PressureAppliedRevision>=R->Revision&&
-    S.RequestedGaugePressurePa.Z==R->Value&&S.AppliedGaugePressurePa.Z==R->Value){
-  State.ReceiverPressurePending=false;State.ReceiverPressureConfirmedPa=R->Value;
+ if(!R||R->Epoch!=State.Epoch||R->Connection!=State.Connection){Why=TEXT("압력 요청 세대·연결 불일치");return false;}
+ const int32 Axis=PlantControl::PressureTarget(R->EquipmentId);
+ FVector Next=State.ExpectedPressurePa;Next[Axis]=R->Value;
+ if(R->Status==EProcessCommandStatus::Applied&&S.Sequence>R->BaselineSequence&&S.PressureAppliedRevision>=R->Revision&&Actual==Next&&Boundary(S,State.ActiveSupplier,false)[Axis]==R->Value){
+  State.ExpectedPressurePa=Next;State.ReceiverPressureConfirmedPa=R->Value;State.ReceiverPressurePending=false;
   State.ReceiverPressureAppliedSeconds=S.PressureAppliedSimulationSeconds;State.ReceiverPressureStatus=TEXT("적용 완료 · 작업자 압력 설정 확인");
-  UE_LOG(LogTemp,Display,TEXT("TRANSFER_PRESSURE_CONFIRMED request=%s transfer=%lld revision=%lld sequence=%lld applied_s=%.9f observed_s=%.9f receiver_pa=%.9g flow=%.12g"),*R->RequestId.ToString(),State.TransferId,R->Revision,S.Sequence,State.ReceiverPressureAppliedSeconds,S.PhysicalSeconds,R->Value,S.Transfer.CalculatedCarrierFlowM3s);
   return true;
  }
- if(!R->IsPending()){State.ReceiverPressureStatus=TEXT("압력 적용 실패 · ")+R->Message;Why=State.ReceiverPressureStatus;return false;}
- return S.AppliedGaugePressurePa.Z==State.ReceiverPressurePreviousPa||
-  (S.PressureAppliedRevision>=R->Revision&&S.AppliedGaugePressurePa.Z==State.ReceiverPressureRequestedPa);
+ if(State.Stage==EProcessAutoStage::Transferring&&S.Transfer.State==EPlantTransferState::Complete)return Actual==State.ExpectedPressurePa||Actual==Next;
+ if(R->Status==EProcessCommandStatus::Rejected&&Actual==State.ExpectedPressurePa){
+  State.ReceiverPressurePending=false;State.ReceiverPressureStatus=R->Message;return true;
+ }
+ if(!R->IsPending()){Why=State.ReceiverPressureStatus=TEXT("압력 적용 실패 · ")+R->Message;return false;}
+ return Actual==State.ExpectedPressurePa||(Actual==Next&&S.PressureAppliedRevision>=R->Revision);
 }
-
 void FProcessAutoRun::EndReceiverPressure()
 {
- if(State.ReceiverPressurePending)State.ReceiverPressureStatus=TEXT("취소 · 이송 종료/정지 우선 · 자동 재적용 안 함");
+ if(State.ReceiverPressurePending)State.ReceiverPressureStatus=TEXT("취소 · 단계 종료 또는 전체 정지");
  State.ReceiverPressurePending=false;
 }
