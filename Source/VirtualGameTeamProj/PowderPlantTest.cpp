@@ -464,7 +464,22 @@ struct FPlantRuntime {
 APowderPlantTest::APowderPlantTest(){PrimaryActorTick.bCanEverTick=true;RootComponent=CreateDefaultSubobject<USceneComponent>(TEXT("Root"));}
 APowderPlantTest::~APowderPlantTest(){Stop();}
 void APowderPlantTest::Stop(){delete DemoRuntime;DemoRuntime=nullptr;delete Runtime;Runtime=nullptr;}
-void APowderPlantTest::CacheRotor(){Rotor.Empty();for(TActorIterator<AActor>It(GetWorld());It;++It){const FString N=It->GetActorNameOrLabel();if(N.StartsWith(TEXT("MX-301_"))&&(N.Contains(TEXT("Paddle"))||N.Contains(TEXT("Shaft")))&&!N.Contains(TEXT("Drive"))&&!N.Contains(TEXT("Support"))){FPlantRotorVisual V;V.Actor=*It;V.Initial=It->GetActorTransform();if(auto*Root=It->GetRootComponent())Root->SetMobility(EComponentMobility::Movable);Rotor.Add(V);}}}
+void APowderPlantTest::CacheRotor()
+{
+ Rotor.Empty();
+ for(TActorIterator<AActor> It(GetWorld());It;++It){
+  const FString N=It->GetActorNameOrLabel();
+  // Revised imports explicitly identify the complete rotating assembly. Keep
+  // the name fallback for older maps, but never rotate tagged static shaft seals.
+  const bool Legacy=!It->ActorHasTag(TEXT("PlantMixerStatic"))&&N.StartsWith(TEXT("MX-301_"))&&
+   (N.Contains(TEXT("Paddle"))||N.Contains(TEXT("Shaft")))&&!N.Contains(TEXT("Drive"))&&!N.Contains(TEXT("Support"));
+  if(It->ActorHasTag(TEXT("PlantMixerRotor"))||Legacy){
+   FPlantRotorVisual V;V.Actor=*It;V.Initial=It->GetActorTransform();
+   if(auto* Root=It->GetRootComponent())Root->SetMobility(EComponentMobility::Movable);
+   Rotor.Add(V);
+  }
+ }
+}
 void APowderPlantTest::ResetSimulation(){if(DemoRealtime){ResetDemoSimulation();return;}AutomaticCancelStopPending=false;ControlTargets=FPlantControlTargets();++SnapshotEpoch;InitialSupplierCounts.Empty();Stop();Error.Empty();ParticleCount=0;PhysicalSeconds=ActualRate=0;Generation=0;CurrentPhase=0;AppliedSupplierMask=0;WeighingHopperOpen=AppliedHopperOpen=false;ReceiverOpen=AppliedReceiverOpen=MixerEnabled=false;InWeighingHopper=InReceiver=InMixer=0;try{
   InitializeSuppliers();for(int i=0;i<SupplierOpen.Num();++i)SupplierOpen[i]=false;
   if(!std::isfinite(FixedDt)||FixedDt<1e-6||FixedDt>2.5e-5||ContactIterations<4||ContactIterations>32||!std::isfinite(StageTimeoutSeconds)||StageTimeoutSeconds<=0)throw std::runtime_error("invalid plant test controls");

@@ -1,0 +1,16 @@
+{
+  "backend": "<PlantComputeBackend.OPEN_CL: 0>",
+  "particles": 20000,
+  "groups": [
+    10000,
+    10000
+  ],
+  "rotating_parts": 47,
+  "static_parts_unchanged": 201,
+  "rotation_degrees": 0.12959983795301683,
+  "max_rigid_transform_error_cm": 5.392893311543046e-09,
+  "applied_rpm": 15.0,
+  "motor_stopped_while_particles_advance": true,
+  "physical_seconds": 0.015679999603889883,
+  "device": "NVIDIA GeForce RTX 4060 Ti"
+}

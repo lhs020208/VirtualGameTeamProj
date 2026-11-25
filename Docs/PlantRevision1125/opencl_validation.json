@@ -1,0 +1,1 @@
+{"backend":"OpenCL","particles":20000,"initial_projection_m":0,"mixer_surface_queries":60084,"mixer_surface_max_delta_m":0,"pipe_path_queries":837,"pipe_path_max_delta_m":0,"local_fixture_particles":36,"inlet_passed":12,"inside_mixer":36,"simulated_seconds":0.151359996176,"rotor_angle_radians":0.235724300146,"rotor_stop_passed":true,"displacement_m":3.78572160751}

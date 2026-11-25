@@ -13,7 +13,8 @@ public:
  EPlantMixerRegion Classify(const powder::Grain& Position) const;
  FString Error;
  bool Supported=false;
- double ReceiverGateZ=0, ChamberTopZ=double(1.2675f);
+ double ReceiverGateZ=0, ChamberTopZ=0;
 private:
+ double CentreX=0, CentreY=0, AxisZ=0, MinX=0, MaxX=0, FloorZ=0, RadiusY=0, RadiusZ=0;
  TArray<FVector2d> ConnectorProfile; // z, inner bore radius
 };
