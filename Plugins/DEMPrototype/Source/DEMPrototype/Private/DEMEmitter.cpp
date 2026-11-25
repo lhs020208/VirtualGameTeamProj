@@ -172,7 +172,7 @@ bool ADEMEmitter::BuildBurst(bool bPreview)
     Instances->SetStaticMesh(Candidate.SphereMesh);
     if (Candidate.MaterialOverride) Instances->SetMaterial(0, Candidate.MaterialOverride);
     else if(ParticleSettings->bGPUApproximation){
-        auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/M_BulkFlow.M_BulkFlow"));
+        auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/ProcessPlant_20261111_LowPoly/Particles/M_BulkFlow.M_BulkFlow"));
         if(Base){Instances->SetMaterial(0,Base);if(auto* M=Instances->CreateDynamicMaterialInstance(0))M->SetVectorParameterValue(TEXT("Tint"),GPUGroup==0?FLinearColor(.8f,.04f,.02f):FLinearColor(.02f,.3f,.9f));}
     }
     Instances->AddInstances(Transforms, false, false, false); // One batch, no per-particle dirty calls.
@@ -250,7 +250,7 @@ FString ADEMEmitter::ConfigurationSignature() const {
 bool ADEMEmitter::BindGPU(AActor* Consumer){
  if(!Consumer||GPUOwner.IsValid()||!bValidBurst)return false;
  GPUOwner=Consumer;bGPUInvalidated=false;BoundSignature=ConfigurationSignature();
- if(!ActiveSettings.MaterialOverride){auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/M_BulkFlow.M_BulkFlow"));if(Base){Instances->SetMaterial(0,Base);if(auto* M=Instances->CreateDynamicMaterialInstance(0))M->SetVectorParameterValue(TEXT("Tint"),GPUGroup==0?FLinearColor(.8f,.04f,.02f):FLinearColor(.02f,.3f,.9f));}}
+ if(!ActiveSettings.MaterialOverride){auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/ProcessPlant_20261111_LowPoly/Particles/M_BulkFlow.M_BulkFlow"));if(Base){Instances->SetMaterial(0,Base);if(auto* M=Instances->CreateDynamicMaterialInstance(0))M->SetVectorParameterValue(TEXT("Tint"),GPUGroup==0?FLinearColor(.8f,.04f,.02f):FLinearColor(.02f,.3f,.9f));}}
  GenerationStatus=TEXT("GPU-owned burst. Changes require mixer Reset.");SuppressStaticDisplay(true);return true;
 }
 void ADEMEmitter::ReleaseGPU(AActor* Consumer){if(GPUOwner.Get()!=Consumer)return;GPUOwner.Reset();bGPUInvalidated=false;bStaticDisplaySuppressed=false;Clear();}

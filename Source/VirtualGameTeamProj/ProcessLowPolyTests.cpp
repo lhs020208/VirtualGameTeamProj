@@ -7,8 +7,6 @@
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProcessLowPolyMappingTest,"ProcessUI.LowPoly.Mapping",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
 bool FProcessLowPolyMappingTest::RunTest(const FString&)
 {
-    TestTrue(TEXT("CUDA map explicitly bound"),ProcessPlantBinding::SourcePath(ProcessPlantBinding::CudaMap).Contains(TEXT("L_ProcessPlant_CUDA_1118:PersistentLevel.PowderPlantTest_0")));
-    TestTrue(TEXT("CUDA uses verified LowPoly geometry contract"),ProcessPlantBinding::IsLowPoly(ProcessPlantBinding::SourcePath(ProcessPlantBinding::CudaMap)));
     FPlantSimulationSnapshot S;
     S.SourceActorPath=ProcessPlantBinding::SourcePath(ProcessPlantBinding::LowPolyMap);
     TestTrue(TEXT("explicit LowPoly object, not FlowTest or first actor"),S.SourceActorPath.Contains(TEXT("L_ProcessPlant_LowPoly_1111:PersistentLevel.PowderPlantTest_0")));

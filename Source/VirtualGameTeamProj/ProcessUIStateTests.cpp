@@ -77,7 +77,7 @@ bool FProcessWidgetBindingTest::RunTest(const FString&)
     auto* Player=NewObject<ULocalPlayer>(GEngine);
     auto* Controller=World->SpawnActor<APlayerController>();
     Controller->SetPlayer(Player);
-    auto* Class=LoadClass<UUserWidget>(nullptr,TEXT("/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2_C"));
+    auto* Class=LoadClass<UUserWidget>(nullptr,TEXT("/Game/ProcessPlant_20261111_LowPoly/UI/WBP_ProcessUIV2.WBP_ProcessUIV2_C"));
     auto* Widget=Class?CreateWidget<UUserWidget>(Controller,Class):nullptr;
     if(!TestNotNull(TEXT("real UI_v2 asset"),Widget)){World->DestroyWorld(false);GEngine->DestroyWorldContext(World);return false;}
     auto* Adapter=NewObject<UProcessUIStateAdapter>(World);

@@ -512,7 +512,7 @@ bool UProcessUIStateSubsystem::OpenForActor(APowderPlantTest* Actor)
     auto* PC = GetWorld()->GetFirstPlayerController();
     if (!PC) return false;
     Close();
-    auto* Class = LoadClass<UUserWidget>(nullptr, TEXT("/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2_C"));
+    auto* Class = LoadClass<UUserWidget>(nullptr, TEXT("/Game/ProcessPlant_20261111_LowPoly/UI/WBP_ProcessUIV2.WBP_ProcessUIV2_C"));
     if (!Class) return false;
     StatusWidget = CreateWidget<UUserWidget>(PC, Class);
     if (!StatusWidget) return false;

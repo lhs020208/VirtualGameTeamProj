@@ -38,7 +38,7 @@ bool FProcessOperatorEditing::RunTest(const FString&)
  auto* World=UWorld::CreateWorld(EWorldType::Game,false,NAME_None,nullptr,true,ERHIFeatureLevel::Num,&IV);if(!TestNotNull(TEXT("world"),World))return false;
  GEngine->CreateNewWorldContext(EWorldType::Game).SetCurrentWorld(World);World->InitializeActorsForPlay(FURL());
  auto* Player=NewObject<ULocalPlayer>(GEngine);auto* PC=World->SpawnActor<APlayerController>();PC->SetPlayer(Player);
- auto* Class=LoadClass<UUserWidget>(nullptr,TEXT("/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2_C"));auto* W=Class?CreateWidget<UUserWidget>(PC,Class):nullptr;
+ auto* Class=LoadClass<UUserWidget>(nullptr,TEXT("/Game/ProcessPlant_20261111_LowPoly/UI/WBP_ProcessUIV2.WBP_ProcessUIV2_C"));auto* W=Class?CreateWidget<UUserWidget>(PC,Class):nullptr;
  if(!TestNotNull(TEXT("existing widget"),W)){World->DestroyWorld(false);GEngine->DestroyWorldContext(World);return false;}
  auto* Adapter=NewObject<UProcessUIStateAdapter>(World);auto* Service=NewObject<UProcessControlService>(World);auto* UI=NewObject<UProcessControlUI>(World);
  auto& M=Service->State;auto& S=M.Snapshot;M.Connected=true;M.Connection=1;M.ManualGranted=true;S.Epoch=2;S.Validity=EPlantValueValidity::Valid;S.PublishedWallSeconds=FPlatformTime::Seconds();

@@ -59,8 +59,8 @@ void APowderCoupledTest::ResetSimulation(){Stop();Error.Empty();PhysicalSeconds=
   double Density[3]{DensitiesKgM3.X,DensitiesKgM3.Y,DensitiesKgM3.Z};for(double D:Density)if(!std::isfinite(D)||D<100||D>10000)throw std::invalid_argument("density must be 100..10000 kg/m3");
   for(auto& B:W.dem.bodies){B.density_kg_m3=Density[B.type];for(auto& P:B.pebbles){P.diameter_m*=DiameterScale;P.local_m.x*=DiameterScale;P.local_m.y*=DiameterScale;P.local_m.z*=DiameterScale;}}
   }
-  W.initialize();auto* Mesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/DEM/SM_GrainSphere.SM_GrainSphere"));if(!Mesh)Mesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-  auto* Material=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/M_BulkFlow.M_BulkFlow"));FLinearColor Colors[3]{FLinearColor(.8f,.05f,.02f),FLinearColor(.02f,.25f,.9f),FLinearColor(.9f,.7f,.02f)};
+  W.initialize();auto* Mesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/ProcessPlant_20261111_LowPoly/Particles/SM_GrainSphere.SM_GrainSphere"));if(!Mesh)Mesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Sphere.Sphere"));
+  auto* Material=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/ProcessPlant_20261111_LowPoly/Particles/M_BulkFlow.M_BulkFlow"));FLinearColor Colors[3]{FLinearColor(.8f,.05f,.02f),FLinearColor(.02f,.25f,.9f),FLinearColor(.9f,.7f,.02f)};
   for(int I=0;I<3;++I){Groups[I]->ClearInstances();Groups[I]->SetStaticMesh(Mesh);if(Material){Groups[I]->SetMaterial(0,Material);if(auto* M=Groups[I]->CreateDynamicMaterialInstance(0))M->SetVectorParameterValue(TEXT("Tint"),Colors[I]);}}
   Walls->ClearInstances();Walls->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube")));if(Material){Walls->SetMaterial(0,Material);if(auto* M=Walls->CreateDynamicMaterialInstance(0))M->SetVectorParameterValue(TEXT("Tint"),FLinearColor(.15f,.2f,.22f));}
   // Display magnified 10x (manual) or 100x (small preset); solver remains SI.

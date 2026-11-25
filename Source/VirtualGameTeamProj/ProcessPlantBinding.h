@@ -7,15 +7,12 @@
 namespace ProcessPlantBinding
 {
 inline const TCHAR* LowPolyMap = TEXT("/Game/ProcessPlant_20261111_LowPoly/L_ProcessPlant_LowPoly_1111");
-inline const TCHAR* CudaMap = TEXT("/Game/ProcessPlant_CUDA_20261118/L_ProcessPlant_CUDA_1118");
 inline const TCHAR* FlowTestMap = TEXT("/Game/ProcessPlant_20261029/L_ProcessPlant_FlowTest");
 
 inline FString SourcePath(const FString& Map)
 {
     if(Map == LowPolyMap)
         return TEXT("/Game/ProcessPlant_20261111_LowPoly/L_ProcessPlant_LowPoly_1111.L_ProcessPlant_LowPoly_1111:PersistentLevel.PowderPlantTest_0");
-    if(Map == CudaMap)
-        return TEXT("/Game/ProcessPlant_CUDA_20261118/L_ProcessPlant_CUDA_1118.L_ProcessPlant_CUDA_1118:PersistentLevel.PowderPlantTest_0");
     if(Map == FlowTestMap)
         return TEXT("/Game/ProcessPlant_20261029/L_ProcessPlant_FlowTest.L_ProcessPlant_FlowTest:PersistentLevel.PowderPlantTest_0");
     return FString();
@@ -23,7 +20,7 @@ inline FString SourcePath(const FString& Map)
 
 inline bool IsLowPoly(const FString& Source)
 {
-    return Source.Contains(TEXT("/ProcessPlant_20261111_LowPoly/")) || Source.Contains(TEXT("/ProcessPlant_CUDA_20261118/"));
+    return Source.Contains(TEXT("/ProcessPlant_20261111_LowPoly/"));
 }
 
 inline int32 SupplierIndex(const FString& Id)
