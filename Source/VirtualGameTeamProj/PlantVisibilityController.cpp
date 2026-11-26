@@ -173,7 +173,18 @@ void APlantVisibilityController::OpenDisplayPanel()
                 + SOverlay::Slot()
                 [SNew(SBox).Visibility_Lambda([Visibility](){return Visibility(true);})
                     [SNew(SOverlay).Visibility(EVisibility::SelfHitTestInvisible)
-                        + SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(20,0,0,170)
+                        + SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(TAttribute<FMargin>::CreateLambda([World]()
+                        {
+                            // Follow the UMG content area instead of assuming a fixed footer height/DPI.
+                            const auto* UI=World.IsValid()?World->GetSubsystem<UProcessUIStateSubsystem>():nullptr;
+                            const auto* Area=UI&&UI->StatusWidget?UI->StatusWidget->GetWidgetFromName(TEXT("OperatorViewportArea")):nullptr;
+                            if(Area){
+                                const auto& G=UI->StatusWidget->GetCachedGeometry();const auto& A=Area->GetCachedGeometry();
+                                const auto Bottom=G.AbsoluteToLocal(A.LocalToAbsolute(A.GetLocalSize()));
+                                return FMargin(20,0,0,FMath::Max(8.f,float(G.GetLocalSize().Y-Bottom.Y)+8.f));
+                            }
+                            return FMargin(20,0,0,170);
+                        }))
                         [SNew(SBorder).Padding(10).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
                             .BorderBackgroundColor(FLinearColor(.035f,.045f,.06f,.92f))
                             [SNew(SVerticalBox)

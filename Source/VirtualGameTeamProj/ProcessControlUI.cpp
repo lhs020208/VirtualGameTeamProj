@@ -100,6 +100,7 @@ void UProcessControlUI::Detach()
         if(auto* B=Cast<UButton>(W->GetWidgetFromName(Name)))B->OnClicked.RemoveAll(this);
     for(auto Field:NumericFields)if(Field)Field->Detach();NumericFields.Empty();
     OperatorLayoutBuilt=false;OperatorDetailsOpen=false;IndividualSettingsOpen=false;OperatorDetails=nullptr;
+    ResponsiveRecipeRows.Empty();
     OriginalRecipeValid=false;OriginalRecipeText.Empty();LastCompactText.Empty();OriginalDisplayText.Empty();
     if(RecipePanel)RecipePanel->RemoveFromParent();RecipePanel=nullptr;RecipeFiles.Empty();RecipeOpen=false;RecipeMessage.Empty();
     if(DoseControls)DoseControls->RemoveFromParent();DoseControls=nullptr;DoseMessage.Empty();

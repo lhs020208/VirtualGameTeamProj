@@ -85,11 +85,11 @@ void UProcessControlUI::BuildOperatorLayout(UCanvasPanel* Root)
  auto* Design=Cast<USizeBox>(Get(TEXT("DesignSize")));Design->RemoveFromParent();Design->SetWidthOverride(1100);Design->SetHeightOverride(730);
  auto* Panel=Cast<UVerticalBox>(Get(TEXT("PanelContents")));Panel->RemoveFromParent();
  Body->SetContent(Columns);
- auto* Scale=Tree->ConstructWidget<UScaleBox>();Scale->SetStretch(EStretch::ScaleToFit);Scale->SetContent(Design);
- FSlateChildSize LeftSize(ESlateSizeRule::Fill);LeftSize.Value=1.7f;Columns->AddChildToHorizontalBox(Scale)->SetSize(LeftSize);
+ auto* Scale=Tree->ConstructWidget<UScaleBox>(UScaleBox::StaticClass(),TEXT("OperatorDiagramScale"));Scale->SetStretch(EStretch::ScaleToFit);Scale->SetContent(Design);
+ FSlateChildSize LeftSize(ESlateSizeRule::Fill);LeftSize.Value=1.3f;Columns->AddChildToHorizontalBox(Scale)->SetSize(LeftSize);
  auto* Side=Tree->ConstructWidget<UScrollBox>(UScrollBox::StaticClass(),TEXT("OperatorSideScroll"));Side->SetScrollbarThickness(FVector2D(12,12));
  auto* SideSlot=Columns->AddChildToHorizontalBox(Side);SideSlot->SetSize(FSlateChildSize(ESlateSizeRule::Fill));SideSlot->SetPadding(FMargin(20,0,0,0));
- auto* Right=Tree->ConstructWidget<UVerticalBox>();Side->AddChild(Right);
+ auto* Right=Tree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass(),TEXT("OperatorSideContent"));Side->AddChild(Right);
  Right->AddChildToVerticalBox(Text(TEXT("SelectedOverview"),TEXT(""),24))->SetPadding(FMargin(0,0,0,5));
  Move(PressureControls,Right);
  for(const TCHAR* N:{TEXT("RPMLabel"),TEXT("RPMInput"),TEXT("SetRPM")})Move(Get(N),Right);
@@ -175,6 +175,7 @@ void UProcessControlUI::BuildOperatorLayout(UCanvasPanel* Root)
  Numeric(TEXT("RecipeRPM"),TEXT("RPM"),1,0,30,true);Numeric(TEXT("RPMInput"),TEXT("RPM"),1,0,30);
  Numeric(TEXT("RecipeReceiverPressure"),TEXT("kPa(g)"),.1,-1,0);
  Numeric(TEXT("PressureInput"),TEXT("kPa(g)"),.1,-1,1);Numeric(TEXT("PurgePressureInput"),TEXT("kPa(g)"),.1,0,1);
+ BuildResponsiveOperatorLayout(Root);
  OperatorLayoutBuilt=true;
 }
 
@@ -313,4 +314,5 @@ void UProcessControlUI::RefreshOperatorLayout()
   if(N==TEXT("RecipeDelay"))Compare(TEXT("RecipeMixSeconds"),false);
   F->Refresh(Applied,Known,Cross);
  }
+ RefreshResponsiveOperatorLayout();
 }

@@ -11,6 +11,7 @@ class UVerticalBox;
 class UCanvasPanel;
 class UBorder;
 class UProcessNumericField;
+class UWrapBox;
 
 /** Runtime-only bindings to the existing widget; no asset graph or physics writes. */
 UCLASS()
@@ -68,6 +69,9 @@ private:
     TMap<FString,FString> OriginalDisplayText;
     void BuildOperatorLayout(UCanvasPanel* Root);
     void RefreshOperatorLayout();
+    void BuildResponsiveOperatorLayout(UCanvasPanel* Root);
+    void RefreshResponsiveOperatorLayout();
+    UPROPERTY(Transient) TArray<TObjectPtr<UWrapBox>> ResponsiveRecipeRows;
     void RefreshOperationGuidance();
     void RememberRecoveryCheck();
     bool RecoveryCheckCurrent() const;
