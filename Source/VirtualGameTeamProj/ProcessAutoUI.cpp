@@ -41,7 +41,7 @@ void UProcessControlUI::RefreshAutomatic()
  const bool SameRun=A.Epoch==Snapshot.Epoch&&A.Connection==S->State.Connection;
  const FString Label=!SameRun?TEXT("이전 배치 기록 · 초기화/연결 변경"):
   A.Stage==EProcessAutoStage::Mixing&&!MixingNow?TEXT("혼합 상태 확인 중"):FProcessAutoRun::StageText(A.Stage);
- const FString MaterialLabel=A.AdditiveEnabled&&A.ActiveSupplier==2?(A.Stage==EProcessAutoStage::Complete?FString(TEXT("[A+B+C] ")):FString(TEXT("[첨가제 C] "))):A.BatchMode==EProcessBatchMode::SequentialAB?(Snapshot.SequentialBatch.Combined?TEXT("[A+B] "):(A.ActiveSupplier==1?TEXT("[B] "):TEXT("[A] "))):TEXT("");
+ const FString MaterialLabel=!A.Entries.IsEmpty()?FString::Printf(TEXT("[%c] "),TCHAR('A'+A.ActiveSupplier)):A.AdditiveEnabled&&A.ActiveSupplier==2?(A.Stage==EProcessAutoStage::Complete?FString(TEXT("[A+B+C] ")):FString(TEXT("[첨가제 C] "))):A.BatchMode==EProcessBatchMode::SequentialAB?(Snapshot.SequentialBatch.Combined?TEXT("[A+B] "):(A.ActiveSupplier==1?TEXT("[B] "):TEXT("[A] "))):TEXT("");
  const FString Status=MaterialLabel+(A.BatchMode!=EProcessBatchMode::Full&&A.Stage==EProcessAutoStage::Feeding?FString(TEXT("목표량 공급 중")):Label)+TEXT(" · ")+(A.RecoveryPending&&!A.RecoveryReason.IsEmpty()?A.RecoveryReason:A.Reason);
  if(auto* T=Cast<UTextBlock>(W->GetWidgetFromName(TEXT("Help")))){
   T->SetText(FText::FromString(Status+TEXT("\n")+(A.Active?TEXT("상충 수동 조작 잠금 · 전체 정지 가능"):S->State.StopDescription())));
@@ -55,10 +55,12 @@ void UProcessControlUI::RefreshAutomatic()
    const double BKg=A.BatchMode==EProcessBatchMode::SequentialAB?A.FinalBKg:0;
    const double CKg=A.AdditiveEnabled?A.FinalAdditiveKg:0;
    FString Body=TEXT("배치 완료\n최종 혼합기 도착량 · 시뮬레이션 계산값\n");
+   if(!A.Entries.IsEmpty())Body+=A.FinalSummary()+TEXT("\n");else{
    Body+=FString::Printf(TEXT("A %.6f g\n"),AKg*1000);
    if(A.BatchMode==EProcessBatchMode::SequentialAB)Body+=FString::Printf(TEXT("B %.6f g\n"),BKg*1000);
    if(A.AdditiveEnabled)Body+=FString::Printf(TEXT("C %.6f g\n"),CKg*1000);
    Body+=FString::Printf(TEXT("합계 %.6f g\n"),(AKg+BKg+CKg)*1000);
+   }
    const double Age=FPlatformTime::Seconds()-Snapshot.PublishedWallSeconds;
    if(S->State.Connected&&Snapshot.Validity==EPlantValueValidity::Valid&&Age>=0&&Age<=2.&&Snapshot.AppliedRPMValid)
     Body+=FString::Printf(TEXT("계산 적용 RPM %.3f\n"),Snapshot.AppliedRPM);
@@ -84,7 +86,7 @@ void UProcessControlUI::RefreshAutomatic()
   if(A.RecoveryPending||A.RecoveryCount>0||A.RecoveryAbandoned){
    Body+=TEXT("배치 기록 보존 · 계산 재개와 배치 재개는 별도\n")+A.RecoveryReason+TEXT("\n");
    for(const auto& R:Snapshot.Recovery.Materials){
-    const double Target=R.Supplier==0?A.LockedTargetAKg:R.Supplier==1?A.LockedTargetBKg:A.AdditiveTargetKg;
+    if(!A.UsesSupplier(R.Supplier))continue;const double Target=A.DoseFor(R.Supplier,false);
     const bool Final=!R.SelectedIds.IsEmpty();const double Unit=Snapshot.ModelParticleMassKg*1000;
     const double Passed=(R.SupplyConnector+R.Weighing+R.Pipe+R.Receiver+R.MixerConnector+R.Mixer)*Unit;
     Body+=FString::Printf(TEXT("%c: 이미 공급 %.6f g · 이동 중 %.6f g · 수취 %.6f g · 혼합기 %.6f g · 남은 %s %.6f g\n"),
@@ -93,13 +95,20 @@ void UProcessControlUI::RefreshAutomatic()
    }
    Body+=TEXT("이어갈 단계: ")+FProcessAutoRun::StageText(A.RecoveryNext)+TEXT("\n");
   }
-  if(!A.RecipeName.IsEmpty()){
+  if(!A.Entries.IsEmpty()){
+   for(const auto& E:A.Entries)if(E.Enabled){
+    const bool Known=Same&&Snapshot.Recovery.Valid&&Snapshot.SequentialBatch.Materials.IsValidIndex(E.Supplier);
+    const auto* M=Known?&Snapshot.SequentialBatch.Materials[E.Supplier]:nullptr;
+    Body+=FString::Printf(TEXT("%c %s · 목표 %g ± %g g · 확정 %s · 수취 %s\n"),'A'+E.Supplier,*E.DisplayName,E.TargetKg*1000,E.ToleranceKg*1000,
+     M&&M->FinalSimulationSeconds>=0?*FString::Printf(TEXT("%g g"),M->FinalKg*1000):TEXT("미확인"),M?*FString::Printf(TEXT("%g g"),M->ReceiverCount*Snapshot.ModelParticleMassKg*1000):TEXT("미확인"));
+   }
+  }else if(!A.RecipeName.IsEmpty()){
    Body+=FString::Printf(TEXT("이번 실행 레시피: %s\n원료 표시명 A [%s]"),*A.RecipeName,*A.RecipeMaterialA);
    if(A.BatchMode==EProcessBatchMode::SequentialAB)Body+=FString::Printf(TEXT(" / B [%s]"),*A.RecipeMaterialB);
    if(A.AdditiveEnabled)Body+=FString::Printf(TEXT(" / C [%s]"),*A.RecipeMaterialC);
    Body+=TEXT("\n");
   }
-  if(A.BatchMode==EProcessBatchMode::SequentialAB){
+  if(A.Entries.IsEmpty()&&A.BatchMode==EProcessBatchMode::SequentialAB){
    const auto FinalMass=[](double Kg){return Kg>0?FString::Printf(TEXT("확정 %.6f g"),Kg*1000):FString(TEXT("미확정"));};
    Body+=FString::Printf(TEXT("A 목표 %.6f g ± %.6f g · %s\nB 목표 %.6f g ± %.6f g · %s\n"),A.LockedTargetAKg*1000,A.LockedToleranceAKg*1000,*FinalMass(A.FinalAKg),A.LockedTargetBKg*1000,A.LockedToleranceBKg*1000,*FinalMass(A.FinalBKg));
    const auto& AB=Snapshot.SequentialBatch;
@@ -109,8 +118,8 @@ void UProcessControlUI::RefreshAutomatic()
    const auto& C=Snapshot.SequentialBatch.Additive;
    const FString FinalAdditive=A.FinalAdditiveKg>0?FString::Printf(TEXT("확정 %.6f g"),A.FinalAdditiveKg*1000):FString(TEXT("미확정"));
    const auto AppliedTime=[](double Seconds){return Seconds>=0?FString::Printf(TEXT("%.9f"),Seconds):FString(TEXT("미확인"));};
-   Body+=FString::Printf(TEXT("첨가제 C · %s · 목표 %.6f g ± %.6f g · %s\n수취 %.6f g · 연결부 %.6f g · 혼합기 %.6f g\n예약 N %.6f 해석초 · %s\n"),
-    A.AdditiveScheduled?TEXT("예약 ON"):TEXT("예약 OFF · 혼합 전 초기 투입"),A.AdditiveTargetKg*1000,A.AdditiveToleranceKg*1000,*FinalAdditive,
+   Body+=FString::Printf(TEXT("첨가제 %c · %s · 목표 %.6f g ± %.6f g · %s\n수취 %.6f g · 연결부 %.6f g · 혼합기 %.6f g\n예약 N %.6f 해석초 · %s\n"),
+    TCHAR('A'+A.AdditiveSupplier),A.AdditiveScheduled?TEXT("예약 ON"):TEXT("예약 OFF · 혼합 전 초기 투입"),A.AdditiveTargetKg*1000,A.AdditiveToleranceKg*1000,*FinalAdditive,
     C.ReceiverCount*Snapshot.ModelParticleMassKg*1000,C.ConnectorCount*Snapshot.ModelParticleMassKg*1000,C.MixerCount*Snapshot.ModelParticleMassKg*1000,
     A.AdditiveDelaySeconds,*A.AdditiveStatus);
    if(A.AdditiveDueSeconds>=0)Body+=FString::Printf(TEXT("예약 해석시각 %.9f · 준비 %s\n"),A.AdditiveDueSeconds,*AppliedTime(A.AdditivePreparedSeconds));
@@ -144,7 +153,7 @@ void UProcessControlUI::RefreshAutomatic()
   }
   else if(Same){
    // A's completed opening is historical once B owns the cleared transfer record.
-   const bool PreviousOpening=A.BatchMode==EProcessBatchMode::SequentialAB&&A.ActiveSupplier>0&&
+   const bool PreviousOpening=A.BatchMode==EProcessBatchMode::SequentialAB&&A.ActiveSupplier!=A.NextRegular(INDEX_NONE)&&
     Snapshot.Transfer.Id==0&&Snapshot.FeedPreparation.State==EPlantFeedPreparationState::Opened;
    Body+=(PreviousOpening?FString(TEXT("현재 원료 공급 완료 확인 전 · 칭량호퍼 출구 닫힘 유지\n")):UProcessUIStateAdapter::FormatPreparation(Snapshot.FeedPreparation))+
     UProcessUIStateAdapter::FormatTransfer(Snapshot.Transfer).Replace(TEXT("수동 이송"),TEXT("이송"));

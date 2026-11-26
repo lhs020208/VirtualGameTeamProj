@@ -136,6 +136,11 @@ void UProcessControlUI::SetRPM()
     auto* W=Widget.Get();auto* Input=W?Cast<UEditableTextBox>(W->GetWidgetFromName(TEXT("RPMInput"))):nullptr;
     double RPM=std::numeric_limits<double>::quiet_NaN();
     if(Input){FString Text=Input->GetText().ToString().TrimStartAndEnd();FTCHARToUTF8 Bytes(*Text);char* End=nullptr;RPM=std::strtod(Bytes.Get(),&End);if(Text.IsEmpty()||End==Bytes.Get()||!End||*End!=0)RPM=std::numeric_limits<double>::quiet_NaN();}
+    if(Is3D()||Selected()!=TEXT("mixer"))return;
+    if(auto* S=Service.Get();S&&(SpeedDraftBatch.IsValid()||S->AutoRun.State.Active)){
+        S->RequestMixSpeed(FGuid::NewGuid(),SpeedDraftEpoch,SpeedDraftBatch,SpeedDraftRun,RPM);
+        Refresh();return;
+    }
     Send(EProcessCommand::MixerRPM,RPM);
 }
 
@@ -148,7 +153,7 @@ void UProcessControlUI::Refresh()
     {
         auto* B=Cast<UButton>(W->GetWidgetFromName(Name));if(!B)return;
         B->SetVisibility(Show&&(!Observation||C==EProcessCommand::StopAll)?ESlateVisibility::Visible:ESlateVisibility::Collapsed);
-        const FString Reason=State.UnavailableReason(Target,C,V,Now);
+        const FString Reason=C!=EProcessCommand::StopAll&&S->WebOwnsControl()?S->LocalOperatorReason():State.UnavailableReason(Target,C,V,Now);
         bool Pending=false;for(const auto& Pair:State.History)if(Pair.Value.IsPending()&&Pair.Value.EquipmentId==Target&&Pair.Value.Command==C&&Pair.Value.Value==V)Pending=true;
         // Closing and stop remain reachable even while an opening is in flight.
         B->SetIsEnabled(Show&&(!Observation||C==EProcessCommand::StopAll)&&Reason.IsEmpty()&&!Pending);B->SetToolTipText(FText::FromString(Pending?TEXT("같은 요청의 적용 확인 중"):Reason));
@@ -159,7 +164,8 @@ void UProcessControlUI::Refresh()
     Update(TEXT("ValveClose"),EProcessCommand::Valve,0,!Mixer&&!Id.IsEmpty(),Id);
     Update(TEXT("MixerStart"),EProcessCommand::MixerEnabled,1,Mixer,Id);
     Update(TEXT("MixerStop"),EProcessCommand::MixerEnabled,0,Mixer,Id);
-    Update(TEXT("SetRPM"),EProcessCommand::MixerRPM,State.Snapshot.RequestedRPM,Mixer,Id);
+    if (!Mixer || !S->AutoRun.State.Active)
+        Update(TEXT("SetRPM"),EProcessCommand::MixerRPM,State.Snapshot.RequestedRPM,Mixer,Id);
     Update(TEXT("ManualRequest"),EProcessCommand::StopAll,0,false,TEXT("plant"));
     Update(TEXT("GlobalStop"),EProcessCommand::StopAll,0,true,TEXT("plant"));
     Update(TEXT("ManualResume"),EProcessCommand::Resume,1,true,TEXT("plant"));
@@ -167,10 +173,39 @@ void UProcessControlUI::Refresh()
     if(auto* B=Cast<UButton>(W->GetWidgetFromName(TEXT("GlobalStop"))))
         ButtonLabel(B,State.StopStage==EProcessStopStage::Failed?TEXT("정지 재시도"):TEXT("전체 정지"));
     RefreshMixTimeControls();RefreshPressureControls();RefreshPurgeControls();
-    Label(W,TEXT("RPMLabel"),TEXT("목표 회전속도 · 0~30 rpm"));
+    const auto& A=S->AutoRun.State;
+    const bool Automatic=Mixer&&A.Active;
+    const FGuid Batch=Automatic?A.RunId:FGuid();
+    const int64 MixRun=Automatic?A.ConfirmedMixRun:0;
+    const FString SpeedWhy=S->WebOwnsControl()?S->LocalOperatorReason():S->AutoRun.MixSpeedReason(State,Now);
+    if(SpeedDraftBatch!=Batch||SpeedDraftRun!=MixRun||SpeedDraftEpoch!=State.Snapshot.Epoch){
+        SpeedDraftBatch=Batch;SpeedDraftRun=MixRun;SpeedDraftEpoch=State.Snapshot.Epoch;
+        if(auto* Input=Cast<UEditableTextBox>(W->GetWidgetFromName(TEXT("RPMInput")))){
+            double Initial=Automatic?A.TargetMixerRPM:State.Snapshot.RequestedRPM;
+            if(Automatic&&MixRun&&State.Snapshot.AppliedRPMValid)Initial=State.Snapshot.AppliedRPM;
+            Input->SetText(FText::FromString(ProcessDisplay::Exact(Initial)));
+        }
+    }
+    FString RPMText=TEXT("목표 회전속도 · 0~30 RPM");
+    if(Automatic){
+        const auto& P=State.Snapshot;
+        const bool Known=P.Validity==EPlantValueValidity::Valid&&P.Epoch==A.Epoch&&P.AppliedRPMValid&&Now-P.PublishedWallSeconds<=2;
+        RPMText=FString::Printf(TEXT("현재 적용 %s RPM · 레시피 %s RPM · 남은 혼합 %s초\n이번 혼합에 적용"),Known?*ProcessDisplay::Number(P.AppliedRPM):TEXT("미확인"),*ProcessDisplay::Number(A.TargetMixerRPM),Known?*ProcessDisplay::Number(A.MixingRemainingSeconds):TEXT("미확인"));
+        if(!SpeedWhy.IsEmpty())RPMText+=TEXT("\n")+SpeedWhy;
+        if(const auto* R=State.History.Find(A.SpeedRequest))RPMText+=TEXT("\n")+R->Message;
+    }
+    if(auto* Button=Cast<UButton>(W->GetWidgetFromName(TEXT("SetRPM")))){
+        ButtonLabel(Button,Automatic?TEXT("RPM 적용"):TEXT("목표 회전속도 설정"));
+        if(Automatic){
+            Button->SetVisibility(Observation?ESlateVisibility::Collapsed:ESlateVisibility::Visible);
+            Button->SetIsEnabled(!Observation&&SpeedWhy.IsEmpty());
+            Button->SetToolTipText(FText::FromString(SpeedWhy));
+        }
+    }
+    Label(W,TEXT("RPMLabel"),RPMText);
     for(const TCHAR* Name:{TEXT("RPMLabel"),TEXT("RPMInput")})if(auto* C=W->GetWidgetFromName(Name))C->SetVisibility(Mixer&&!Observation?ESlateVisibility::Visible:ESlateVisibility::Collapsed);
     if(auto* Input=W->GetWidgetFromName(TEXT("RPMInput")))
-        Input->SetIsEnabled(Mixer&&!Observation&&State.UnavailableReason(TEXT("mixer"),EProcessCommand::MixerRPM,State.Snapshot.RequestedRPM,Now).IsEmpty());
+        Input->SetIsEnabled(Mixer&&!Observation&&(Automatic?SpeedWhy.IsEmpty():State.UnavailableReason(TEXT("mixer"),EProcessCommand::MixerRPM,State.Snapshot.RequestedRPM,Now).IsEmpty()));
     for(const TCHAR* Name:{TEXT("TransferStart"),TEXT("TransferStop")})if(auto* B=Cast<UButton>(W->GetWidgetFromName(Name)))
     {B->SetIsEnabled(false);B->SetVisibility(!Mixer&&!Id.IsEmpty()&&!Observation?ESlateVisibility::Visible:ESlateVisibility::Collapsed);B->SetToolTipText(FText::FromString(State.Snapshot.PressureControlEnabled?TEXT("압력과 밸브를 각각 적용하세요. A 전량 또는 시험 목표량은 공급 A/칭량 패널에서 설정한 뒤 상단 자동 시작을 사용하세요."):TEXT("독립적인 이송 제어 API가 없습니다. 밸브 열기는 목표량 이송 완료를 뜻하지 않습니다.")));}
     FString Message=State.UnavailableReason(Id,Mixer?EProcessCommand::MixerEnabled:EProcessCommand::Valve,1,Now);
@@ -179,7 +214,7 @@ void UProcessControlUI::Refresh()
     const FProcessCommandRecord* Latest=nullptr;
     for(const auto& Pair:State.History)if(Pair.Value.Connection==State.Connection&&(Pair.Value.EquipmentId==Id||Pair.Value.EquipmentId==TEXT("plant")||(Pair.Value.Command==EProcessCommand::Pressure&&PlantControl::SamePressureTarget(Pair.Value.EquipmentId,Id)))&&(!Latest||Pair.Value.AcceptedAt>Latest->AcceptedAt))Latest=&Pair.Value;
     if(Latest)Message=FProcessControlMachine::StatusText(Latest->Status)+TEXT(" · ")+Latest->Message+TEXT("\n")+Message;
-    Label(W,TEXT("Disconnected"),Message);
+    Label(W,TEXT("Disconnected"),S->LocalOperatorReason().IsEmpty()?Message:S->LocalOperatorReason()+TEXT("\n")+Message);
     FString GlobalMessage=TEXT("조회·화면 전환은 운전을 변경하지 않습니다. 정지 확인 후 계산 재개를 선택하세요.");
     if(State.TimeoutPolicy==EProcessTimeoutPolicy::Unspecified)GlobalMessage=TEXT("닫힘 실패 시 처리 정책을 확인한 뒤 수동 조작을 활성화할 수 있습니다.");
     else if(State.IsStopping())GlobalMessage=TEXT("미확인: ")+State.UnconfirmedEquipment();
@@ -189,11 +224,11 @@ void UProcessControlUI::Refresh()
         GlobalMessage=TEXT("개방·혼합 시작 전 ‘계산 재개’를 선택하세요. 닫기 요청은 전체 정지를 확인합니다.");
     Label(W,TEXT("Help"),State.StopDescription()+TEXT("\n")+GlobalMessage);
     Label(W,TEXT("DiagramNote"),ProcessPlantBinding::IsLowPoly(State.Snapshot.SourceActorPath)?
-        TEXT("전체 정지는 압력 설정 0·밸브 8개 닫힘·계산 적용 RPM 0·작업자 정지를 확인합니다.\nA 단독 전량·목표량 및 A·B 순차 계량 배치를 지원합니다. 모델 질량 기준이며 C~F 순차 투입·자동 보충·초과분 회수는 후속 단계입니다."):
+        TEXT("전체 정지는 압력 설정 0·밸브 8개 닫힘·계산 적용 RPM 0·작업자 정지를 확인합니다.\nA 단독 전량·목표량 또는 레시피에서 선택한 공급호퍼를 순서대로 계량합니다. 계량량은 시뮬레이션 모델 기준입니다."):
         TEXT("전체 정지는 제어 가능한 밸브·혼합·계산 정지를 확인합니다.\n독립 압력 차단·자동 이송은 미지원입니다. 수동 이송 판정은 모델 질량·시험 기준입니다."));
     if(auto* Help=W->GetWidgetFromName(TEXT("Help")))Help->SetToolTipText(FText::FromString(FString::Printf(
         TEXT("A 자동 실행 중 수동 명령은 차단되며 전체 정지는 즉시 요청할 수 있습니다. 닫기 요청은 모델의 공급·이송 유량 요청을 0으로 만듭니다. 압력 지원 레벨에서는 모든 압력 목표 0의 적용도 확인합니다. 외부 장비 정지·실제 감압·분진 안전 판정은 제공하지 않습니다.\n수동 일시정지와 일시정지 중 닫기는 전체 정지 절차입니다. 시간 초과 시 계산 동결 응답까지 확인하며 실패 후 명시적 재시도가 필요합니다.\n시험용 제한: 명령·동결 응답 %.1f초 / 전체 정지 %.1f초 (실제 경과 시간)\n%s"),State.CommandTimeoutSeconds,State.StopTimeoutSeconds,*State.UnconfirmedEquipment())));
     if(Latest)if(auto* T=W->GetWidgetFromName(TEXT("Disconnected")))T->SetToolTipText(FText::FromString(FString::Printf(TEXT("요청 %s\n초기화 세대 %lld · 연결 %lld · 작업자 확인 번호 %lld\n요청값 %.9g"),*Latest->RequestId.ToString(),Latest->Epoch,Latest->Connection,Latest->Revision,Latest->Value)));
-    if(Observation)Label(W,TEXT("ThreeDNotice"),FString::Printf(TEXT("3D 관찰 전용 · %s\n해석 시간 %.4f초\n장비 조작은 공정도에서만 가능합니다.\n우클릭: 회전 · 우클릭+WASD/QE: 이동 · 휠: 확대/축소"),*State.StopDescription(),State.Snapshot.PhysicalSeconds));
+    if(Observation)Label(W,TEXT("ThreeDNotice"),S->LocalOperatorReason()+TEXT("\n")+FString::Printf(TEXT("3D 관찰 전용 · %s\n해석 시간 %.4f초\n장비 조작은 공정도에서만 가능합니다.\n우클릭: 회전 · 우클릭+WASD/QE: 이동 · 휠: 확대/축소"),*State.StopDescription(),State.Snapshot.PhysicalSeconds));
     RefreshDoseControls();RefreshAutomatic();RefreshRecipeControls();RefreshOperatorLayout();
 }

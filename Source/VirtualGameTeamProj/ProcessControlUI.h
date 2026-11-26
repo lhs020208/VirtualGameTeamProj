@@ -71,6 +71,8 @@ private:
     void RefreshOperationGuidance();
     void RememberRecoveryCheck();
     bool RecoveryCheckCurrent() const;
+    FGuid SpeedDraftBatch;
+    int64 SpeedDraftEpoch=-1,SpeedDraftRun=0;
     FGuid CheckedRun,CheckedStop,CheckedCommand;
     int64 CheckedEpoch=-1,CheckedConnection=-1,CheckedControl=-1;
     double CheckedSimulationSeconds=-1;
@@ -110,7 +112,10 @@ private:
     void RefreshPurgeControls();
     FString PressureDraftEquipment;
     int64 PressureDraftEpoch = -1, PressureDraftConnection = -1;
-    FGuid PressureDraftStop;
+    FGuid PressureDraftStop,PressureDraftStage,PressureDraftBatch;
+    int32 PressureDraftSupplier=INDEX_NONE;
+    int64 PressureDraftTransfer=0;
+    bool PressureDraftAutomatic=false;
     void BuildPressureControls(UVerticalBox* Panel);
     void RefreshPressureControls();
     FString LocalError;

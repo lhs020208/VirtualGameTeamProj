@@ -59,8 +59,8 @@ FString FProcessControlMachine::UnavailableReason(const FString& Id, EProcessCom
     if(C==EProcessCommand::RecoverBatch&&(!AutomationDispatch||Id!=TEXT("plant")))return TEXT("명시적인 배치 재개에서만 복구 검증할 수 있습니다.");
     if(AutomationActive&&!AutomationDispatch&&C!=EProcessCommand::StopAll&&C!=EProcessCommand::Pause)return TEXT("A 자동 배치 실행 중입니다. 중단하려면 전체 정지를 선택하세요.");
     if((C==EProcessCommand::BeginB||C==EProcessCommand::CombineAB||C==EProcessCommand::BeginAdditive)&&(!AutomationDispatch||Id!=TEXT("plant")||!Snapshot.SupplyABatch.Supported))return TEXT("자동 순차 배치에서만 원료를 전환·합산할 수 있습니다.");
-    if(C==EProcessCommand::FinalizeADose&&(!AutomationDispatch||(Id!=TEXT("supply-a")&&Id!=TEXT("supply-b")&&Id!=TEXT("supply-c"))||!Snapshot.SupplyABatch.Supported))return TEXT("자동 계량에서만 최종 배치를 확정할 수 있습니다.");
-    if(C==EProcessCommand::CaptureABatch&&(!AutomationDispatch||Id!=TEXT("supply-a")||!Snapshot.SupplyABatch.Supported))return TEXT("자동 시작에서만 A 초기 배치를 확정할 수 있습니다.");
+    if(C==EProcessCommand::FinalizeADose&&(!AutomationDispatch||(ProcessPlantBinding::SupplierIndex(Id)<0)||!Snapshot.SupplyABatch.Supported))return TEXT("자동 계량에서만 최종 배치를 확정할 수 있습니다.");
+    if(C==EProcessCommand::CaptureABatch&&(!AutomationDispatch||ProcessPlantBinding::SupplierIndex(Id)<0||!Snapshot.SupplyABatch.Supported))return TEXT("자동 시작에서만 A 초기 배치를 확정할 수 있습니다.");
     if (!FMath::IsFinite(V)) return TEXT("유한한 숫자를 입력하세요.");
     if ((C == EProcessCommand::Valve && !IsValve(Id)) ||
         ((C == EProcessCommand::MixerEnabled || C == EProcessCommand::MixerRPM) && Id != TEXT("mixer")) ||
@@ -68,8 +68,10 @@ FString FProcessControlMachine::UnavailableReason(const FString& Id, EProcessCom
         return TEXT("이 장비에서 지원하지 않는 명령입니다.");
     if(C==EProcessCommand::PurgePressure||C==EProcessCommand::PurgeEnabled)
     {
+        if(ProcessPlantBinding::SupplierIndex(Id)<0)return TEXT("공급호퍼를 선택하세요.");
         const auto& Purge=PlantPurgeFor(Snapshot,ProcessPlantBinding::SupplierIndex(Id));
-        if((Id!=TEXT("supply-a")&&Id!=TEXT("supply-b")&&Id!=TEXT("supply-c"))||!Purge.Supported)return TEXT("이 장비·해석 구성은 A 연결부 공기를 지원하지 않습니다.");
+        if(!Purge.Supported)return TEXT("이 장비·해석 구성은 선택한 연결부 공기를 지원하지 않습니다.");
+        if(!Purge.Valid)return TEXT("선택 공급 연결부의 최신 작업자 상태 확인 필요");
         if(C==EProcessCommand::PurgePressure&&(V<0||V>1000))return TEXT("연결부 공기 모델 시험 범위는 0~1 kPa(g)입니다. 범위 밖 값은 거부합니다.");
         if(C==EProcessCommand::PurgeEnabled&&V!=0&&V!=1)return TEXT("공기 시작/정지 값은 1 또는 0이어야 합니다.");
         const bool Want=C==EProcessCommand::PurgePressure?Purge.RequestedEnabled:V==1;
@@ -78,9 +80,9 @@ FString FProcessControlMachine::UnavailableReason(const FString& Id, EProcessCom
         if(Want&&(!Purge.Valid||SupplierRequested||Snapshot.AppliedSupplierMask||Snapshot.AppliedHopperOpen||Pa<=Snapshot.RequestedGaugePressurePa.Y))
             return TEXT("공급 밸브·칭량 출구의 실제 닫힘과 칭량보다 높은 연결부 공기 압력을 확인하세요.");
     }
-    if(C==EProcessCommand::Valve&&V==1&&Id!=TEXT("weigher")&&(Snapshot.SupplyAPurge.RequestedEnabled||Snapshot.SupplyAPurge.AppliedEnabled||Snapshot.SupplyBPurge.RequestedEnabled||Snapshot.SupplyBPurge.AppliedEnabled||Snapshot.SupplyCPurge.RequestedEnabled||Snapshot.SupplyCPurge.AppliedEnabled))
+    if(C==EProcessCommand::Valve&&V==1&&Id!=TEXT("weigher")&&(AnyPlantPurge(Snapshot,[](const auto& P){return P.RequestedEnabled||P.AppliedEnabled;})))
         return TEXT("연결부 공기 정지 확인 후 다른 밸브를 여세요.");
-    if(C==EProcessCommand::Pressure&&Id==TEXT("weigher")&&((Snapshot.SupplyAPurge.RequestedEnabled&&V>=Snapshot.SupplyAPurge.RequestedGaugePa)||(Snapshot.SupplyBPurge.RequestedEnabled&&V>=Snapshot.SupplyBPurge.RequestedGaugePa)||(Snapshot.SupplyCPurge.RequestedEnabled&&V>=Snapshot.SupplyCPurge.RequestedGaugePa)))
+    if(C==EProcessCommand::Pressure&&Id==TEXT("weigher")&&(AnyPlantPurge(Snapshot,[V](const auto& P){return P.RequestedEnabled&&V>=P.RequestedGaugePa;})))
         return TEXT("연결부 공기 압력이 칭량 압력보다 높아야 합니다. 공기 정지 후 변경하세요.");
     if(C == EProcessCommand::Valve && IsSupplier(Id) && !Snapshot.RequestedSuppliers.IsValidIndex(ProcessPlantBinding::SupplierIndex(Id)))
         return TEXT("이 해석 구성에서는 시뮬레이션 미구현입니다.");
@@ -137,9 +139,14 @@ FString FProcessControlMachine::UnavailableReason(const FString& Id, EProcessCom
         (Snapshot.Execution != EPlantExecutionState::Running || !Snapshot.RequestedRunning))
         return TEXT("계산이 일시정지 중입니다. ‘수동 운전 시작 · 계산 재개’를 먼저 누르세요.");
     for (const auto& Pair : History)
-        if (Pair.Value.IsPending() && (Pair.Value.EquipmentId == Id || Pair.Value.EquipmentId == TEXT("plant") ||
+        {
+        const auto Other=Pair.Value.Command;
+        const bool IndependentMaterialCommand=DispatchMixRun>0&&(Other==EProcessCommand::CaptureABatch||
+            Other==EProcessCommand::BeginB||Other==EProcessCommand::CombineAB||Other==EProcessCommand::BeginAdditive);
+        if (Pair.Value.IsPending() && (Pair.Value.EquipmentId == Id || (Pair.Value.EquipmentId == TEXT("plant") && !IndependentMaterialCommand) ||
             (C==EProcessCommand::Pressure && Pair.Value.Command==C && PlantControl::SamePressureTarget(Pair.Value.EquipmentId,Id))))
             return TEXT("이 장비의 이전 요청을 확인 중입니다. 닫기·전체 정지는 사용할 수 있습니다.");
+    }
     return FString();
 }
 
@@ -160,6 +167,13 @@ bool FProcessControlMachine::Matches(const FProcessCommandRecord& R) const
     if(R.Command==EProcessCommand::Pressure)
     {
         const int32 Target=PlantControl::PressureTarget(R.EquipmentId);
+        if(Target==0&&R.IndividualPressure){
+            const int32 Source=ProcessPlantBinding::SupplierIndex(R.EquipmentId);
+            return Snapshot.AppliedPressureValid&&Snapshot.PressureAppliedRevision>=R.Revision&&
+                Snapshot.SupplierPressure(Source,false)==R.Value&&Snapshot.SupplierPressure(Source,true)==R.Value;
+        }
+        if(Target==0)for(int I=0;I<Snapshot.AppliedSupplierPa.Num();++I)
+            if(Snapshot.SupplierPressure(I,true)!=R.Value||Snapshot.SupplierPressure(I,false)!=R.Value)return false;
         return Target!=INDEX_NONE&&Snapshot.PressureControlEnabled&&Snapshot.AppliedPressureValid&&
             Snapshot.PressureAppliedRevision>=R.Revision&&Snapshot.RequestedGaugePressurePa[Target]==R.Value&&
             Snapshot.AppliedGaugePressurePa[Target]==R.Value;
@@ -176,7 +190,7 @@ bool FProcessControlMachine::Matches(const FProcessCommandRecord& R) const
             if(Want&&R.Revision>0&&D.Valid&&!D.Cancelled&&D.RequestId==R.RequestId&&D.Epoch==R.Epoch&&
                D.ArmRevision==R.Revision&&D.Supplier==I&&D.OpenedSeconds>=0)return true;
             const auto& B=PlantBrakeFor(Snapshot,I);
-            if(I<3&&B.Supported&&(!B.Valid||(Want?(B.Required||B.Applied):(B.Required&&!B.Applied))))return false;
+            if(B.Supported&&(!B.Valid||(Want?(B.Required||B.Applied):(B.Required&&!B.Applied))))return false;
             return Snapshot.RequestedSuppliers.IsValidIndex(I) && Snapshot.RequestedSuppliers[I]==Want &&
                 ((Snapshot.AppliedSupplierMask & (1<<I))!=0)==Want;
         }
@@ -184,6 +198,8 @@ bool FProcessControlMachine::Matches(const FProcessCommandRecord& R) const
             (!R.PreparedOpening||R.Revision==0||(Snapshot.FeedPreparation.RequestRevision==R.Revision&&Snapshot.FeedPreparation.State==EPlantFeedPreparationState::Opened));
         if (R.EquipmentId==TEXT("receiver")) return Snapshot.RequestedReceiverOpen==Want && Snapshot.AppliedReceiverOpen==Want;
     }
+    if(R.SpeedRun>0)return R.Revision>0&&Snapshot.MixRun==R.SpeedRun&&Snapshot.SpeedAppliedRevision==R.Revision&&
+        Snapshot.WorkerMixerEnabled&&Snapshot.AppliedRPMValid&&Snapshot.AppliedRPM==double(float(R.Value));
     if (R.Command==EProcessCommand::MixerRPM)
         return Snapshot.WorkerTargetRPM==R.Value && Snapshot.RequestedRPM==R.Value &&
             (!Snapshot.WorkerMixerEnabled || (Snapshot.AppliedRPMValid && Snapshot.AppliedRPM==double(float(R.Value))));
@@ -201,10 +217,10 @@ bool FProcessControlMachine::AllClosed() const
         Snapshot.RequestedHopperOpen || Snapshot.RequestedReceiverOpen || Snapshot.RequestedMixerEnabled || Snapshot.WorkerMixerEnabled ||
         !Snapshot.AppliedRPMValid || Snapshot.AppliedRPM!=0) return false;
     for (bool Open:Snapshot.RequestedSuppliers) if (Open) return false;
-    for(const auto& B:{Snapshot.SupplyABrake,Snapshot.SupplyBBrake,Snapshot.SupplyCBrake})if(B.Supported&&(!B.Valid||(B.Required&&!B.Applied)))return false;
-    if(Snapshot.PressureControlEnabled&&(!Snapshot.AppliedPressureValid||
+    for(int32 I=0;I<6;++I){const auto& B=PlantBrakeFor(Snapshot,I);if(B.Supported&&(!B.Valid||(B.Required&&!B.Applied)))return false;}
+    if(Snapshot.PressureControlEnabled&&(!Snapshot.SuppliersVented()||!Snapshot.AppliedPressureValid||
         Snapshot.RequestedGaugePressurePa!=FVector::ZeroVector||Snapshot.AppliedGaugePressurePa!=FVector::ZeroVector))return false;
-    for(const auto& P:{Snapshot.SupplyAPurge,Snapshot.SupplyBPurge,Snapshot.SupplyCPurge})if(P.Supported&&(!P.Valid||P.RequestedEnabled||P.AppliedEnabled||P.RequestedGaugePa!=0||P.AppliedGaugePa!=0||P.FlowM3s!=0))return false;
+    for(int32 I=0;I<6;++I){const auto& P=PlantPurgeFor(Snapshot,I);if(P.Supported&&(!P.Valid||P.RequestedEnabled||P.AppliedEnabled||P.RequestedGaugePa!=0||P.AppliedGaugePa!=0||P.FlowM3s!=0))return false;}
     return true;
 }
 
@@ -219,13 +235,15 @@ FProcessCommandRecord FProcessControlMachine::Submit(FGuid Id, int64 Epoch, cons
     }
     FProcessCommandRecord R;
     R.RequestId=Id; R.Epoch=Epoch; R.Connection=Connection; R.EquipmentId=Equipment; R.Command=Command; R.Value=Value;
+    R.SpeedRun=DispatchMixRun;
     R.AcceptedAt=Now; R.Deadline=Now+FMath::Max(0.1,CommandTimeoutSeconds); R.BaselineSequence=Snapshot.Sequence;
     R.PreparedOpening=Command==EProcessCommand::Valve&&Equipment==TEXT("weigher")&&Value==1&&Snapshot.FeedPreparation.Enabled&&!Snapshot.AppliedHopperOpen;
     if(R.PreparedOpening)R.Deadline=Now+TransferPreparationTimeoutSeconds;
     // Mechanical protected closure includes upstream isolation and gravity clearing.
     // Bound it by the existing whole-stop closure budget, not the generic 10s mailbox budget.
     // The whole-stop deadline itself is unchanged and always takes precedence.
-    const bool ProtectedSupplyClose=Command==EProcessCommand::Valve&&(Equipment==TEXT("supply-a")||Equipment==TEXT("supply-b")||Equipment==TEXT("supply-c"))&&Value==0&&(PlantBrakeFor(Snapshot,ProcessPlantBinding::SupplierIndex(Equipment)).Supported);
+    R.IndividualPressure=AutomationDispatch&&Command==EProcessCommand::Pressure&&IsSupplier(Equipment);
+    const bool ProtectedSupplyClose=Command==EProcessCommand::Valve&&(ProcessPlantBinding::SupplierIndex(Equipment)>=0)&&Value==0&&(PlantBrakeFor(Snapshot,ProcessPlantBinding::SupplierIndex(Equipment)).Supported);
     if(ProtectedSupplyClose&&FMath::IsFinite(StopTimeoutSeconds)&&StopTimeoutSeconds>0)R.Deadline=Now+StopTimeoutSeconds;
     FString Reason = !Id.IsValid() ? TEXT("요청 번호가 필요합니다.") : Epoch!=Snapshot.Epoch ? TEXT("초기화 세대가 변경되었습니다. 새 상태에서 다시 요청하세요.") : !AdmissionError.IsEmpty() ? AdmissionError : UnavailableReason(Equipment,Command,Value,Now);
     if (!Reason.IsEmpty()) { R.Status=EProcessCommandStatus::Rejected; R.Message=Reason; History.Add(Id,R); LastRequest=Id; return R; }
@@ -252,7 +270,7 @@ FProcessCommandRecord FProcessControlMachine::Submit(FGuid Id, int64 Epoch, cons
     }
     // An automatic timed stop needs an acknowledgement for this request even when a
     // previous whole-stop already left RPM at zero. Manual idempotent controls stay unchanged.
-    else if (!StopSequence && !(AutomationDispatch&&Command==EProcessCommand::MixerEnabled&&Value==0) && MailboxConfirmed && Matches(R))
+    else if (!StopSequence && !DispatchMixRun && !StagePressureDispatch && !(AutomationDispatch&&Command==EProcessCommand::MixerEnabled&&Value==0) && MailboxConfirmed && Matches(R))
     {
         R.Status=EProcessCommandStatus::Applied;
         R.Message=Command==EProcessCommand::Valve ? (Value==0?TEXT("이미 닫힘 · 최신 적용값 확인"):TEXT("이미 열림 · 최신 적용값 확인")) : TEXT("이미 요청한 상태입니다 · 최신 확인값 기준");
@@ -354,7 +372,10 @@ void FProcessControlMachine::Observe(const FPlantSimulationSnapshot& State, doub
         {R.Status=EProcessCommandStatus::Failed;R.Message=TEXT("연결부 공기 요청이 작업자에서 취소되었습니다. 최신 상태 확인 후 새 요청으로 재시도하세요.");}
         if(!R.IsPending() || R.UsesStopSequence)continue;
         if(R.Command==EProcessCommand::Pressure&&R.Revision>0&&State.TransferPressureRejectedRevision==R.Revision)
-        {R.Status=EProcessCommandStatus::Rejected;R.Message=TEXT("현재 이송이 종료·취소되었거나 작업자 조건이 변경되어 압력 조절을 거부했습니다.");continue;}
+        {R.Status=EProcessCommandStatus::Rejected;R.Message=TEXT("현재 구간이 종료·취소되었거나 유로의 압력 적용 조건을 충족하지 않아 작업자가 요청을 거부했습니다.");continue;}
+        if(R.SpeedRun>0&&State.SpeedRejectedRevision==R.Revision){
+            R.Status=EProcessCommandStatus::Rejected;R.Message=TEXT("현재 혼합 운전 또는 요청 유효 시간이 종료되었습니다.");continue;
+        }
         if(R.Command==EProcessCommand::RecoverBatch&&R.Revision>0&&State.Recovery.RejectedRevision==R.Revision)
         {R.Status=EProcessCommandStatus::Rejected;R.Message=State.Recovery.Reason;continue;}
         if((R.Command==EProcessCommand::BeginB||R.Command==EProcessCommand::CombineAB||R.Command==EProcessCommand::BeginAdditive)&&R.Revision>0&&State.SequentialBatch.RejectedRevision==R.Revision)
@@ -368,12 +389,12 @@ void FProcessControlMachine::Observe(const FPlantSimulationSnapshot& State, doub
             {R.Status=EProcessCommandStatus::Failed;R.Message=P.Reason;continue;}
             R.Message=P.Reason;
         }
-        if(R.Command==EProcessCommand::Valve&&(R.EquipmentId==TEXT("supply-a")||R.EquipmentId==TEXT("supply-b")||R.EquipmentId==TEXT("supply-c"))&&R.Value==0&&(PlantBrakeFor(State,ProcessPlantBinding::SupplierIndex(R.EquipmentId)).Supported)){
+        if(R.Command==EProcessCommand::Valve&&(ProcessPlantBinding::SupplierIndex(R.EquipmentId)>=0)&&R.Value==0&&(PlantBrakeFor(State,ProcessPlantBinding::SupplierIndex(R.EquipmentId)).Supported)){
             const auto& B=PlantBrakeFor(State,ProcessPlantBinding::SupplierIndex(R.EquipmentId));
             R.Message=!B.Valid?TEXT("A 제동 상태 미확인"):(B.Required&&!B.Applied?TEXT("A 공급 제동 적용 확인 중"):
                 FString::Printf(TEXT("게이트 비움·실제 닫힘 확인 중 · 점유 %d개 · 닫힘 보호 유지"),B.GateOccupancyCount));
         }
-        if(State.Sequence>R.BaselineSequence && State.ProcessedControlRevision>=R.Revision && Matches(R))
+        if(State.Sequence>R.BaselineSequence && (R.SpeedRun>0||State.ProcessedControlRevision>=R.Revision) && Matches(R))
         {
             R.Status=EProcessCommandStatus::Applied;
             R.Message=R.Command==EProcessCommand::MixerRPM && !State.WorkerMixerEnabled ?
@@ -394,23 +415,25 @@ FString FProcessControlMachine::UnconfirmedEquipment() const
     TArray<FString> Names;
     if(!ProcessPlantBinding::SupportedCount(Snapshot.RequestedSuppliers.Num()))Names.Add(TEXT("공급기 구성 미확인"));
     for(int32 I=0;I<Snapshot.RequestedSuppliers.Num();++I)if(Snapshot.RequestedSuppliers[I]||(Snapshot.AppliedSupplierMask&(1<<I)))Names.Add(FString::Printf(TEXT("공급 %c"),TCHAR('A'+I)));
-    const auto& B=Snapshot.SupplyABrake;
-    if(B.Supported&&(!B.Valid||(B.Required&&!B.Applied)))Names.Add(TEXT("A 공급 피더 제동 적용"));
-    const auto& BB=Snapshot.SupplyBBrake;if(BB.Supported&&(!BB.Valid||(BB.Required&&!BB.Applied)))Names.Add(TEXT("B 공급 피더 제동 적용"));
-    const auto& CB=Snapshot.SupplyCBrake;if(CB.Supported&&(!CB.Valid||(CB.Required&&!CB.Applied)))Names.Add(TEXT("C 공급 피더 제동 적용"));
+    for(int32 I=0;I<6;++I){
+        const auto& Brake=PlantBrakeFor(Snapshot,I);
+        if(Brake.Supported&&(!Brake.Valid||(Brake.Required&&!Brake.Applied)))
+            Names.Add(FString::Printf(TEXT("%c 공급 피더 제동 적용"),TCHAR('A'+I)));
+        const auto& Air=PlantPurgeFor(Snapshot,I);
+        if(Air.Supported&&(!Air.Valid||Air.RequestedEnabled||Air.AppliedEnabled||Air.RequestedGaugePa!=0||Air.AppliedGaugePa!=0||Air.FlowM3s!=0))
+            Names.Add(FString::Printf(TEXT("공급 %c 연결부 공기 차단·압력 0·유량 0"),TCHAR('A'+I)));
+    }
     if(Snapshot.AppliedHopperOpen||Snapshot.RequestedHopperOpen)Names.Add(TEXT("칭량호퍼 출구"));
     if(Snapshot.AppliedReceiverOpen||Snapshot.RequestedReceiverOpen)Names.Add(TEXT("수취호퍼 출구"));
     if(Snapshot.PressureControlEnabled)
     {
         const TCHAR* PressureNames[]={TEXT("공급 공통 압력 설정 0 (지원 공급호퍼 전체)"),TEXT("칭량호퍼 압력 설정 0"),TEXT("수취 흡입 압력 설정 0")};
-        for(int32 I=0;I<3;++I)if(!Snapshot.AppliedPressureValid||Snapshot.RequestedGaugePressurePa[I]!=0||Snapshot.AppliedGaugePressurePa[I]!=0)
+        for(int32 I=0;I<Snapshot.RequestedSuppliers.Num();++I)
+            if(!Snapshot.AppliedPressureValid||Snapshot.SupplierPressure(I,false)!=0||Snapshot.SupplierPressure(I,true)!=0)
+                Names.Add(FString::Printf(TEXT("공급 %c 압력 설정 0"),'A'+I));
+        for(int32 I=1;I<3;++I)if(!Snapshot.AppliedPressureValid||Snapshot.RequestedGaugePressurePa[I]!=0||Snapshot.AppliedGaugePressurePa[I]!=0)
             Names.Add(PressureNames[I]);
     }
-    const auto& Purge=Snapshot.SupplyAPurge;
-    if(Purge.Supported&&(!Purge.Valid||Purge.RequestedEnabled||Purge.AppliedEnabled||Purge.RequestedGaugePa!=0||Purge.AppliedGaugePa!=0||Purge.FlowM3s!=0))
-        Names.Add(TEXT("공급 A 연결부 공기 차단·압력 0·유량 0"));
-    const auto& PB=Snapshot.SupplyBPurge;if(PB.Supported&&(!PB.Valid||PB.RequestedEnabled||PB.AppliedEnabled||PB.RequestedGaugePa!=0||PB.AppliedGaugePa!=0||PB.FlowM3s!=0))Names.Add(TEXT("공급 B 연결부 공기 차단·압력 0·유량 0"));
-    const auto& PC=Snapshot.SupplyCPurge;if(PC.Supported&&(!PC.Valid||PC.RequestedEnabled||PC.AppliedEnabled||PC.RequestedGaugePa!=0||PC.AppliedGaugePa!=0||PC.FlowM3s!=0))Names.Add(TEXT("공급 C 연결부 공기 차단·압력 0·유량 0"));
     if(!Snapshot.AppliedRPMValid||Snapshot.AppliedRPM!=0||Snapshot.WorkerMixerEnabled||Snapshot.RequestedMixerEnabled)Names.Add(TEXT("혼합기 계산 적용 RPM 0"));
     if(Names.IsEmpty())Names.Add(TEXT("작업자 일시정지 확인"));
     return FString::Join(Names,TEXT(", "));

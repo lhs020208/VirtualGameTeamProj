@@ -23,6 +23,11 @@ inline bool IsLowPoly(const FString& Source)
     return Source.Contains(TEXT("/ProcessPlant_20261111_LowPoly/"));
 }
 
+inline const TCHAR* SupplierId(int32 Index)
+{
+    static const TCHAR* const Ids[]={TEXT("supply-a"),TEXT("supply-b"),TEXT("supply-c"),TEXT("supply-d"),TEXT("supply-e"),TEXT("supply-f")};
+    return Index>=0&&Index<6?Ids[Index]:TEXT("");
+}
 inline int32 SupplierIndex(const FString& Id)
 {
     const TCHAR* Ids[] = {TEXT("supply-a"), TEXT("supply-b"), TEXT("supply-c"),

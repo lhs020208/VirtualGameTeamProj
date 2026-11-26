@@ -80,7 +80,7 @@ struct GranularGPU::Impl {
  std::array<std::array<std::vector<unsigned char>,24>,17> argument_cache;
  cl_event read_event=nullptr;std::vector<Grain> read_buffer;
  std::array<cl_kernel,17> kernels{};std::array<cl_mem,27> buffers{};GranularGasField gas_field;bool cohesive=false;bool gas_ready=false;unsigned gas_steps=0;
- std::array<PlantFeedBrake,3> feed_brakes;
+ std::array<PlantFeedBrake,6> feed_brakes;
  size_t plant_buffer_bytes=0,plant_extra_bytes=0;std::vector<std::pair<size_t,Grain>> plant_upload_patches;Grain plant_thread_header{},plant_cache_header{};size_t plant_cache_offset=0,plant_cache_particles=0;GranularConfig c;int nx=0,ny=0,nz=0,cells=0;float cell=0,angle=0;double time=0;std::string name;bool poisoned=false;GranularTiming timing;std::vector<std::pair<cl_event,unsigned>> events;
  Impl(GranularConfig cfg,const std::vector<Grain>* external=nullptr,const std::vector<Grain>* velocity=nullptr):api(cfg.backend==GranularBackend::OpenCL),c(cfg){try{
  if(c.backend!=GranularBackend::OpenCL){
@@ -207,7 +207,7 @@ auto begin=Clock::now();const double cpuBegin=thread_cpu_seconds();require(!pois
   angle+=omega*c.dt;if(c.coupled_air){arg(14,0,buffers[23]);int count=int(gas_field.velocity_density.size());arg(14,1,count);run(14,count);}
   if(cohesive){if(c.cohesion_gamma_j_m2>0){if(c.candidate_reuse)check_reuse();arg(0,0,buffers[4]);arg(0,1,cells);run(0,cells);arg(1,0,buffers[0]);arg(1,1,buffers[4]);arg(1,2,buffers[5]);arg(1,3,n);arg(1,4,cell);arg(1,5,nx);arg(1,6,ny);arg(1,7,nz);arg(1,8,buffers[6]);run(1,c.count);if(c.candidates)build_candidates();}arg(16,0,buffers[0]);arg(16,1,buffers[4]);arg(16,2,buffers[5]);arg(16,3,n);arg(16,4,c.radius);arg(16,5,cell);arg(16,6,nx);arg(16,7,ny);arg(16,8,nz);arg(16,9,buffers[25]);arg(16,10,buffers[6]);if(c.candidates){int cap=int(c.candidate_capacity);arg(16,11,buffers[10]);arg(16,12,buffers[11]);arg(16,13,cap);}run(16,c.count);}
 
-  arg(2,0,buffers[0]);arg(2,1,buffers[1]);arg(2,2,buffers[2]);arg(2,3,n);arg(2,4,c.dt);arg(2,5,c.radius);arg(2,6,buffers[6]);arg(2,7,buffers[7]);if(c.plant){arg(2,8,buffers[15]);for(unsigned i=0;i<3;++i){const auto& brake=feed_brakes[i];arg(2,9+2*i,brake.region);float rate=brake.enabled?1.f/brake.response_time_s:0.f;arg(2,10+2*i,rate);}}if(c.rotation){arg(2,8,buffers[16]);arg(2,9,buffers[18]);}if(c.coupled_air){unsigned a=c.rotation?10:8;for(unsigned j=0;j<3;++j)arg(2,a+j,buffers[19+j]);Grain origin{gas_field.origin[0],gas_field.origin[1],gas_field.origin[2],0};std::array<int,4> dims{gas_field.cells[0],gas_field.cells[1],gas_field.cells[2],0};arg(2,a+3,origin);arg(2,a+4,dims);arg(2,a+5,gas_field.h);arg(2,a+6,gas_field.viscosity);arg(2,a+7,buffers[22]);arg(2,a+8,buffers[23]);arg(2,a+9,buffers[24]);}if(cohesive){unsigned a=(c.rotation?10:8)+(c.coupled_air?10:0);arg(2,a,buffers[25]);arg(2,a+1,buffers[26]);}run(2,c.count);
+  arg(2,0,buffers[0]);arg(2,1,buffers[1]);arg(2,2,buffers[2]);arg(2,3,n);arg(2,4,c.dt);arg(2,5,c.radius);arg(2,6,buffers[6]);arg(2,7,buffers[7]);if(c.plant){arg(2,8,buffers[15]);for(unsigned i=0;i<feed_brakes.size();++i){const auto& brake=feed_brakes[i];arg(2,9+2*i,brake.region);float rate=brake.enabled?1.f/brake.response_time_s:0.f;arg(2,10+2*i,rate);}}if(c.rotation){arg(2,8,buffers[16]);arg(2,9,buffers[18]);}if(c.coupled_air){unsigned a=c.rotation?10:8;for(unsigned j=0;j<3;++j)arg(2,a+j,buffers[19+j]);Grain origin{gas_field.origin[0],gas_field.origin[1],gas_field.origin[2],0};std::array<int,4> dims{gas_field.cells[0],gas_field.cells[1],gas_field.cells[2],0};arg(2,a+3,origin);arg(2,a+4,dims);arg(2,a+5,gas_field.h);arg(2,a+6,gas_field.viscosity);arg(2,a+7,buffers[22]);arg(2,a+8,buffers[23]);arg(2,a+9,buffers[24]);}if(cohesive){unsigned a=(c.rotation?10:8)+(c.coupled_air?10:0);arg(2,a,buffers[25]);arg(2,a+1,buffers[26]);}run(2,c.count);
   if(c.coupled_air){arg(15,0,buffers[23]);arg(15,1,buffers[24]);arg(15,2,buffers[1]);arg(15,3,buffers[22]);arg(15,4,buffers[21]);arg(15,5,buffers[20]);Grain origin{gas_field.origin[0],gas_field.origin[1],gas_field.origin[2],0};std::array<int,4> dims{gas_field.cells[0],gas_field.cells[1],gas_field.cells[2],0};arg(15,6,origin);arg(15,7,dims);arg(15,8,gas_field.h);arg(15,9,buffers[6]);arg(15,10,n);run(15,gas_field.velocity_density.size());}
   for(unsigned it=0;it<c.iterations;it++){
    if(c.candidate_reuse)check_reuse();
@@ -380,7 +380,7 @@ require(p->c.plant&&!p->poisoned&&data.size()==p->c.plant_data.size(),"plant fie
 
 namespace powder {
 void GranularGPU::set_plant_feed_brake(const PlantFeedBrake& brake,unsigned supplier){
- if(supplier>=3)throw std::invalid_argument("unsupported feed brake supplier");
+ if(supplier>=p->feed_brakes.size())throw std::invalid_argument("unsupported feed brake supplier");
  require(p->c.plant&&!p->poisoned,"feed brake requires a valid plant solver");
  for(float v:{brake.region.x,brake.region.y,brake.region.z,brake.region.w,brake.response_time_s})require(std::isfinite(v),"invalid feed brake input");
  require(!brake.enabled||(brake.region.w>p->c.radius&&brake.response_time_s>=p->c.dt&&brake.response_time_s<=1.f),"invalid feed brake geometry/response");

@@ -85,7 +85,7 @@ bool FPressureStopTest::RunTest(const FString&)
     TestTrue(TEXT("stop invalidates pressure request"),F.M.History[Pending.RequestId].Status==EProcessCommandStatus::Unknown);
     F.M.Snapshot.RequestedGaugePressurePa=FVector::ZeroVector;F.Publish();
     TestTrue(TEXT("closed valves alone cannot pause"),F.Sent.Last()==EProcessCommand::StopAll);
-    TestTrue(TEXT("unconfirmed common pressure named"),F.M.UnconfirmedEquipment().Contains(TEXT("공급 공통")));
+    TestTrue(TEXT("unconfirmed supplier pressure named"),F.M.UnconfirmedEquipment().Contains(TEXT("공급 A 압력 설정 0")));
     TestTrue(TEXT("unconfirmed WH pressure named"),F.M.UnconfirmedEquipment().Contains(TEXT("칭량호퍼 압력")));
     F.M.Snapshot.AppliedGaugePressurePa=FVector::ZeroVector;F.M.Snapshot.AppliedPressureValid=false;F.Publish();
     TestTrue(TEXT("invalid zero settings cannot pause"),F.Sent.Last()==EProcessCommand::StopAll);

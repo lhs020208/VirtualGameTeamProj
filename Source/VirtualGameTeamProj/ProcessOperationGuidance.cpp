@@ -40,9 +40,10 @@ void UProcessControlUI::RefreshOperationGuidance()
  if(auto* B=Cast<UButton>(W->GetWidgetFromName(TEXT("CheckBatch"))))B->SetIsEnabled(Recovery&&!M.IsStopping());
  const auto R=C->GetAppliedRecipe();
  FString Applied=C->RecipeRevision>0?TEXT("현재 배치에 사용할 적용값 · ")+R.Name:TEXT("현재 개별 적용값 · 레시피 미적용");
- if(R.Mode==EProcessBatchMode::Full)Applied+=TEXT(" · A 전량");else Applied+=TEXT(" · A ")+ProcessDisplay::Mass(R.TargetAKg)+TEXT(" ± ")+ProcessDisplay::Mass(R.ToleranceAKg);
+ if(!R.Entries.IsEmpty())Applied+=TEXT("\n")+ProcessRecipe::Summary(R);
+ else if(R.Mode==EProcessBatchMode::Full)Applied+=TEXT(" · A 전량");else Applied+=TEXT(" · A ")+ProcessDisplay::Mass(R.TargetAKg)+TEXT(" ± ")+ProcessDisplay::Mass(R.ToleranceAKg);
  if(R.Mode==EProcessBatchMode::SequentialAB)Applied+=TEXT(" / B ")+ProcessDisplay::Mass(R.TargetBKg)+TEXT(" ± ")+ProcessDisplay::Mass(R.ToleranceBKg);
- if(R.AdditiveEnabled)Applied+=TEXT(" / C ")+ProcessDisplay::Mass(R.TargetCKg)+TEXT(" ± ")+ProcessDisplay::Mass(R.ToleranceCKg)+(R.Scheduled?TEXT(" · 혼합 시작 후 ")+ProcessDisplay::Number(R.DelaySeconds)+TEXT("초"):FString(TEXT(" · 초기 투입")));
+ if(R.Entries.IsEmpty()&&R.AdditiveEnabled)Applied+=TEXT(" / C ")+ProcessDisplay::Mass(R.TargetCKg)+TEXT(" ± ")+ProcessDisplay::Mass(R.ToleranceCKg)+(R.Scheduled?TEXT(" · 혼합 시작 후 ")+ProcessDisplay::Number(R.DelaySeconds)+TEXT("초"):FString(TEXT(" · 초기 투입")));
  Applied+=TEXT("\n")+ProcessDisplay::Number(R.TargetRPM)+TEXT(" RPM · 혼합 ")+ProcessDisplay::Number(R.MixingSeconds)+TEXT("초 · ")+(StartWhy.IsEmpty()?FString(TEXT("시작 가능")):TEXT("시작 조건 확인 필요"));
  if(Same&&(A.Active||A.RecoveryPending))Applied=TEXT("새 배치용 설정 · 현재/중단 배치는 시작 시 확정값을 보존합니다.\n")+Applied.Replace(TEXT("현재 배치에 사용할 적용값"),TEXT("새 배치에 사용할 적용값"));
  Applied+=TEXT("\n호퍼 목표 압력: 공급→칭량 +0.5 / -0.5 · 칭량→수취 +0.5 / ")+ProcessDisplay::Number(R.TransferPressurePa.Z/1000.)+TEXT(" kPa(g)");
@@ -70,18 +71,20 @@ void UProcessControlUI::RefreshOperationGuidance()
   if(auto* Panel=Cast<UBorder>(W->GetWidgetFromName(TEXT("OperatorStatePanel"))))Panel->SetBrushColor(M.StopStage==EProcessStopStage::Failed||!S.Recovery.ForeignIds.IsEmpty()?FLinearColor(1,.86f,.85f):FLinearColor(.86f,.93f,.98f));
   FString Totals=TEXT("보존된 배치 · 원료별 상태\n");
   const bool Proven=Checked&&S.Recovery.Valid&&S.ModelParticleMassKg>0;
-  for(int I=0;I<(A.AdditiveEnabled?3:A.BatchMode==EProcessBatchMode::SequentialAB?2:1);++I){
+  for(int I=0;I<6;++I){if(!A.UsesSupplier(I))continue;
    const auto* Material=S.Recovery.Materials.FindByPredicate([&](const FPlantRecoveryMaterial& V){return V.Supplier==I;});
    Totals+=FString::Printf(TEXT("%c  "),TCHAR('A'+I));
    if(!Proven||!Material||Material->Unknown){Totals+=TEXT("확인 중 · 배치 상태 확인 필요\n");continue;}
    const auto& V=*Material;const double Unit=S.ModelParticleMassKg;const bool Final=!V.SelectedIds.IsEmpty();
    const double Passed=(V.SupplyConnector+V.Weighing+V.Pipe+V.Receiver+V.MixerConnector+V.Mixer)*Unit;
-   const double Target=I==0?A.LockedTargetAKg:I==1?A.LockedTargetBKg:A.AdditiveTargetKg;
+   const double Target=A.DoseFor(I,false);
    const double Remaining=Final?FMath::Max(0,V.SelectedIds.Num()-V.Mixer)*Unit:A.BatchMode==EProcessBatchMode::Full?V.Source*Unit:FMath::Max(0.,Target-Passed);
    Totals+=TEXT("이미 공급 ")+ProcessDisplay::Mass(Passed)+TEXT("\n수취 ")+ProcessDisplay::Mass(V.Receiver*Unit)+TEXT(" · 혼합기 ")+ProcessDisplay::Mass(V.Mixer*Unit);
    Totals+=TEXT("\n이동 중 ")+ProcessDisplay::Mass((V.SupplyConnector+V.Pipe+V.MixerConnector)*Unit)+TEXT(" · 남은 ")+(Final?TEXT("혼합기 이송 "):TEXT("공급 "))+ProcessDisplay::Mass(Remaining)+TEXT("\n");
    if(Final&&(V.Weighing+V.Pipe+V.SupplyConnector)>0)Totals+=TEXT("수취까지 남은 양 ")+ProcessDisplay::Mass((V.Weighing+V.Pipe+V.SupplyConnector)*Unit)+TEXT("\n");
   }
+  if(A.MixerAppliedSimulationSeconds>=0&&A.MixingElapsedSeconds<A.MixingDurationSeconds)
+   Totals+=FString::Printf(TEXT("%g RPM으로 남은 혼합 %.2g초 재개\n"),A.TargetMixerRPM,FMath::Max(0.,A.MixingDurationSeconds-A.MixingElapsedSeconds));
   if(Checked)Totals+=TEXT("이어갈 단계: ")+FProcessAutoRun::StageText(A.RecoveryNext)+TEXT("\n");
   Totals+=TEXT("시뮬레이션 계산값 · 모델 기준\n계산 적용 RPM ")+(Fresh&&S.AppliedRPMValid?ProcessDisplay::Number(S.AppliedRPM):FString(TEXT("미확인")));
   Put(TEXT("OperatorSummary"),Totals);

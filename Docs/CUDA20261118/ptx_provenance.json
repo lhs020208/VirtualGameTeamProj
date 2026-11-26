@@ -1,8 +1,8 @@
 {
   "compiler": "NVIDIA OpenCL compiler CL-38566155; frozen PTX 9.3, sm_89",
   "execution": "CUDA Driver API, no OpenCL runtime dependency",
-  "source_sha256": "638048b05d29648e8e15416dabf1134d7dce2f86a8fe55768da6bd6fa0e417e3",
-  "artifact_sha256": "4fb6525031fcb6b358a829d5ea824d0c9a466087ba4db37d16abb21e960c1d35",
+  "source_sha256": "b0aeca5c8646b7b519699b75e2b4148167523580f6d53ba44b8894eecb6efe5e",
+  "artifact_sha256": "9a26cb3ae46f1eb25d0d8d6263626c789d57d756a74e2146d4caa04c3ce45b5a",
   "transformations": [
     "OpenCL global offset is zero",
     "graph angle supplied from a device array; unchanged host accumulation"

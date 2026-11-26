@@ -93,7 +93,7 @@ bool FProcessWidgetBindingTest::RunTest(const FString&)
     Select(TEXT("weigher"));
     TestEqual(TEXT("missing source rendered"),Text(TEXT("StatusValue")),FString(TEXT("시뮬레이션에 연결되지 않았습니다")));
     Select(TEXT("supply-d"));
-    TestEqual(TEXT("D unsupported rendered"),Text(TEXT("StatusValue")),FString(TEXT("시뮬레이션 미구현")));
+    TestEqual(TEXT("D missing source rendered"),Text(TEXT("StatusValue")),FString(TEXT("시뮬레이션에 연결되지 않았습니다")));
     Select(TEXT("supply-c"));
     TestEqual(TEXT("C missing source, not unsupported"),Text(TEXT("StatusValue")),FString(TEXT("시뮬레이션에 연결되지 않았습니다")));
     for(const TCHAR* Name:{TEXT("ValveOpen"),TEXT("ValveClose"),TEXT("TransferStart"),TEXT("TransferStop"),TEXT("MixerStart"),TEXT("MixerStop"),TEXT("SetRPM"),TEXT("ManualRequest")})

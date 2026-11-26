@@ -20,7 +20,7 @@ void checkbool(bool b,const char*s){if(!b)throw std::invalid_argument(s);}
 void drivercheck(CUresult e,const char*s){if(e!=CUDA_SUCCESS){const char*msg=nullptr;cuGetErrorString(e,&msg);throw std::runtime_error(std::string(s)+": "+(msg?msg:"CUDA driver error"));}}
 }
 struct PlantCuda::Impl {
- std::array<PlantFeedBrake,3> brakes{};
+ std::array<PlantFeedBrake,6> brakes{};
  GranularConfig c;cudaStream_t stream=nullptr;std::array<void*,16>b{};
  CUmodule module=nullptr;std::array<CUfunction,9>functions{};
  std::vector<Grain> upload;std::vector<std::pair<size_t,Grain>> patches;
@@ -68,7 +68,7 @@ struct PlantCuda::Impl {
   auto rate=[&](unsigned i){return brakes[i].enabled?1.f/brakes[i].response_time_s:0.f;};
   for(unsigned s=0;s<steps;++s){
    float a=host_angles[s];
-   launch(2,[&]{if(module)ptx(0,blocks,b[0],b[1],b[2],n,c.dt,c.radius,err,b[7],b[15],br(0),rate(0),br(1),rate(1),br(2),rate(2));else cuda_detail::predict<<<blocks,128,0,stream>>>(f(0),f(1),f(2),n,c.dt,c.radius,err,f(7),f(15),br(0),rate(0),br(1),rate(1),br(2),rate(2));});
+   launch(2,[&]{if(module)ptx(0,blocks,b[0],b[1],b[2],n,c.dt,c.radius,err,b[7],b[15],br(0),rate(0),br(1),rate(1),br(2),rate(2),br(3),rate(3),br(4),rate(4),br(5),rate(5));else cuda_detail::predict<<<blocks,128,0,stream>>>(f(0),f(1),f(2),n,c.dt,c.radius,err,f(7),f(15),br(0),rate(0),br(1),rate(1),br(2),rate(2),br(3),rate(3),br(4),rate(4),br(5),rate(5));});
    for(unsigned it=0;it<c.iterations;++it){
     // All bits set is the same -1 sentinel as cleargrid. Graph dependencies still
     // complete this full reset before grid insertion; no cells or contacts skipped.
@@ -121,7 +121,7 @@ std::array<std::uint64_t,4> PlantCuda::stats(){std::vector<Grain> cache(p->cache
 
 namespace powder {
 void PlantCuda::set_feed_brake(const PlantFeedBrake& brake,unsigned supplier){
- checkbool(supplier<3&&!p->poisoned,"invalid CUDA brake");
+ checkbool(supplier<6&&!p->poisoned,"invalid CUDA brake");
  const auto& prev=p->brakes[supplier];
  if(prev.enabled==brake.enabled&&prev.response_time_s==brake.response_time_s&&!std::memcmp(&prev.region,&brake.region,sizeof(Grain)))return;
  cucheck(cudaStreamSynchronize(p->stream),"CUDA brake sync");

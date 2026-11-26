@@ -19,6 +19,14 @@ public:
     void Tick();
     FProcessCommandRecord Request(const FString& Equipment, EProcessCommand Command, double Value, FGuid RequestId = FGuid());
     FProcessCommandRecord RequestForEpoch(FGuid RequestId, int64 Epoch, const FString& Equipment, EProcessCommand Command, double Value);
+    // Shared operator admission. Web lease is renewed only by an authenticated relay heartbeat.
+    FString WebLeaseId;
+    double WebLeaseUntil=0;
+    int64 WebLeaseEpoch=-1;
+    bool WebDispatch=false;
+    bool WebOwnsControl() const;
+    FString LocalOperatorReason() const;
+    FProcessCommandRecord RequestWeb(FGuid Id,int64 Epoch,const FString& Lease,const FString& Equipment,EProcessCommand Command,double Value);
     FProcessControlMachine State;
     FProcessAutoRun AutoRun;
     UPROPERTY(Config) FProcessAutoSettings AutoSettings;
@@ -38,7 +46,11 @@ public:
     bool SetAutomaticMixingDuration(double Seconds,FString& Reason);
     void ConfirmAutomaticUI(int64 Epoch,int64 TransferId,double Time) { AutoRun.ConfirmUI(Epoch,TransferId,Time); }
     void CancelAutomatic(const FString& Reason);
-    FProcessCommandRecord RequestTransferReceiverPressure(FGuid Id,int64 Epoch,int64 TransferId,double Pa);
+    FProcessCommandRecord RequestMixSpeed(FGuid Id,int64 Epoch,FGuid Batch,int64 MixRun,double RPM,const FString* WebLease=nullptr);
+    FProcessCommandRecord RequestStagePressure(FGuid Id,int64 Epoch,FGuid Batch,FGuid Stage,int32 Supplier,int64 TransferId,const FString& Equipment,double Pa,const FString* WebLease=nullptr);
+    FProcessCommandRecord RequestTransferReceiverPressure(FGuid Id,int64 Epoch,int64 TransferId,double Pa,FGuid ExpectedBatch=FGuid(),FString ExpectedLease=FString());
+    FString WebTransferPressureReason(int64 Epoch,const FString& Lease,FGuid Batch,int64 TransferId,double Now) const;
+    FProcessCommandRecord RequestWebTransferReceiverPressure(FGuid Id,int64 Epoch,const FString& Lease,FGuid Batch,int64 TransferId,double Pa);
 
     // Development trial limits in monotonic wall seconds; not certified operating limits.
     UPROPERTY(Config) double CommandTimeoutSeconds = 10;

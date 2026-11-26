@@ -39,26 +39,28 @@ FPlantSupplyPressureTelemetry::FPlantSupplyPressureTelemetry(const std::vector<p
  }catch(const std::exception& E){for(auto& P:Paths){P.Cell=-1;P.Error=UTF8_TO_TCHAR(E.what());}}
 }
 TArray<FPlantSupplyValvePressure> FPlantSupplyPressureTelemetry::Observe(const std::vector<powder::Grain>& D,const std::vector<powder::PlantRoute>& Routes,
- const FVector& Applied,uint32 Open,uint32 Air,bool Regulated,int32 PurgeSupplier,bool Purging) const
+ const FVector& Applied,uint32 Open,uint32 Air,bool Regulated,int32 PurgeSupplier,bool Purging,const TArray<double>& Sources) const
 {
  TArray<FPlantSupplyValvePressure> Out;Out.SetNum(6);
  for(int32 I=0;I<6;++I){auto& V=Out[I];const auto& P=Paths[I];V.Supplier=I;V.Route=P.Route;V.GateCell=P.Cell;V.GateDataIndex=P.Gate;
-  V.BeforeMetres=P.Before;V.AfterMetres=P.After;V.Mapped=P.Cell>=0;V.HopperDifferencePa=Applied.X-Applied.Y;
+  V.BeforeMetres=P.Before;V.AfterMetres=P.After;V.Mapped=P.Cell>=0;const double Supply=Sources.IsValidIndex(I)?Sources[I]:Applied.X;V.HopperDifferencePa=Supply-Applied.Y;
   if(!Regulated){V.Reason=TEXT("압력 경계조건 모델 미지원");continue;}
   if(!(Open&(1u<<I))){V.Reason=Purging&&PurgeSupplier==I?TEXT("하류 연결부 공기만 작동 · 공급 밸브 닫힘 · 차압 미산출"):TEXT("닫힘 · 차압 미산출");continue;}
   if(!(Air&(1u<<I))){V.Reason=TEXT("닫힘 처리 중 · 공급 공기 차단 · 차압 미산출");continue;}
   if(!V.Mapped){V.Reason=TEXT("경로 위치 미확인 · 차압 미산출 · ")+P.Error;continue;}
   try{
    const auto& R=Routes[P.Route];const double Q=D[R.cells.front()+2].x;double Sum=0,Before=0,After=0;
-   if(!FMath::IsFinite(Q)||Q==0){V.Reason=TEXT("밸브 열림 · 통과 유량 0 · 차압 미산출");continue;}
+   V.FlowValid=FMath::IsFinite(Q);if(V.FlowValid)V.FlowM3s=Q;
+   if(!V.FlowValid){V.Reason=TEXT("유량 계산값 미확인 · 차압 미산출");continue;}
+   if(Q==0){V.Reason=TEXT("밸브 열림 · 통과 유량 0 · 차압 미산출");continue;}
    for(int32 Ci=0;Ci<int32(R.cells.size());++Ci){const int32 At=R.cells[Ci];if(D[At+2].x!=Q)throw std::runtime_error("nonuniform uploaded flow");
     if(Ci==P.Cell)Before=Sum;Sum+=Loss(D,At,Q);if(Ci==P.Cell)After=Sum;
    }
-   V.FlowM3s=Q;V.RouteLossPa=Sum;V.BoundaryResidualPa=Applied.X-Sum-Applied.Y;
+   V.FlowM3s=Q;V.RouteLossPa=Sum;V.BoundaryResidualPa=Supply-Sum-Applied.Y;
    if(FMath::Abs(V.BoundaryResidualPa)>.01)throw std::runtime_error("field pressure boundary residual exceeds telemetry precision");
-   V.BeforeGaugePa=Applied.X-Before;V.AfterGaugePa=Applied.X-After;V.DifferencePa=V.BeforeGaugePa-V.AfterGaugePa;V.Valid=true;
+   V.BeforeGaugePa=Supply-Before;V.AfterGaugePa=Supply-After;V.DifferencePa=V.BeforeGaugePa-V.AfterGaugePa;V.Valid=true;
    V.Reason=TEXT("모델 추정값 · 기존 유로 셀 손실 · 밸브 전용 손실/센서값 아님");
-  }catch(const std::exception& E){V.Valid=false;V.BeforeGaugePa=V.AfterGaugePa=V.DifferencePa=0;V.Reason=TEXT("유로 계산 미확인 · 차압 미산출 · ")+FString(UTF8_TO_TCHAR(E.what()));}
+  }catch(const std::exception& E){V.Valid=false;V.FlowValid=false;V.BeforeGaugePa=V.AfterGaugePa=V.DifferencePa=0;V.Reason=TEXT("유로 계산 미확인 · 차압 미산출 · ")+FString(UTF8_TO_TCHAR(E.what()));}
  }
  return Out;
 }

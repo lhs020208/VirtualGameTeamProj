@@ -95,6 +95,7 @@ public:
  UFUNCTION(BlueprintCallable,Category="Plant") void ToggleReceiver();
  UFUNCTION(BlueprintCallable,Category="Plant") void ToggleMixer();
 private:
+    int64 RevokedPressureEpoch=-1,RevokedPressureRevision=0;
  friend class UProcessControlService;
  TWeakObjectPtr<UProcessControlService> ControlOwner;
  FPlantControlTargets ControlTargets;
@@ -109,16 +110,20 @@ private:
  void RevokePreparedOpening();
  bool SetReceiverValve(bool Open, int64 Epoch, int64& Revision, FString& Reason, int64 RequiredBatchRevision=0, double Deadline=0);
  bool SetMixerEnabled(bool Enabled, int64 Epoch, int64& Revision, FString& Reason, int64 RequiredBatchRevision=0, double Deadline=0);
+ bool SetLiveMixerRPM(double RPM,int64 Epoch,int64 MixRun,double EndSeconds,double Deadline,int64& Revision,FString& Reason);
  bool SetMixerRPM(double RPM, int64 Epoch, int64& Revision, FString& Reason);
-    bool SetGaugePressure(int32 Target, double Pa, int64 Epoch, int64& Revision, FString& Reason,int64 TransferId=0,double Deadline=0);
+    bool SetGaugePressure(int32 Target, double Pa, int64 Epoch, int64& Revision, FString& Reason,int64 TransferId=0,double Deadline=0,int32 Supplier=INDEX_NONE,int64 Capture=0,int32 ActiveSource=INDEX_NONE);
     void RevokeTransferPressure();
+    bool StagePressureRevokedBeforeUpload(int64 Epoch,int64 Revision) const {
+        return Revision>0&&RevokedPressureEpoch==Epoch&&RevokedPressureRevision==Revision;
+    }
  bool FinalizeADose(double TargetKg,double ToleranceKg,int64 CaptureRevision,int64 Epoch,int64& Revision,FString& Reason,double Deadline);
- bool CaptureInitialABatch(int64 Epoch,int64& Revision,FString& Reason);
+ bool CaptureInitialABatch(int64 Epoch,int64& Revision,FString& Reason,int32 Supplier=0);
  void CancelAutomaticControls();
  bool RecoverBatch(int64 Capture,int64 Epoch,FGuid Request,int64& Revision,FString& Reason,double Deadline);
  bool SetSupplyAPurge(bool PressureCommand, double Value, int64 Epoch, int64& Revision, FString& Reason,int32 Supplier=0);
- bool BeginAdditive(bool Scheduled,double Delay,int64 CaptureRevision,int64 Epoch,int64& Revision,FString& Reason,double Deadline);
- bool TransitionBatch(bool Combine,int64 CaptureRevision,int64 Epoch,int64& Revision,FString& Reason,double Deadline);
+ bool BeginAdditive(bool Scheduled,double Delay,int64 CaptureRevision,int64 Epoch,int64& Revision,FString& Reason,double Deadline,int32 Supplier=2);
+ bool TransitionBatch(bool Combine,int64 CaptureRevision,int64 Epoch,int64& Revision,FString& Reason,double Deadline,int32 Supplier=1);
  void MaintainSupplyAPurge(int64 Revision, bool KeepAlive);
  void RevokeSupplyAPurge();
  bool SetSimulationRunning(bool Run, int64 Epoch, int64& Revision, FString& Reason);

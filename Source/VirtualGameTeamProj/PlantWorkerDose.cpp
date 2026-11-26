@@ -16,7 +16,7 @@ void FPlantWorkerDose::Sync(const FPlantControlTargets& C,int32 Active,int64 Cap
   State.Epoch=C.DoseCutoffEpoch;State.Connection=C.ObservationConnection;State.Supplier=C.DoseCutoffSupplier;
   State.TargetKg=C.DoseCutoffTargetKg;State.ToleranceKg=C.DoseCutoffToleranceKg;State.RequestedWall=C.DoseCutoffRequestedWall;
   State.ReceivedWall=Now;State.ReceivedSeconds=Sim;PreviousTime=-1;PreviousPassed=0;
-  State.Valid=State.RequestId.IsValid()&&State.Epoch>=0&&State.Supplier>=0&&State.Supplier<3&&
+  State.Valid=State.RequestId.IsValid()&&State.Epoch>=0&&State.Supplier>=0&&State.Supplier<6&&
    PlantDose::Validate(State.TargetKg,State.ToleranceKg,ParticleKg,AvailableKg).IsEmpty();
   State.Armed=State.Valid;
   if(!State.Valid){Cancel(TEXT("작업자 계량 목표·재고·입자 분해능 또는 요청 번호 오류"));return;}
@@ -28,14 +28,14 @@ void FPlantWorkerDose::Sync(const FPlantControlTargets& C,int32 Active,int64 Cap
     C.DoseCutoffTargetKg!=State.TargetKg||C.DoseCutoffToleranceKg!=State.ToleranceKg||C.DoseCutoffSupplier!=State.Supplier)
  {Cancel(TEXT("계량 차단의 연결·배치·초기화 세대·목표가 변경됐습니다."));return;}
  if(!C.Running||C.Suppliers!=Bit||C.WeighingOpen||C.ReceiverOpen||C.SupplyAPurgeEnabled||C.SupplyAPurgeGaugePa!=0||
-    C.GaugePressurePa!=FVector(500,-500,0)||!FMath::IsFinite(C.DoseCutoffDeadline)||Now>C.DoseCutoffDeadline)
+    !FMath::IsFinite(C.DoseCutoffDeadline)||Now>C.DoseCutoffDeadline)
  {Cancel(TEXT("계량 차단 취소/만료 또는 공급 조건 변경 · 출구 개방 금지"));}
 }
 uint32 FPlantWorkerDose::Requests(const FPlantControlTargets& C) const
 {
  if(C.DoseCutoffRevision<=0)return C.Suppliers;
  const int I=C.DoseCutoffSupplier;
- if(I<0||I>=3)return 0;
+ if(I<0||I>=6)return 0;
  if(State.ArmRevision!=C.DoseCutoffRevision||!State.Valid||State.Cancelled||State.Triggered||!State.Armed)return C.Suppliers&~(1u<<I);
  return C.Suppliers;
 }

@@ -31,7 +31,7 @@ const FLinearColor Ink(.025f,.055f,.09f), Muted(.16f,.22f,.28f), Accent(.02f,.25
 bool IsImplementedId(const FString& Id, const FPlantSimulationSnapshot* State = nullptr)
 {
     const int32 Index = ProcessPlantBinding::SupplierIndex(Id);
-    const int32 Count = State ? State->RequestedSuppliers.Num() : 3;
+    const int32 Count = State ? State->RequestedSuppliers.Num() : 6;
     // A failed/uninitialized data load has no gate array yet; show that state, not "unimplemented".
     if(State && Count==0 && State->Validity!=EPlantValueValidity::Valid && Index!=INDEX_NONE) return true;
     return (Index != INDEX_NONE && Index < Count && ProcessPlantBinding::SupportedCount(Count)) ||
@@ -192,6 +192,9 @@ FProcessEquipmentSnapshot UProcessUIStateAdapter::BuildEquipment(const FString& 
     if(Id==TEXT("supply-a")){R.SupplyAPurge=S->SupplyAPurge;if(Validity!=EPlantValueValidity::Valid)R.SupplyAPurge.Valid=false;}
     if(Id==TEXT("supply-b")){R.SupplyBPurge=S->SupplyBPurge;if(Validity!=EPlantValueValidity::Valid)R.SupplyBPurge.Valid=false;}
     if(Id==TEXT("supply-c")){R.SupplyCPurge=S->SupplyCPurge;if(Validity!=EPlantValueValidity::Valid)R.SupplyCPurge.Valid=false;}
+    if(Id==TEXT("supply-d")){R.SupplyDPurge=S->SupplyDPurge;if(Validity!=EPlantValueValidity::Valid)R.SupplyDPurge.Valid=false;}
+    if(Id==TEXT("supply-e")){R.SupplyEPurge=S->SupplyEPurge;if(Validity!=EPlantValueValidity::Valid)R.SupplyEPurge.Valid=false;}
+    if(Id==TEXT("supply-f")){R.SupplyFPurge=S->SupplyFPurge;if(Validity!=EPlantValueValidity::Valid)R.SupplyFPurge.Valid=false;}
     if(Id==TEXT("weigher")||Id==TEXT("receiver"))
     {
         R.CurrentMass=Id==TEXT("weigher")?S->WeighingMass:S->ReceiverMass;R.Transfer=S->Transfer;
@@ -203,9 +206,9 @@ FProcessEquipmentSnapshot UProcessUIStateAdapter::BuildEquipment(const FString& 
     const int32 PressureTarget=PlantControl::PressureTarget(Id);
     if(PressureTarget!=INDEX_NONE&&S->PressureControlEnabled)
     {
-        R.PressureScope=PressureTarget==0?TEXT("공급 A~F 공통"):PressureTarget==1?TEXT("칭량호퍼"):TEXT("수취호퍼 흡입");
-        R.RequestedPressurePa=Value(S->RequestedGaugePressurePa[PressureTarget],TEXT("Pa(g)"),Validity);
-        R.AppliedPressurePa=Value(S->AppliedGaugePressurePa[PressureTarget],TEXT("Pa(g) boundary setting"),
+        R.PressureScope=PressureTarget==0?TEXT("선택 공급호퍼"):PressureTarget==1?TEXT("칭량호퍼"):TEXT("수취호퍼 흡입");
+        R.RequestedPressurePa=Value(PressureTarget==0?S->SupplierPressure(ProcessPlantBinding::SupplierIndex(Id),false):S->RequestedGaugePressurePa[PressureTarget],TEXT("Pa(g)"),Validity);
+        R.AppliedPressurePa=Value(PressureTarget==0?S->SupplierPressure(ProcessPlantBinding::SupplierIndex(Id),true):S->AppliedGaugePressurePa[PressureTarget],TEXT("Pa(g) boundary setting"),
             Validity!=EPlantValueValidity::Valid?Validity:S->AppliedPressureValid?Validity:EPlantValueValidity::Unknown);
     }
     R.SimulationTime = Value(S->PhysicalSeconds, TEXT("s"), Validity);
@@ -222,7 +225,13 @@ FProcessEquipmentSnapshot UProcessUIStateAdapter::BuildEquipment(const FString& 
         R.ValveAppliedOpen = Value((S->AppliedSupplierMask & (1 << Index)) != 0, TEXT("bool"), Validity);
         if (S->InitialSupplierCounts.IsValidIndex(Index))
             R.InitialParticleCount = Value(S->InitialSupplierCounts[Index], TEXT("particles (initial)"), Validity);
-        // No supplier region count exists. Initial charge is not current inventory.
+        if(S->Recovery.Valid&&S->ModelParticleMassKg>0&&S->Recovery.Materials.IsValidIndex(Index)){
+            const auto& M=S->Recovery.Materials[Index];
+            if(M.Supplier==Index&&!M.Unknown){
+                R.RegionParticleCount=Value(M.Source,TEXT("particles"),Validity);
+                R.CurrentMass.Kg=M.Source*S->ModelParticleMassKg;R.CurrentMass.Validity=Validity;
+            }
+        }
     }
     else if (Id == TEXT("weigher"))
     {
@@ -300,6 +309,8 @@ void UProcessUIStateAdapter::Format(const FProcessEquipmentSnapshot& S, FText& S
     Status = FText::FromString(FString::Printf(TEXT("%s\n시뮬레이션 시간 %.4f초"), ExecutionText(S.Execution), S.SimulationTime.Value));
     if(S.EquipmentId==TEXT("weigher")||S.EquipmentId==TEXT("receiver"))
         Quantity=FText::FromString(FormatMass(S.CurrentMass)+TEXT("\n모델 기준 · 배치 환산 없음"));
+    else if(ProcessPlantBinding::SupplierIndex(S.EquipmentId)>=0)
+        Quantity=FText::FromString(FormatMass(S.CurrentMass)+(S.InitialParticleCount.Validity==EPlantValueValidity::Valid&&S.InitialParticleCount.Value==0?TEXT("\n장입 원료 없음"):TEXT("\n현재 상류 모델 질량")));
     else if (S.RegionParticleCount.Validity == EPlantValueValidity::Valid)
         Quantity = FText::FromString(FText::AsNumber(int64(S.RegionParticleCount.Value)).ToString() + TEXT("개\n무게(kg)는 제공하지 않습니다"));
     else if (S.InitialParticleCount.Validity == EPlantValueValidity::Valid)
@@ -412,7 +423,7 @@ void UProcessUIStateAdapter::Push(const FString& Id)
     if (Id == ReadString(W, TEXT("SelectedEquipmentId")))
     {
         SetLabel(W, TEXT("ValveLabel"), Id == TEXT("mixer") ? TEXT("혼합기 회전 설정") : TEXT("밸브 상태"));
-        SetLabel(W, TEXT("QuantityLabel"), Id.StartsWith(TEXT("supply-")) ? TEXT("처음 넣은 입자 수") : (Id==TEXT("weigher")||Id==TEXT("receiver"))?TEXT("현재 담긴 양"):TEXT("현재 영역의 입자 수"));
+        SetLabel(W, TEXT("QuantityLabel"), Id.StartsWith(TEXT("supply-")) ? TEXT("현재 상류 모델 질량") : (Id==TEXT("weigher")||Id==TEXT("receiver"))?TEXT("현재 담긴 양"):TEXT("현재 영역의 입자 수"));
         const TCHAR* Description = Id.StartsWith(TEXT("supply-")) ? TEXT("칭량호퍼로 원료를 보내는 공급 장비입니다.") :
             Id == TEXT("weigher") ? TEXT("호퍼 내부 입자의 모델 질량입니다. 출구를 열면 수취호퍼까지 이번 이송분을 관찰합니다.") :
             Id == TEXT("receiver") ? TEXT("혼합기로 보내기 전 원료를 받아두는 호퍼입니다.") : TEXT("원료를 섞는 장비입니다. 아래 회전수는 계산에 사용된 값이며 실측값은 아닙니다.");
