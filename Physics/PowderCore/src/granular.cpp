@@ -5,6 +5,7 @@
 #include "powder/plant_cuda.hpp"
 #endif
 #include "powder/plant.hpp"
+#include "powder/plant_empty.hpp"
 #include "powder/plant_candidates.hpp"
 #include <CL/cl.h>
 #define WIN32_LEAN_AND_MEAN
@@ -78,6 +79,7 @@ struct GranularGPU::Impl {
 #ifdef POWDER_WITH_CUDA
  std::unique_ptr<PlantCuda> cuda;
 #endif
+ std::unique_ptr<EmptyPlantDrive> empty;bool empty_read_pending=false;
  Api api;cl_device_id device=nullptr;cl_context context=nullptr;cl_command_queue queue=nullptr;cl_program program=nullptr;
  std::array<std::array<std::vector<unsigned char>,24>,21> argument_cache;
  cl_event read_event=nullptr;std::vector<Grain> read_buffer;
@@ -85,7 +87,8 @@ struct GranularGPU::Impl {
  std::array<PlantFeedBrake,6> feed_brakes;
  PlantMixerDriveState mixer_state;std::vector<Grain> mixer_initial;
  size_t valve_offset=0,valve_scratch=0;Grain valve_header{};size_t plant_buffer_bytes=0,plant_extra_bytes=0;std::vector<std::pair<size_t,Grain>> plant_upload_patches;Grain plant_thread_header{},plant_cache_header{};size_t plant_cache_offset=0,plant_cache_particles=0;GranularConfig c;int nx=0,ny=0,nz=0,cells=0;float cell=0,angle=0;double time=0;std::string name;bool poisoned=false;GranularTiming timing;std::vector<std::pair<cl_event,unsigned>> events;
- Impl(GranularConfig cfg,const std::vector<Grain>* external=nullptr,const std::vector<Grain>* velocity=nullptr):api(cfg.backend==GranularBackend::OpenCL),c(cfg){try{
+ Impl(GranularConfig cfg,const std::vector<Grain>* external=nullptr,const std::vector<Grain>* velocity=nullptr):api(cfg.backend==GranularBackend::OpenCL&&!(cfg.plant&&cfg.count==0)),c(cfg){try{
+ if(c.plant&&c.count==0){require(external&&velocity&&external->empty()&&velocity->empty(),"empty equipment requires explicit empty state");validate_plant_data(c.plant_data);empty=std::make_unique<EmptyPlantDrive>(c);name="CPU equipment only (no particles / no GPU allocation)";mixer_state=empty->mixer;return;}
  require(!c.plant_powered_mixer||(c.plant&&c.backend==GranularBackend::OpenCL),"powered mixer requires OpenCL plant");
  require(!c.plant_powered_valves||(c.plant&&c.backend==GranularBackend::OpenCL),"powered valves require OpenCL plant");
  if(c.backend!=GranularBackend::OpenCL){
@@ -207,6 +210,7 @@ struct GranularGPU::Impl {
  void run(unsigned k,std::size_t n){std::size_t local=(k==18||k==20)?128:c.diagnostic_local_size,global=(n+local-1)/local*local;cl_event event=nullptr;check(api.clEnqueueNDRangeKernel(queue,kernels[k],1,nullptr,&global,&local,0,nullptr,c.profile?&event:nullptr),"dispatch");if(event)events.push_back({event,k});}
  void clear_plant_cache(){if(plant_cache_offset){std::vector<Grain> zero(plant_cache_particles*139);check(api.clEnqueueWriteBuffer(queue,buffers[15],CL_TRUE,plant_cache_offset*sizeof(Grain),zero.size()*sizeof(Grain),zero.data(),0,nullptr,nullptr),"reset plant wall cache");}}
  void set(const std::vector<Grain>& state,const std::vector<Grain>& vel){
+ if(empty){require(state.empty()&&vel.empty(),"empty equipment cannot accept particles without reinitialization");empty->reset();mixer_state=empty->mixer;time=angle=0;poisoned=false;return;}
 #ifdef POWDER_WITH_CUDA
  if(cuda){cuda->set(state,vel);return;}
 #endif
@@ -227,6 +231,7 @@ require(state.size()==c.count&&vel.size()==c.count,"state count mismatch");for(u
  arg(11,0,buffers[0]);arg(11,1,n);arg(11,2,c.radius);arg(11,3,buffers[10]);arg(11,4,buffers[11]);arg(11,5,capacity);arg(11,6,buffers[4]);arg(11,7,buffers[5]);arg(11,8,cell);arg(11,9,nx);arg(11,10,ny);arg(11,11,nz);arg(11,12,buffers[6]);run(11,c.count);
  }
  void advance(unsigned steps,float rpm,bool gate){
+ if(empty){require(!poisoned&&steps>0&&steps<=1000&&std::isfinite(rpm)&&std::abs(rpm)<=60,"invalid empty equipment advance");for(unsigned i=0;i<steps;++i){empty->advance(c.dt,rpm);time+=c.dt;}mixer_state=empty->mixer;angle=float(mixer_state.angle_rad);return;}
 #ifdef POWDER_WITH_CUDA
  if(cuda){cuda->advance(steps,rpm,gate);return;}
 #endif
@@ -279,16 +284,19 @@ void GranularGPU::set_gas_field(const GranularGasField& f){
 GranularGasExchange GranularGPU::gas_exchange(){require(p->c.coupled_air&&p->gas_ready&&!p->poisoned,"valid coupled exchange unavailable");GranularGasExchange result;result.steps=p->gas_steps;std::size_t n=p->gas_field.velocity_density.size();std::vector<Grain> raw(n*2);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[21],CL_TRUE,0,raw.size()*sizeof(Grain),raw.data(),0,nullptr,nullptr),"gas exchange readback");result.impulse_volume.assign(raw.begin(),raw.begin()+n);result.drag_rate_kg_s.resize(n);for(std::size_t i=0;i<n;++i){result.drag_rate_kg_s[i]=result.steps?raw[i+n].x/result.steps:0;if(result.steps)result.impulse_volume[i].w/=result.steps;}return result;}
 
 std::vector<Grain> GranularGPU::snapshot(){
+ if(p->empty)return {};
 #ifdef POWDER_WITH_CUDA
  if(p->cuda)return p->cuda->snapshot();
 #endif
 auto begin=Clock::now();std::vector<Grain> result(p->c.count);cl_event event=nullptr;check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[0],CL_TRUE,0,result.size()*sizeof(Grain),result.data(),0,nullptr,p->c.profile?&event:nullptr),"snapshot");if(event){p->events.push_back({event,7});p->collect();}p->timing.snapshot_wall+=elapsed(begin);return result;}
 std::vector<Grain> GranularGPU::velocity_snapshot(){
+ if(p->empty)return {};
 #ifdef POWDER_WITH_CUDA
  if(p->cuda)return p->cuda->snapshot(true);
 #endif
 require(!p->poisoned,"invalid solver");std::vector<Grain> v(p->c.count);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[2],CL_TRUE,0,v.size()*sizeof(Grain),v.data(),0,nullptr,nullptr),"velocity snapshot");return v;}
 std::vector<Grain> GranularGPU::plant_air_snapshot(){
+ if(p->empty)return {};
 #ifdef POWDER_WITH_CUDA
  if(p->cuda)return p->cuda->air_snapshot();
 #endif
@@ -309,6 +317,7 @@ std::vector<Grain> GranularGPU::plant_air_snapshot(){
 }
  std::vector<Grain> GranularGPU::angular_velocity_snapshot(){require(p->c.rotation&&!p->poisoned,"angular state unavailable");std::vector<Grain> v(p->c.count);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[18],CL_TRUE,0,v.size()*sizeof(Grain),v.data(),0,nullptr,nullptr),"angular snapshot");return v;}
  void GranularGPU::request_snapshot(){
+ if(p->empty){require(!p->empty_read_pending,"snapshot pending");p->empty_read_pending=true;return;}
 #ifdef POWDER_WITH_CUDA
  require(!p->cuda,"CUDA asynchronous snapshot API not implemented; use snapshot");
 #endif
@@ -318,6 +327,7 @@ std::vector<Grain> GranularGPU::plant_air_snapshot(){
  check(p->api.clFlush(p->queue),"snapshot flush");p->timing.snapshot_wall+=elapsed(begin);
 }
 bool GranularGPU::receive_snapshot(std::vector<Grain>& destination,bool wait){
+ if(p->empty){if(!p->empty_read_pending)return false;destination.clear();p->empty_read_pending=false;return true;}
  if(!p->read_event)return false;auto begin=Clock::now();
  if(wait)check(p->api.clWaitForEvents(1,&p->read_event),"snapshot wait");
  cl_int status=0;check(p->api.clGetEventInfo(p->read_event,CL_EVENT_COMMAND_EXECUTION_STATUS,sizeof(status),&status,nullptr),"snapshot status");require(status>=0,"async snapshot failed");
@@ -345,6 +355,7 @@ std::vector<GranularBoundarySample> GranularGPU::inspect_boundaries(const std::v
  if(p->cuda)return p->cuda->inspect(points,angle,gate,shell);
 #endif
 
+ require(!p->empty,"particle boundary diagnostics unavailable in empty equipment mode");
  require(!p->poisoned&&!points.empty()&&points.size()<=65536&&std::isfinite(angle),"invalid boundary diagnostic request");
  for(auto a:points)for(float v:{a.x,a.y,a.z,a.w})require(std::isfinite(v),"nonfinite boundary diagnostic point");
  std::array<cl_mem,4> temp{};try{
@@ -406,6 +417,7 @@ void write_granular_timing(std::ostream& out,const GranularTiming& t){
 }
 
 namespace powder {void GranularGPU::update_plant_field(const std::vector<Grain>& data){
+ if(p->empty){require(!p->poisoned&&data.size()==p->c.plant_data.size(),"invalid empty plant controls");p->empty->controls(data);return;}
 #ifdef POWDER_WITH_CUDA
  if(p->cuda){p->cuda->update(data);return;}
 #endif
@@ -428,18 +440,21 @@ void GranularGPU::set_plant_feed_brake(const PlantFeedBrake& brake,unsigned supp
 
 namespace powder {
 std::vector<PlantActuatorState> GranularGPU::plant_valve_states(){
+ if(p->empty)return p->empty->valves;
  if(!p->c.plant_powered_valves)return {};size_t n=size_t(p->c.plant_data[5].y);std::vector<Grain>d(n*6);
  check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[15],CL_TRUE,p->valve_offset*sizeof(Grain),d.size()*sizeof(Grain),d.data(),0,nullptr,nullptr),"valve telemetry");
  std::vector<PlantActuatorState> result;for(size_t j=0;j<n;++j){auto a=d[j*6+1],b=d[j*6+2],f=d[j*6+3],c=d[j*6+4],l=d[j*6+5];PlantActuatorState v;
  v.angle_rad=a.x;v.omega_rad_s=a.y;v.target_rad=a.z;v.power_fraction=a.w;v.motor_nm=b.x;v.contact_nm=b.y;v.electrical_w=b.z;v.energy_j=b.w;v.stalled_seconds=f.x;v.tripped=f.y!=0;v.normal_n=l.z;v.penetration_m=l.w;v.voltage=c.x;result.push_back(v);}return result;
 }
 void GranularGPU::set_plant_valve_power(unsigned valve,float fraction){require(p->c.plant_powered_valves&&valve<unsigned(p->c.plant_data[5].y)&&std::isfinite(fraction)&&fraction>=0&&fraction<=1,"invalid valve power");
+ if(p->empty){p->empty->valves.at(valve).power_fraction=fraction;return;}
  check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,(p->valve_offset+6*valve+1)*sizeof(Grain)+3*sizeof(float),sizeof(float),&fraction,0,nullptr,nullptr),"valve supply");
 }
 }
 
 namespace powder {
 void GranularGPU::update_plant_controls(const std::vector<Grain>& data){
+ if(p->empty){require(!p->poisoned&&data.size()==p->c.plant_data.size(),"invalid empty plant controls");p->empty->controls(data);return;}
  require(p->c.plant_powered_valves&&!p->poisoned&&data.size()==p->c.plant_data.size(),"powered valve controls shape mismatch");
  auto& old=p->c.plant_data;const size_t first=size_t(old[0].z),count=size_t(old[0].w),gate=size_t(old[5].x),gates=size_t(old[5].y);
  require(data[4].x>=0&&data[4].x<=2&&data[4].y==1&&std::isfinite(data[4].z)&&std::isfinite(data[4].w),"invalid pressure control header");
@@ -455,6 +470,6 @@ void GranularGPU::update_plant_controls(const std::vector<Grain>& data){
 
 namespace powder {
 PlantMixerDriveState GranularGPU::plant_mixer_state()const{return p->mixer_state;}
-void GranularGPU::set_plant_mixer_power(float fraction){require(p->c.plant_powered_mixer&&!p->poisoned&&std::isfinite(fraction)&&fraction>=0&&fraction<=1,"invalid mixer supply");check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[27],CL_TRUE,sizeof(Grain)+3*sizeof(float),sizeof(float),&fraction,0,nullptr,nullptr),"mixer supply");}
-std::vector<Grain> GranularGPU::plant_mixer_contact_snapshot(){require(p->c.plant_powered_mixer&&!p->poisoned,"mixer contacts unavailable");std::vector<Grain> v(2*size_t(p->c.count));check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[27],CL_TRUE,7*sizeof(Grain),v.size()*sizeof(Grain),v.data(),0,nullptr,nullptr),"mixer contacts read");return v;}
+void GranularGPU::set_plant_mixer_power(float fraction){require(p->c.plant_powered_mixer&&!p->poisoned&&std::isfinite(fraction)&&fraction>=0&&fraction<=1,"invalid mixer supply");if(p->empty){p->empty->mixer.power_fraction=fraction;return;}check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[27],CL_TRUE,sizeof(Grain)+3*sizeof(float),sizeof(float),&fraction,0,nullptr,nullptr),"mixer supply");}
+std::vector<Grain> GranularGPU::plant_mixer_contact_snapshot(){require(p->c.plant_powered_mixer&&!p->poisoned,"mixer contacts unavailable");if(p->empty)return {};std::vector<Grain> v(2*size_t(p->c.count));check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[27],CL_TRUE,7*sizeof(Grain),v.size()*sizeof(Grain),v.data(),0,nullptr,nullptr),"mixer contacts read");return v;}
 }

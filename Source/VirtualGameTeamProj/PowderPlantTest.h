@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "PlantSimulationSnapshot.h"
@@ -100,6 +100,11 @@ public:
  UPROPERTY(EditAnywhere,Category="Plant|Test",meta=(ClampMin="0")) double ReceiverTransferSeconds=2.;
  UPROPERTY(EditAnywhere,Category="Plant|Transfer Observation",meta=(ToolTip="Provisional model-mass completion criteria. LowPoly requested-opening readiness reuses the stable simulation interval. Applied on initialization; no target-mass cutoff.")) FPlantTransferSettings TransferSettings;
  UPROPERTY(EditAnywhere,Category="Plant|Transfer Preparation",meta=(ClampMin="1",ToolTip="LowPoly trial wall-clock limit for a user-requested opening. Stability reuses TransferSettings.StableSimulationSeconds. Timeout cancels, never opens.")) double TransferPreparationTimeoutSeconds=1800;
+ // Independent initial charge. Changing it resets the run, never rewrites a recipe/CSV.
+ UPROPERTY(EditAnywhere,Category="Plant|Particles") bool OverrideParticleCounts=false;
+ UPROPERTY(EditAnywhere,Category="Plant|Particles") TArray<int32> InitialParticleCountsOverride;
+ UFUNCTION(BlueprintCallable,Category="Plant|Particles") bool SetInitialParticleCounts(const TArray<int32>& Counts,FString& Reason);
+ UFUNCTION(BlueprintPure,Category="Plant|Particles") TArray<int32> GetInitialParticleCounts() const {return InitialSupplierCounts;}
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") int32 ParticleCount=0;
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") int32 InWeighingHopper=0;
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") int32 InReceiver=0;
@@ -175,7 +180,8 @@ private:
  double SmokeSeconds=0,SmokeWallLimit=120,SmokeStart=0;bool SmokeShot=false;
 
  int32 SmokeWarmFrames=0;
- float PreviousMaxFPS=0;
+ float PreviousMaxFPS=0,AppliedMaxFPS=0;
+ void ApplySimulationFrameRate();
  double DemoTestSeconds=0,DemoTestStart=0,DemoLastFrame=0,DemoNextSample=0;
  int32 DemoWarmFrames=0,DemoAutoStage=-1,DemoShotStage=0,DemoCameraStage=0;
  TArray<double> DemoFrames;

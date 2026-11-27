@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "CoreMinimal.h"
 #include "ProcessControlTypes.h"
 #include "ProcessRecipe.h"
@@ -23,6 +23,9 @@ public:
     bool Attach(UUserWidget* Widget, UProcessControlService* Service);
     void Detach();
     void Refresh();
+    UFUNCTION() void ToggleParticleSettings();
+    UFUNCTION() void ApplyParticleSettings();
+    UFUNCTION() void ClearParticleDraft();
     UFUNCTION() void ToggleOperatorDetails();
     UFUNCTION() void ToggleIndividualSettings();
     UFUNCTION() void ToggleRecipes();
@@ -63,6 +66,12 @@ public:
     UFUNCTION() void Pause();
 private:
     bool OperatorLayoutBuilt=false,OperatorDetailsOpen=false,IndividualSettingsOpen=false;
+    bool ParticleSettingsOpen=false;
+    FString ParticleSettingsMessage;
+    UPROPERTY(Transient) TObjectPtr<UBorder> ParticleSettingsPanel;
+    UPROPERTY(Transient) TArray<TObjectPtr<UProcessNumericField>> ParticleCountFields;
+    void BuildParticleControls(UCanvasPanel* Root);
+    void RefreshParticleControls();
     UPROPERTY(Transient) TObjectPtr<UBorder> OperatorDetails;
     UPROPERTY(Transient) TArray<TObjectPtr<UProcessNumericField>> NumericFields;
     TMap<FString,FString> LastCompactText;

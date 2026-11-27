@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "ProcessControlTypes.h"
@@ -15,6 +15,8 @@ class VIRTUALGAMETEAMPROJ_API UProcessControlService : public UObject
     GENERATED_BODY()
 public:
     bool Attach(APowderPlantTest* Actor);
+    bool ApplyParticleCounts(const TArray<int32>& Counts,FString& Reason);
+    static bool LoadParticleCounts(const FString& DataDirectory,TArray<int32>& Counts);
     void Detach();
     void Tick();
     FProcessCommandRecord Request(const FString& Equipment, EProcessCommand Command, double Value, FGuid RequestId = FGuid());

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "PlantTransferTypes.h"
@@ -357,6 +357,8 @@ USTRUCT(BlueprintType)
 struct FPlantSimulationSnapshot
 {
     GENERATED_BODY()
+    UPROPERTY(BlueprintReadOnly) bool EquipmentOnly=false;
+    UPROPERTY(BlueprintReadOnly) int32 TotalParticleCount=0;
     UPROPERTY(BlueprintReadOnly) TArray<FPlantValveActuatorSnapshot> ValveActuators;
     UPROPERTY(BlueprintReadOnly) FPlantMixerDriveSnapshot MixerDrive;
     // Command acknowledgement is separate from tachometer speed during ramp/load changes.

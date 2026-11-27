@@ -1,0 +1,23 @@
+{
+  "positive_count": 6,
+  "empty_device": "CPU equipment only (no particles / no GPU allocation)",
+  "real_time_rate": 0.9993846628528374,
+  "measured_wall_seconds": 13.0,
+  "measured_sim_seconds": 12.992000617086887,
+  "rpm": 14.993712089917171,
+  "valve_a_degrees": 90.0,
+  "empty_weigher_open": true,
+  "return_to_gpu": "NVIDIA GeForce RTX 4060 Ti",
+  "restored_counts": [
+    100,
+    100,
+    0,
+    0,
+    0,
+    0
+  ],
+  "recipe_unchanged": true,
+  "pause_holds_time": true,
+  "zero_mode_restored_on_new_play": true,
+  "wall_seconds": 45.85899999999674
+}

@@ -27,6 +27,6 @@ struct PlantActuatorState {
  float normal_n=0,penetration_m=0,voltage=24;
  bool closed()const{return angle_rad<=.0001f&&std::abs(omega_rad_s)<.001f;}
  bool open()const{return angle_rad>=1.57079632679f-.0001f&&std::abs(omega_rad_s)<.001f;}
- double aperture()const{return closed()?0.:std::max(0.,1.-std::cos(double(angle_rad)));}
+ double aperture()const{return closed()?0.:std::clamp(1.-std::cos(double(angle_rad)),0.,1.);}
 };
 }

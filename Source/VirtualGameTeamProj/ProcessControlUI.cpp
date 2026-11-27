@@ -1,4 +1,4 @@
-#include "ProcessControlUI.h"
+﻿#include "ProcessControlUI.h"
 #include "ProcessPlantBinding.h"
 #include "ProcessNumericField.h"
 #include "ProcessControlService.h"
@@ -99,7 +99,8 @@ void UProcessControlUI::Detach()
     if(auto* W=Widget.Get())for(const TCHAR* Name:{TEXT("CheckBatch"),TEXT("ResumeBatch"),TEXT("AbandonBatch"),TEXT("AutoStartA"),TEXT("ApplyAutomaticMixTime"),TEXT("AutoModeFull"),TEXT("AutoModeTarget"),TEXT("AutoModeSequential"),TEXT("ApplyBTargetMass"),TEXT("ApplyTargetMass"),TEXT("ValveOpen"),TEXT("ValveClose"),TEXT("MixerStart"),TEXT("MixerStop"),TEXT("SetRPM"),TEXT("ApplyPressure"),TEXT("PurgeApplyPressure"),TEXT("PurgeStart"),TEXT("PurgeStop"),TEXT("ManualRequest"),TEXT("GlobalStop"),TEXT("ManualResume"),TEXT("ManualPause")})
         if(auto* B=Cast<UButton>(W->GetWidgetFromName(Name)))B->OnClicked.RemoveAll(this);
     for(auto Field:NumericFields)if(Field)Field->Detach();NumericFields.Empty();
-    OperatorLayoutBuilt=false;OperatorDetailsOpen=false;IndividualSettingsOpen=false;OperatorDetails=nullptr;
+    for(auto Field:ParticleCountFields)if(Field)Field->Detach();
+    ParticleSettingsPanel=nullptr;ParticleCountFields.Empty();ParticleSettingsOpen=false;OperatorLayoutBuilt=false;OperatorDetailsOpen=false;IndividualSettingsOpen=false;OperatorDetails=nullptr;
     ResponsiveRecipeRows.Empty();
     OriginalRecipeValid=false;OriginalRecipeText.Empty();LastCompactText.Empty();OriginalDisplayText.Empty();
     if(RecipePanel)RecipePanel->RemoveFromParent();RecipePanel=nullptr;RecipeFiles.Empty();RecipeOpen=false;RecipeMessage.Empty();
