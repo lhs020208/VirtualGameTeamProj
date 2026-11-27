@@ -88,6 +88,7 @@ struct GranularGPU::Impl {
  PlantMixerDriveState mixer_state;std::vector<Grain> mixer_initial;
  size_t valve_offset=0,valve_scratch=0;Grain valve_header{};size_t plant_buffer_bytes=0,plant_extra_bytes=0;std::vector<std::pair<size_t,Grain>> plant_upload_patches;Grain plant_thread_header{},plant_cache_header{};size_t plant_cache_offset=0,plant_cache_particles=0;GranularConfig c;int nx=0,ny=0,nz=0,cells=0;float cell=0,angle=0;double time=0;std::string name;bool poisoned=false;GranularTiming timing;std::vector<std::pair<cl_event,unsigned>> events;
  Impl(GranularConfig cfg,const std::vector<Grain>* external=nullptr,const std::vector<Grain>* velocity=nullptr):api(cfg.backend==GranularBackend::OpenCL&&!(cfg.plant&&cfg.count==0)),c(cfg){try{
+ c.mixer_stops.validate();require(!c.mixer_stops.enabled||(c.plant&&c.plant_powered_mixer&&c.backend==GranularBackend::OpenCL),"fixed mixer obstacles require powered OpenCL plant");
  if(c.plant&&c.count==0){require(external&&velocity&&external->empty()&&velocity->empty(),"empty equipment requires explicit empty state");validate_plant_data(c.plant_data);empty=std::make_unique<EmptyPlantDrive>(c);name="CPU equipment only (no particles / no GPU allocation)";mixer_state=empty->mixer;return;}
  require(!c.plant_powered_mixer||(c.plant&&c.backend==GranularBackend::OpenCL),"powered mixer requires OpenCL plant");
  require(!c.plant_powered_valves||(c.plant&&c.backend==GranularBackend::OpenCL),"powered valves require OpenCL plant");
@@ -175,6 +176,7 @@ struct GranularGPU::Impl {
   auto upload=mixer_initial;upload.resize(7+2*size_t(c.count));buffers[27]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,upload.size()*sizeof(Grain),nullptr,&err);check(err,"mixer state buffer");
   check(api.clEnqueueWriteBuffer(queue,buffers[27],CL_TRUE,0,upload.size()*sizeof(Grain),upload.data(),0,nullptr,nullptr),"mixer state upload");
   kernels[19]=api.clCreateKernel(program,"mixer_contacts",&err);check(err,"mixer contacts kernel");kernels[20]=api.clCreateKernel(program,"mixer_drive",&err);check(err,"mixer drive kernel");
+  int stops=c.mixer_stops.enabled?1:0;arg(20,5,stops);arg(20,6,c.mixer_stops.lower_rad);arg(20,7,c.mixer_stops.upper_rad);
  }
  arg(3,c.candidates?17:14,buffers[15]);arg(3,c.candidates?18:15,buffers[6]);arg(4,c.profile_split?14:12,buffers[15]);if(c.profile_split){arg(5,5,buffers[15]);arg(6,7,buffers[15]);}
  if(cohesive){kernels[16]=api.clCreateKernel(program,"adhesive_loads",&err);check(err,"adhesive kernel");buffers[25]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(Grain),nullptr,&err);check(err,"adhesive acceleration");buffers[26]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(Grain),nullptr,&err);check(err,"contact correction impulse");}

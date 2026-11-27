@@ -1,10 +1,11 @@
-﻿#pragma once
+#pragma once
 #include "powder/granular.hpp"
 #include <algorithm>
 
 namespace powder {
 // Empty equipment uses the same bounded drive equations, with zero particle load.
-// No OpenCL context, particle buffers, collision queries or GPU kernels are created.
+// No OpenCL context, particle buffers or GPU kernels are created. Fixed mixer
+// obstacles use the same geometry-derived unilateral stops as the OpenCL drive.
 class EmptyPlantDrive {
  GranularConfig config;
  std::vector<int> gate_records;
@@ -19,6 +20,8 @@ public:
   c.small_valve.validate(1.e-6f,1);c.large_valve.validate(1.e-6f,1);c.mixer_drive.validate(1.e-6f,1);
   int count=int(c.plant_data[5].y),base=int(c.plant_data[5].x);
   for(int j=0;j<count;++j){gate_records.push_back(base+2*j+1);targets.push_back(false);}
+  c.mixer_stops.validate();
+  if(c.mixer_stops.enabled&&!c.plant_powered_mixer)throw std::invalid_argument("mixer obstacles require powered mixer");
   reset();
  }
  void reset(){
@@ -59,11 +62,22 @@ public:
    double span=dt*(c.torque_nm+dry+c.bearing_nm_s*std::abs(s.omega_rad_s))/c.inertia_kg_m2+std::abs(s.omega_rad_s),lo=-span,hi=span;
    for(int k=0;k<40;++k){omega=(lo+hi)/2;motor=torque(omega);double residual=c.inertia_kg_m2*(omega-s.omega_rad_s)/dt-motor+c.bearing_nm_s*omega+std::copysign(dry,omega);if(residual>0)hi=omega;else lo=omega;}
   }
+  double angle=s.angle_rad+omega*dt,reaction=0;
+  const auto& stop=config.mixer_stops;
+  if(stop.enabled&&(angle>stop.upper_rad||angle<stop.lower_rad)){
+   angle=std::clamp(angle,double(stop.lower_rad),double(stop.upper_rad));
+   // Perfectly inelastic contact against a fixed body. The reaction balances
+   // motor torque and the impulse needed to arrest the actual shaft inertia.
+   const double direction=std::copysign(1.,omega);
+   omega=0;motor=torque(0);
+   reaction=-c.inertia_kg_m2*s.omega_rad_s/dt-motor+direction*dry;
+  }
+  s.contact_nm=float(reaction);
   double cap=c.torque_nm*s.power_fraction;
   if(powered&&std::abs(request)>.01&&std::abs(omega)<std::abs(request)*.02&&std::abs(motor)>cap*.95)s.stalled_seconds+=float(dt);else s.stalled_seconds=0;
   if(s.stalled_seconds>=c.trip_seconds)s.tripped=true;
   double watts=powered?std::max(0.,motor*omega)+(1-c.efficiency)*c.input_w*s.power_fraction*(.1+.9*std::pow(std::abs(motor)/std::max(cap,1.e-6),2)):0;
-  s.target_rad_s=float(request);s.omega_rad_s=float(omega);s.angle_rad+=omega*dt;s.motor_nm=float(motor);s.electrical_w=float(watts);s.energy_j+=float(watts*dt);
+  s.target_rad_s=float(request);s.omega_rad_s=float(omega);s.angle_rad=angle;s.motor_nm=float(motor);s.electrical_w=float(watts);s.energy_j+=float(watts*dt);
  }
 };
 }

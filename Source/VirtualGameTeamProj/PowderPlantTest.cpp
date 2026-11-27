@@ -1,4 +1,4 @@
-﻿#include "PowderPlantTest.h"
+#include "PowderPlantTest.h"
 #include "powder/demo_plant.hpp"
 #include "Engine/GameViewportClient.h"
 #include <iomanip>
@@ -17,6 +17,7 @@
 #include "PlantWorkerDose.h"
 #include "PlantTransferDiagnostics.h"
 #include "PlantBendDiagnostics.h"
+#include "PlantMixerObstacles.h"
 #include "Camera/CameraActor.h"
 #include "powder/plant.hpp"
 #include "powder/plant_charge.hpp"
@@ -597,6 +598,7 @@ void APowderPlantTest::ResetSimulation(){if(DemoRealtime){ResetDemoSimulation();
   for(int I=0;I<Groups.Num();++I){auto*G=Groups[I].Get();G->ClearInstances();G->SetStaticMesh(Mesh);if(Mat){G->SetMaterial(0,Mat);if(auto*M=G->CreateDynamicMaterialInstance(0))M->SetVectorParameterValue(TEXT("Tint"),Colors[I%3]);}}
   double Diameter=Mesh->GetBounds().BoxExtent.GetMax()*2;for(auto A:P)Groups[int(A.w)]->AddInstance(FTransform(FQuat::Identity,FVector(A.x,-A.y,A.z)*100,FVector((200.*ParticleRadiusM)/Diameter)));
   Stage=FString::Printf(TEXT("Initial charge: %d particles"),ParticleCount);if(HasActorBegunPlay()){powder::GranularConfig C;C.backend=static_cast<powder::GranularBackend>(ComputeBackend);C.cuda_ptx_file=TCHAR_TO_UTF8(*FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()/TEXT("SourceAssets/PowderCUDA/plant_sm89.ptx")));C.plant=true;C.plant_threaded=true;C.kernel_optimize=true;C.plant_data=powder::read_plant_data(TCHAR_TO_UTF8(*(Root/TEXT("runtime.plant"))));RotorPivotCm=FVector(C.plant_data[1].x,-C.plant_data[1].y,C.plant_data[1].z)*100;C.plant_wall_mode=(C.plant_data[10].x==2&&C.plant_data[13].z>0&&C.plant_data[13].w>0)?(P.size()>=3000?5u:3u):0u;if(int(C.plant_data[11].x)!=SectionTest)throw std::runtime_error("section mode/data mismatch");if(C.backend!=powder::GranularBackend::OpenCL&&C.plant_wall_mode==3)C.plant_wall_mode=5;C.plant_powered_mixer=PoweredMixer;C.mixer_drive.input_w=MixerInputPowerW;C.mixer_drive.torque_nm=MixerMaxTorqueNm;C.mixer_drive.inertia_kg_m2=MixerInertiaKgM2;C.mixer_drive.efficiency=MixerDriveEfficiency;C.mixer_drive.supply_fraction=MixerPowerFraction;C.mixer_drive.ramp_seconds=MixerRampSeconds;C.mixer_drive.brake_nm=MixerBrakeTorqueNm;C.mixer_drive.trip_seconds=MixerTripSeconds;C.plant_powered_valves=PoweredValves&&C.backend==powder::GranularBackend::OpenCL;C.small_valve.torque_nm=SmallValveTorqueNm;C.small_valve.holding_nm=SmallValveTorqueNm;C.large_valve.torque_nm=LargeValveTorqueNm;C.large_valve.holding_nm=LargeValveTorqueNm;C.small_valve.electrical_w=SmallValveElectricalW;C.large_valve.electrical_w=LargeValveElectricalW;C.small_valve.travel_seconds=SmallValveTravelSeconds;C.large_valve.travel_seconds=LargeValveTravelSeconds;C.small_valve.supply_fraction=C.large_valve.supply_fraction=ValvePowerFraction;
+  ConfigureFixedMixerObstacles(GetWorld(),C);
   ValvePivotsCm.Empty();for(int I=0;I<int(C.plant_data[5].y);++I){auto G=C.plant_data[int(C.plant_data[5].x)+2*I];ValvePivotsCm.Add(FVector(G.x,-G.y,G.z)*100);}
   C.radius=ParticleRadiusM;C.count=unsigned(P.size());C.dt=P.empty()?.001f:float(FixedDt);C.iterations=unsigned(ContactIterations);auto Routes=powder::read_plant_routes(TCHAR_TO_UTF8(*(Root/TEXT("runtime.routes"))));for(auto V:Rotor)if(V.Actor)V.Actor->SetActorTransform(V.Initial);ControlTargets.Running=Running;ControlTargets.RPM=MixerRPM;ControlTargets.Pressure=TestPressureDropPa;Runtime=new FPlantRuntime(std::move(C),std::move(P),std::move(Routes),StageTimeoutSeconds,MinimumReceiverFraction,ReceiverTransferSeconds,Running,TestPressureDropPa,0,TransferSettings,MixerBoundsMinM,MixerBoundsMaxM,RegulatedPressureEnabled,ProcessPlantBinding::IsLowPoly(GetPathName())&&SectionTest==0,MoveTemp(SupplierById));PublishControls();ApplySimulationFrameRate();}
  }catch(const std::exception&E){Error=UTF8_TO_TCHAR(E.what());Running=false;}}

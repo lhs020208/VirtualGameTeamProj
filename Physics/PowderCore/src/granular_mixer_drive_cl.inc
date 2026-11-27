@@ -28,7 +28,7 @@ float mixer_torque(float omega,float reference,float4 rating,float fraction,int 
  float gain=rating.y/(.1f*1.57079632679f);
  return clamp(gain*(reference-omega),-cap,cap);
 }
-__kernel void mixer_drive(__global float4* motor,int n,float dt,float requested,__global int* error){
+__kernel void mixer_drive(__global float4* motor,int n,float dt,float requested,__global int* error,int stopped_by_geometry,float lower_angle,float upper_angle){
  int lane=get_local_id(0);float4 sum=(float4)(0);
  for(int i=lane;i<n;i+=128){float4 v=motor[7+n+i];sum.x+=v.x;sum.y+=v.y;sum.z=fmax(sum.z,v.z);}
  __local float4 loads[128];loads[lane]=sum;barrier(CLK_LOCAL_MEM_FENCE);
@@ -51,11 +51,22 @@ __kernel void mixer_drive(__global float4* motor,int n,float dt,float requested,
    if(residual>0)hi=omega;else lo=omega;
   }
  }
+ float advance_angle=s.x+omega*dt;
+ if(stopped_by_geometry){
+  float unwrapped=turn.x*6.28318530718f+advance_angle;
+  if(unwrapped>upper_angle||unwrapped<lower_angle){
+   float direction=copysign(1.f,omega);
+   advance_angle=clamp(unwrapped,lower_angle,upper_angle)-turn.x*6.28318530718f;
+   omega=0;torque=mixer_torque(0,reference,rating,s.w,powered);
+   // Total reaction includes particle load plus fixed-body contact impulse.
+   load=-rating.w*s.y/dt-torque+direction*dry;
+  }
+ }
  float cap=rating.y*s.w;
  if(powered&&fabs(requested)>.01f&&fabs(omega)<fabs(requested)*.02f&&fabs(torque)>cap*.95f)fault.x+=dt;else fault.x=0;
  if(fault.x>=fault.z)fault.y=1;
  float watts=powered?fmax(0.f,torque*omega)+(1-rating.z)*rating.x*s.w*(.1f+.9f*pown(fabs(torque)/fmax(cap,1.e-6f),2)):0;
- float a=s.x+omega*dt,turns=floor(a/6.28318530718f);a-=turns*6.28318530718f;turn.x+=turns;
+ float a=advance_angle,turns=stopped_by_geometry?0.f:floor(a/6.28318530718f);a-=turns*6.28318530718f;turn.x+=turns;
  if(!isfinite(a)||!isfinite(omega)||fabs(omega)*dt>.01f||watts>rating.x*s.w*1.0001f){atomic_or(error,1024);return;}
  s.x=a;s.y=omega;energy=(float4)(torque,load,watts,energy.w+watts*dt);
  detail.y=reference;detail.z=loads[0].y;detail.w=loads[0].z;

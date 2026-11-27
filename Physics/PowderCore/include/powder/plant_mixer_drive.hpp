@@ -3,6 +3,17 @@
 #include <initializer_list>
 #include <stdexcept>
 namespace powder {
+// Unilateral rigid stops derived from fixed obstacle geometry at reset. Angles
+// are unwrapped about the initial shaft pose, in the solver's world-X convention.
+struct PlantMixerStops {
+ bool enabled=false;
+ float lower_rad=0,upper_rad=0;
+ void validate()const {
+  if(enabled&&(!std::isfinite(lower_rad)||!std::isfinite(upper_rad)||
+     lower_rad>0||upper_rad<0||lower_rad>=upper_rad))
+   throw std::invalid_argument("invalid mixer obstacle angular clearance");
+ }
+};
 // Trial VFD/gearmotor equivalent: SEW DRN90S4 1.1 kW / 84.5% motor efficiency,
 // R87 table around 14 rpm / 750 Nm. Gear efficiency, inertia and ramp are assumptions.
 struct PlantMixerDriveSettings {
