@@ -1,0 +1,42 @@
+{
+  "succeeded": 9,
+  "failed": 0,
+  "tests": [
+    {
+      "path": "ProcessUI.Additive.IndependentClockAndActualStop",
+      "state": "Success"
+    },
+    {
+      "path": "ProcessUI.AutoA.PoweredMixerRundown",
+      "state": "Success"
+    },
+    {
+      "path": "ProcessUI.AutoA.TimedMixCancellationAndFaults",
+      "state": "Success"
+    },
+    {
+      "path": "ProcessUI.AutoA.TimedMixClockAndStop",
+      "state": "Success"
+    },
+    {
+      "path": "ProcessUI.Control.PoweredMixer",
+      "state": "Success"
+    },
+    {
+      "path": "ProcessUI.Control.PoweredValves",
+      "state": "Success"
+    },
+    {
+      "path": "ProcessUI.Control.Protocol",
+      "state": "Success"
+    },
+    {
+      "path": "ProcessUI.Control.StopSequence",
+      "state": "Success"
+    },
+    {
+      "path": "ProcessUI.ReadOnly.MappingAndFreshness",
+      "state": "Success"
+    }
+  ]
+}

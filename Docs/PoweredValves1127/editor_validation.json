@@ -1,0 +1,54 @@
+{
+  "level": "/Game/ProcessPlant_20261111_LowPoly/L_ProcessPlant_LowPoly_1111.L_ProcessPlant_LowPoly_1111",
+  "data_directory": "SourceAssets/PlantRevision1125/Simulation",
+  "particles": 200,
+  "powered_valves": true,
+  "backend": "<PlantComputeBackend.OPEN_CL: 0>",
+  "valves": {
+    "ASSUMED_VT_MovingGate": {
+      "mobility": "<ComponentMobility.MOVABLE: 2>",
+      "render_material": "/Game/ProcessPlant_20261111_LowPoly/Revision1125/Materials/MI_grey_Solid.MI_grey_Solid",
+      "rotation": "<Struct 'Rotator' (0x0000014A0131BF80) {pitch: 0.000000, yaw: 0.000000, roll: 0.000000}>"
+    },
+    "V101A_Disc": {
+      "mobility": "<ComponentMobility.MOVABLE: 2>",
+      "render_material": "/Game/ProcessPlant_20261111_LowPoly/Revision1125/Materials/MI_grey_Solid.MI_grey_Solid",
+      "rotation": "<Struct 'Rotator' (0x0000014A0131B300) {pitch: 0.000000, yaw: 0.000000, roll: 0.000000}>"
+    },
+    "V101B_Disc": {
+      "mobility": "<ComponentMobility.MOVABLE: 2>",
+      "render_material": "/Game/ProcessPlant_20261111_LowPoly/Revision1125/Materials/MI_grey_Solid.MI_grey_Solid",
+      "rotation": "<Struct 'Rotator' (0x0000014A0131BEE0) {pitch: 0.000000, yaw: 0.000000, roll: 0.000000}>"
+    },
+    "V101C_Disc": {
+      "mobility": "<ComponentMobility.MOVABLE: 2>",
+      "render_material": "/Game/ProcessPlant_20261111_LowPoly/Revision1125/Materials/MI_grey_Solid.MI_grey_Solid",
+      "rotation": "<Struct 'Rotator' (0x0000014A0131BC60) {pitch: 0.000000, yaw: 0.000000, roll: 0.000000}>"
+    },
+    "V101D_Disc": {
+      "mobility": "<ComponentMobility.MOVABLE: 2>",
+      "render_material": "/Game/ProcessPlant_20261111_LowPoly/Revision1125/Materials/MI_grey_Solid.MI_grey_Solid",
+      "rotation": "<Struct 'Rotator' (0x0000014A0131BDF0) {pitch: -0.000000, yaw: -179.999991, roll: -0.000000}>"
+    },
+    "V101E_Disc": {
+      "mobility": "<ComponentMobility.MOVABLE: 2>",
+      "render_material": "/Game/ProcessPlant_20261111_LowPoly/Revision1125/Materials/MI_grey_Solid.MI_grey_Solid",
+      "rotation": "<Struct 'Rotator' (0x0000014A0131BFD0) {pitch: -0.000000, yaw: -179.999991, roll: -0.000000}>"
+    },
+    "V101F_Disc": {
+      "mobility": "<ComponentMobility.MOVABLE: 2>",
+      "render_material": "/Game/ProcessPlant_20261111_LowPoly/Revision1125/Materials/MI_grey_Solid.MI_grey_Solid",
+      "rotation": "<Struct 'Rotator' (0x0000014A0131BDA0) {pitch: -0.000000, yaw: -179.999991, roll: -0.000000}>"
+    },
+    "BV272_210_Disc": {
+      "mobility": "<ComponentMobility.MOVABLE: 2>",
+      "render_material": "/Game/ProcessPlant_20261111_LowPoly/Revision1125/Materials/MI_grey_Solid.MI_grey_Solid",
+      "rotation": "<Struct 'Rotator' (0x0000014A0131BDA0) {pitch: 0.000000, yaw: -0.000014, roll: -0.000000}>"
+    },
+    "BV272_212_Disc_hub": {
+      "mobility": "<ComponentMobility.MOVABLE: 2>",
+      "render_material": "/Game/ProcessPlant_20261111_LowPoly/Revision1125/Materials/MI_grey_Solid.MI_grey_Solid",
+      "rotation": "<Struct 'Rotator' (0x0000014A0131BC10) {pitch: 0.000000, yaw: 89.999992, roll: 90.000003}>"
+    }
+  }
+}

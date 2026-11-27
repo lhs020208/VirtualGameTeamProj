@@ -322,9 +322,51 @@ struct FPlantSupplyValvePressure
 };
 
 USTRUCT(BlueprintType)
+struct FPlantMixerDriveSnapshot {
+ GENERATED_BODY()
+ UPROPERTY(BlueprintReadOnly) bool Supported=false;
+ UPROPERTY(BlueprintReadOnly) bool Tripped=false;
+ UPROPERTY(BlueprintReadOnly) bool Stopped=true;
+ UPROPERTY(BlueprintReadOnly) double TargetRPM=0;
+ UPROPERTY(BlueprintReadOnly) double ActualRPM=0;
+ UPROPERTY(BlueprintReadOnly) double MotorTorqueNm=0;
+ UPROPERTY(BlueprintReadOnly) double ContactTorqueNm=0;
+ UPROPERTY(BlueprintReadOnly) double ElectricalWatts=0;
+ UPROPERTY(BlueprintReadOnly) double EnergyJoules=0;
+ UPROPERTY(BlueprintReadOnly) double PowerFraction=0;
+ UPROPERTY(BlueprintReadOnly) double NormalLoadN=0;
+};
+
+USTRUCT(BlueprintType)
+struct FPlantValveActuatorSnapshot {
+ GENERATED_BODY()
+ UPROPERTY(BlueprintReadOnly) double AngleDegrees=0;
+ UPROPERTY(BlueprintReadOnly) double AngularSpeedDegrees=0;
+ UPROPERTY(BlueprintReadOnly) double MotorTorqueNm=0;
+ UPROPERTY(BlueprintReadOnly) double ContactTorqueNm=0;
+ UPROPERTY(BlueprintReadOnly) double NormalLoadN=0;
+ UPROPERTY(BlueprintReadOnly) double ElectricalWatts=0;
+ UPROPERTY(BlueprintReadOnly) double EnergyJoules=0;
+ UPROPERTY(BlueprintReadOnly) double Voltage=24;
+ UPROPERTY(BlueprintReadOnly) bool Closed=true;
+ UPROPERTY(BlueprintReadOnly) bool Open=false;
+ UPROPERTY(BlueprintReadOnly) bool Tripped=false;
+};
+
+USTRUCT(BlueprintType)
 struct FPlantSimulationSnapshot
 {
     GENERATED_BODY()
+    UPROPERTY(BlueprintReadOnly) TArray<FPlantValveActuatorSnapshot> ValveActuators;
+    UPROPERTY(BlueprintReadOnly) FPlantMixerDriveSnapshot MixerDrive;
+    // Command acknowledgement is separate from tachometer speed during ramp/load changes.
+    bool MixerTargetApplied(double Target) const {
+        if(!AppliedRPMValid)return false;
+        if(!MixerDrive.Supported)return AppliedRPM==double(float(Target));
+        return !MixerDrive.Tripped&&FMath::Abs(MixerDrive.TargetRPM-Target)<.001&&
+            (Target==0?MixerDrive.Stopped:(MixerDrive.PowerFraction>0&&AppliedRPM>0));
+    }
+
     UPROPERTY(BlueprintReadOnly) FPlantBatchRecoverySnapshot Recovery;
     UPROPERTY(BlueprintReadOnly) FPlantABatchSnapshot SupplyABatch;
     UPROPERTY(BlueprintReadOnly) FPlantDoseCutoffSnapshot DoseCutoff;
@@ -361,7 +403,7 @@ struct FPlantSimulationSnapshot
     UPROPERTY(BlueprintReadOnly) bool RequestedRunning = false;
     UPROPERTY(BlueprintReadOnly) bool RequestedMixerEnabled = false;
     UPROPERTY(BlueprintReadOnly) double RequestedRPM = 0;
-    // RPM used by the last successful solver batch, not a tachometer reading.
+    // Computed shaft speed when powered drive is enabled; legacy prescribed RPM otherwise.
     UPROPERTY(BlueprintReadOnly) double AppliedRPM = 0;
     UPROPERTY(BlueprintReadOnly) bool AppliedRPMValid = false;
     // First successful GPU batch using this mailbox revision; reset with the worker/epoch.
@@ -425,6 +467,10 @@ USTRUCT(BlueprintType)
 struct FProcessEquipmentSnapshot
 {
     GENERATED_BODY()
+    UPROPERTY(BlueprintReadOnly) FPlantMixerDriveSnapshot MixerDrive;
+    UPROPERTY(BlueprintReadOnly) bool HasValveActuator=false;
+    UPROPERTY(BlueprintReadOnly) FPlantValveActuatorSnapshot ValveActuator;
+
     UPROPERTY(BlueprintReadOnly) FString EquipmentId;
     UPROPERTY(BlueprintReadOnly) FString Source = TEXT("실시간 시뮬레이션 · 미보정");
     UPROPERTY(BlueprintReadOnly) FString SourceActorPath;
@@ -479,3 +525,5 @@ inline bool AnyPlantPurge(const FPlantSimulationSnapshot& S,Predicate Matches)
  for(int32 I=0;I<6;++I)if(Matches(PlantPurgeFor(S,I)))return true;
  return false;
 }
+
+inline FString PlantValveStatus(const FPlantValveActuatorSnapshot& A){return A.Tripped?TEXT("과부하 정지"):A.Closed?TEXT("닫힘"):A.Open?TEXT("열림"):FString::Printf(TEXT("회전 중 %.1f°"),A.AngleDegrees);}

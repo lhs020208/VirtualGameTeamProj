@@ -1,0 +1,19 @@
+{
+  "test_particles": 24,
+  "actual_rpm": 0.3766732644863711,
+  "target_rpm": 15.000000417413029,
+  "watts": 28.80314826965332,
+  "torque_nm": 46.85829544067383,
+  "contact_nm": 0.0,
+  "energy_j": 1.7207638025283813,
+  "angle_rad": 0.0010489391861483455,
+  "world_x_rotor_count": 47,
+  "other_valves_closed": true,
+  "stopped": true,
+  "stop_physical_seconds": 0.06319999840343371,
+  "final_rpm": 0.0,
+  "final_energy_j": 3.181778907775879,
+  "physical_seconds": 0.16143999592168257,
+  "final_particles": 24,
+  "wall_seconds": 14.171999999991385
+}

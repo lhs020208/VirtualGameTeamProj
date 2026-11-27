@@ -32,7 +32,9 @@ void check(cl_int code,const char* op){if(code)throw std::runtime_error(std::str
 const char* source=
 #include "granular_mx301_cl.inc"
 
+#include "granular_valves_cl.inc"
 #include "granular_plant_cl.inc"
+#include "granular_mixer_drive_cl.inc"
 #include "granular_kernels.inc"
 ;
 #define GPU_API(X) X(clGetPlatformIDs) X(clGetDeviceIDs) X(clGetDeviceInfo) X(clCreateContext) X(clCreateCommandQueue) X(clCreateProgramWithSource) X(clBuildProgram) X(clGetProgramBuildInfo) X(clCreateKernel) X(clCreateBuffer) X(clSetKernelArg) X(clEnqueueWriteBuffer) X(clEnqueueReadBuffer) X(clEnqueueNDRangeKernel) X(clFinish) X(clFlush) X(clWaitForEvents) X(clGetEventInfo) X(clGetEventProfilingInfo) X(clReleaseEvent) X(clReleaseMemObject) X(clReleaseKernel) X(clReleaseProgram) X(clReleaseCommandQueue) X(clReleaseContext)
@@ -77,12 +79,15 @@ struct GranularGPU::Impl {
  std::unique_ptr<PlantCuda> cuda;
 #endif
  Api api;cl_device_id device=nullptr;cl_context context=nullptr;cl_command_queue queue=nullptr;cl_program program=nullptr;
- std::array<std::array<std::vector<unsigned char>,24>,17> argument_cache;
+ std::array<std::array<std::vector<unsigned char>,24>,21> argument_cache;
  cl_event read_event=nullptr;std::vector<Grain> read_buffer;
- std::array<cl_kernel,17> kernels{};std::array<cl_mem,27> buffers{};GranularGasField gas_field;bool cohesive=false;bool gas_ready=false;unsigned gas_steps=0;
+ std::array<cl_kernel,21> kernels{};std::array<cl_mem,28> buffers{};GranularGasField gas_field;bool cohesive=false;bool gas_ready=false;unsigned gas_steps=0;
  std::array<PlantFeedBrake,6> feed_brakes;
- size_t plant_buffer_bytes=0,plant_extra_bytes=0;std::vector<std::pair<size_t,Grain>> plant_upload_patches;Grain plant_thread_header{},plant_cache_header{};size_t plant_cache_offset=0,plant_cache_particles=0;GranularConfig c;int nx=0,ny=0,nz=0,cells=0;float cell=0,angle=0;double time=0;std::string name;bool poisoned=false;GranularTiming timing;std::vector<std::pair<cl_event,unsigned>> events;
+ PlantMixerDriveState mixer_state;std::vector<Grain> mixer_initial;
+ size_t valve_offset=0,valve_scratch=0;Grain valve_header{};size_t plant_buffer_bytes=0,plant_extra_bytes=0;std::vector<std::pair<size_t,Grain>> plant_upload_patches;Grain plant_thread_header{},plant_cache_header{};size_t plant_cache_offset=0,plant_cache_particles=0;GranularConfig c;int nx=0,ny=0,nz=0,cells=0;float cell=0,angle=0;double time=0;std::string name;bool poisoned=false;GranularTiming timing;std::vector<std::pair<cl_event,unsigned>> events;
  Impl(GranularConfig cfg,const std::vector<Grain>* external=nullptr,const std::vector<Grain>* velocity=nullptr):api(cfg.backend==GranularBackend::OpenCL),c(cfg){try{
+ require(!c.plant_powered_mixer||(c.plant&&c.backend==GranularBackend::OpenCL),"powered mixer requires OpenCL plant");
+ require(!c.plant_powered_valves||(c.plant&&c.backend==GranularBackend::OpenCL),"powered valves require OpenCL plant");
  if(c.backend!=GranularBackend::OpenCL){
 #ifdef POWDER_WITH_CUDA
  require(external&&velocity,"CUDA requires explicit plant state");cuda=std::make_unique<PlantCuda>(c,*external,*velocity);return;
@@ -116,6 +121,8 @@ struct GranularGPU::Impl {
  cl_int err=0;context=api.clCreateContext(nullptr,1,&device,nullptr,nullptr,&err);check(err,"context");queue=api.clCreateCommandQueue(context,device,c.profile?CL_QUEUE_PROFILING_ENABLE:0,&err);check(err,"queue");
  program=api.clCreateProgramWithSource(context,1,&source,nullptr,&err);check(err,"program");std::string options=std::string("-cl-std=CL1.2 -DGRANULAR_BOUNDS_FAST=")+(c.fast_bounds?"1":"0")+" -DGRANULAR_MX301="+(c.test_mixer?"1":"0")+" -DGRANULAR_PROFILE_SPLIT="+(c.profile_split?"1":"0")+" -DGRANULAR_CANDIDATES="+(c.candidates?"1":"0")+" -DGRANULAR_REUSE="+(c.candidate_reuse?"1":"0")+" -DGRANULAR_BOUNDARY_CANDIDATES="+(c.boundary_candidates?"1":"0")+" -DGRANULAR_KERNEL_OPTIMIZE="+(c.kernel_optimize?"1":"0");std::ostringstream defines;defines<<std::scientific<<std::setprecision(9);
  defines<<" -DGRANULAR_COHESION="<<(cohesive?1:0)<<" -DCOHESION_GAMMA="<<c.cohesion_gamma_j_m2<<"f -DWALL_GAMMA="<<c.wall_adhesion_gamma_j_m2<<"f";
+ defines<<" -DPLANT_POWERED_MIXER="<<(c.plant_powered_mixer?1:0);
+ defines<<" -DPLANT_POWERED_VALVES="<<(c.plant_powered_valves?1:0);
  defines<<" -DGRANULAR_PLANT="<<(c.plant?1:0);
  defines<<" -DGRANULAR_SIMPLE_BOX="<<(c.simple_box?1:0);
  defines<<" -DGRANULAR_COUPLED_AIR="<<(c.coupled_air?1:0);
@@ -144,8 +151,28 @@ struct GranularGPU::Impl {
  if(c.plant){auto upload=c.plant_threaded?plant_threaded_upload(c.plant_data):c.plant_data;plant_thread_header=upload[8];
  if(c.plant_wall_mode>=4){auto originalSize=upload.size();plant_candidate_upload(upload,c.plant_wall_mode);plant_extra_bytes=(upload.size()-originalSize)*sizeof(Grain);for(size_t i=0;i<c.plant_data.size();++i)if(std::memcmp(&upload[i],&c.plant_data[i],sizeof(Grain))!=0)plant_upload_patches.push_back({i,upload[i]});}
 
+ if(c.plant_powered_valves){
+  float mass=4.188790204786391f*c.radius*c.radius*c.radius*c.plant_data[1].w;
+  c.small_valve.validate(c.dt,mass);c.large_valve.validate(c.dt,mass);
+  valve_offset=upload.size();int valveCount=int(upload[5].y);upload[5].z=float(valve_offset);
+  for(int j=0;j<valveCount;++j){auto g=upload[int(upload[5].x)+2*j];const auto& v=g.w>.06f?c.large_valve:c.small_valve;
+   upload.push_back({v.torque_nm,v.electrical_w,1.57079632679f/v.travel_seconds,v.inertia_kg_m2});
+   upload.push_back({0,0,0,v.supply_fraction});upload.push_back({0,0,0,0});upload.push_back({0,0,v.trip_seconds,0});
+   upload.push_back({v.voltage,v.stiffness_n_m,v.damping_ratio,v.holding_nm});upload.push_back({v.external_torque_nm,.003f,0,0});
+  }
+  valve_scratch=upload.size();upload[5].w=float(valve_scratch);valve_header=upload[5];upload.resize(upload.size()+size_t(c.count)*(valveCount+1));
+  kernels[17]=api.clCreateKernel(program,"valve_contacts",&err);check(err,"valve contacts kernel");
+  kernels[18]=api.clCreateKernel(program,"valve_drive",&err);check(err,"valve drive kernel");
+ }
  if(c.plant_wall_mode>=2&&upload[10].x==2&&upload[13].z>0){plant_cache_offset=upload.size();plant_cache_particles=std::min(size_t(c.count),size_t(65536));upload[10].z=float(plant_cache_offset);upload[10].w=float(plant_cache_particles);upload.resize(upload.size()+plant_cache_particles*139);}
- plant_buffer_bytes=upload.size()*sizeof(Grain);require(upload.size()<16777216,"plant GPU indices exceed exact float range");plant_cache_header=upload[10];buffers[15]=api.clCreateBuffer(context,plant_cache_offset?CL_MEM_READ_WRITE:CL_MEM_READ_ONLY,upload.size()*sizeof(Grain),nullptr,&err);check(err,"plant buffer");check(api.clEnqueueWriteBuffer(queue,buffers[15],CL_TRUE,0,upload.size()*sizeof(Grain),upload.data(),0,nullptr,nullptr),"plant geometry upload");}
+ plant_buffer_bytes=upload.size()*sizeof(Grain);require(upload.size()<16777216,"plant GPU indices exceed exact float range");plant_cache_header=upload[10];buffers[15]=api.clCreateBuffer(context,(plant_cache_offset||c.plant_powered_valves)?CL_MEM_READ_WRITE:CL_MEM_READ_ONLY,upload.size()*sizeof(Grain),nullptr,&err);check(err,"plant buffer");check(api.clEnqueueWriteBuffer(queue,buffers[15],CL_TRUE,0,upload.size()*sizeof(Grain),upload.data(),0,nullptr,nullptr),"plant geometry upload");}
+ if(c.plant_powered_mixer){
+  const auto& m=c.mixer_drive;m.validate(c.dt,4.188790204786391f*c.radius*c.radius*c.radius*c.plant_data[1].w);
+  mixer_initial={{m.input_w,m.torque_nm,m.efficiency,m.inertia_kg_m2},{0,0,0,m.supply_fraction},{0,0,0,0},{0,0,m.trip_seconds,m.brake_nm},{m.stiffness_n_m,m.damping_ratio,m.bearing_nm_s,1.57079632679f/m.ramp_seconds},{m.test_resisting_nm,0,0,0},{0,0,0,0}};
+  auto upload=mixer_initial;upload.resize(7+2*size_t(c.count));buffers[27]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,upload.size()*sizeof(Grain),nullptr,&err);check(err,"mixer state buffer");
+  check(api.clEnqueueWriteBuffer(queue,buffers[27],CL_TRUE,0,upload.size()*sizeof(Grain),upload.data(),0,nullptr,nullptr),"mixer state upload");
+  kernels[19]=api.clCreateKernel(program,"mixer_contacts",&err);check(err,"mixer contacts kernel");kernels[20]=api.clCreateKernel(program,"mixer_drive",&err);check(err,"mixer drive kernel");
+ }
  arg(3,c.candidates?17:14,buffers[15]);arg(3,c.candidates?18:15,buffers[6]);arg(4,c.profile_split?14:12,buffers[15]);if(c.profile_split){arg(5,5,buffers[15]);arg(6,7,buffers[15]);}
  if(cohesive){kernels[16]=api.clCreateKernel(program,"adhesive_loads",&err);check(err,"adhesive kernel");buffers[25]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(Grain),nullptr,&err);check(err,"adhesive acceleration");buffers[26]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(Grain),nullptr,&err);check(err,"contact correction impulse");}
  if(c.coupled_air){kernels[14]=api.clCreateKernel(program,"clear_gas",&err);check(err,"clear gas kernel");kernels[15]=api.clCreateKernel(program,"reduce_gas",&err);check(err,"reduce gas kernel");buffers[22]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,2*c.count*sizeof(Grain),nullptr,&err);check(err,"gas particle impulse");buffers[24]=api.clCreateBuffer(context,CL_MEM_READ_WRITE,c.count*sizeof(int),nullptr,&err);check(err,"gas particle links");}
@@ -177,7 +204,7 @@ struct GranularGPU::Impl {
  check(api.clSetKernelArg(kernels[k],i,sizeof(v),&v),"arg");++timing.argument_calls;
  if(c.kernel_optimize){cached.resize(sizeof(v));std::memcpy(cached.data(),&v,sizeof(v));}
  }
- void run(unsigned k,std::size_t n){std::size_t local=c.diagnostic_local_size,global=(n+local-1)/local*local;cl_event event=nullptr;check(api.clEnqueueNDRangeKernel(queue,kernels[k],1,nullptr,&global,&local,0,nullptr,c.profile?&event:nullptr),"dispatch");if(event)events.push_back({event,k});}
+ void run(unsigned k,std::size_t n){std::size_t local=(k==18||k==20)?128:c.diagnostic_local_size,global=(n+local-1)/local*local;cl_event event=nullptr;check(api.clEnqueueNDRangeKernel(queue,kernels[k],1,nullptr,&global,&local,0,nullptr,c.profile?&event:nullptr),"dispatch");if(event)events.push_back({event,k});}
  void clear_plant_cache(){if(plant_cache_offset){std::vector<Grain> zero(plant_cache_particles*139);check(api.clEnqueueWriteBuffer(queue,buffers[15],CL_TRUE,plant_cache_offset*sizeof(Grain),zero.size()*sizeof(Grain),zero.data(),0,nullptr,nullptr),"reset plant wall cache");}}
  void set(const std::vector<Grain>& state,const std::vector<Grain>& vel){
 #ifdef POWDER_WITH_CUDA
@@ -185,6 +212,7 @@ struct GranularGPU::Impl {
 #endif
 require(state.size()==c.count&&vel.size()==c.count,"state count mismatch");for(unsigned i=0;i<c.count;i++)for(float v:{state[i].x,state[i].y,state[i].z,state[i].w,vel[i].x,vel[i].y,vel[i].z})require(std::isfinite(v),"nonfinite input state");
  for(const auto& a:state)require(c.plant?(a.w>=0&&a.w<32&&std::floor(a.w)==a.w):(a.w==0||a.w==1),"invalid group ID");
+ if(c.plant_powered_mixer){check(api.clEnqueueWriteBuffer(queue,buffers[27],CL_TRUE,0,mixer_initial.size()*sizeof(Grain),mixer_initial.data(),0,nullptr,nullptr),"reset mixer drive");mixer_state={};mixer_state.supported=true;mixer_state.power_fraction=c.mixer_drive.supply_fraction;}
  gas_ready=false;gas_steps=0;for(auto& brake:feed_brakes)brake.enabled=false;drain_read();clear_plant_cache();check(api.clEnqueueWriteBuffer(queue,buffers[0],CL_TRUE,0,state.size()*sizeof(Grain),state.data(),0,nullptr,nullptr),"state write");check(api.clEnqueueWriteBuffer(queue,buffers[2],CL_TRUE,0,vel.size()*sizeof(Grain),vel.data(),0,nullptr,nullptr),"velocity write");time=0;angle=0;poisoned=false;for(auto e:events)if(e.first)api.clReleaseEvent(e.first);events.clear();timing={};timing.profiling_enabled=c.profile;timing.split_boundaries=c.profile_split;timing.candidates_enabled=c.candidates;timing.candidate_capacity=c.candidates?c.candidate_capacity:0;timing.boundary_candidates_enabled=c.boundary_candidates;timing.kernel_optimize_enabled=c.kernel_optimize;timing.candidate_reuse_enabled=c.candidate_reuse;timing.candidate_audit_enabled=c.candidate_audit;timing.candidate_skin_m=c.candidate_reuse?c.radius*c.candidate_skin_ratio:0;
  if(c.rotation){std::vector<Grain> zeros(c.count);for(unsigned b=16;b<19;++b)check(api.clEnqueueWriteBuffer(queue,buffers[b],CL_TRUE,0,zeros.size()*sizeof(Grain),zeros.data(),0,nullptr,nullptr),"reset angular state");}
  if(c.candidate_reuse){cl_uint control[6]{};check(api.clEnqueueWriteBuffer(queue,buffers[14],CL_TRUE,0,sizeof(control),control,0,nullptr,nullptr),"reset reuse state");}}
@@ -204,9 +232,11 @@ require(state.size()==c.count&&vel.size()==c.count,"state count mismatch");for(u
 #endif
 auto begin=Clock::now();const double cpuBegin=thread_cpu_seconds();require(!poisoned,"reset required after rejected GPU batch");require(!c.simple_box||!gate,"simple box is closed; gate is unsupported");require(!c.coupled_air||gas_ready,"coupled gas field must be supplied before advance");require(steps>0&&steps<=1000&&std::isfinite(rpm)&&std::abs(rpm)<=60,"invalid granular control");int zero=0;check(api.clEnqueueWriteBuffer(queue,buffers[6],CL_FALSE,0,sizeof(int),&zero,0,nullptr,nullptr),"clear error");cl_ulong zeroOverflow=0;if(c.candidates)check(api.clEnqueueWriteBuffer(queue,buffers[12],CL_FALSE,0,sizeof(zeroOverflow),&zeroOverflow,0,nullptr,nullptr),"clear candidate overflow");if(c.candidate_reuse)check(api.clEnqueueWriteBuffer(queue,buffers[14],CL_FALSE,3*sizeof(cl_uint),2*sizeof(cl_uint),&zeroOverflow,0,nullptr,nullptr),"clear reuse counters");int n=static_cast<int>(c.count),g=gate?1:0;float omega=rpm*.104719755f;
  for(unsigned s=0;s<steps;s++){
-  angle+=omega*c.dt;if(c.coupled_air){arg(14,0,buffers[23]);int count=int(gas_field.velocity_density.size());arg(14,1,count);run(14,count);}
+  if(!c.plant_powered_mixer)angle+=omega*c.dt;if(c.coupled_air){arg(14,0,buffers[23]);int count=int(gas_field.velocity_density.size());arg(14,1,count);run(14,count);}
   if(cohesive){if(c.cohesion_gamma_j_m2>0){if(c.candidate_reuse)check_reuse();arg(0,0,buffers[4]);arg(0,1,cells);run(0,cells);arg(1,0,buffers[0]);arg(1,1,buffers[4]);arg(1,2,buffers[5]);arg(1,3,n);arg(1,4,cell);arg(1,5,nx);arg(1,6,ny);arg(1,7,nz);arg(1,8,buffers[6]);run(1,c.count);if(c.candidates)build_candidates();}arg(16,0,buffers[0]);arg(16,1,buffers[4]);arg(16,2,buffers[5]);arg(16,3,n);arg(16,4,c.radius);arg(16,5,cell);arg(16,6,nx);arg(16,7,ny);arg(16,8,nz);arg(16,9,buffers[25]);arg(16,10,buffers[6]);if(c.candidates){int cap=int(c.candidate_capacity);arg(16,11,buffers[10]);arg(16,12,buffers[11]);arg(16,13,cap);}run(16,c.count);}
 
+  if(c.plant_powered_valves){arg(17,0,buffers[0]);arg(17,1,buffers[2]);arg(17,2,buffers[15]);arg(17,3,n);arg(17,4,c.radius);arg(17,5,c.dt);arg(17,6,c.friction);arg(17,7,buffers[6]);run(17,c.count);}
+  if(c.plant_powered_mixer){arg(19,0,buffers[0]);arg(19,1,buffers[2]);arg(19,2,buffers[15]);arg(19,3,buffers[27]);arg(19,4,n);arg(19,5,c.radius);arg(19,6,c.dt);arg(19,7,c.friction);arg(19,8,buffers[6]);run(19,c.count);arg(2,21,buffers[27]);}
   arg(2,0,buffers[0]);arg(2,1,buffers[1]);arg(2,2,buffers[2]);arg(2,3,n);arg(2,4,c.dt);arg(2,5,c.radius);arg(2,6,buffers[6]);arg(2,7,buffers[7]);if(c.plant){arg(2,8,buffers[15]);for(unsigned i=0;i<feed_brakes.size();++i){const auto& brake=feed_brakes[i];arg(2,9+2*i,brake.region);float rate=brake.enabled?1.f/brake.response_time_s:0.f;arg(2,10+2*i,rate);}}if(c.rotation){arg(2,8,buffers[16]);arg(2,9,buffers[18]);}if(c.coupled_air){unsigned a=c.rotation?10:8;for(unsigned j=0;j<3;++j)arg(2,a+j,buffers[19+j]);Grain origin{gas_field.origin[0],gas_field.origin[1],gas_field.origin[2],0};std::array<int,4> dims{gas_field.cells[0],gas_field.cells[1],gas_field.cells[2],0};arg(2,a+3,origin);arg(2,a+4,dims);arg(2,a+5,gas_field.h);arg(2,a+6,gas_field.viscosity);arg(2,a+7,buffers[22]);arg(2,a+8,buffers[23]);arg(2,a+9,buffers[24]);}if(cohesive){unsigned a=(c.rotation?10:8)+(c.coupled_air?10:0);arg(2,a,buffers[25]);arg(2,a+1,buffers[26]);}run(2,c.count);
   if(c.coupled_air){arg(15,0,buffers[23]);arg(15,1,buffers[24]);arg(15,2,buffers[1]);arg(15,3,buffers[22]);arg(15,4,buffers[21]);arg(15,5,buffers[20]);Grain origin{gas_field.origin[0],gas_field.origin[1],gas_field.origin[2],0};std::array<int,4> dims{gas_field.cells[0],gas_field.cells[1],gas_field.cells[2],0};arg(15,6,origin);arg(15,7,dims);arg(15,8,gas_field.h);arg(15,9,buffers[6]);arg(15,10,n);run(15,gas_field.velocity_density.size());}
   for(unsigned it=0;it<c.iterations;it++){
@@ -221,13 +251,16 @@ auto begin=Clock::now();const double cpuBegin=thread_cpu_seconds();require(!pois
   }
   if(c.profile_split){arg(6,0,buffers[0]);arg(6,1,n);arg(6,2,c.radius);arg(6,3,angle);arg(6,4,g);arg(6,5,buffers[8]);arg(6,6,buffers[9]);run(6,c.count);arg(4,12,buffers[8]);arg(4,13,buffers[9]);}
   arg(4,0,buffers[0]);arg(4,1,buffers[1]);arg(4,2,buffers[2]);arg(4,3,n);arg(4,4,c.dt);arg(4,5,c.radius);arg(4,6,angle);arg(4,7,omega);arg(4,8,g);arg(4,9,c.friction);arg(4,10,buffers[6]);arg(4,11,buffers[7]);if(c.rotation){unsigned a=c.profile_split?15:13;arg(4,a,buffers[16]);arg(4,a+1,buffers[18]);}if(cohesive)arg(4,(c.profile_split?15:13)+(c.rotation?2:0),buffers[26]);run(4,c.count);
+  if(c.plant_powered_valves){arg(18,0,buffers[15]);arg(18,1,n);arg(18,2,c.dt);arg(18,3,buffers[6]);run(18,size_t(c.plant_data[5].y)*128);}
+  if(c.plant_powered_mixer){arg(20,0,buffers[27]);arg(20,1,n);arg(20,2,c.dt);arg(20,3,omega);arg(20,4,buffers[6]);run(20,128);}
  }
  timing.submit_wall+=elapsed(begin);timing.submit_thread_cpu+=thread_cpu_seconds()-cpuBegin;auto guardBegin=Clock::now();
  int error=0;check(api.clEnqueueReadBuffer(queue,buffers[6],CL_TRUE,0,sizeof(int),&error,0,nullptr,nullptr),"guard");timing.guard_wait_wall+=elapsed(guardBegin);
  if(c.candidates){cl_ulong overflow=0;check(api.clEnqueueReadBuffer(queue,buffers[12],CL_TRUE,0,sizeof(overflow),&overflow,0,nullptr,nullptr),"candidate fallback count");timing.candidate_fallback_particle_iterations+=overflow;}
  if(c.candidate_reuse){cl_uint counts[2]{};check(api.clEnqueueReadBuffer(queue,buffers[14],CL_TRUE,3*sizeof(cl_uint),sizeof(counts),counts,0,nullptr,nullptr),"reuse counters");timing.candidate_builds+=counts[0];timing.reuse_checks+=counts[1];timing.candidate_reuses+=counts[1]-counts[0];}
+ if(c.plant_powered_mixer){Grain d[7];check(api.clEnqueueReadBuffer(queue,buffers[27],CL_TRUE,0,sizeof(d),d,0,nullptr,nullptr),"mixer telemetry");auto& m=mixer_state;m.supported=true;m.angle_rad=double(d[6].x)*6.283185307179586+double(d[1].x);m.omega_rad_s=d[1].y;m.target_rad_s=d[1].z;m.power_fraction=d[1].w;m.motor_nm=d[2].x;m.contact_nm=d[2].y;m.electrical_w=d[2].z;m.energy_j=d[2].w;m.stalled_seconds=d[3].x;m.tripped=d[3].y!=0;m.normal_n=d[5].z;m.penetration_m=d[5].w;angle=float(m.angle_rad);}
  collect();timing.advance_wall+=elapsed(begin);timing.advance_thread_cpu+=thread_cpu_seconds()-cpuBegin;
- if(error){std::ostringstream details;if(c.plant){std::vector<Grain> state(c.count),velocity(c.count);if(api.clEnqueueReadBuffer(queue,buffers[0],CL_TRUE,0,state.size()*sizeof(Grain),state.data(),0,nullptr,nullptr)==CL_SUCCESS&&api.clEnqueueReadBuffer(queue,buffers[2],CL_TRUE,0,velocity.size()*sizeof(Grain),velocity.data(),0,nullptr,nullptr)==CL_SUCCESS){size_t fastest=0;double speed=-1;for(size_t i=0;i<velocity.size();++i){double v=std::hypot(velocity[i].x,velocity[i].y,velocity[i].z);if(v>speed){speed=v;fastest=i;}}auto a=state[fastest],v=velocity[fastest];details<<" id="<<fastest<<" p="<<a.x<<","<<a.y<<","<<a.z<<" v="<<v.x<<","<<v.y<<","<<v.z<<" max_speed="<<speed;}}throw std::runtime_error("granular safety rejection bits="+std::to_string(error)+" (1=domain,2=step displacement,4=nonfinite,8=missing candidate,16=excessive mass-weighted correction,32=air Re/slip/relaxation outside contract); reset required"+details.str());}time+=steps*c.dt;if(c.coupled_air)gas_steps+=steps;
+ if(error){std::ostringstream details;if(c.plant){std::vector<Grain> state(c.count),velocity(c.count);if(api.clEnqueueReadBuffer(queue,buffers[0],CL_TRUE,0,state.size()*sizeof(Grain),state.data(),0,nullptr,nullptr)==CL_SUCCESS&&api.clEnqueueReadBuffer(queue,buffers[2],CL_TRUE,0,velocity.size()*sizeof(Grain),velocity.data(),0,nullptr,nullptr)==CL_SUCCESS){size_t fastest=0;double speed=-1;for(size_t i=0;i<velocity.size();++i){double v=std::hypot(velocity[i].x,velocity[i].y,velocity[i].z);if(v>speed){speed=v;fastest=i;}}auto a=state[fastest],v=velocity[fastest];details<<" id="<<fastest<<" p="<<a.x<<","<<a.y<<","<<a.z<<" v="<<v.x<<","<<v.y<<","<<v.z<<" max_speed="<<speed;}}throw std::runtime_error("granular safety rejection bits="+std::to_string(error)+" (1=domain,2=step displacement,4=nonfinite,8=missing candidate,16=excessive mass-weighted correction,32=air Re/slip/relaxation outside contract,128=valve penetration,256=valve angular step,512=mixer penetration,1024=mixer drive step); reset required"+details.str());}time+=steps*c.dt;if(c.coupled_air)gas_steps+=steps;
  }
 };
 GranularGPU::GranularGPU(GranularConfig c):p(std::make_unique<Impl>(c)){}
@@ -365,8 +398,8 @@ void write_granular_timing(std::ostream& out,const GranularTiming& t){
  out<<",\"candidate_reuse_enabled\":"<<(t.candidate_reuse_enabled?"true":"false")<<",\"candidate_audit_enabled\":"<<(t.candidate_audit_enabled?"true":"false")<<",\"candidate_skin_m\":"<<t.candidate_skin_m<<",\"reuse_checks\":"<<t.reuse_checks<<",\"candidate_reuses\":"<<t.candidate_reuses;
  out<<",\"kernel_optimize_enabled\":"<<(t.kernel_optimize_enabled?"true":"false")<<",\"argument_calls\":"<<t.argument_calls<<",\"argument_cache_hits\":"<<t.argument_cache_hits;
  out<<",\"boundary_candidates_enabled\":"<<(t.boundary_candidates_enabled?"true":"false");
- const char* names[]={"grid_clear","grid_build","predict",t.split_boundaries?"particle_contact":"contact_and_boundary",t.split_boundaries?"velocity":"velocity_and_boundary_probe","boundary_projection","boundary_probe","snapshot_readback","candidate_build","reuse_begin","reuse_check","candidate_audit","boundary_group_init","boundary_inspect","gas_clear","gas_reduce","adhesive_loads"};
- for(unsigned i=0;i<17;++i)out<<",\""<<names[i]<<"_gpu_s\":"<<t.gpu_seconds[i]<<",\""<<names[i]<<"_calls\":"<<t.calls[i];
+ const char* names[]={"grid_clear","grid_build","predict",t.split_boundaries?"particle_contact":"contact_and_boundary",t.split_boundaries?"velocity":"velocity_and_boundary_probe","boundary_projection","boundary_probe","snapshot_readback","candidate_build","reuse_begin","reuse_check","candidate_audit","boundary_group_init","boundary_inspect","gas_clear","gas_reduce","adhesive_loads","valve_contacts","valve_drive","mixer_contacts","mixer_drive"};
+ for(unsigned i=0;i<21;++i)out<<",\""<<names[i]<<"_gpu_s\":"<<t.gpu_seconds[i]<<",\""<<names[i]<<"_calls\":"<<t.calls[i];
  out<<"}";
 }
 
@@ -376,7 +409,8 @@ namespace powder {void GranularGPU::update_plant_field(const std::vector<Grain>&
 #ifdef POWDER_WITH_CUDA
  if(p->cuda){p->cuda->update(data);return;}
 #endif
-require(p->c.plant&&!p->poisoned&&data.size()==p->c.plant_data.size(),"plant field size mismatch");validate_plant_data(data);for(size_t i=0;i<data.size();++i){auto a=data[i],b=p->c.plant_data[i];if(i==4){a=b;}else if(i>=size_t(data[5].x)&&i<size_t(data[5].x+2*data[5].y)&&(i-size_t(data[5].x))%2==1&&b.x<=2){a.y=b.y;a.z=b.z;}else if(i>=size_t(data[0].z)&&i<size_t(data[0].z+3*data[0].w)&&(i-size_t(data[0].z))%3==2)a.x=b.x;require(std::memcmp(&a,&b,sizeof(Grain))==0,"plant geometry is immutable during simulation");}p->drain_read();auto upload=data;for(auto patch:p->plant_upload_patches)upload[patch.first]=patch.second;if(p->c.plant_threaded)upload[8]=p->plant_thread_header;upload[10]=p->plant_cache_header;p->clear_plant_cache();check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,0,upload.size()*sizeof(Grain),upload.data(),0,nullptr,nullptr),"plant field update");}}
+require(p->c.plant&&!p->poisoned&&data.size()==p->c.plant_data.size(),"plant field size mismatch");validate_plant_data(data);for(size_t i=0;i<data.size();++i){auto a=data[i],b=p->c.plant_data[i];if(i==4){a=b;}else if(i>=size_t(data[5].x)&&i<size_t(data[5].x+2*data[5].y)&&(i-size_t(data[5].x))%2==1&&b.x<=2){a.y=b.y;a.z=b.z;}else if(i>=size_t(data[0].z)&&i<size_t(data[0].z+3*data[0].w)&&(i-size_t(data[0].z))%3==2)a.x=b.x;require(std::memcmp(&a,&b,sizeof(Grain))==0,"plant geometry is immutable during simulation");}p->drain_read();auto upload=data;for(auto patch:p->plant_upload_patches)upload[patch.first]=patch.second;if(p->c.plant_threaded)upload[8]=p->plant_thread_header;upload[10]=p->plant_cache_header;if(p->c.plant_powered_valves)upload[5]=p->valve_header;if(!p->c.plant_powered_valves){p->clear_plant_cache();check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,0,upload.size()*sizeof(Grain),upload.data(),0,nullptr,nullptr),"plant field update");}
+ else {for(size_t i=0;i<data.size();++i)if(std::memcmp(&data[i],&p->c.plant_data[i],sizeof(Grain))!=0)check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,i*sizeof(Grain),sizeof(Grain),&upload[i],0,nullptr,nullptr),"plant changed field record");p->c.plant_data=data;}}}
 
 namespace powder {
 void GranularGPU::set_plant_feed_brake(const PlantFeedBrake& brake,unsigned supplier){
@@ -390,4 +424,37 @@ void GranularGPU::set_plant_feed_brake(const PlantFeedBrake& brake,unsigned supp
 #endif
  p->feed_brakes[supplier]=brake;
 }
+}
+
+namespace powder {
+std::vector<PlantActuatorState> GranularGPU::plant_valve_states(){
+ if(!p->c.plant_powered_valves)return {};size_t n=size_t(p->c.plant_data[5].y);std::vector<Grain>d(n*6);
+ check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[15],CL_TRUE,p->valve_offset*sizeof(Grain),d.size()*sizeof(Grain),d.data(),0,nullptr,nullptr),"valve telemetry");
+ std::vector<PlantActuatorState> result;for(size_t j=0;j<n;++j){auto a=d[j*6+1],b=d[j*6+2],f=d[j*6+3],c=d[j*6+4],l=d[j*6+5];PlantActuatorState v;
+ v.angle_rad=a.x;v.omega_rad_s=a.y;v.target_rad=a.z;v.power_fraction=a.w;v.motor_nm=b.x;v.contact_nm=b.y;v.electrical_w=b.z;v.energy_j=b.w;v.stalled_seconds=f.x;v.tripped=f.y!=0;v.normal_n=l.z;v.penetration_m=l.w;v.voltage=c.x;result.push_back(v);}return result;
+}
+void GranularGPU::set_plant_valve_power(unsigned valve,float fraction){require(p->c.plant_powered_valves&&valve<unsigned(p->c.plant_data[5].y)&&std::isfinite(fraction)&&fraction>=0&&fraction<=1,"invalid valve power");
+ check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,(p->valve_offset+6*valve+1)*sizeof(Grain)+3*sizeof(float),sizeof(float),&fraction,0,nullptr,nullptr),"valve supply");
+}
+}
+
+namespace powder {
+void GranularGPU::update_plant_controls(const std::vector<Grain>& data){
+ require(p->c.plant_powered_valves&&!p->poisoned&&data.size()==p->c.plant_data.size(),"powered valve controls shape mismatch");
+ auto& old=p->c.plant_data;const size_t first=size_t(old[0].z),count=size_t(old[0].w),gate=size_t(old[5].x),gates=size_t(old[5].y);
+ require(data[4].x>=0&&data[4].x<=2&&data[4].y==1&&std::isfinite(data[4].z)&&std::isfinite(data[4].w),"invalid pressure control header");
+ for(size_t i=0;i<count;++i)require(std::isfinite(data[first+3*i+2].x),"invalid flow control");
+ for(size_t i=0;i<gates;++i){auto v=data[gate+2*i+1];require((v.y==0||v.y==1)&&v.z==1,"invalid actuator target");}
+ p->drain_read();old[4]=data[4];for(size_t i=0;i<count;++i)old[first+3*i+2].x=data[first+3*i+2].x;
+ for(size_t i=0;i<gates;++i){old[gate+2*i+1].y=data[gate+2*i+1].y;old[gate+2*i+1].z=1;}
+ check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,4*sizeof(Grain),sizeof(Grain),&old[4],0,nullptr,nullptr),"pressure header");
+ check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,first*sizeof(Grain),3*count*sizeof(Grain),old.data()+first,0,nullptr,nullptr),"pressure cells");
+ check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[15],CL_TRUE,gate*sizeof(Grain),2*gates*sizeof(Grain),old.data()+gate,0,nullptr,nullptr),"valve targets");
+}
+}
+
+namespace powder {
+PlantMixerDriveState GranularGPU::plant_mixer_state()const{return p->mixer_state;}
+void GranularGPU::set_plant_mixer_power(float fraction){require(p->c.plant_powered_mixer&&!p->poisoned&&std::isfinite(fraction)&&fraction>=0&&fraction<=1,"invalid mixer supply");check(p->api.clEnqueueWriteBuffer(p->queue,p->buffers[27],CL_TRUE,sizeof(Grain)+3*sizeof(float),sizeof(float),&fraction,0,nullptr,nullptr),"mixer supply");}
+std::vector<Grain> GranularGPU::plant_mixer_contact_snapshot(){require(p->c.plant_powered_mixer&&!p->poisoned,"mixer contacts unavailable");std::vector<Grain> v(2*size_t(p->c.count));check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[27],CL_TRUE,7*sizeof(Grain),v.size()*sizeof(Grain),v.data(),0,nullptr,nullptr),"mixer contacts read");return v;}
 }

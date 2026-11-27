@@ -1,4 +1,4 @@
-#include "ProcessControlTypes.h"
+﻿#include "ProcessControlTypes.h"
 #include "ProcessControlService.h"
 #include "PowderPlantTest.h"
 #include "Misc/AutomationTest.h"
@@ -235,6 +235,33 @@ bool FProcessClosureGuardTest::RunTest(const FString&)
     TestFalse(TEXT("particle on gate prevents closure"),powder::plant_supplier_closure_clear(Gate,{{0,0,1,0}},Radius));
     TestTrue(TEXT("particle released below gate allows closure"),powder::plant_supplier_closure_clear(Gate,{{0,0,.9f,0}},Radius));
     return true;
+}
+
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProcessPoweredValveTest,"ProcessUI.Control.PoweredValves",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FProcessPoweredValveTest::RunTest(const FString&){
+ FControlFixture F;F.Manual();F.M.Snapshot.ValveActuators.SetNum(5);
+ auto R=F.Request(TEXT("supply-a"),EProcessCommand::Valve,1);F.M.Snapshot.RequestedSuppliers[0]=true;
+ auto& V=F.M.Snapshot.ValveActuators[0];V.Closed=false;V.AngleDegrees=20;F.M.Snapshot.AppliedSupplierMask=1;
+ F.Now+=20;F.M.Snapshot.PhysicalSeconds=.2;F.Publish();TestTrue(TEXT("wall clock does not falsely timeout physical rotation"),F.M.History[R.RequestId].IsPending());
+ V.Open=true;V.AngleDegrees=90;F.Publish();TestTrue(TEXT("opening needs actual end switch"),F.M.History[R.RequestId].Status==EProcessCommandStatus::Applied);
+ R=F.Request(TEXT("supply-a"),EProcessCommand::Valve,0);F.M.Snapshot.RequestedSuppliers[0]=false;V.Open=false;V.AngleDegrees=40;F.Publish();TestTrue(TEXT("close target is not actual closure"),F.M.History[R.RequestId].IsPending());
+ V.Tripped=true;F.Publish();TestTrue(TEXT("jam is reported as failure"),F.M.History[R.RequestId].Status==EProcessCommandStatus::Failed);
+ return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProcessPoweredMixerTest,"ProcessUI.Control.PoweredMixer",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FProcessPoweredMixerTest::RunTest(const FString&){
+ FControlFixture F;F.Manual();auto& S=F.M.Snapshot;auto& D=S.MixerDrive;D.Supported=true;D.PowerFraction=1;D.Stopped=true;
+ auto R=F.Request(TEXT("mixer"),EProcessCommand::MixerEnabled,1);S.RequestedMixerEnabled=S.WorkerMixerEnabled=true;D.TargetRPM=15;
+ F.Now+=20;S.PhysicalSeconds=.02;F.Publish();TestTrue(TEXT("slow physical start does not wall-timeout"),F.M.History[R.RequestId].IsPending());
+ D.Stopped=false;D.ActualRPM=S.AppliedRPM=.1;F.Publish();TestTrue(TEXT("actual movement acknowledges energizing without pretending target speed"),F.M.History[R.RequestId].Status==EProcessCommandStatus::Applied);
+ TestTrue(TEXT("load-reduced speed still has applied target"),S.MixerTargetApplied(15));
+ R=F.Request(TEXT("mixer"),EProcessCommand::MixerEnabled,0);S.RequestedMixerEnabled=S.WorkerMixerEnabled=false;D.TargetRPM=0;
+ F.Now+=20;S.PhysicalSeconds=.04;F.Publish();TestTrue(TEXT("stop waits for physical coast-down"),F.M.History[R.RequestId].IsPending());
+ D.ActualRPM=S.AppliedRPM=0;D.Stopped=true;F.Publish();TestTrue(TEXT("zero shaft speed completes stop"),F.M.History[R.RequestId].Status==EProcessCommandStatus::Applied);
+ R=F.Request(TEXT("mixer"),EProcessCommand::MixerEnabled,1);D.Tripped=true;F.Publish();TestTrue(TEXT("overload fails start"),F.M.History[R.RequestId].Status==EProcessCommandStatus::Failed);
+ return true;
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProcessLiveControlTest,"ProcessUI.Control.LiveWorker",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)

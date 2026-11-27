@@ -267,7 +267,7 @@ float3 plant_boundary_ref_uncached(float3 p,float r,float angle,__global const f
  if(d[10].x==1.f)displacement=p-initial;
  // Configurable horizontal valve disks: xyz/radius plus open phase.
  int gates=(int)d[5].x,gatecount=(int)d[5].y;
- for(int j=0;j<gatecount;++j){int k=gates+2*j;int open=phase==(int)d[k+1].x;if(d[k+1].z==1.f)open=d[k+1].y==1.f;
+ for(int j=0;j<gatecount&&!PLANT_POWERED_VALVES;++j){int k=gates+2*j;int open=phase==(int)d[k+1].x;if(d[k+1].z==1.f)open=d[k+1].y==1.f;
   float4 gate=d[k];if(!open){
    // Finite cylinder: round the rim by the particle radius. A radial entry
    // must not be snapped to a distant top/bottom plane.
@@ -283,10 +283,12 @@ float3 plant_boundary_ref_uncached(float3 p,float r,float angle,__global const f
   }
  }
  float3 delta=displacement;*wn=length(delta)>1.e-9f?normalize(delta):(float3)(0);*wv=(float3)(0);
+ #if !PLANT_POWERED_MIXER
  float3 pivot=d[1].xyz,rotated=plant_rotate(p-pivot,-angle)+pivot;
  displacement=(float3)(0);
  float3 moved=d[10].x==2.f&&!referenceZone?plant_hybrid(rotated,r,(int)d[12].y,(int)d[13].y,d,correction):plant_mesh(rotated,r,(int)d[0].y,d,correction),shift=plant_rotate(moved-rotated,angle);
  if(length(displacement)>1.e-9f){p+=shift;*wn=plant_rotate(normalize(displacement),angle);*wv=(float3)(0,-(p.z-pivot.z),p.y-pivot.y);}
+ #endif
  return p;
 }
 float3 plant_boundary_ref(float3 p,float r,float angle,__global const float4* d,float3* wn,float3* wv,float3 reference){

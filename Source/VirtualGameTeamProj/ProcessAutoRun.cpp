@@ -1,4 +1,4 @@
-#include "ProcessAutoRun.h"
+﻿#include "ProcessAutoRun.h"
 #include "ProcessRecipe.h"
 #include "ProcessStagePressure.h"
 #include "ProcessPlantBinding.h"
@@ -165,8 +165,14 @@ bool FProcessAutoRun::MixSpeedMatches(const FProcessControlMachine& M) const
  const auto* R=M.History.Find(State.SpeedRequest);
  const double Confirmed=State.ConfirmedMixRPM>0?State.ConfirmedMixRPM:State.TargetMixerRPM;
  const bool Scoped=R&&R->Revision>0&&R->SpeedRun==State.ConfirmedMixRun&&R->SpeedBatch==State.RunId;
- const bool Previous=S.AppliedRPM==double(float(Confirmed))&&S.WorkerTargetRPM==Confirmed;
- const bool New=Scoped&&S.MixRun==R->SpeedRun&&S.SpeedAppliedRevision==R->Revision&&S.AppliedRPM==double(float(R->Value))&&S.WorkerTargetRPM==R->Value;
+ if(State.Stage==EProcessAutoStage::StopMixer&&S.MixerDrive.Supported){
+  if(!S.AppliedRPMValid||S.MixerDrive.Tripped)return false;
+  if(S.MixerDrive.TargetRPM==0)return true;
+  // A published batch may still precede the newly issued stop request.
+  if(State.MixerStopRequestRevision>0&&S.ProcessedControlRevision>=State.MixerStopRequestRevision)return false;
+ }
+ const bool Previous=S.MixerTargetApplied(Confirmed)&&S.WorkerTargetRPM==Confirmed;
+ const bool New=Scoped&&S.MixRun==R->SpeedRun&&S.SpeedAppliedRevision==R->Revision&&S.MixerTargetApplied(R->Value)&&S.WorkerTargetRPM==R->Value;
  // Stop releases the request target immediately. Only worker rotation matters during rundown.
  return (Previous||New)&&(State.Stage==EProcessAutoStage::StopMixer||S.RequestedRPM==Confirmed||(Scoped&&S.RequestedRPM==R->Value));
 }
@@ -452,7 +458,7 @@ void FProcessAutoRun::Tick(FProcessControlMachine& M,double Now,const FProcessAu
   {Fail(TEXT("혼합 시작 전 수취 닫힘·전량 투입 재확인 실패"),M,Now,Send);break;}
   const auto Next=State.AdditiveEnabled&&State.AdditiveScheduled?(State.IsAdditive()?EProcessAutoStage::WaitAdditive:EProcessAutoStage::BeginAdditive):EProcessAutoStage::Mixing;
   if(Go(EProcessCommand::MixerEnabled,TEXT("mixer"),1,Next)){
-   if(!S.AppliedRPMValid||S.AppliedRPM!=double(float(State.TargetMixerRPM))||StartFeed.MixerAppliedRevision!=State.MixerRequestRevision||
+   if(!S.AppliedRPMValid||!S.MixerTargetApplied(State.TargetMixerRPM)||StartFeed.MixerAppliedRevision!=State.MixerRequestRevision||
       StartFeed.CloseRevision>=StartFeed.MixerStartRevision){Fail(TEXT("혼합 계산 RPM·닫힘 선행 작업자 확인 실패"),M,Now,Send);break;}
    ConfirmMixStart();
    State.MixerAppliedSimulationSeconds=StartFeed.MixerAppliedSimulationSeconds;

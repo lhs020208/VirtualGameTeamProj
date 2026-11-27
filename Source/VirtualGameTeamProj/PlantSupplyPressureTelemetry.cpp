@@ -39,7 +39,7 @@ FPlantSupplyPressureTelemetry::FPlantSupplyPressureTelemetry(const std::vector<p
  }catch(const std::exception& E){for(auto& P:Paths){P.Cell=-1;P.Error=UTF8_TO_TCHAR(E.what());}}
 }
 TArray<FPlantSupplyValvePressure> FPlantSupplyPressureTelemetry::Observe(const std::vector<powder::Grain>& D,const std::vector<powder::PlantRoute>& Routes,
- const FVector& Applied,uint32 Open,uint32 Air,bool Regulated,int32 PurgeSupplier,bool Purging,const TArray<double>& Sources) const
+ const FVector& Applied,uint32 Open,uint32 Air,bool Regulated,int32 PurgeSupplier,bool Purging,const TArray<double>& Sources,const std::vector<double>* Apertures) const
 {
  TArray<FPlantSupplyValvePressure> Out;Out.SetNum(6);
  for(int32 I=0;I<6;++I){auto& V=Out[I];const auto& P=Paths[I];V.Supplier=I;V.Route=P.Route;V.GateCell=P.Cell;V.GateDataIndex=P.Gate;
@@ -54,12 +54,12 @@ TArray<FPlantSupplyValvePressure> FPlantSupplyPressureTelemetry::Observe(const s
    if(!V.FlowValid){V.Reason=TEXT("유량 계산값 미확인 · 차압 미산출");continue;}
    if(Q==0){V.Reason=TEXT("밸브 열림 · 통과 유량 0 · 차압 미산출");continue;}
    for(int32 Ci=0;Ci<int32(R.cells.size());++Ci){const int32 At=R.cells[Ci];if(D[At+2].x!=Q)throw std::runtime_error("nonuniform uploaded flow");
-    if(Ci==P.Cell)Before=Sum;Sum+=Loss(D,At,Q);if(Ci==P.Cell)After=Sum;
+    if(Ci==P.Cell)Before=Sum;Sum+=Loss(D,At,Q);if(Apertures&&Ci==P.Cell&&Apertures->at(I)>1.e-8){double Area=PI*D[P.Gate].w*D[P.Gate].w,Aperture=Apertures->at(I);Sum+=.6*Q*Q/(Area*Area)*FMath::Max(0.,1/(Aperture*Aperture)-1)/(.62*.62);}if(Ci==P.Cell)After=Sum;
    }
    V.FlowM3s=Q;V.RouteLossPa=Sum;V.BoundaryResidualPa=Supply-Sum-Applied.Y;
    if(FMath::Abs(V.BoundaryResidualPa)>.01)throw std::runtime_error("field pressure boundary residual exceeds telemetry precision");
    V.BeforeGaugePa=Supply-Before;V.AfterGaugePa=Supply-After;V.DifferencePa=V.BeforeGaugePa-V.AfterGaugePa;V.Valid=true;
-   V.Reason=TEXT("모델 추정값 · 기존 유로 셀 손실 · 밸브 전용 손실/센서값 아님");
+   V.Reason=Apertures?TEXT("모델 추정값 · 실제 각도의 개구율/오리피스 손실 포함 · 센서값 아님"):TEXT("모델 추정값 · 기존 유로 셀 손실 · 밸브 전용 손실/센서값 아님");
   }catch(const std::exception& E){V.Valid=false;V.FlowValid=false;V.BeforeGaugePa=V.AfterGaugePa=V.DifferencePa=0;V.Reason=TEXT("유로 계산 미확인 · 차압 미산출 · ")+FString(UTF8_TO_TCHAR(E.what()));}
  }
  return Out;

@@ -50,11 +50,12 @@ struct PlantPressureState {
 };
 // The ideal WH regulator supplies q_out - sum(q_in); negative means extraction.
 // This explicitly accounts for a reservoir source/sink, not a closed-node imbalance.
-inline PlantPressureState plant_set_regulated_pressures(std::vector<Grain>&d,const std::vector<PlantRoute>&routes,PlantPressureTargets target,std::uint32_t suppliers,std::uint32_t supplier_air,bool hopper,bool hopper_air,bool receiver_open,PlantSupplyAPurge purge={}){
+inline PlantPressureState plant_set_regulated_pressures(std::vector<Grain>&d,const std::vector<PlantRoute>&routes,PlantPressureTargets target,std::uint32_t suppliers,std::uint32_t supplier_air,bool hopper,bool hopper_air,bool receiver_open,PlantSupplyAPurge purge={},const std::vector<double>* apertures=nullptr){
  validate_plant_pressure_targets(target);validate_plant_supply_a_purge(purge);
  if(d.size()<16||d[11].x!=0)throw std::invalid_argument("regulated pressure requires full plant");
  auto gates=plant_supplier_gates(d);int wh=plant_weighing_gate(d),rh=plant_receiver_gate(d);
- PlantPressureState state;state.applied=target;if(receiver_open)state.applied.receiver=0; // vented discharge test assumption
+ if(apertures){if(apertures->size()!=gates.size()+2)throw std::invalid_argument("valve aperture count mismatch");for(double a:*apertures)if(!std::isfinite(a)||a<0||a>1)throw std::invalid_argument("invalid valve aperture");}
+ PlantPressureState state;state.applied=target;if(apertures)state.applied.receiver*=1-apertures->back();else if(receiver_open)state.applied.receiver=0; // vented discharge test assumption
  PlantSupplyAPurgePath purge_path;
  if(purge.enabled||purge.gauge_pa!=0)purge_path=plant_supply_purge_path(d,routes,purge.supplier);
  if(purge.enabled&&(suppliers||supplier_air||hopper||purge.gauge_pa<=target.weighing))
@@ -66,10 +67,12 @@ inline PlantPressureState plant_set_regulated_pressures(std::vector<Grain>&d,con
   bool enabled;double dp;
   if(r.phase==0){if(branch>=gates.size())throw std::invalid_argument("too many supplier routes");enabled=(suppliers&supplier_air&(std::uint32_t(1)<<branch))!=0;dp=target.source(branch)-target.weighing;++branch;}
   else{++outputs;enabled=hopper&&hopper_air;dp=target.weighing-state.applied.receiver;}
+  double opening=1,gate_radius=d[wh].w;
+  if(apertures){size_t index=r.phase==0?branch-1:gates.size();opening=(*apertures)[index];enabled=opening>1.e-8;gate_radius=r.phase==0?d[gates[index]].w:d[wh].w;}
   const bool purging=purge.enabled&&route_index==purge_path.route;
   const size_t first=purging?purge_path.first_cell:0;
-  if(purging){enabled=true;dp=purge.gauge_pa-target.weighing;}
-  auto loss=[&](double q){double sum=0;for(size_t ci=first;ci<r.cells.size();++ci){int at=r.cells[ci];if(at<int(d[0].z)||at+2>=int(d.size())||(at-int(d[0].z))%3||d[at+2].w!=r.phase)throw std::invalid_argument("regulated route cell mismatch");auto a=d[at],b=d[at+1],v=d[at+2];double length=std::hypot(std::hypot(b.x-a.x,b.y-a.y),b.z-a.z);sum+=v.z==1?plant_cell_loss(q,length,2*a.w*b.w/(a.w+b.w),v.y,4*a.w*b.w):plant_cell_loss(q,length,std::min(a.w,b.w),v.y);}return sum;};
+  if(purging){enabled=true;dp=purge.gauge_pa-target.weighing;opening=1;}
+  auto loss=[&](double q){double sum=0;for(size_t ci=first;ci<r.cells.size();++ci){int at=r.cells[ci];if(at<int(d[0].z)||at+2>=int(d.size())||(at-int(d[0].z))%3||d[at+2].w!=r.phase)throw std::invalid_argument("regulated route cell mismatch");auto a=d[at],b=d[at+1],v=d[at+2];double length=std::hypot(std::hypot(b.x-a.x,b.y-a.y),b.z-a.z);sum+=v.z==1?plant_cell_loss(q,length,2*a.w*b.w/(a.w+b.w),v.y,4*a.w*b.w):plant_cell_loss(q,length,std::min(a.w,b.w),v.y);}if(apertures&&opening>1.e-8){double area=3.141592653589793*gate_radius*gate_radius;sum+=.6*q*q/(area*area)*std::max(0.,1/(opening*opening)-1)/(.62*.62);}return sum;};
   loss(0);double q=0;
   if(enabled&&dp!=0){double lo=0,hi=1;if(loss(hi)<std::abs(dp))throw std::invalid_argument("pressure flow bracket exceeded");for(int n=0;n<55;++n){double mid=(lo+hi)/2;if(loss(mid)>std::abs(dp))hi=mid;else lo=mid;}q=std::copysign((lo+hi)/2,dp);}
   for(int at:r.cells){double radius=std::min(d[at].w,d[at+1].w);if(std::abs(q)/(3.141592653589793*radius*radius)>80)throw std::invalid_argument("pressure produces carrier speed above model limit");}

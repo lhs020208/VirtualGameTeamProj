@@ -9,6 +9,7 @@ class APlantVisibilityController;
 class UProcessControlService;
 struct FPlantRuntime;
 class SWidget;
+
 UENUM(BlueprintType)
 enum class EPlantComputeBackend : uint8 {
  OpenCL UMETA(DisplayName="OpenCL"),
@@ -27,6 +28,9 @@ struct FPlantRotorVisual {
 UCLASS()
 class VIRTUALGAMETEAMPROJ_API APowderPlantTest:public AActor {
  GENERATED_BODY()
+ TMap<AActor*,FTransform> ValveInitialTransforms;
+ TArray<FVector> ValvePivotsCm;
+
 public:
  APowderPlantTest();~APowderPlantTest();
  virtual void BeginPlay() override;
@@ -35,6 +39,25 @@ public:
  UPROPERTY(EditAnywhere,Category="Plant|Test",meta=(ClampMin="0",ClampMax="4")) int32 SectionTest=0;
  UPROPERTY(EditAnywhere,Category="Plant|Test") FString DataDirectory=TEXT("SourceAssets/ProcessPlantPhysics");
  // Existing levels keep OpenCL. The isolated CUDA level opts in explicitly.
+ // Applies on ResetSimulation. Supply is a fraction of nominal 24 V gearbox availability.
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive") bool PoweredValves=false;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="0",ClampMax="1")) double ValvePowerFraction=1;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="0.1")) double SmallValveTorqueNm=10;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="0.1")) double LargeValveTorqueNm=100;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="1")) double SmallValveElectricalW=15;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="1")) double LargeValveElectricalW=45;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="0.1")) double SmallValveTravelSeconds=11;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="0.1")) double LargeValveTravelSeconds=24;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive") bool PoweredMixer=false;
+ // All drive parameters apply on ResetSimulation; RPM remains the operator speed target.
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="1")) double MixerInputPowerW=1302;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0.001")) double MixerMaxTorqueNm=750;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0.001")) double MixerInertiaKgM2=60;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0.01",ClampMax="0.99")) double MixerDriveEfficiency=.8;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0",ClampMax="1")) double MixerPowerFraction=1;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0.1")) double MixerRampSeconds=2;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0")) double MixerBrakeTorqueNm=100;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0.1")) double MixerTripSeconds=2;
  UPROPERTY(EditAnywhere,Category="Plant|Compute") EPlantComputeBackend ComputeBackend=EPlantComputeBackend::OpenCL;
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") FString ComputeDevice;
  // Opt-in only: old OpenCL/CUDA maps retain their original solver.

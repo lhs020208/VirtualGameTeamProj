@@ -1,4 +1,4 @@
-#include "ProcessWebSnapshot.h"
+﻿#include "ProcessWebSnapshot.h"
 #include "ProcessUIStateAdapter.h"
 #include "ProcessAutoRun.h"
 #include "ProcessPlantBinding.h"
@@ -56,6 +56,8 @@ FString ProcessWebSnapshot::Serialize(const FContext& C,const FPlantSimulationSn
    const FString Label=Material?BaseLabel+TEXT(" · ")+Material->DisplayName:BaseLabel;
    const auto E=UProcessUIStateAdapter::BuildEquipment(Id,S,Now);auto M=Obj();
    Child(M,TEXT("valve_requested"),Metric(E.ValveRequestedOpen,TEXT("bool")));Child(M,TEXT("valve_applied"),Metric(E.ValveAppliedOpen,TEXT("bool")));
+   if(E.HasValveActuator){const auto& Drive=E.ValveActuator;Child(M,TEXT("valve_angle"),Metric(Drive.AngleDegrees,TEXT("deg"),Status,PlantValveStatus(Drive)));Child(M,TEXT("valve_power"),Metric(Drive.ElectricalWatts,TEXT("W"),Status));Child(M,TEXT("valve_torque"),Metric(Drive.MotorTorqueNm,TEXT("Nm"),Status));}
+   if(E.MixerDrive.Supported){const auto& Drive=E.MixerDrive;Child(M,TEXT("motor_power"),Metric(Drive.ElectricalWatts,TEXT("W"),Status));Child(M,TEXT("motor_torque"),Metric(Drive.MotorTorqueNm,TEXT("Nm"),Status));Child(M,TEXT("contact_torque"),Metric(Drive.ContactTorqueNm,TEXT("Nm"),Status));Child(M,TEXT("motor_energy"),Metric(Drive.EnergyJoules,TEXT("J"),Status));Child(M,TEXT("motor_trip"),Metric(Drive.Tripped?1:0,TEXT("bool"),Status));}
    Child(M,TEXT("particles"),Metric(E.RegionParticleCount,TEXT("particles")));Child(M,TEXT("mass"),Metric(E.CurrentMass.Kg,TEXT("kg"),Validity(E.CurrentMass.Validity)));
    Child(M,TEXT("pressure_requested"),Metric(E.RequestedPressurePa.Value,TEXT("Pa(g)"),Validity(E.RequestedPressurePa.Validity),E.PressureScope,TEXT("호퍼 목표 압력")));
    Child(M,TEXT("pressure_applied"),Metric(E.AppliedPressurePa.Value,TEXT("Pa(g)"),Validity(E.AppliedPressurePa.Validity),E.PressureScope,TEXT("적용 압력 설정 · 센서값 아님")));

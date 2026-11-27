@@ -1,0 +1,15 @@
+{
+  "test_particles": 24,
+  "actuator_count": 8,
+  "backend": "<PlantComputeBackend.OPEN_CL: 0>",
+  "mid_open_degrees": 0.5321052670478821,
+  "motor_nm": -9.73934365902096e-05,
+  "watts": 3.0,
+  "world_x_only": true,
+  "disc_visible": true,
+  "other_valves_closed": true,
+  "closed_after_reverse": true,
+  "physical_seconds": 0.1737599956104532,
+  "normal_contact_load_n": 0.004733849782496691,
+  "final_particles": 24
+}

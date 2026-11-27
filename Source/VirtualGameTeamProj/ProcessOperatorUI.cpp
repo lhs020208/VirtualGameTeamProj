@@ -274,6 +274,7 @@ void UProcessControlUI::RefreshOperatorLayout()
   else if(I==6)Caption=TEXT("현재량\n")+ProcessDisplay::Mass(Snap.WeighingMass.Kg,Fresh&&Snap.WeighingMass.Validity==EPlantValueValidity::Valid)+TEXT("\n")+(Fresh?(Snap.AppliedHopperOpen?TEXT("열림"):TEXT("닫힘")):TEXT("미확인"));
   else if(I==7)Caption=TEXT("현재량\n")+ProcessDisplay::Mass(Snap.ReceiverMass.Kg,Fresh&&Snap.ReceiverMass.Validity==EPlantValueValidity::Valid)+TEXT("\n")+(Fresh?(Snap.AppliedReceiverOpen?TEXT("열림"):TEXT("닫힘")):TEXT("미확인"));
   else Caption=(Fresh&&Snap.AppliedRPMValid?ProcessDisplay::Number(Snap.AppliedRPM):TEXT("미확인"))+TEXT(" RPM");
+  if(Fresh&&Snap.ValveActuators.IsValidIndex(I))Caption=PlantValveStatus(Snap.ValveActuators[I]);
   T->SetText(FText::FromString(Caption));Font(T,18);T->SetAutoWrapText(false);
   if(auto* B=Cast<UButton>(T->GetParent())){auto Style=B->GetStyle();Style.NormalPadding=Style.PressedPadding=FMargin(4);B->SetStyle(Style);}
  }

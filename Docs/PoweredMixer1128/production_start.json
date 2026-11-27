@@ -1,0 +1,9 @@
+{
+  "particles": 200,
+  "backend": "<PlantComputeBackend.OPEN_CL: 0>",
+  "physical_seconds": 0.04159999894909561,
+  "mixer_powered": true,
+  "mixer_stopped": true,
+  "closed_valves": 8,
+  "error": ""
+}

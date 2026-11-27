@@ -1,0 +1,6 @@
+1 warning generated.
+unloaded travel_s=11.25 angle=1.5708 energy_J=33.0302
+external jam angle=0 tripped=1
+two_face contact_Nm=-0.0239979 normal_N=1.99983 angle=0
+production contact_Nm=-0.0239902 normal_N=1.99919
+PASS powered valves: finite travel, electricity, reverse, torque stall, bilateral reaction, actual aperture

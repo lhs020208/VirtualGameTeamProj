@@ -1,4 +1,4 @@
-#include "ProcessAutoRun.h"
+﻿#include "ProcessAutoRun.h"
 #include "PlantSupplyABatch.h"
 #include "PlantDoseValidation.h"
 #include "Misc/AutomationTest.h"
@@ -218,6 +218,20 @@ bool FTimedMixClock::RunTest(const FString&){
  TestEqual(TEXT("target-to-stop overshoot recorded"),F.A.State.MixingStopOverrunSeconds,.04,1e-9);
  return true;
 }
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPoweredMixRundown,"ProcessUI.AutoA.PoweredMixerRundown",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FPoweredMixRundown::RunTest(const FString&){
+ FAutoFixture F;F.ArmMixing();auto& S=F.M.Snapshot;S.MixerDrive.Supported=true;S.MixerDrive.PowerFraction=1;S.MixerDrive.Stopped=false;S.MixerDrive.TargetRPM=15;S.AppliedRPM=14;
+ F.Tick(.16);TestTrue(TEXT("loaded actual RPM reaches scheduled stop"),F.A.State.Stage==EProcessAutoStage::StopMixer);
+ const int64 Rev=F.A.State.MixerStopRequestRevision;F.Queued.Empty();
+ auto Publish=[&](){auto P=F.M.Snapshot;P.Sequence++;P.PhysicalSeconds+=.01;F.Now+=.1;P.PublishedWallSeconds=F.Now;F.M.Observe(P,F.Now,F.Transport);F.A.Tick(F.M,F.Now,F.Send);};
+ Publish();TestTrue(TEXT("in-flight pre-stop snapshot is accepted"),F.A.State.Stage==EProcessAutoStage::StopMixer);
+ S.ProcessedControlRevision=S.RequestedControlRevision=Rev;S.RequestedMixerEnabled=S.WorkerMixerEnabled=false;S.MixerDrive.TargetRPM=0;S.AppliedRPM=10;
+ Publish();TestTrue(TEXT("physical rundown is not premature completion or RPM failure"),F.A.State.Stage==EProcessAutoStage::StopMixer&&F.A.State.Active);
+ S.AppliedRPM=0;S.MixerDrive.Stopped=true;S.AppliedRPMRevision=Rev;S.AppliedRPMSimulationSeconds=S.PhysicalSeconds;
+ Publish();TestTrue(TEXT("actual stop confirms timed mix"),F.A.State.Stage==EProcessAutoStage::Complete&&!F.A.State.Active);
+ return true;
+}
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FTimedMixFaults,"ProcessUI.AutoA.TimedMixCancellationAndFaults",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
 bool FTimedMixFaults::RunTest(const FString&){
  FAutoFixture F;F.ArmMixing();F.A.Cancel(TEXT("whole stop during mixing"));F.M.AutomationActive=false;
