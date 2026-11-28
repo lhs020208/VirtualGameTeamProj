@@ -48,6 +48,19 @@ FString ProcessRecipe::ValidateEntries(const TArray<FProcessFeedEntry>& Entries,
 
 FString ProcessRecipe::Validate(const FProcessRecipe& R)
 {
+ if(!R.DiameterMm.IsEmpty()||!R.TargetCounts.IsEmpty()){
+  if(R.DiameterMm.Num()!=6||R.TargetCounts.Num()!=6)return TEXT("A~F 입자 설정 6개가 필요합니다.");
+  for(int32 I=0;I<6;++I){
+   if(!ValidDiameter(R.DiameterMm[I])||R.TargetCounts[I]<0||R.TargetCounts[I]>1000000)return TEXT("지름은 2 mm 이상 20 mm 미만, 목표 개수는 1~1,000,000개입니다.");
+   if(!R.TargetCounts[I])continue;
+   const auto* E=R.Entries.FindByPredicate([I](const auto& V){return V.Supplier==I;});
+   const bool Active=E?E->Enabled:R.Mode!=EProcessBatchMode::HopperSequence&&R.Mode!=EProcessBatchMode::Full&&(I==0||(I==1&&R.Mode==EProcessBatchMode::SequentialAB)||(I==2&&R.AdditiveEnabled));
+   const double Tolerance=E?E->ToleranceKg:I==0?R.ToleranceAKg:I==1?R.ToleranceBKg:R.ToleranceCKg;
+   if(!Active||Tolerance!=0)return TEXT("개수 목표는 사용 중인 원료의 정확한 정수 개수로 판정합니다.");
+   const double Kg=E?E->TargetKg:R.Mode==EProcessBatchMode::HopperSequence?0:I==0?R.TargetAKg:I==1?R.TargetBKg:I==2?R.TargetCKg:0;
+   if(FMath::Abs(Kg-R.TargetCounts[I]*GrainKg(R.DiameterMm[I]))>1e-13*FMath::Max(1.,Kg))return TEXT("입자 개수와 목표 질량이 일치하지 않습니다.");
+  }
+ }
  const auto PressureWhy=ProcessStagePressure::Validate(R.FeedPressurePa,R.TransferPressurePa,R.SupplierFeedPa);if(!PressureWhy.IsEmpty())return PressureWhy;
  if(!TextOK(R.Name,80))return TEXT("레시피 이름은 공백으로 시작/끝나지 않는 1~80자여야 합니다. 제어 문자는 사용할 수 없습니다.");
  if(R.Mode!=EProcessBatchMode::HopperSequence&&R.Mode!=EProcessBatchMode::Full&&R.Mode!=EProcessBatchMode::TargetMass&&R.Mode!=EProcessBatchMode::SequentialAB)return TEXT("지원하지 않는 배치 모드입니다.");
@@ -103,6 +116,16 @@ FString ProcessRecipe::Encode(const FProcessRecipe& R)
   Press->SetObjectField(TEXT("supplier_feed_pa"),Sources);
  }
  Press->SetObjectField(TEXT("supply_to_weighing"),Stage(R.FeedPressurePa));Press->SetObjectField(TEXT("weighing_to_receiver"),Stage(R.TransferPressurePa));O->SetObjectField(TEXT("hopper_pressure_targets"),Press);
+ if(!R.DiameterMm.IsEmpty()){
+  Obj Sizes=MakeShared<FJsonObject>();
+  for(int32 I=0;I<6;++I){
+   Obj Item=MakeShared<FJsonObject>();Item->SetNumberField(TEXT("diameter_mm"),R.DiameterMm[I]);
+   Item->SetStringField(TEXT("target_basis"),R.TargetCounts[I]>0?TEXT("count"):TEXT("mass"));
+   Item->SetNumberField(TEXT("target_count"),R.TargetCounts[I]);
+   Sizes->SetObjectField(ProcessPlantBinding::SupplierId(I),Item);
+  }
+  O->SetNumberField(TEXT("version"),5);O->SetObjectField(TEXT("particle_settings"),Sizes);
+ }
  FString Text;FJsonSerializer::Serialize(O.ToSharedRef(),TJsonWriterFactory<>::Create(&Text));return Text;
 }
 
@@ -111,7 +134,17 @@ bool ProcessRecipe::Decode(const FString& Text,FProcessRecipe& Out,FString& Erro
  auto Fail=[&](const TCHAR* Why){Error=Why;return false;};Obj O;
  if(Text.Len()>65536||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),O)||!O)return Fail(TEXT("레시피 JSON이 손상됐거나 크기 제한(64 KiB)을 초과했습니다."));
  FString Schema,Mode;double V=0;FProcessRecipe R;
- if(!Str(O,TEXT("schema"),Schema)||Schema!=TEXT("virtual-game-team.batch-recipe")||!Num(O,TEXT("version"),V)||(V!=1&&V!=Version&&V!=3&&V!=4))return Fail(TEXT("지원하지 않는 레시피 형식 또는 버전입니다."));
+ if(!Str(O,TEXT("schema"),Schema)||Schema!=TEXT("virtual-game-team.batch-recipe")||!Num(O,TEXT("version"),V)||(V!=1&&V!=Version&&V!=3&&V!=4&&V!=5))return Fail(TEXT("지원하지 않는 레시피 형식 또는 버전입니다."));
+ if(V==5){
+  const auto Sizes=Sub(O,TEXT("particle_settings"));
+  if(!Sizes||Sizes->Values.Num()!=6)return Fail(TEXT("호퍼별 입자 설정 누락"));
+  for(int I=0;I<6;++I){
+   const auto Item=Sub(Sizes,ProcessPlantBinding::SupplierId(I));double Mm=0,N=0;FString Basis;
+   if(!Keys(Item,{TEXT("diameter_mm"),TEXT("target_basis"),TEXT("target_count")})||!Num(Item,TEXT("diameter_mm"),Mm)||!Num(Item,TEXT("target_count"),N)||!Str(Item,TEXT("target_basis"),Basis)||N<0||N>1000000||N!=FMath::FloorToDouble(N)||(N==0?Basis!=TEXT("mass"):Basis!=TEXT("count")))return Fail(TEXT("입자 지름·목표 기준·정수 개수를 확인하세요."));
+   R.DiameterMm.Add(Mm);R.TargetCounts.Add(int32(N));
+  }
+  O->RemoveField(TEXT("particle_settings"));
+ }
  const bool Modern=V>=2;
  const bool RootKeys=Modern?Keys(O,{TEXT("schema"),TEXT("version"),TEXT("name"),TEXT("mode"),TEXT("units"),TEXT("feed_order"),TEXT("materials"),TEXT("mixing"),TEXT("additive"),TEXT("hopper_pressure_targets")}):Keys(O,{TEXT("schema"),TEXT("version"),TEXT("name"),TEXT("mode"),TEXT("units"),TEXT("feed_order"),TEXT("materials"),TEXT("mixing"),TEXT("additive")});
  if(!RootKeys)return Fail(TEXT("레시피 필드가 누락됐거나 지원하지 않는 필드가 있습니다. 실행 상태/명령은 레시피가 아닙니다."));
@@ -126,7 +159,7 @@ bool ProcessRecipe::Decode(const FString& Text,FProcessRecipe& Out,FString& Erro
   Obj P=Sub(O,TEXT("hopper_pressure_targets"));
   auto ReadStage=[&](const TCHAR* Id,FVector& OutPressure){Obj T=Sub(P,Id);return Keys(T,{TEXT("supply-common"),TEXT("weigher"),TEXT("receiver")})&&Num(T,TEXT("supply-common"),OutPressure.X)&&Num(T,TEXT("weigher"),OutPressure.Y)&&Num(T,TEXT("receiver"),OutPressure.Z);};
   bool Fields=Keys(P,{TEXT("supply_to_weighing"),TEXT("weighing_to_receiver")});
-  if(V==4){
+  if(V==4||(V==5&&P&&P->HasField(TEXT("supplier_feed_pa")))){
    Fields=Keys(P,{TEXT("supply_to_weighing"),TEXT("weighing_to_receiver"),TEXT("supplier_feed_pa")});
    const Obj Sources=Sub(P,TEXT("supplier_feed_pa"));
    if(!Sources||Sources->Values.Num()!=6)return Fail(TEXT("공급원별 압력 목록 오류"));

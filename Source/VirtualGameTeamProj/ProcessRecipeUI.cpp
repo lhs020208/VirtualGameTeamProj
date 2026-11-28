@@ -1,6 +1,7 @@
 #include "ProcessControlUI.h"
 #include "ProcessControlService.h"
 #include "ProcessDisplay.h"
+#include "ProcessGrainTargetInput.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Border.h"
@@ -48,13 +49,34 @@ void UProcessControlUI::BuildRecipeControls(UCanvasPanel* Root)
  auto* Copy=Button(TEXT("RecipeCopyApplied"),TEXT("현재 적용값을 편집으로"));FileRow->AddChildToHorizontalBox(Copy);Copy->OnClicked.AddDynamic(this,&UProcessControlUI::CopyAppliedRecipe);
  auto Input=[&](const TCHAR* N,const TCHAR* Caption,UHorizontalBox* Row=nullptr,float Weight=1){
   auto* Col=W->WidgetTree->ConstructWidget<UVerticalBox>();if(Row){auto* Slot=Row->AddChildToHorizontalBox(Col);FSlateChildSize Size(ESlateSizeRule::Fill);Size.Value=Weight;Slot->SetSize(Size);Slot->SetPadding(FMargin(3,0));}else P->AddChildToVerticalBox(Col)->SetPadding(FMargin(0,4));
-  Col->AddChildToVerticalBox(Text(TEXT(""),Caption));auto* I=W->WidgetTree->ConstructWidget<UEditableTextBox>(UEditableTextBox::StaticClass(),N);auto Style=I->GetWidgetStyle();auto F=Style.TextStyle.Font;F.Size=18;Style.SetFont(F);Style.SetForegroundColor(FLinearColor(.025f,.055f,.09f));I->SetWidgetStyle(Style);I->OnTextChanged.AddDynamic(this,&UProcessControlUI::RecipeTextChanged);Col->AddChildToVerticalBox(I);
+  Col->AddChildToVerticalBox(Text(FString(N).EndsWith(TEXT("Count"))?*(FString(N)+TEXT("Label")):TEXT(""),Caption));const FString Field(N);
+  const bool IsTarget=Field.StartsWith(TEXT("RecipeTarget"))||(Field.StartsWith(TEXT("FeedSlot"))&&Field.Contains(TEXT("Target")));
+  UEditableTextBox* I=nullptr;
+  if(IsTarget){
+   auto* Dose=W->WidgetTree->ConstructWidget<UProcessGrainTargetInput>(UProcessGrainTargetInput::StaticClass(),N);
+   Dose->Edited.BindWeakLambda(this,[this,Field](){
+    if(RecipeFilling)return;
+    if(Field.EndsWith(TEXT("Count"))){CountBasedFields.Add(Field.LeftChop(5));DiameterEdited=true;}
+    else CountBasedFields.Remove(Field);
+    RecipeTextChanged(FText());
+   });
+   Dose->BindEditing();I=Dose;
+  }else{
+   I=W->WidgetTree->ConstructWidget<UEditableTextBox>(UEditableTextBox::StaticClass(),N);
+   I->OnTextChanged.AddDynamic(this,&UProcessControlUI::RecipeTextChanged);
+  }
+  auto Style=I->GetWidgetStyle();auto F=Style.TextStyle.Font;F.Size=18;Style.SetFont(F);Style.SetForegroundColor(FLinearColor(.025f,.055f,.09f));I->SetWidgetStyle(Style);Col->AddChildToVerticalBox(I);
  };
+ for(int32 I=0;I<6;++I){
+  Input(*FString::Printf(TEXT("GrainDiameter%d"),I),*FString::Printf(TEXT("공급 %c · 새 장입 입자 지름 (mm)"),'A'+I));
+ }
+ auto* NewCharge=Button(TEXT("NewParticleCharge"),TEXT("적용한 지름으로 새 장입 · 전체 정지 후"));
+ P->AddChildToVerticalBox(NewCharge);NewCharge->OnClicked.AddDynamic(this,&UProcessControlUI::NewParticleCharge);
  Input(TEXT("RecipeName"),TEXT("편집 레시피 이름"));
  auto* Mode=W->WidgetTree->ConstructWidget<UComboBoxString>(UComboBoxString::StaticClass(),TEXT("RecipeMode"));for(const TCHAR* V:Modes)Mode->AddOption(V);Mode->OnSelectionChanged.AddDynamic(this,&UProcessControlUI::RecipeModeChanged);P->AddChildToVerticalBox(Mode)->SetPadding(FMargin(0,4));
  auto Material=[&](const TCHAR* RowName,const TCHAR* Caption,const TCHAR* Name,const TCHAR* Target,const TCHAR* Tol){
   auto* Row=W->WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass(),RowName);P->AddChildToVerticalBox(Row)->SetPadding(FMargin(0,5));
-  Input(Name,Caption,Row,2);Input(Target,TEXT("목표량 (g)"),Row);Input(Tol,TEXT("계량 오차 ± (g)"),Row);
+  Input(Name,Caption,Row,2);Input(*(FString(Target)+TEXT("Count")),TEXT("목표 입자 수 (개)"),Row);Input(Target,TEXT("목표량 (g)"),Row);Input(Tol,TEXT("계량 오차 ± (g)"),Row);
  };
  for(int32 Slot=0;Slot<6;++Slot){
   const FString Key=FString::Printf(TEXT("FeedSlot%d"),Slot);
@@ -67,7 +89,7 @@ void UProcessControlUI::BuildRecipeControls(UCanvasPanel* Root)
   };
   Options(TEXT("Hopper"),{TEXT("미지정"),TEXT("A"),TEXT("B"),TEXT("C"),TEXT("D"),TEXT("E"),TEXT("F")});
   Options(TEXT("Role"),{TEXT("원료"),TEXT("첨가제"),TEXT("원료 · 미사용"),TEXT("첨가제 · 미사용")});
-  Input(*(Key+TEXT("Name")),TEXT("표시명"),Row,2);Input(*(Key+TEXT("Target")),TEXT("목표 g"),Row);Input(*(Key+TEXT("Tolerance")),TEXT("오차 g"),Row);
+  Input(*(Key+TEXT("Name")),TEXT("표시명"),Row,2);Input(*(Key+TEXT("TargetCount")),TEXT("목표 입자 수 (개)"),Row);Input(*(Key+TEXT("Target")),TEXT("목표 g"),Row);Input(*(Key+TEXT("Tolerance")),TEXT("오차 g"),Row);
  }
  Material(TEXT("RecipeARow"),TEXT("공급 A · 원료 표시명 (supply-a)"),TEXT("RecipeMaterialA"),TEXT("RecipeTargetA"),TEXT("RecipeToleranceA"));
  Material(TEXT("RecipeBRow"),TEXT("공급 B · 원료 표시명 (supply-b)"),TEXT("RecipeMaterialB"),TEXT("RecipeTargetB"),TEXT("RecipeToleranceB"));
@@ -92,7 +114,7 @@ void UProcessControlUI::BuildRecipeControls(UCanvasPanel* Root)
  Check(TEXT("RecipeOverwriteConfirm"),TEXT("목록에서 선택한 같은 이름의 레시피를 덮어쓰겠습니다"),false);
  auto* Replace=Button(TEXT("RecipeOverwrite"),TEXT("선택 레시피 덮어쓰기"));P->AddChildToVerticalBox(Replace)->SetPadding(FMargin(0,4));Replace->OnClicked.AddDynamic(this,&UProcessControlUI::OverwriteSelectedRecipe);
  P->AddChildToVerticalBox(Text(TEXT("RecipeAppliedSummary"),TEXT("현재 적용값")))->SetPadding(FMargin(0,12));
- All->AddChildToVerticalBox(Text(TEXT("RecipeMessage"),TEXT("Saved/BatchRecipes · 선택 순차 버전3 · 버전1·2 호환 · 저장/불러오기/적용은 장비를 조작하지 않습니다.")))->SetPadding(FMargin(0,6));
+ All->AddChildToVerticalBox(Text(TEXT("RecipeMessage"),TEXT("Saved/BatchRecipes · 입자 설정 버전5 · 버전1~4 호환 · 저장/불러오기/적용은 장비를 조작하지 않습니다.")))->SetPadding(FMargin(0,6));
  RefreshRecipeList();FillRecipeDraft(S->GetAppliedRecipe());RecipePanel->SetVisibility(ESlateVisibility::Collapsed);
 }
 bool UProcessControlUI::RecipeEditable()
@@ -103,9 +125,62 @@ bool UProcessControlUI::RecipeEditable()
 }
 void UProcessControlUI::ToggleRecipes(){if(Is3D())return;RecipeOpen=!RecipeOpen;if(RecipeOpen)RefreshRecipeList();Refresh();}
 void UProcessControlUI::CloseRecipes(){RecipeOpen=false;Refresh();}
-void UProcessControlUI::RecipeModeChanged(FString,ESelectInfo::Type){if(!RecipeFilling){RecipeDirty=true;RefreshRecipeControls();}}
+void UProcessControlUI::RecipeModeChanged(FString,ESelectInfo::Type){if(!RecipeFilling){SyncGrainTargets();RecipeDirty=true;RefreshRecipeControls();}}
 void UProcessControlUI::RecipeSelectionChanged(FString,ESelectInfo::Type){if(RecipeFilling)return;if(auto* W=Widget.Get())if(auto* C=Cast<UCheckBox>(W->GetWidgetFromName(TEXT("RecipeOverwriteConfirm"))))C->SetIsChecked(false);}
-void UProcessControlUI::RecipeTextChanged(const FText&){if(!RecipeFilling){RecipeDirty=true;RecipeSelectionChanged(FString(),ESelectInfo::Direct);}}
+void UProcessControlUI::NewParticleCharge(){
+ if(auto* S=Service.Get()){if(S->LoadNewCharge(RecipeMessage))RecipeMessage=TEXT("적용 지름으로 새 장입을 시작했습니다.");Refresh();}
+}
+void UProcessControlUI::SyncGrainTargets(const FProcessRecipe* Loading)
+{
+ auto* W=Widget.Get();if(!W)return;
+ TGuardValue<bool> Guard(RecipeFilling,true);
+ if(Loading){GrainEditText.Reset();CountBasedFields.Reset();DiameterEdited=!Loading->DiameterMm.IsEmpty();}
+ for(int I=0;I<6;++I){
+  const FString Key=FString::Printf(TEXT("GrainDiameter%d"),I);
+  const FString Value=TextOf(W,*Key);
+  if(!Loading&&GrainEditText.Contains(Key)&&GrainEditText[Key]!=Value)DiameterEdited=true;
+  GrainEditText.Add(Key,Value);
+ }
+ for(int Row=0;Row<9;++Row){
+  const FString Base=Row<6?FString::Printf(TEXT("FeedSlot%dTarget"),Row):FString::Printf(TEXT("RecipeTarget%c"),'A'+Row-6);
+  const FString CountKey=Base+TEXT("Count");
+  int32 I=Row-6;
+  if(Row<6){
+   auto* Combo=Cast<UComboBoxString>(W->GetWidgetFromName(FName(*FString::Printf(TEXT("FeedSlot%dHopper"),Row))));
+   I=Combo?Combo->GetSelectedIndex()-1:INDEX_NONE;
+  }
+  if(I<0||I>=6)continue;
+  auto* G=Cast<UEditableTextBox>(W->GetWidgetFromName(FName(*Base)));
+  auto* N=Cast<UEditableTextBox>(W->GetWidgetFromName(FName(*CountKey)));
+  if(!G||!N)continue;
+  const FString CountText=N->GetText().ToString(),MassText=G->GetText().ToString();
+  const double Mm=NumberOf(W,*FString::Printf(TEXT("GrainDiameter%d"),I));
+  const double OneG=ProcessRecipe::GrainKg(Mm)*1000.;
+  if(Loading){
+   if(Loading->TargetCounts.IsValidIndex(I)&&Loading->TargetCounts[I]){
+    CountBasedFields.Add(Base);N->SetText(FText::FromString(FString::FromInt(Loading->TargetCounts[I])));
+   }
+  }
+  if(ProcessRecipe::ValidDiameter(Mm)){
+   if(CountBasedFields.Contains(Base)){
+    const double Count=NumberOf(W,*CountKey);
+    if(Count>=1&&Count<=1000000&&Count==FMath::FloorToDouble(Count)){
+     const FString New=ProcessDisplay::Exact(Count*OneG);
+     if(New!=MassText)G->SetText(FText::FromString(New));
+    }
+   }else{
+    const double Grams=NumberOf(W,*Base);
+    const FString New=FMath::IsFinite(Grams)&&Grams>=0&&Grams/OneG<=MAX_int32?FString::FromInt(FMath::RoundToInt(Grams/OneG)):FString();
+    if(CountText!=New)N->SetText(FText::FromString(New));
+   }
+  }
+  if(auto* Caption=Cast<UTextBlock>(W->GetWidgetFromName(FName(*(CountKey+TEXT("Label"))))))
+   Caption->SetText(FText::FromString(CountBasedFields.Contains(Base)?TEXT("목표 입자 수 (개)"):TEXT("예상 약 ")+N->GetText().ToString()+TEXT("개 · 개수 편집")));
+  N->SetToolTipText(FText::FromString(CountBasedFields.Contains(Base)?TEXT("정확한 목표 개수"):TEXT("질량 기준 · 예상 약 ")+N->GetText().ToString()+TEXT("개")));
+
+ }
+}
+void UProcessControlUI::RecipeTextChanged(const FText&){if(!RecipeFilling){SyncGrainTargets();RecipeDirty=true;RecipeSelectionChanged(FString(),ESelectInfo::Direct);}}
 void UProcessControlUI::RecipeCheckChanged(bool){if(!RecipeFilling){RecipeDirty=true;RefreshRecipeControls();}}
 void UProcessControlUI::RefreshRecipeList(const FString& SelectedFile)
 {
@@ -138,6 +213,8 @@ void UProcessControlUI::FillRecipeDraft(const FProcessRecipe& R)
   Select(TEXT("Hopper"),E?1+E->Supplier:0);Select(TEXT("Role"),E?(E->Additive?1:0)+(E->Enabled?0:2):0);
   Put(*(Key+TEXT("Name")),E?E->DisplayName:FString());Num(*(Key+TEXT("Target")),E?E->TargetKg*1000:0);Num(*(Key+TEXT("Tolerance")),E?E->ToleranceKg*1000:0);
  }
+ for(int I=0;I<6;++I)Num(*FString::Printf(TEXT("GrainDiameter%d"),I),R.DiameterMm.IsValidIndex(I)?R.DiameterMm[I]:4.);
+ SyncGrainTargets(&R);
  OriginalRecipeDraft=R;OriginalRecipeValid=true;OriginalRecipeText.Empty();
  for(int I=0;I<6;++I){const FString Field=FString::Printf(TEXT("RecipeSourcePressure%d"),I);OriginalRecipeText.Add(Field,TextOf(W,*Field));}
  for(const TCHAR* N:{TEXT("RecipeTargetA"),TEXT("RecipeToleranceA"),TEXT("RecipeTargetB"),TEXT("RecipeToleranceB"),TEXT("RecipeTargetC"),TEXT("RecipeToleranceC"),TEXT("RecipeRPM"),TEXT("RecipeMixSeconds"),TEXT("RecipeFeedWeigher"),TEXT("RecipeFeedReceiver"),TEXT("RecipeTransferWeigher"),TEXT("RecipeDelay"),TEXT("RecipeReceiverPressure")})OriginalRecipeText.Add(N,TextOf(W,N));
@@ -179,7 +256,28 @@ bool UProcessControlUI::ReadRecipeDraft(FProcessRecipe& Out,FString& Error) cons
  R.TransferPressurePa.Z=Native(TEXT("RecipeReceiverPressure"),OriginalRecipeDraft.TransferPressurePa.Z,.001);
  if(OriginalRecipeDraft.SupplierFeedPa.IsEmpty()&&R.FeedPressurePa==OriginalRecipeDraft.FeedPressurePa&&R.TransferPressurePa.Y==OriginalRecipeDraft.TransferPressurePa.Y&&
     !R.SupplierFeedPa.ContainsByPredicate([&](double V){return V!=R.FeedPressurePa.X;}))R.SupplierFeedPa.Reset();
- R.TargetRPM=Native(TEXT("RecipeRPM"),OriginalRecipeDraft.TargetRPM,1.);R.MixingSeconds=Native(TEXT("RecipeMixSeconds"),OriginalRecipeDraft.MixingSeconds,1.);Error=ProcessRecipe::Validate(R);if(!Error.IsEmpty())return false;Out=R;return true;
+ R.TargetRPM=Native(TEXT("RecipeRPM"),OriginalRecipeDraft.TargetRPM,1.);R.MixingSeconds=Native(TEXT("RecipeMixSeconds"),OriginalRecipeDraft.MixingSeconds,1.);if(DiameterEdited){
+  R.TargetCounts.Init(0,6);
+  for(int I=0;I<6;++I)R.DiameterMm.Add(NumberOf(W,*FString::Printf(TEXT("GrainDiameter%d"),I)));
+  auto SetCount=[&](int I,const FString& Key,double& Kg,double& Tol){
+   if(!CountBasedFields.Contains(Key))return true;
+   const double N=NumberOf(W,*(Key+TEXT("Count")));
+   if(!FMath::IsFinite(N)||N<1||N>1000000||N!=FMath::FloorToDouble(N)){Error=TEXT("목표 개수는 1~1,000,000 사이 정수여야 합니다.");return false;}
+   R.TargetCounts[I]=int32(N);Kg=N*ProcessRecipe::GrainKg(R.DiameterMm[I]);Tol=0;return true;
+  };
+  if(R.Mode==EProcessBatchMode::HopperSequence){
+   for(int Slot=0;Slot<6;++Slot){
+    auto* Box=Cast<UComboBoxString>(W->GetWidgetFromName(FName(*FString::Printf(TEXT("FeedSlot%dHopper"),Slot))));
+    const int I=Box?Box->GetSelectedIndex()-1:INDEX_NONE;
+    for(auto& E:R.Entries)if(E.Enabled&&E.Supplier==I&&!SetCount(I,FString::Printf(TEXT("FeedSlot%dTarget"),Slot),E.TargetKg,E.ToleranceKg))return false;
+   }
+  }else{
+   if(R.Mode!=EProcessBatchMode::Full&&!SetCount(0,TEXT("RecipeTargetA"),R.TargetAKg,R.ToleranceAKg))return false;
+   if(R.Mode==EProcessBatchMode::SequentialAB&&!SetCount(1,TEXT("RecipeTargetB"),R.TargetBKg,R.ToleranceBKg))return false;
+   if(R.AdditiveEnabled&&!SetCount(2,TEXT("RecipeTargetC"),R.TargetCKg,R.ToleranceCKg))return false;
+  }
+ }
+ Error=ProcessRecipe::Validate(R);if(!Error.IsEmpty())return false;Out=R;return true;
 }
 void UProcessControlUI::LoadSelectedRecipe()
 {
@@ -212,6 +310,10 @@ void UProcessControlUI::RefreshRecipeControls()
  if(auto* B=W->GetWidgetFromName(TEXT("RecipeToggle")))B->SetVisibility(Is3D()?ESlateVisibility::Collapsed:ESlateVisibility::Visible);
  RecipePanel->SetVisibility(RecipeOpen&&!Is3D()?ESlateVisibility::Visible:ESlateVisibility::Collapsed);if(!RecipeOpen||Is3D())return;
  const bool Edit=!S->WebOwnsControl()&&!S->AutoRun.State.Active&&!S->State.AutomationActive&&!S->State.IsStopping();auto* M=Cast<UComboBoxString>(W->GetWidgetFromName(TEXT("RecipeMode")));
+ for(int I=0;I<6;++I)if(auto* V=W->GetWidgetFromName(FName(*FString::Printf(TEXT("GrainDiameter%d"),I))))V->SetIsEnabled(Edit);
+ if(auto* V=W->GetWidgetFromName(TEXT("NewParticleCharge"))){
+  const FString Why=S->NewChargeReason();V->SetIsEnabled(Edit&&!RecipeDirty&&Why.IsEmpty());V->SetToolTipText(FText::FromString(RecipeDirty?TEXT("레시피를 먼저 적용하세요."):Why));
+ }
  const int Mode=M?M->GetSelectedIndex():-1;const bool AB=Mode==2,C=AB&&Checked(W,TEXT("RecipeAdditiveEnabled")),Scheduled=(C||Mode==3)&&Checked(W,TEXT("RecipeScheduled"));
  for(int I=0;I<6;++I)if(auto* Field=W->GetWidgetFromName(FName(*FString::Printf(TEXT("RecipeSourcePressure%d"),I))))Field->SetIsEnabled(Edit);
  for(const TCHAR* N:{TEXT("RecipeName"),TEXT("RecipeMode"),TEXT("RecipeMaterialA"),TEXT("RecipeMaterialB"),TEXT("RecipeMaterialC"),TEXT("RecipeTargetA"),TEXT("RecipeToleranceA"),TEXT("RecipeTargetB"),TEXT("RecipeToleranceB"),TEXT("RecipeTargetC"),TEXT("RecipeToleranceC"),TEXT("RecipeAdditiveEnabled"),TEXT("RecipeScheduled"),TEXT("RecipeDelay"),TEXT("RecipeRPM"),TEXT("RecipeMixSeconds"),TEXT("RecipeFeedWeigher"),TEXT("RecipeFeedReceiver"),TEXT("RecipeTransferWeigher"),TEXT("RecipeReceiverPressure"),TEXT("RecipeFileList"),TEXT("RecipeLoad"),TEXT("RecipeCopyApplied"),TEXT("RecipeApply"),TEXT("RecipeSaveNew"),TEXT("RecipeOverwrite"),TEXT("RecipeOverwriteConfirm")})if(auto* V=W->GetWidgetFromName(N))V->SetIsEnabled(Edit);
@@ -229,5 +331,5 @@ void UProcessControlUI::RefreshRecipeControls()
  const auto Applied=S->GetAppliedRecipe();const bool Modified=S->RecipeRevision>0&&!ProcessRecipe::Same(Applied,S->RecipeMetadata);
  Label(W,TEXT("RecipeDraftState"),!Edit?TEXT("실행 중 · 레시피 편집/불러오기/적용 잠금 · 전체 정지는 하단에서 가능"):(RecipeDirty||Modified)?TEXT("편집값 · 적용되지 않은 변경이 있습니다. 저장과 적용은 별도입니다."):TEXT("편집값 전체를 적용했습니다. 시작 버튼은 적용된 값으로 실행합니다."));
  Label(W,TEXT("RecipeAppliedSummary"),TEXT("현재 적용값 · 시작 버튼이 사용할 설정")+(Modified?FString(TEXT(" (개별 설정에서 변경됨)")):FString())+TEXT("\n")+ProcessRecipe::Summary(Applied));
- Label(W,TEXT("RecipeMessage"),RecipeMessage.IsEmpty()?TEXT("Saved/BatchRecipes · 선택 순차 버전3 · 버전1·2 호환 · 예약 N은 목표 RPM 실제 적용 후 수취 출구를 열 시각입니다."):RecipeMessage);
+ Label(W,TEXT("RecipeMessage"),RecipeMessage.IsEmpty()?TEXT("Saved/BatchRecipes · 입자 설정 버전5 · 버전1~4 호환 · 예약 N은 목표 RPM 실제 적용 후 수취 출구를 열 시각입니다."):RecipeMessage);
 }

@@ -246,6 +246,7 @@ struct FPlantABatchSnapshot
     UPROPERTY(BlueprintReadOnly) int64 CaptureRevision = 0;
     UPROPERTY(BlueprintReadOnly) int32 TotalCount = 0;
     UPROPERTY(BlueprintReadOnly) double TotalKg = 0;
+    UPROPERTY(BlueprintReadOnly) double ObservedCohortKg = 0;
     UPROPERTY(BlueprintReadOnly) int32 SourceCount = 0;
     UPROPERTY(BlueprintReadOnly) int32 ConnectorCount = 0;
     UPROPERTY(BlueprintReadOnly) int32 WeighingCount = 0;
@@ -400,6 +401,10 @@ struct FPlantSimulationSnapshot
     UPROPERTY(BlueprintReadOnly) FPlantMassValue WeighingMass;
     UPROPERTY(BlueprintReadOnly) FPlantMassValue PipeMass;
     UPROPERTY(BlueprintReadOnly) FPlantMassValue ReceiverMass;
+    UPROPERTY(BlueprintReadOnly) int32 InTransferPipe=0;
+    UPROPERTY(BlueprintReadOnly) double MixerMassKg=0;
+    UPROPERTY(BlueprintReadOnly) TArray<double> SupplierParticleMassKg;
+    double SourceKg(int32 I) const {return SupplierParticleMassKg.IsValidIndex(I)?SupplierParticleMassKg[I]:ModelParticleMassKg;}
     UPROPERTY(BlueprintReadOnly) double ModelParticleMassKg = 0;
     UPROPERTY(BlueprintReadOnly) FString MassDiagnostic;
     UPROPERTY(BlueprintReadOnly) FPlantTransferSnapshot Transfer;

@@ -95,6 +95,8 @@ private:
  bool LegacyControlsAllowed() const;
  int64 SnapshotEpoch=0;
  TArray<int32> InitialSupplierCounts;
+ TArray<float> LoadedRadiiM;
+ TArray<double> NextChargeDiameterMm;
  float ParticleRadiusM=.00125f;
  FVector RotorPivotCm=FVector(300,0,90);
  TArray<bool> SupplierOpen;

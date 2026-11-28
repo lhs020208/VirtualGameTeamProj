@@ -70,7 +70,7 @@ FString ProcessWebSnapshot::Serialize(const FContext& C,const FPlantSimulationSn
     const auto* R=S->Recovery.Materials.FindByPredicate([I](const FPlantRecoveryMaterial& P){return P.Supplier==I;});
     const FString Inventory=S->Recovery.Valid&&R&&!R->Unknown?Status:TEXT("unknown");
     Child(M,TEXT("particles"),Metric(R?R->Source:0,TEXT("particles"),Inventory,TEXT("공급원 ID 기준 현재 상류 재고")));
-    Child(M,TEXT("mass"),Metric(R?R->Source*S->ModelParticleMassKg:0,TEXT("kg"),S->ModelParticleMassKg>0?Inventory:TEXT("unknown")));
+    Child(M,TEXT("mass"),Metric(R?R->Source*S->SourceKg(R->Supplier):0,TEXT("kg"),S->ModelParticleMassKg>0?Inventory:TEXT("unknown")));
     const auto* P=S->SupplyValvePressures.FindByPredicate([I](const FPlantSupplyValvePressure& Q){return Q.Supplier==I;});
     const bool Open=E.ValveAppliedOpen.Validity==EPlantValueValidity::Valid&&E.ValveAppliedOpen.Value!=0;
     const FString PV=V!=EPlantValueValidity::Valid?Status:P&&P->Mapped&&P->Valid&&Open?TEXT("valid"):TEXT("not_computed");
@@ -87,14 +87,14 @@ FString ProcessWebSnapshot::Serialize(const FContext& C,const FPlantSimulationSn
    {
     M->RemoveField(TEXT("valve_requested"));M->RemoveField(TEXT("valve_applied"));M->RemoveField(TEXT("pressure_requested"));M->RemoveField(TEXT("pressure_applied"));
     Child(M,TEXT("rpm_target"),Metric(E.RequestedRPM,TEXT("rpm")));Child(M,TEXT("rpm_applied"),Metric(E.AppliedRPM,TEXT("rpm")));
-    Child(M,TEXT("mass"),Metric(S->InMixer*S->ModelParticleMassKg,TEXT("kg"),S->ModelParticleMassKg>0?Status:TEXT("unknown"),FString(),TEXT("모델 입자 질량 × 현재 입자 수")));
+    Child(M,TEXT("mass"),Metric(S->MixerMassKg,TEXT("kg"),S->ModelParticleMassKg>0?Status:TEXT("unknown"),FString(),TEXT("현재 모델 입자 질량 합계")));
    }
    else Child(M,TEXT("flow"),Metric(S->Transfer.CalculatedCarrierFlowM3s,TEXT("m3/s"),S->Transfer.CarrierFlowValid?Status:TEXT("not_computed"),S->Transfer.Reason,TEXT("계산 이송 유량")));
    auto Q=Entry(Id,Label,M);if(Material)Text(Q,TEXT("role"),Material->Additive?TEXT("첨가제"):TEXT("일반 원료"));Text(Q,TEXT("kind"),Supply?TEXT("supplier"):Id);Equipment.Add(Val(Q));
   }
   Snap->SetArrayField(TEXT("equipment"),Equipment);TArray<TSharedPtr<FJsonValue>> Regions;
   auto Pipe=Obj();Child(Pipe,TEXT("mass"),Metric(S->PipeMass.Kg,TEXT("kg"),V==EPlantValueValidity::Valid?Validity(S->PipeMass.Validity):Status));
-  Child(Pipe,TEXT("particles"),Metric(S->ModelParticleMassKg>0?FMath::RoundToDouble(S->PipeMass.Kg/S->ModelParticleMassKg):0,TEXT("particles"),S->ModelParticleMassKg>0&&S->PipeMass.Validity==EPlantValueValidity::Valid?Status:TEXT("unknown"),FString(),TEXT("모델 질량 / 균일 입자 질량")));Regions.Add(Val(Entry(TEXT("transfer-pipe"),TEXT("칭량–수취 배관"),Pipe)));
+  Child(Pipe,TEXT("particles"),Metric(S->ModelParticleMassKg>0?S->InTransferPipe:0,TEXT("particles"),S->ModelParticleMassKg>0&&S->PipeMass.Validity==EPlantValueValidity::Valid?Status:TEXT("unknown"),FString(),TEXT("이송 배관 내부 입자 수")));Regions.Add(Val(Entry(TEXT("transfer-pipe"),TEXT("칭량–수취 배관"),Pipe)));
   auto Connector=Obj();Child(Connector,TEXT("mass"),Metric(S->MixerFeed.ConnectorKg,TEXT("kg"),S->MixerFeed.Valid?Status:TEXT("unknown"),FString(),TEXT("이번 확정 배치 연결부 잔량")));Regions.Add(Val(Entry(TEXT("mixer-connector"),TEXT("수취–혼합 연결부 · 이번 배치"),Connector)));Snap->SetArrayField(TEXT("regions"),Regions);
   auto Batch=Obj();const bool AutoValid=A&&(A->Epoch==S->Epoch||(!A->Active&&!A->RunId.IsValid()&&A->Stage==EProcessAutoStage::Idle));Text(Batch,TEXT("stage"),AutoValid?StaticEnum<EProcessAutoStage>()->GetNameStringByValue(int64(A->Stage)).ToLower():TEXT("unknown"));
   Text(Batch,TEXT("label"),AutoValid?(A->Active&&!A->Entries.IsEmpty()?FString::Printf(TEXT("%c · %s"),'A'+A->ActiveSupplier,*FProcessAutoRun::StageText(A->Stage)):FProcessAutoRun::StageText(A->Stage)):TEXT("배치 상태 확인 대기"));Batch->SetBoolField(TEXT("active"),AutoValid&&A->Active);
@@ -107,8 +107,8 @@ FString ProcessWebSnapshot::Serialize(const FContext& C,const FPlantSimulationSn
    const auto* Plan=AutoValid?A->EntryFor(I):nullptr;
    const auto& B=S->SequentialBatch.Materials.IsValidIndex(I)?S->SequentialBatch.Materials[I]:*Batches[I];auto M=Obj();const FString Final=B.FinalSimulationSeconds>=0?Status:TEXT("unknown");
    Child(M,TEXT("target"),Metric(Plan?Plan->TargetKg:B.TargetKg,TEXT("kg"),(Plan||B.TargetKg>0)?Status:TEXT("unknown")));Child(M,TEXT("final"),Metric(B.FinalKg,TEXT("kg"),Final));
-   Child(M,TEXT("receiver"),Metric(B.ReceiverCount*S->ModelParticleMassKg,TEXT("kg"),B.InitialCount>0&&S->ModelParticleMassKg>0?Status:TEXT("unknown")));
-   Child(M,TEXT("mixer"),Metric(B.MixerCount*S->ModelParticleMassKg,TEXT("kg"),B.InitialCount>0&&S->ModelParticleMassKg>0?Status:TEXT("unknown")));
+   Child(M,TEXT("receiver"),Metric(S->MixerFeed.ReceiverKg,TEXT("kg"),B.InitialCount>0&&S->ModelParticleMassKg>0?Status:TEXT("unknown")));
+   Child(M,TEXT("mixer"),Metric(S->MixerFeed.MixerKg,TEXT("kg"),B.InitialCount>0&&S->ModelParticleMassKg>0?Status:TEXT("unknown")));
    Materials.Add(Val(Entry(FString::Printf(TEXT("supply-%c"),TCHAR('a'+I)),Plan?Plan->DisplayName:FString::Printf(TEXT("원료 %c"),TCHAR('A'+I)),M)));}
   Batch->SetArrayField(TEXT("materials"),Materials);Child(Snap,TEXT("batch"),Batch);Child(Root,TEXT("snapshot"),Snap);
  }

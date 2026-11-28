@@ -25,6 +25,10 @@ struct FProcessRecipe
  UPROPERTY(BlueprintReadOnly) double DelaySeconds=0;
  UPROPERTY(BlueprintReadOnly) double TargetRPM=0;
  UPROPERTY(BlueprintReadOnly) double MixingSeconds=0;
+ // Empty for a legacy recipe: the next charge then uses radii from its input file.
+ UPROPERTY(BlueprintReadOnly) TArray<double> DiameterMm;
+ // Zero selects a mass target. Positive values are exact particle counts by supplier.
+ UPROPERTY(BlueprintReadOnly) TArray<int32> TargetCounts;
  UPROPERTY(BlueprintReadOnly) TArray<double> SupplierFeedPa;
  UPROPERTY(BlueprintReadOnly) FVector FeedPressurePa=FVector(500,-500,0);
  UPROPERTY(BlueprintReadOnly) FVector TransferPressurePa=FVector(0,500,-1000);
@@ -33,6 +37,12 @@ struct FProcessRecipe
 namespace ProcessRecipe
 {
  constexpr int32 Version=2;
+ inline double GrainKg(double Mm){
+  const double R=static_cast<float>(Mm*0.0005); // same float radius sent to OpenCL
+  return (4.0/3.0)*UE_DOUBLE_PI*1200.0*R*R*R;
+ }
+ inline bool ValidDiameter(double Mm){return FMath::IsFinite(Mm)&&Mm>=2&&Mm<20&&static_cast<float>(Mm*.0005)<.01f;}
+
  FString ValidateEntries(const TArray<FProcessFeedEntry>& Entries,bool WithAdditive);
  FString Validate(const FProcessRecipe& R);
  FString Encode(const FProcessRecipe& R);

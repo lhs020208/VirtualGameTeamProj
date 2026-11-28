@@ -34,6 +34,11 @@ public:
     UFUNCTION() void CopyAppliedRecipe();
     UFUNCTION() void RecipeModeChanged(FString Value,ESelectInfo::Type Type);
     UFUNCTION() void RecipeSelectionChanged(FString Value,ESelectInfo::Type Type);
+    TMap<FString,FString> GrainEditText;
+    TSet<FString> CountBasedFields;
+    bool DiameterEdited=false;
+    void SyncGrainTargets(const FProcessRecipe* Loading=nullptr);
+    UFUNCTION() void NewParticleCharge();
     UFUNCTION() void RecipeTextChanged(const FText& Value);
     UFUNCTION() void RecipeCheckChanged(bool Value);
     UFUNCTION() void OpenValve();

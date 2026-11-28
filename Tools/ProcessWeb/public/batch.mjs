@@ -1,19 +1,20 @@
 import {operatorNumber,displayMetric} from './protocol.mjs';
 import {webContext,sendCommand,reason,acknowledgeTransfer} from './manual.mjs';
-import {emptyRecipe,decodeRecipe} from './recipes.mjs';
+import {emptyRecipe,decodeRecipe,grainKg,validDiameter} from './recipes.mjs';
 import {pending,statusLabels} from './commands.mjs';
 const $=id=>document.getElementById(id),make=(tag,text)=>{const x=document.createElement(tag);if(text!==undefined)x.textContent=text;return x;},fmt=v=>v===null||v===undefined?'확인 중':operatorNumber(v),mass=v=>{const m=displayMetric({unit:'kg',value:v,validity:Number.isFinite(v)?'valid':'unknown'},{mass:true});return m.text+' '+m.unit;};
 let original=emptyRecipe(),files=[],loaded=null,editing=false,feedback='',lastBatch='',identity='';const fields=new Map(),intents=new Map();
+const countBasis=new Set();let grainEdited=false;
 function summary(text){try{const r=JSON.parse(text);return `${r.name||'이름 미입력'} · ${r.mode==='a_full'?'A 전량':r.materials.filter(m=>m.enabled!==false).map(m=>`${m.hopper_id.slice(-1).toUpperCase()} ${mass(m.target_kg)} ±${mass(m.tolerance_kg)}`).join(' / ')} · ${fmt(r.mixing.target_rpm)} RPM · ${fmt(r.mixing.duration_s)} 해석초 · 첨가제 ${!r.additive.enabled?'미사용':!r.additive.scheduled?'초기 투입':`예약 ON · ${fmt(r.additive.delay_s)}초`} · 이송 수취 ${fmt((r.hopper_pressure_targets?.weighing_to_receiver.receiver??-1000)/1000)} kPa(g)`;}catch{return '확인 대기';}}
 function field(id,label,{unit='',step=1,type='number',options=[]}={}){
  const box=make('div'),l=make('label',label),row=make('div'),input=make(options.length?'select':'input'),err=make('p');box.className='recipe-field';row.className='number-row';input.id='recipe-'+id;input.setAttribute('aria-label',label);l.htmlFor=input.id;
  if(options.length)for(const [v,t]of options){const o=make('option',t);o.value=v;input.append(o);}else{input.type=type==='check'?'checkbox':'text';if(type==='number')input.inputMode='decimal';}
  const f={input,box,err,initial:'',value:undefined,type};fields.set(id,f);
- if(type==='number'){for(const [sign,txt]of [[-1,'−'],[1,'+']]){const b=make('button',txt);b.type='button';b.setAttribute('aria-label',label+(sign<0?' 감소':' 증가'));b.onclick=()=>{const v=Number(input.value);if(input.value.trim()&&Number.isFinite(v)){input.value=String(Number((v+sign*step).toPrecision(15)));editing=true;render();}};if(sign<0)row.append(b);else{row.append(input,b,make('span',unit));}}}else row.append(input);
- input.addEventListener('keydown',e=>{if(e.key==='Enter')e.preventDefault();});input.addEventListener('wheel',e=>e.preventDefault(),{passive:false});input.addEventListener('input',()=>{editing=true;render();});input.addEventListener('change',()=>{editing=true;render();});err.className='field-error';box.append(l,row,err);$('recipe-fields').append(box);
+ if(type==='number'){for(const [sign,txt]of [[-1,'−'],[1,'+']]){const b=make('button',txt);b.type='button';b.setAttribute('aria-label',label+(sign<0?' 감소':' 증가'));b.onclick=()=>{const v=Number(input.value);if(input.value.trim()&&Number.isFinite(v)){input.value=String(Number((v+sign*step).toPrecision(15)));input.dispatchEvent(new Event('input'));}};if(sign<0)row.append(b);else{row.append(input,b,make('span',unit));}}}else row.append(input);
+ input.addEventListener('keydown',e=>{if(e.key==='Enter')e.preventDefault();});input.addEventListener('wheel',e=>e.preventDefault(),{passive:false});input.addEventListener('input',()=>{editing=true;editDose(id);render();});input.addEventListener('change',()=>{editing=true;render();});err.className='field-error';box.append(l,row,err);$('recipe-fields').append(box);
 }
 field('name','레시피 이름',{type:'text'});field('mode','배치 모드',{type:'text',options:[['a_full','A 단독 전량'],['a_target','A 단독 목표량'],['sequential_ab','A → B 순차 계량'],['hopper_sequence','공급호퍼 선택 · 순차 계량']]});
-for(const k of 'abcdef'){field('name-'+k,`${k.toUpperCase()} 원료 표시명`,{type:'text'});field('target-'+k,`${k.toUpperCase()} 목표량`,{unit:'g',step:1});field('tolerance-'+k,`${k.toUpperCase()} 계량 허용 오차`,{unit:'g',step:.1});}
+for(const k of 'abcdef'){field('name-'+k,`${k.toUpperCase()} 원료 표시명`,{type:'text'});field('diameter-'+k,k.toUpperCase()+' 새 장입 입자 지름',{unit:'mm',step:.1});field('count-'+k,k.toUpperCase()+' 목표 입자 수',{unit:'개',step:1});field('target-'+k,`${k.toUpperCase()} 목표량`,{unit:'g',step:1});field('tolerance-'+k,`${k.toUpperCase()} 계량 허용 오차`,{unit:'g',step:.1});}
 for(const k of 'abcdef'){
  const label=k.toUpperCase();
  field('role-'+k,label+' 투입 역할',{type:'text',options:[['','미지정'],['material','일반 원료'],['additive','첨가제'],['off-material','일반 원료 · 미사용'],['off-additive','첨가제 · 미사용']]});
@@ -27,7 +28,23 @@ const pressureFields=[
 ];
 for(const [id,label] of pressureFields)field(id,label,{unit:'kPa(g)',step:.1});
 for(const k of 'abcdef')field('pressure-'+k,k.toUpperCase()+' 공급 기준 압력',{unit:'kPa(g)',step:.1});
-function fill(r){original=structuredClone(r);const vals={name:r.name,mode:r.mode,'c-enabled':r.additive.enabled,'c-scheduled':r.additive.scheduled,delay:r.additive.delay_s,rpm:r.mixing.target_rpm,duration:r.mixing.duration_s,receiver:r.hopper_pressure_targets.weighing_to_receiver.receiver/1000};for(const [id,,phase,axis] of pressureFields)vals[id]=r.hopper_pressure_targets[phase][axis]/1000;for(const k of 'abcdef'){vals['pressure-'+k]=(r.hopper_pressure_targets.supplier_feed_pa?.['supply-'+k]??r.hopper_pressure_targets.supply_to_weighing['supply-common'])/1000;const m=r.materials.find(m=>m.hopper_id==='supply-'+k);
+function editDose(id){
+ const match=/^(diameter|count|target)-([a-f])$/.exec(id);
+ if(!match)return;
+ const [,unit,k]=match;
+ if(unit==='count')countBasis.add(k);
+ if(unit==='target')countBasis.delete(k);
+ grainEdited=true;
+ const one=grainKg(value('diameter-'+k))*1000;
+ const grams=fields.get('target-'+k).input,n=fields.get('count-'+k).input;
+ if(!validDiameter(value('diameter-'+k)))return;
+ if(countBasis.has(k)){const count=value('count-'+k);grams.value=Number.isSafeInteger(count)&&count>0?String(count*one):'';}
+ else{const g=value('target-'+k);n.value=Number.isFinite(g)&&g>=0?String(Math.round(g/one)):'';}
+}
+function fill(r){countBasis.clear();grainEdited=false;original=structuredClone(r);const vals={name:r.name,mode:r.mode,'c-enabled':r.additive.enabled,'c-scheduled':r.additive.scheduled,delay:r.additive.delay_s,rpm:r.mixing.target_rpm,duration:r.mixing.duration_s,receiver:r.hopper_pressure_targets.weighing_to_receiver.receiver/1000};for(const [id,,phase,axis] of pressureFields)vals[id]=r.hopper_pressure_targets[phase][axis]/1000;for(const k of 'abcdef'){vals['pressure-'+k]=(r.hopper_pressure_targets.supplier_feed_pa?.['supply-'+k]??r.hopper_pressure_targets.supply_to_weighing['supply-common'])/1000;const m=r.materials.find(m=>m.hopper_id==='supply-'+k);
+ const profile=r.particle_settings?.['supply-'+k],mm=profile?.diameter_mm??4;
+ vals['diameter-'+k]=mm;vals['count-'+k]=profile?.target_count||Math.round((m?.target_kg??0)/grainKg(mm));
+ if(profile?.target_basis==='count')countBasis.add(k);
  vals['role-'+k]=m?(m.enabled===false?'off-':'')+(m.role??(m.hopper_id===r.additive.hopper_id&&r.additive.enabled?'additive':'material')):'';
  vals['order-'+k]=m?r.materials.indexOf(m)+1:k.charCodeAt(0)-96;vals['name-'+k]=m?.display_name??(k==='c'?'첨가제 C':'원료 '+k.toUpperCase());vals['target-'+k]=(m?.target_kg??0)*1000;vals['tolerance-'+k]=(m?.tolerance_kg??0)*1000;}for(const [k,v]of Object.entries(vals)){const f=fields.get(k);if(f.type==='check')f.input.checked=v;else f.input.value=String(v);f.initial=f.input.value;f.value=v;}editing=false;}
 const value=k=>{const f=fields.get(k);return f.type==='check'?f.input.checked:f.type==='number'?f.input.value.trim()===''?NaN:Number(f.input.value):f.input.value;};
@@ -57,8 +74,24 @@ function collect(){const r=emptyRecipe();r.name=value('name');r.mode=value('mode
   if(sources[id]!==p.supply_to_weighing['supply-common'])individual=true;
  }
  if(individual){r.version=4;p.supplier_feed_pa=sources;}
+ if(grainEdited||original.particle_settings){
+  r.version=5;r.particle_settings={};
+  for(const k of 'abcdef'){
+   const id='supply-'+k,mm=value('diameter-'+k),m=r.materials.find(x=>x.hopper_id===id);
+   const counted=countBasis.has(k)&&m&&m.enabled!==false&&r.mode!=='a_full';
+   const n=counted?value('count-'+k):0;
+   r.particle_settings[id]={diameter_mm:mm,target_count:n,target_basis:counted?'count':'mass'};
+   if(counted){m.target_kg=n*grainKg(mm);m.tolerance_kg=0;}
+  }
+ }
  return r;}
-function validation(){let first='';for(const f of fields.values())f.err.textContent='';const fail=(k,s)=>{fields.get(k).err.textContent=s;first ||=s;};const r=collect();if(r.mode==='hopper_sequence'){
+function validation(){let first='';for(const f of fields.values())f.err.textContent='';const fail=(k,s)=>{fields.get(k).err.textContent=s;first ||=s;};const r=collect();for(const k of 'abcdef'){
+  const mm=value('diameter-'+k),n=value('count-'+k),m=r.materials.find(m=>m.hopper_id==='supply-'+k);
+  if(!validDiameter(mm))fail('diameter-'+k,'2 mm 이상 20 mm 미만');
+  if(!m||m.enabled===false||r.mode==='a_full')continue;
+  if(countBasis.has(k)&&(!Number.isSafeInteger(n)||n<1||n>1000000))fail('count-'+k,'1~1,000,000개 정수 입력');
+  else fields.get('count-'+k).err.textContent=countBasis.has(k)?'확정 개수로 판정':Number.isFinite(n)?'질량 기준 · 예상 약 '+n+'개':'';
+ }if(r.mode==='hopper_sequence'){
   const used=new Set();
   for(const m of r.materials){const k=m.hopper_id.slice(-1),n=value('order-'+k);
    if(!Number.isInteger(n)||n<1||n>6||used.has(n))fail('order-'+k,'1~6 중 겹치지 않는 순서를 선택하세요.');
@@ -87,9 +120,9 @@ function render(){if(!$('recipe-panel'))return;consume();const ctx=webContext(),
  const active=!!b?.active,locked=active||['requested','closing','pausing'].includes(b?.stop_stage),v=validation(),ab=value('mode')==='sequential_ab',c=ab&&value('c-enabled');
  for(const [k,f]of fields){const relevant=!((k.endsWith('-b')&&!ab)||(k.endsWith('-c')&&!c)||(k==='c-enabled'&&!ab)||(k==='c-scheduled'&&!c)||(k==='delay'&&(!c||!value('c-scheduled')))||k.startsWith('target-')&&value('mode')==='a_full'||k.startsWith('tolerance-')&&value('mode')==='a_full');const custom=value('mode')==='hopper_sequence';
  const customOnly=/^(role|order)-/.test(k)||/-[def]$/.test(k);
- f.box.hidden=custom?k==='c-enabled':customOnly;
+ f.box.hidden=!k.startsWith('diameter-')&&(custom?k==='c-enabled':customOnly);
  const customAllowed=k!=='delay'||value('c-scheduled');
- f.input.disabled=locked||f.box.hidden||!(custom?customAllowed:relevant);for(const button of f.box.querySelectorAll('button'))button.disabled=f.input.disabled;}
+ f.input.disabled=locked||f.box.hidden||(!k.startsWith('diameter-')&&!(custom?customAllowed:relevant))||(k.startsWith('count-')&&value('mode')==='a_full')||(k.startsWith('tolerance-')&&countBasis.has(k.slice(-1)));for(const button of f.box.querySelectorAll('button'))button.disabled=f.input.disabled;}
  $('recipe-order').textContent=value('mode')==='hopper_sequence'?'선택 순서: '+v.r.feed_order.join(' → '):'지원 투입 순서: '+(ab?'A → B'+(c?' → C':''):'A')+' · C 예약 ON 0초는 혼합 적용 직후 투입, OFF는 초기 투입';
  $('applied-summary').textContent=w?`현재 적용 r${w.recipe_revision} · ${summary(w.applied_json)}`:'적용 레시피 확인 대기';$('recipe-applied-summary').textContent=$('applied-summary').textContent;
  $('execution-summary').textContent=w?.execution_json?summary(w.execution_json)+' · 배치 '+w.batch_id:'배치 시작 전 · 시작 시 실행값 확정';$('recipe-dirty').textContent=editing?'편집값 변경됨 · 적용값과 별도. 전체 적용을 눌러야 다음 실행 설정이 바뀝니다.':'편집값과 적용값은 별도입니다. 불러오기만으로 적용되지 않습니다.';
@@ -103,6 +136,7 @@ function render(){if(!$('recipe-panel'))return;consume();const ctx=webContext(),
  $('movement-summary').textContent=r?.movement_summary??'배치 상태 확인 후 남은 양이 표시됩니다.';$('recovery-materials').replaceChildren(...(r?.materials??[]).map(m=>{const tr=make('tr');for(const x of [m.label,mass(m.already_passed_kg),mass(m.transit_kg),mass(m.additional_supply_kg),mass(m.remaining_transfer_kg)])tr.append(make('td',x));return tr;}));$('abandon-description').textContent=`대상 배치: ${w?.batch_id||'없음'}. 기록과 이미 투입된 원료는 보존하고 이 배치의 재개를 종료합니다.`;
  const select=files.find(f=>f.file_id===$('recipe-files').value);$('overwrite-target').textContent='덮어쓸 대상: '+(select?.name??'목록에서 선택하세요.');
  $('recipe-list').disabled=!!operationReason('recipe_list');$('recipe-load').disabled=!!operationReason('recipe_load')||!select;$('recipe-copy').disabled=locked||!w;$('recipe-library-reason').textContent=operationReason('recipe_load')||select?.error||'불러오기는 편집값만 채웁니다.';
+ const chargeWhy=operationReason('recipe_charge')||(editing?'편집값을 먼저 적용하세요.':'');$('recipe-charge').disabled=!!chargeWhy;$('charge-reason').textContent=chargeWhy||'새 장입 시 지름 적용';
  const err=operationReason('recipe_apply')||v.error;$('recipe-apply').disabled=!!err;$('recipe-save-new').disabled=!!operationReason('recipe_save')||!!v.error;$('recipe-action-reason').textContent=err||'전체 검증 후 적용 · 재고와 입자 분해능은 시작 시 다시 확인';
  const overwriteWhy=operationReason('recipe_save')||v.error||(!loaded||loaded.file_id!==select?.file_id?'대상 레시피를 먼저 불러와 버전을 확인하세요.':!$('overwrite-confirm').checked?'대상 이름을 확인하고 덮어쓰기 확인란을 선택하세요.':'');$('recipe-overwrite').disabled=!!overwriteWhy;$('overwrite-reason').textContent=overwriteWhy;
  $('recipe-feedback').textContent=feedback;$('batch-feedback').textContent=completed&&!['requested','closing','pausing','failed'].includes(b.stop_stage)?'배치 완료 · 최종 도착량과 계산 적용 RPM을 확인하세요. 이전 요청 결과는 명령 이력에 보존됩니다.':feedback;
@@ -112,6 +146,7 @@ for(const id of ['show-recipes','start-settings'])$(id).onclick=()=>view(true);f
 $('recipe-list').onclick=()=>send('recipe_list');$('recipe-load').onclick=()=>send('recipe_load',{file_id:$('recipe-files').value});$('recipe-files').onchange=()=>{$('overwrite-confirm').checked=false;render();};$('overwrite-confirm').onchange=$('abandon-confirm').onchange=render;
 $('recipe-copy').onclick=()=>{try{const r=JSON.parse(webContext().packet.envelope.control.batch_workflow.applied_json);fill(r);feedback='현재 적용값 복사 · 편집값만 변경';render();}catch(e){feedback=e.message;}};
 const config=()=>{const w=webContext().packet?.envelope?.control?.batch_workflow;return {recipe_revision:w?.recipe_revision,recipe_fingerprint:w?.recipe_fingerprint};};
+$('recipe-charge').onclick=()=>send('recipe_charge',config());
 $('recipe-apply').onclick=()=>{const v=validation();if(!v.error)send('recipe_apply',{...config(),recipe_json:JSON.stringify(v.r)});};$('recipe-save-new').onclick=()=>{const v=validation();if(!v.error)send('recipe_save',{recipe_json:JSON.stringify(v.r)});};$('recipe-overwrite').onclick=()=>{const v=validation();if(!v.error&&loaded&&$('overwrite-confirm').checked)send('recipe_save',{recipe_json:JSON.stringify(v.r),...loaded,confirm:true});};
 $('batch-start').onclick=()=>send('batch_start',config());for(const [id,k]of [['batch-check','batch_check'],['batch-resume','batch_resume'],['batch-abandon','batch_abandon']])$(id).onclick=()=>{const w=webContext().packet?.envelope?.control?.batch_workflow;send(k,{batch_id:w?.batch_id,check_token:w?.recovery?.check_token,confirm:k==='batch_abandon'&&$('abandon-confirm').checked});};
 fill(emptyRecipe());document.addEventListener('process-control',render);render();

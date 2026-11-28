@@ -228,7 +228,7 @@ void UProcessControlUI::RefreshOperatorLayout()
  }else{
   auto Mass=[&](const FPlantMassValue& V){return ProcessDisplay::Mass(V.Kg,Fresh&&V.Validity==EPlantValueValidity::Valid);};
   Summary=TEXT("칭량호퍼 현재량  ")+Mass(Snap.WeighingMass)+TEXT("\n배관 이동 중  ")+Mass(Snap.PipeMass)+TEXT("\n수취호퍼에 남은 양  ")+Mass(Snap.ReceiverMass);
-  Summary+=TEXT("\n혼합기 현재량  ")+ProcessDisplay::Mass(Snap.InMixer*Snap.ModelParticleMassKg,Fresh&&Snap.ModelParticleMassKg>0);
+  Summary+=TEXT("\n혼합기 현재량  ")+ProcessDisplay::Mass(Snap.MixerMassKg,Fresh&&Snap.ModelParticleMassKg>0);
 
  }
  Summary+=TEXT("\n계산 적용 RPM  ")+(Fresh&&Snap.AppliedRPMValid?ProcessDisplay::Number(Snap.AppliedRPM):FString(TEXT("미확인")));

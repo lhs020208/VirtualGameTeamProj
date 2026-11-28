@@ -1,4 +1,5 @@
 #include "ProcessControlService.h"
+#include "PowderPlantTest.h"
 
 FProcessRecipe UProcessControlService::GetAppliedRecipe() const
 {
@@ -26,7 +27,7 @@ bool UProcessControlService::ApplyRecipe(const FProcessRecipe& R,FString& Reason
  }
  Reason=ProcessRecipe::Validate(R);if(!Reason.IsEmpty())return false;
  // Validate everything before assigning. Never Tick, Request, access the worker or issue RPM here.
- auto Next=AutoSettings;Next.BatchMode=R.Mode;Next.TargetMassKg=R.TargetAKg;Next.WeighingToleranceKg=R.ToleranceAKg;
+ auto Next=AutoSettings;Next.RequiredDiametersMm=R.DiameterMm;Next.BatchMode=R.Mode;Next.TargetMassKg=R.TargetAKg;Next.WeighingToleranceKg=R.ToleranceAKg;
  Next.TargetMassBKg=R.TargetBKg;Next.WeighingToleranceBKg=R.ToleranceBKg;Next.AdditiveEnabled=R.AdditiveEnabled;
  Next.AdditiveSupplier=2;Next.AdditiveTargetKg=R.TargetCKg;Next.AdditiveToleranceKg=R.ToleranceCKg;
  Next.AdditiveScheduled=R.Scheduled;Next.AdditiveDelaySeconds=R.DelaySeconds;Next.TargetMixerRPM=R.TargetRPM;Next.MixingDurationSeconds=R.MixingSeconds;
@@ -38,7 +39,24 @@ bool UProcessControlService::ApplyRecipe(const FProcessRecipe& R,FString& Reason
    Next.AdditiveSupplier=E.Supplier;Next.AdditiveTargetKg=E.TargetKg;Next.AdditiveToleranceKg=E.ToleranceKg;
   }
  }
+ if(auto* Actor=Source.Get())Actor->NextChargeDiameterMm=R.DiameterMm;
  AutoSettings=Next;AutoRun.Settings=Next;RecipeMetadata=R;++RecipeRevision;
  // Inventory and representable particle mass remain checked by the existing CanStart path.
  return true;
+}
+
+FString UProcessControlService::NewChargeReason() const
+{
+ if(!Source.IsValid()||!State.Connected)return TEXT("해석 Actor 연결 대기");
+ if(AutoRun.State.Active||AutoRun.State.RecoveryPending||State.AutomationActive||State.IsStopping())return TEXT("실행 또는 복구할 배치가 있습니다.");
+ if(State.Snapshot.Execution!=EPlantExecutionState::Paused||State.StopStage!=EProcessStopStage::Complete)return TEXT("전체 정지가 확인된 뒤 새 장입이 가능합니다.");
+ if(RecipeRevision<=0)return TEXT("먼저 입자 설정을 포함한 레시피를 적용하세요.");
+ return FString();
+}
+bool UProcessControlService::LoadNewCharge(FString& Reason)
+{
+ if(WebOwnsControl()&&!WebDispatch){Reason=LocalOperatorReason();return false;}
+ Reason=NewChargeReason();if(!Reason.IsEmpty())return false;
+ auto* Actor=Source.Get();Actor->NextChargeDiameterMm=RecipeMetadata.DiameterMm;
+ Actor->ResetSimulation();Reason=Actor->Error;return Reason.IsEmpty();
 }

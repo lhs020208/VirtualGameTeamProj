@@ -229,7 +229,7 @@ FProcessEquipmentSnapshot UProcessUIStateAdapter::BuildEquipment(const FString& 
             const auto& M=S->Recovery.Materials[Index];
             if(M.Supplier==Index&&!M.Unknown){
                 R.RegionParticleCount=Value(M.Source,TEXT("particles"),Validity);
-                R.CurrentMass.Kg=M.Source*S->ModelParticleMassKg;R.CurrentMass.Validity=Validity;
+                R.CurrentMass.Kg=M.Source*S->SourceKg(Index);R.CurrentMass.Validity=Validity;
             }
         }
     }

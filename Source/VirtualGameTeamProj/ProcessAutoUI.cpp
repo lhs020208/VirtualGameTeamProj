@@ -87,7 +87,7 @@ void UProcessControlUI::RefreshAutomatic()
    Body+=TEXT("배치 기록 보존 · 계산 재개와 배치 재개는 별도\n")+A.RecoveryReason+TEXT("\n");
    for(const auto& R:Snapshot.Recovery.Materials){
     if(!A.UsesSupplier(R.Supplier))continue;const double Target=A.DoseFor(R.Supplier,false);
-    const bool Final=!R.SelectedIds.IsEmpty();const double Unit=Snapshot.ModelParticleMassKg*1000;
+    const bool Final=!R.SelectedIds.IsEmpty();const double Unit=Snapshot.SourceKg(R.Supplier)*1000;
     const double Passed=(R.SupplyConnector+R.Weighing+R.Pipe+R.Receiver+R.MixerConnector+R.Mixer)*Unit;
     Body+=FString::Printf(TEXT("%c: 이미 공급 %.6f g · 이동 중 %.6f g · 수취 %.6f g · 혼합기 %.6f g · 남은 %s %.6f g\n"),
      TCHAR('A'+R.Supplier),Passed,(R.SupplyConnector+R.Pipe+R.MixerConnector)*Unit,R.Receiver*Unit,R.Mixer*Unit,
@@ -100,7 +100,7 @@ void UProcessControlUI::RefreshAutomatic()
     const bool Known=Same&&Snapshot.Recovery.Valid&&Snapshot.SequentialBatch.Materials.IsValidIndex(E.Supplier);
     const auto* M=Known?&Snapshot.SequentialBatch.Materials[E.Supplier]:nullptr;
     Body+=FString::Printf(TEXT("%c %s · 목표 %g ± %g g · 확정 %s · 수취 %s\n"),'A'+E.Supplier,*E.DisplayName,E.TargetKg*1000,E.ToleranceKg*1000,
-     M&&M->FinalSimulationSeconds>=0?*FString::Printf(TEXT("%g g"),M->FinalKg*1000):TEXT("미확인"),M?*FString::Printf(TEXT("%g g"),M->ReceiverCount*Snapshot.ModelParticleMassKg*1000):TEXT("미확인"));
+     M&&M->FinalSimulationSeconds>=0?*FString::Printf(TEXT("%g g"),M->FinalKg*1000):TEXT("미확인"),M?*FString::Printf(TEXT("%g g"),M->ReceiverCount*Snapshot.SourceKg(E.Supplier)*1000):TEXT("미확인"));
    }
   }else if(!A.RecipeName.IsEmpty()){
    Body+=FString::Printf(TEXT("이번 실행 레시피: %s\n원료 표시명 A [%s]"),*A.RecipeName,*A.RecipeMaterialA);
@@ -112,7 +112,7 @@ void UProcessControlUI::RefreshAutomatic()
    const auto FinalMass=[](double Kg){return Kg>0?FString::Printf(TEXT("확정 %.6f g"),Kg*1000):FString(TEXT("미확정"));};
    Body+=FString::Printf(TEXT("A 목표 %.6f g ± %.6f g · %s\nB 목표 %.6f g ± %.6f g · %s\n"),A.LockedTargetAKg*1000,A.LockedToleranceAKg*1000,*FinalMass(A.FinalAKg),A.LockedTargetBKg*1000,A.LockedToleranceBKg*1000,*FinalMass(A.FinalBKg));
    const auto& AB=Snapshot.SequentialBatch;
-   Body+=FString::Printf(TEXT("수취 보관 A %.6f g / B %.6f g\n혼합기 도착 A %.6f g / B %.6f g\n"),AB.A.ReceiverCount*Snapshot.ModelParticleMassKg*1000,AB.B.ReceiverCount*Snapshot.ModelParticleMassKg*1000,AB.A.MixerCount*Snapshot.ModelParticleMassKg*1000,AB.B.MixerCount*Snapshot.ModelParticleMassKg*1000);
+   Body+=FString::Printf(TEXT("수취 보관 A %.6f g / B %.6f g\n혼합기 도착 A %.6f g / B %.6f g\n"),AB.A.ReceiverCount*Snapshot.SourceKg(0)*1000,AB.B.ReceiverCount*Snapshot.SourceKg(1)*1000,AB.A.MixerCount*Snapshot.SourceKg(0)*1000,AB.B.MixerCount*Snapshot.SourceKg(1)*1000);
   }
   if(A.AdditiveEnabled){
    const auto& C=Snapshot.SequentialBatch.Additive;
@@ -120,7 +120,7 @@ void UProcessControlUI::RefreshAutomatic()
    const auto AppliedTime=[](double Seconds){return Seconds>=0?FString::Printf(TEXT("%.9f"),Seconds):FString(TEXT("미확인"));};
    Body+=FString::Printf(TEXT("첨가제 %c · %s · 목표 %.6f g ± %.6f g · %s\n수취 %.6f g · 연결부 %.6f g · 혼합기 %.6f g\n예약 N %.6f 해석초 · %s\n"),
     TCHAR('A'+A.AdditiveSupplier),A.AdditiveScheduled?TEXT("예약 ON"):TEXT("예약 OFF · 혼합 전 초기 투입"),A.AdditiveTargetKg*1000,A.AdditiveToleranceKg*1000,*FinalAdditive,
-    C.ReceiverCount*Snapshot.ModelParticleMassKg*1000,C.ConnectorCount*Snapshot.ModelParticleMassKg*1000,C.MixerCount*Snapshot.ModelParticleMassKg*1000,
+    C.ReceiverCount*Snapshot.SourceKg(A.AdditiveSupplier)*1000,C.ConnectorCount*Snapshot.SourceKg(A.AdditiveSupplier)*1000,C.MixerCount*Snapshot.SourceKg(A.AdditiveSupplier)*1000,
     A.AdditiveDelaySeconds,*A.AdditiveStatus);
    if(A.AdditiveDueSeconds>=0)Body+=FString::Printf(TEXT("예약 해석시각 %.9f · 준비 %s\n"),A.AdditiveDueSeconds,*AppliedTime(A.AdditivePreparedSeconds));
    if(A.AdditiveOpenRequestedSeconds>=0)Body+=FString::Printf(TEXT("개방 요청 %.9f · 실제 열림 %s\n"),A.AdditiveOpenRequestedSeconds,*AppliedTime(A.AdditiveOpenAppliedSeconds));

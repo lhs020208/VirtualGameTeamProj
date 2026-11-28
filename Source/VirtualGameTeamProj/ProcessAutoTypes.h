@@ -28,6 +28,7 @@ USTRUCT(BlueprintType)
 struct FProcessAutoSettings
 {
  GENERATED_BODY()
+ UPROPERTY() TArray<double> RequiredDiametersMm;
  UPROPERTY(EditAnywhere) TArray<FProcessFeedEntry> Entries;
  // Trial observation limits, not changes to physics or completion tolerances.
  UPROPERTY(EditAnywhere) TArray<double> SupplierFeedPa;

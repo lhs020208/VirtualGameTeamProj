@@ -49,12 +49,15 @@ struct Api {
 void validate_granular_initial(GranularConfig c,const std::vector<Grain>& p){
  if(c.plant)validate_plant_data(c.plant_data);
  require(c.count==p.size()&&c.count>0&&c.count<=1000000,"external initial count mismatch");
+ require(c.plant_particle_radii.empty() || (c.plant && c.plant_particle_radii.size()==p.size()),"plant radius count mismatch");
+ for(float r:c.plant_particle_radii)require(std::isfinite(r)&&r>=.001f&&r<=c.radius,"invalid plant particle radius");
+ const auto radius_at=[&](size_t i){return c.plant_particle_radii.empty()?c.radius:c.plant_particle_radii[i];};
  const float maxr=c.binary_materials?float(std::max(c.materials[0].radius_m,c.materials[1].radius_m)):c.radius;
  if(c.binary_materials)for(auto& m:c.materials)m.validate();
- const float rmax=maxr;require(std::isfinite(rmax)&&rmax>.001f&&rmax<.03f,"external radius outside GPU range");
+ const float rmax=maxr;require(std::isfinite(rmax)&&(c.plant?rmax>=.001f:rmax>.001f)&&rmax<.03f,"external radius outside GPU range");
  std::map<std::array<int,3>,std::vector<std::size_t>> grid;const double pitch=2*double(maxr),tol=1.e-6;
  for(std::size_t i=0;i<p.size();++i){auto a=p[i];float x=a.x,y=a.y,z=a.z;
-  const float r=c.binary_materials?float(c.materials[a.w==0?0:1].radius_m):c.radius;
+  const float r=c.binary_materials?float(c.materials[a.w==0?0:1].radius_m):radius_at(i);
   require(std::isfinite(x)&&std::isfinite(y)&&std::isfinite(z)&&(c.plant?(a.w>=0&&a.w<32&&std::floor(a.w)==a.w):(a.w==0||a.w==1)),"invalid external position or group");
   if(c.plant){require(x>=c.plant_data[2].x&&y>=c.plant_data[2].y&&z>=c.plant_data[2].z&&x<=c.plant_data[3].x&&y<=c.plant_data[3].y&&z<=c.plant_data[3].z,"initial plant particle outside bounds");}else if(c.simple_box){require(std::abs(x)<=.8-r+tol&&std::abs(y)<=.5-r+tol&&std::abs(z)<=.5-r+tol,"initial particle outside coupled box");}else if(c.test_mixer){
    for(int j=0;j<133;++j){auto plane=mxplanes[j];require(plane[0]*x+plane[1]*y+plane[2]*z-plane[3]<=-r+tol,"initial particle outside MX301 vessel");}
@@ -65,7 +68,7 @@ void validate_granular_initial(GranularConfig c,const std::vector<Grain>& p){
    for(unsigned k=0;k<6;k++){float angle=k*1.04719755f,co=std::cos(angle),si=std::sin(angle);float lx=x-(-.375f+k*.15f),ly=co*y+si*(z-.21f)-.095f,lz=-si*y+co*(z-.21f);float beta=k%2?-.4f:.4f;float tx=std::cos(beta)*lx+std::sin(beta)*ly,ty=-std::sin(beta)*lx+std::cos(beta)*ly;float dx=std::max(0.f,std::abs(tx)-.045f),dy=std::max(0.f,std::abs(ty)-.07f),dz=std::max(0.f,std::abs(lz)-.012f);require(dx*dx+dy*dy+dz*dz>=(r-tol)*(r-tol),"initial particle overlaps paddle");}
   }
   std::array<int,3> key{int(std::floor(x/pitch)),int(std::floor(y/pitch)),int(std::floor(z/pitch))};
-  for(int dz=-1;dz<=1;dz++)for(int dy=-1;dy<=1;dy++)for(int dx=-1;dx<=1;dx++){auto it=grid.find({key[0]+dx,key[1]+dy,key[2]+dz});if(it==grid.end())continue;for(auto j:it->second){double ax=x-p[j].x,ay=y-p[j].y,az=z-p[j].z;require(ax*ax+ay*ay+az*az>=std::pow(double(r)+(c.binary_materials?c.materials[p[j].w==0?0:1].radius_m:c.radius)-tol,2),"initial particles overlap (including between emitters)");}}
+  for(int dz=-1;dz<=1;dz++)for(int dy=-1;dy<=1;dy++)for(int dx=-1;dx<=1;dx++){auto it=grid.find({key[0]+dx,key[1]+dy,key[2]+dz});if(it==grid.end())continue;for(auto j:it->second){double ax=x-p[j].x,ay=y-p[j].y,az=z-p[j].z;require(ax*ax+ay*ay+az*az>=std::pow(double(r)+(c.binary_materials?c.materials[p[j].w==0?0:1].radius_m:radius_at(j))-tol,2),"initial particles overlap (including between emitters)");}}
   grid[key].push_back(i);
  }
 }
@@ -96,7 +99,7 @@ struct GranularGPU::Impl {
  require(c.count>=1&&c.count<=1000000&&c.iterations>=2&&c.iterations<=32,"granular count/iterations outside contract");
  if(c.binary_materials){for(auto& m:c.materials)m.validate();require(std::isfinite(c.cross_friction)&&c.cross_friction>=0&&c.cross_friction<=1,"invalid cross friction");c.radius=float(std::max(c.materials[0].radius_m,c.materials[1].radius_m));}
  if(c.radius==0)c.radius=static_cast<float>(std::cbrt(.054/(c.count*4.188790204786391)));
- require(std::isfinite(c.radius)&&c.radius>.001f&&c.radius<.03f&&std::isfinite(c.dt)&&c.dt>0&&c.dt<=.001f&&std::isfinite(c.friction)&&c.friction>=0&&c.friction<=1,"invalid granular configuration");
+ require(std::isfinite(c.radius)&&(c.plant?c.radius>=.001f:c.radius>.001f)&&c.radius<.03f&&std::isfinite(c.dt)&&c.dt>0&&c.dt<=.001f&&std::isfinite(c.friction)&&c.friction>=0&&c.friction<=1,"invalid granular configuration");
  cl_uint count=0;check(api.clGetPlatformIDs(0,nullptr,&count),"platform count");std::vector<cl_platform_id> platforms(count);check(api.clGetPlatformIDs(count,platforms.data(),nullptr),"platforms");
  for(auto platform:platforms){cl_uint n=0;if(api.clGetDeviceIDs(platform,CL_DEVICE_TYPE_GPU,0,nullptr,&n)||!n)continue;std::vector<cl_device_id> ids(n);check(api.clGetDeviceIDs(platform,CL_DEVICE_TYPE_GPU,n,ids.data(),nullptr),"devices");device=ids[0];break;}require(device!=nullptr,"no OpenCL GPU");
  char text[256]{};check(api.clGetDeviceInfo(device,CL_DEVICE_NAME,sizeof(text),text,nullptr),"device name");name=text;
@@ -166,9 +169,18 @@ struct GranularGPU::Impl {
  }
  void run(unsigned k,std::size_t n){std::size_t local=c.diagnostic_local_size,global=(n+local-1)/local*local;cl_event event=nullptr;check(api.clEnqueueNDRangeKernel(queue,kernels[k],1,nullptr,&global,&local,0,nullptr,c.profile?&event:nullptr),"dispatch");if(event)events.push_back({event,k});}
  void clear_plant_cache(){if(plant_cache_offset){std::vector<Grain> zero(plant_cache_particles*139);check(api.clEnqueueWriteBuffer(queue,buffers[15],CL_TRUE,plant_cache_offset*sizeof(Grain),zero.size()*sizeof(Grain),zero.data(),0,nullptr,nullptr),"reset plant wall cache");}}
+ std::vector<float> species;
+ void restore_species(std::vector<Grain>& positions)const{
+  for(size_t i=0;i<species.size();++i)positions[i].w=species[i];
+ }
  void set(const std::vector<Grain>& state,const std::vector<Grain>& vel){require(state.size()==c.count&&vel.size()==c.count,"state count mismatch");for(unsigned i=0;i<c.count;i++)for(float v:{state[i].x,state[i].y,state[i].z,state[i].w,vel[i].x,vel[i].y,vel[i].z})require(std::isfinite(v),"nonfinite input state");
  for(const auto& a:state)require(c.plant?(a.w>=0&&a.w<32&&std::floor(a.w)==a.w):(a.w==0||a.w==1),"invalid group ID");
- gas_ready=false;gas_steps=0;for(auto& brake:feed_brakes)brake.enabled=false;drain_read();clear_plant_cache();check(api.clEnqueueWriteBuffer(queue,buffers[0],CL_TRUE,0,state.size()*sizeof(Grain),state.data(),0,nullptr,nullptr),"state write");check(api.clEnqueueWriteBuffer(queue,buffers[2],CL_TRUE,0,vel.size()*sizeof(Grain),vel.data(),0,nullptr,nullptr),"velocity write");time=0;angle=0;poisoned=false;for(auto e:events)if(e.first)api.clReleaseEvent(e.first);events.clear();timing={};timing.profiling_enabled=c.profile;timing.split_boundaries=c.profile_split;timing.candidates_enabled=c.candidates;timing.candidate_capacity=c.candidates?c.candidate_capacity:0;timing.boundary_candidates_enabled=c.boundary_candidates;timing.kernel_optimize_enabled=c.kernel_optimize;timing.candidate_reuse_enabled=c.candidate_reuse;timing.candidate_audit_enabled=c.candidate_audit;timing.candidate_skin_m=c.candidate_reuse?c.radius*c.candidate_skin_ratio:0;
+ std::vector<Grain> device_state;
+ if(!c.plant_particle_radii.empty()){
+  device_state=state;species.resize(state.size());
+  for(size_t i=0;i<state.size();++i){species[i]=state[i].w;device_state[i].w=-c.plant_particle_radii[i];}
+ }
+ gas_ready=false;gas_steps=0;for(auto& brake:feed_brakes)brake.enabled=false;drain_read();clear_plant_cache();check(api.clEnqueueWriteBuffer(queue,buffers[0],CL_TRUE,0,state.size()*sizeof(Grain),device_state.empty()?state.data():device_state.data(),0,nullptr,nullptr),"state write");check(api.clEnqueueWriteBuffer(queue,buffers[2],CL_TRUE,0,vel.size()*sizeof(Grain),vel.data(),0,nullptr,nullptr),"velocity write");time=0;angle=0;poisoned=false;for(auto e:events)if(e.first)api.clReleaseEvent(e.first);events.clear();timing={};timing.profiling_enabled=c.profile;timing.split_boundaries=c.profile_split;timing.candidates_enabled=c.candidates;timing.candidate_capacity=c.candidates?c.candidate_capacity:0;timing.boundary_candidates_enabled=c.boundary_candidates;timing.kernel_optimize_enabled=c.kernel_optimize;timing.candidate_reuse_enabled=c.candidate_reuse;timing.candidate_audit_enabled=c.candidate_audit;timing.candidate_skin_m=c.candidate_reuse?c.radius*c.candidate_skin_ratio:0;
  if(c.rotation){std::vector<Grain> zeros(c.count);for(unsigned b=16;b<19;++b)check(api.clEnqueueWriteBuffer(queue,buffers[b],CL_TRUE,0,zeros.size()*sizeof(Grain),zeros.data(),0,nullptr,nullptr),"reset angular state");}
  if(c.candidate_reuse){cl_uint control[6]{};check(api.clEnqueueWriteBuffer(queue,buffers[14],CL_TRUE,0,sizeof(control),control,0,nullptr,nullptr),"reset reuse state");}}
  void collect(){auto begin=Clock::now();cl_ulong first=0,last=0;for(auto& e:events){cl_ulong start=0,end=0;check(api.clGetEventProfilingInfo(e.first,CL_PROFILING_COMMAND_START,sizeof(start),&start,nullptr),"profile start");check(api.clGetEventProfilingInfo(e.first,CL_PROFILING_COMMAND_END,sizeof(end),&end,nullptr),"profile end");require(end>=start,"invalid GPU timestamps");if(!first)first=start;if(last&&start>last)timing.gpu_intercommand_gap+=(start-last)*1.e-9;last=end;timing.gpu_seconds[e.second]+=(end-start)*1.e-9;++timing.calls[e.second];api.clReleaseEvent(e.first);e.first=nullptr;}events.clear();if(first)timing.gpu_batch_span+=(last-first)*1.e-9;if(c.profile)timing.profile_collect_wall+=elapsed(begin);}
@@ -224,7 +236,7 @@ void GranularGPU::set_gas_field(const GranularGasField& f){
 }
 GranularGasExchange GranularGPU::gas_exchange(){require(p->c.coupled_air&&p->gas_ready&&!p->poisoned,"valid coupled exchange unavailable");GranularGasExchange result;result.steps=p->gas_steps;std::size_t n=p->gas_field.velocity_density.size();std::vector<Grain> raw(n*2);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[21],CL_TRUE,0,raw.size()*sizeof(Grain),raw.data(),0,nullptr,nullptr),"gas exchange readback");result.impulse_volume.assign(raw.begin(),raw.begin()+n);result.drag_rate_kg_s.resize(n);for(std::size_t i=0;i<n;++i){result.drag_rate_kg_s[i]=result.steps?raw[i+n].x/result.steps:0;if(result.steps)result.impulse_volume[i].w/=result.steps;}return result;}
 
-std::vector<Grain> GranularGPU::snapshot(){auto begin=Clock::now();std::vector<Grain> result(p->c.count);cl_event event=nullptr;check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[0],CL_TRUE,0,result.size()*sizeof(Grain),result.data(),0,nullptr,p->c.profile?&event:nullptr),"snapshot");if(event){p->events.push_back({event,7});p->collect();}p->timing.snapshot_wall+=elapsed(begin);return result;}
+std::vector<Grain> GranularGPU::snapshot(){auto begin=Clock::now();std::vector<Grain> result(p->c.count);cl_event event=nullptr;check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[0],CL_TRUE,0,result.size()*sizeof(Grain),result.data(),0,nullptr,p->c.profile?&event:nullptr),"snapshot");if(event){p->events.push_back({event,7});p->collect();}p->restore_species(result);p->timing.snapshot_wall+=elapsed(begin);return result;}
 std::vector<Grain> GranularGPU::velocity_snapshot(){require(!p->poisoned,"invalid solver");std::vector<Grain> v(p->c.count);check(p->api.clEnqueueReadBuffer(p->queue,p->buffers[2],CL_TRUE,0,v.size()*sizeof(Grain),v.data(),0,nullptr,nullptr),"velocity snapshot");return v;}
 std::vector<Grain> GranularGPU::plant_air_snapshot(){
  require(p->c.plant&&!p->poisoned,"plant air diagnostic requires a valid plant solver");
@@ -254,7 +266,7 @@ bool GranularGPU::receive_snapshot(std::vector<Grain>& destination,bool wait){
  cl_int status=0;check(p->api.clGetEventInfo(p->read_event,CL_EVENT_COMMAND_EXECUTION_STATUS,sizeof(status),&status,nullptr),"snapshot status");require(status>=0,"async snapshot failed");
  if(status!=CL_COMPLETE){p->timing.snapshot_wall+=elapsed(begin);return false;}
  if(p->c.profile){cl_ulong start=0,end=0;check(p->api.clGetEventProfilingInfo(p->read_event,CL_PROFILING_COMMAND_START,sizeof(start),&start,nullptr),"snapshot profile start");check(p->api.clGetEventProfilingInfo(p->read_event,CL_PROFILING_COMMAND_END,sizeof(end),&end,nullptr),"snapshot profile end");p->timing.gpu_seconds[7]+=(end-start)*1.e-9;++p->timing.calls[7];}
- p->api.clReleaseEvent(p->read_event);p->read_event=nullptr;destination.swap(p->read_buffer);p->timing.snapshot_wall+=elapsed(begin);return true;
+ p->api.clReleaseEvent(p->read_event);p->read_event=nullptr;destination.swap(p->read_buffer);p->restore_species(destination);p->timing.snapshot_wall+=elapsed(begin);return true;
 }
 void GranularGPU::set_state(const std::vector<Grain>& a,const std::vector<Grain>& b){p->set(a,b);}
 GranularCandidates GranularGPU::inspect_candidates(){

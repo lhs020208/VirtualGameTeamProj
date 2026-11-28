@@ -53,7 +53,7 @@ void UProcessNumericField::Adjust(double Direction)
  const double Next=V+Direction*Step;const int32 Precision=FMath::Clamp(FMath::Max(Places(Input->GetText().ToString()),Places(ProcessDisplay::Exact(Step))),0,17);
  FString Draft=FMath::Abs(Next)<1.e15?FString::Printf(TEXT("%.*f"),Precision,Next):ProcessDisplay::Exact(Next);
  if(FMath::Abs(Next)<1.e15&&Draft.Contains(TEXT("."))){while(Draft.EndsWith(TEXT("0")))Draft.LeftChopInline(1);if(Draft.EndsWith(TEXT(".")))Draft.LeftChopInline(1);}
- Input->SetText(FText::FromString(Draft));Touched=true;
+ Input->SetText(FText::FromString(Draft));Input->OnTextChanged.Broadcast(Input->GetText());Touched=true;
 }
 void UProcessNumericField::Increase(){Adjust(1);}
 void UProcessNumericField::Decrease(){Adjust(-1);}

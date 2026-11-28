@@ -35,6 +35,8 @@ public:
     UFUNCTION(BlueprintCallable) bool ResumeAutomaticBatch();
     UFUNCTION(BlueprintCallable) FString CheckAutomaticBatch();
     UFUNCTION(BlueprintCallable) void AbandonAutomaticBatch();
+    FString NewChargeReason() const;
+    bool LoadNewCharge(FString& Reason);
     bool ApplyRecipe(const FProcessRecipe& Recipe,FString& Reason);
     UFUNCTION(BlueprintPure,Category="Process UI|Recipe") FProcessRecipe GetAppliedRecipe() const;
     UPROPERTY(Transient) FProcessRecipe RecipeMetadata;

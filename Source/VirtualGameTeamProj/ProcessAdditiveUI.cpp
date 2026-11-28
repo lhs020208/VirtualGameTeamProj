@@ -58,5 +58,5 @@ void UProcessControlUI::RefreshAdditiveControls()
  if(auto* T=Cast<UTextBlock>(W->GetWidgetFromName(TEXT("AdditiveSummary"))))T->SetText(FText::FromString(
   FString::Printf(TEXT("적용: %s · %c %.6f g ± %.6f g · %s N=%.6f초\n현재 첨가제 상류 %s · 입자당 %.9f g\n예약 시각에 준비 미완료면 출구 닫힘·전체 정지. 혼합 시간 자동 연장 없음.\n%s"),
    V.AdditiveEnabled?TEXT("첨가제 사용"):TEXT("첨가제 미사용"),TCHAR('A'+V.AdditiveSupplier),V.AdditiveTargetKg*1000,V.AdditiveToleranceKg*1000,V.AdditiveScheduled?TEXT("예약 ON"):TEXT("예약 OFF"),V.AdditiveDelaySeconds,
-   Snapshot.Recovery.Valid&&Snapshot.Recovery.Materials.IsValidIndex(V.AdditiveSupplier)&&Snapshot.Validity==EPlantValueValidity::Valid?*FString::Printf(TEXT("%g g"),Snapshot.Recovery.Materials[V.AdditiveSupplier].Source*Snapshot.ModelParticleMassKg*1000):TEXT("미확인"),Snapshot.ModelParticleMassKg*1000,*AdditiveMessage)));
+   Snapshot.Recovery.Valid&&Snapshot.Recovery.Materials.IsValidIndex(V.AdditiveSupplier)&&Snapshot.Validity==EPlantValueValidity::Valid?*FString::Printf(TEXT("%g g"),Snapshot.Recovery.Materials[V.AdditiveSupplier].Source*Snapshot.SourceKg(V.AdditiveSupplier)*1000):TEXT("미확인"),Snapshot.SourceKg(V.AdditiveSupplier)*1000,*AdditiveMessage)));
 }

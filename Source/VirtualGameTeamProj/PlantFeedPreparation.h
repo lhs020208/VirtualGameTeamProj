@@ -12,7 +12,7 @@ public:
     // A supply residual is downstream of a real supply gate and upstream of WH ownership.
     bool InSupplier(int32 Supplier,const powder::Grain& Position) const;
     int32 SupplyPath(const powder::Grain& Position) const;
-    void CountSupplyConnectors(const std::vector<powder::Grain>& Positions,int32 (&Counts)[6]) const;
+    void CountSupplyConnectors(const std::vector<powder::Grain>& Positions,int32 (&Counts)[6],double* MassKg=nullptr) const;
     int32 SupplyAInventory(const std::vector<powder::Grain>& Positions,int32 Supplier=0) const;
     void SyncIntent(const FPlantControlTargets& Control, double Time, double WallTime);
     bool Evaluate(const std::vector<powder::Grain>& Positions, double Time, double WallTime,

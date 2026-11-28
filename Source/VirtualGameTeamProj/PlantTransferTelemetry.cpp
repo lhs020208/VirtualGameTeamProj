@@ -22,6 +22,9 @@ FPlantTransferTelemetry::FPlantTransferTelemetry(const powder::GranularConfig& C
         const double Density=C.plant_data[1].w;
         LowPolyReceiver=powder::plant_supplier_gates(C.plant_data).size()==6;
         ParticleMassKg=(4.0/3.0)*UE_DOUBLE_PI*double(C.radius)*double(C.radius)*double(C.radius)*Density;
+        const auto SphereKg=[Density](double R){return (4.0/3.0)*UE_DOUBLE_PI*R*R*R*Density;};
+        for(float R:C.plant_particle_radii)IdMassKg.Add(SphereKg(R));
+        for(float R:C.plant_supplier_radii)SupplierMassKg.Add(R>0?SphereKg(R):ParticleMassKg);
         const auto W=C.plant_data[powder::plant_weighing_gate(C.plant_data)];
         const auto R=C.plant_data[powder::plant_receiver_gate(C.plant_data)];
         WeighingGateZ=W.z;ReceiverGateZ=R.z;
@@ -132,16 +135,16 @@ bool FPlantTransferTelemetry::Collect(const std::vector<powder::Grain>& Position
     const FDateTime Now=FDateTime::UtcNow();
     for(auto* M:{&Weighing,&Pipe,&Receiver}){M->Validity=EPlantValueValidity::Unknown;M->UpdatedUtc=Now;M->Kg=0;}
     if(!GeometryError.IsEmpty()||Positions.size()!=ParticleCount)return false;
-    Regions.SetNum(int32(Positions.size()));int32 Counts[3]={};
+    Regions.SetNum(int32(Positions.size()));double Kg[3]{};for(int32& Count:RegionCounts)Count=0;
     for(int32 I=0;I<Regions.Num();++I)
     {
         const auto Region=Classify(Positions[I]);Regions[I]=Region;
         if(Region==EPlantMassRegion::Invalid)return false;
-        if(Region==EPlantMassRegion::Weighing)++Counts[0];
-        else if(Region==EPlantMassRegion::Pipe)++Counts[1];
-        else if(Region==EPlantMassRegion::Receiver)++Counts[2];
+        if(Region==EPlantMassRegion::Weighing){++RegionCounts[0];Kg[0]+=ForId(I);}
+        else if(Region==EPlantMassRegion::Pipe){++RegionCounts[1];Kg[1]+=ForId(I);}
+        else if(Region==EPlantMassRegion::Receiver){++RegionCounts[2];Kg[2]+=ForId(I);}
     }
-    Weighing.Kg=Counts[0]*ParticleMassKg;Pipe.Kg=Counts[1]*ParticleMassKg;Receiver.Kg=Counts[2]*ParticleMassKg;
+    Weighing.Kg=Kg[0];Pipe.Kg=Kg[1];Receiver.Kg=Kg[2];
     Weighing.Validity=Pipe.Validity=Receiver.Validity=EPlantValueValidity::Valid;return true;
 }
 
@@ -190,7 +193,7 @@ void FPlantTransferTelemetry::Observe(const std::vector<powder::Grain>& Position
     Transfer.Validity=EPlantValueValidity::Valid;
     if(Transfer.Id==0)return;
     if(Membership.Num()!=Regions.Num()){Indeterminate(TEXT("입자 ID 연결이 변경되었습니다."));return;}
-    int32 Remaining=0,Transit=0,Arrived=0,Unknown=0;
+    double Remaining=0,Transit=0,Arrived=0,Unknown=0;
     FString ForeignReason;
     for(int32 I=0;I<Regions.Num();++I)
     {
@@ -199,10 +202,10 @@ void FPlantTransferTelemetry::Observe(const std::vector<powder::Grain>& Position
         {AdditionalSeen[I]=1;++Transfer.AdditionalInflowCount;}
         if(Membership[I]==1)
         {
-            if(R==EPlantMassRegion::Weighing)++Remaining;
-            else if(R==EPlantMassRegion::Pipe)++Transit;
-            else if(R==EPlantMassRegion::Receiver)++Arrived;
-            else ++Unknown;
+            if(R==EPlantMassRegion::Weighing)Remaining+=ForId(I);
+            else if(R==EPlantMassRegion::Pipe)Transit+=ForId(I);
+            else if(R==EPlantMassRegion::Receiver)Arrived+=ForId(I);
+            else Unknown+=ForId(I);
         }
         else if(ForeignReason.IsEmpty())
         {
@@ -216,8 +219,8 @@ void FPlantTransferTelemetry::Observe(const std::vector<powder::Grain>& Position
                 ForeignReason=TEXT("이송 기준에 없는 입자가 수취호퍼에 들어왔습니다. 이번 이송분만의 완료를 판정할 수 없습니다.");
         }
     }
-    Transfer.RemainingKg=Remaining*ParticleMassKg;Transfer.InTransitKg=Transit*ParticleMassKg;
-    Transfer.ArrivedKg=Arrived*ParticleMassKg;Transfer.UnclassifiedKg=Unknown*ParticleMassKg;
+    Transfer.RemainingKg=Remaining;Transfer.InTransitKg=Transit;
+    Transfer.ArrivedKg=Arrived;Transfer.UnclassifiedKg=Unknown;
     if(Arrived>0&&Transfer.FirstArrivalSimulationSeconds<0)Transfer.FirstArrivalSimulationSeconds=Time;
     if(!ForeignReason.IsEmpty())Indeterminate(ForeignReason);
     if(Unknown)Indeterminate(TEXT("이번 이송 입자가 칭량호퍼·배관·수취호퍼 밖에 있습니다. 미분류량을 확인하세요."));
@@ -238,8 +241,8 @@ void FPlantTransferTelemetry::Observe(const std::vector<powder::Grain>& Position
 
 void FPlantTransferTelemetry::Publish(FPlantSimulationSnapshot& S) const
 {
-    S.WeighingMass=Weighing;S.PipeMass=Pipe;S.ReceiverMass=Receiver;S.ModelParticleMassKg=ParticleMassKg;
+    S.WeighingMass=Weighing;S.PipeMass=Pipe;S.ReceiverMass=Receiver;S.ModelParticleMassKg=ParticleMassKg;S.SupplierParticleMassKg=SupplierMassKg;S.InTransferPipe=RegionCounts[1];
     S.MassDiagnostic=GeometryError;S.Transfer=Transfer;
     if(Weighing.Validity==EPlantValueValidity::Valid&&ParticleMassKg>0)
-    {S.InWeighingHopper=FMath::RoundToInt(Weighing.Kg/ParticleMassKg);S.InReceiver=FMath::RoundToInt(Receiver.Kg/ParticleMassKg);}
+    {S.InWeighingHopper=RegionCounts[0];S.InReceiver=RegionCounts[2];}
 }

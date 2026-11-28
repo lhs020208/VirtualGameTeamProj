@@ -19,6 +19,12 @@ public:
     void ReceiverDischarging();
     void Publish(FPlantSimulationSnapshot& Snapshot) const;
     double ParticleMassKg = 0;
+    TArray<double> SupplierMassKg;
+    double ForId(int32 Id) const {return IdMassKg.IsValidIndex(Id)?IdMassKg[Id]:ParticleMassKg;}
+    double ForSource(int32 Source) const {return SupplierMassKg.IsValidIndex(Source)?SupplierMassKg[Source]:ParticleMassKg;}
+private:
+    TArray<double> IdMassKg;
+    int32 RegionCounts[3]{};
 private:
     struct FTube { FVector3d A, B; double RA, RB; };
     TArray<FTube> Pipes;

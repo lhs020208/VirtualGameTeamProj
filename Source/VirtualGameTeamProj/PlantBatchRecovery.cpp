@@ -21,7 +21,7 @@ bool FPlantSupplyABatch::AdmitRecovery(const std::vector<powder::Grain>& P,doubl
  }
  if(State.DoseFinalized){
   if(State.SourceCount||State.ConnectorCount||State.WeighingCount+State.PipeCount+State.ReceiverCount+State.MixerConnectorCount+State.MixerCount!=State.TotalCount||
-     FMath::Abs(State.TotalCount*Mass.ParticleMassKg-State.TotalKg)>Criteria.MassErrorKg){
+     FMath::Abs(State.ObservedCohortKg-State.TotalKg)>Criteria.MassErrorKg){
    Recovery.RejectedRevision=Revision;Recovery.Reason=TEXT("확정 입자 누락·역류·질량 불일치 · 재개 금지");return false;
   }
  }

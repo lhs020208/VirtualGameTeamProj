@@ -2,6 +2,8 @@ R"CLC(
 float grain_radius(float group,float legacy){
 #if GRANULAR_BINARY
  return group==0?MAT_R0:MAT_R1;
+#elif GRANULAR_PLANT
+ return group<0?-group:legacy;
 #else
  return legacy;
 #endif
@@ -25,6 +27,11 @@ float3 pair_correction(float4 a,float4 b,float3 olda,float3 oldb,int i,int j,flo
 #if GRANULAR_BINARY
  float mi=a.w==0?MAT_M0:MAT_M1,mj=b.w==0?MAT_M0:MAT_M1;
  weight=.5f*mj/(mi+mj);mu=a.w!=b.w?MAT_CROSS:(a.w==0?MAT_MU0:MAT_MU1);
+#elif GRANULAR_PLANT
+ if(a.w!=b.w&&(a.w<0||b.w<0)){
+  float ri=grain_radius(a.w,r),rj=grain_radius(b.w,r);
+  weight=.5f*rj*rj*rj/(ri*ri*ri+rj*rj*rj);
+ }
 #endif
  float3 relative=(a.xyz-olda)-(b.xyz-oldb);
 #if GRANULAR_ROTATION

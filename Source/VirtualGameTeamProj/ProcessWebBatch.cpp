@@ -10,7 +10,7 @@ FString Hash(const FString& Text){FTCHARToUTF8 B(*Text);FMD5 M;M.Update(reinterp
 void Number(J O,const TCHAR* K,double V,bool Known=true){if(Known&&FMath::IsFinite(V))O->SetNumberField(K,V);else O->SetField(K,MakeShared<FJsonValueNull>());}
 FString Stage(EProcessAutoStage S){return FProcessAutoRun::StageText(S);}
 }
-bool FProcessWebBatch::Handles(const FString& K){return K==TEXT("recipe_list")||K==TEXT("recipe_load")||K==TEXT("recipe_save")||K==TEXT("recipe_apply")||K==TEXT("batch_start")||K==TEXT("batch_check")||K==TEXT("batch_resume")||K==TEXT("batch_abandon");}
+bool FProcessWebBatch::Handles(const FString& K){return K==TEXT("recipe_list")||K==TEXT("recipe_load")||K==TEXT("recipe_save")||K==TEXT("recipe_apply")||K==TEXT("recipe_charge")||K==TEXT("batch_start")||K==TEXT("batch_check")||K==TEXT("batch_resume")||K==TEXT("batch_abandon");}
 bool FProcessWebBatch::ReadOnly(const FString& K){return K==TEXT("recipe_list")||K==TEXT("recipe_load");}
 FString FProcessWebBatch::RecipeFingerprint(const UProcessControlService& S){return Hash(ProcessRecipe::Encode(S.GetAppliedRecipe()));}
 FString FProcessWebBatch::RecoveryKey(const UProcessControlService& S) const
@@ -27,6 +27,7 @@ FString FProcessWebBatch::Reason(const FString& K,UProcessControlService& S,doub
  if(K==TEXT("recipe_load")||K==TEXT("recipe_save")||K==TEXT("recipe_apply")){
   if(A.Active||M.AutomationActive||M.IsStopping())return TEXT("자동 배치·정지 확인 중 · 이번 실행 설정을 유지합니다.");return FString();
  }
+ if(K==TEXT("recipe_charge"))return S.NewChargeReason();
  if(K==TEXT("batch_start")){
   if(A.RecoveryPending)return TEXT("복구할 배치가 있습니다. 상태 확인 후 남은 양 재개 또는 배치 포기를 선택하세요.");
   if(S.RecipeRevision<=0)return TEXT("레시피 미적용 · 레시피 설정에서 전체 적용하세요.");
@@ -46,7 +47,7 @@ void FProcessWebBatch::Execute(const ProcessWebCommands::FCommand& C,UProcessCon
  if(!ReadOnly(C.Kind)&&(!S.WebOwnsControl()||C.Lease!=S.WebLeaseId)){Rec.Message=TEXT("웹 제어권 없음 · 명시적으로 다시 가져오세요.");return;}
  Rec.Message=Reason(C.Kind,S,FPlatformTime::Seconds());if(!Rec.Message.IsEmpty())return;
  if(C.Kind.StartsWith(TEXT("batch_"))&&C.Kind!=TEXT("batch_start")&&C.BatchId!=A.RunId.ToString(EGuidFormats::DigitsWithHyphens)){Rec.Message=TEXT("대상 배치 ID 변경 · 현재 배치를 다시 확인하세요.");return;}
- if((C.Kind==TEXT("recipe_apply")||C.Kind==TEXT("batch_start"))&&(C.RecipeRevision!=LexToString(S.RecipeRevision)||C.RecipeFingerprint!=RecipeFingerprint(S))){Rec.Message=TEXT("적용 설정 버전 충돌 · 최신 적용값을 확인하세요.");return;}
+ if((C.Kind==TEXT("recipe_apply")||C.Kind==TEXT("recipe_charge")||C.Kind==TEXT("batch_start"))&&(C.RecipeRevision!=LexToString(S.RecipeRevision)||C.RecipeFingerprint!=RecipeFingerprint(S))){Rec.Message=TEXT("적용 설정 버전 충돌 · 최신 적용값을 확인하세요.");return;}
  TGuardValue<bool> Guard(S.WebDispatch,true);R.Data=Obj();bool OK=false;
  if(C.Kind==TEXT("recipe_list")){
   TArray<TSharedPtr<FJsonValue>> List;const auto Entries=Store.List();
@@ -67,6 +68,8 @@ void FProcessWebBatch::Execute(const ProcessWebCommands::FCommand& C,UProcessCon
    else{const auto* Found=Files.Find(C.FileId);if(!Found||!C.Confirm||C.FileVersion.IsEmpty()){Rec.Message=TEXT("덮어쓸 대상·파일 버전·명시적 확인 필요");return;}File=*Found;OK=Store.ReplaceSelected(File,Recipe,Rec.Message,C.FileVersion);}
    if(OK){FString Id=C.FileId;if(Id.IsEmpty()){Id=FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);Files.Add(Id,File);}R.Data->SetStringField(TEXT("file_id"),Id);R.Data->SetStringField(TEXT("file_version"),Store.FileVersion(File));}
   }
+ }else if(C.Kind==TEXT("recipe_charge")){
+  OK=S.LoadNewCharge(Rec.Message);
  }else if(C.Kind==TEXT("batch_start")){
   OK=S.StartAutomaticA();if(OK){ExecutionBatch=A.RunId.ToString(EGuidFormats::DigitsWithHyphens);ExecutionRecipeRevision=C.RecipeRevision;R.Data->SetStringField(TEXT("recipe_revision"),ExecutionRecipeRevision);}if(!OK)Rec.Message=S.AutoRun.CanStart(M,FPlatformTime::Seconds());
  }else if(C.Kind==TEXT("batch_check")){
@@ -80,7 +83,7 @@ void FProcessWebBatch::Execute(const ProcessWebCommands::FCommand& C,UProcessCon
   if(!C.Confirm){Rec.Message=TEXT("대상 배치 포기를 명시적으로 확인하세요.");return;}
   S.AbandonAutomaticBatch();CheckToken.Empty();OK=A.RecoveryAbandoned;
  }
- if(OK){Rec.Status=C.Kind==TEXT("batch_resume")?EProcessCommandStatus::Processing:EProcessCommandStatus::Applied;Rec.Message=C.Kind==TEXT("batch_resume")?TEXT("남은 양 재개 접수 · 기존 작업자 재개 승인 확인 중"):C.Kind==TEXT("batch_start")?TEXT("자동 시작 접수 · 확정 실행값으로 배치 생성. 배치 완료는 진행 상태에서 별도 확인"):TEXT("처리 완료 · 설정/조회는 장비 명령을 발행하지 않습니다.");
+ if(OK){Rec.Status=C.Kind==TEXT("batch_resume")?EProcessCommandStatus::Processing:EProcessCommandStatus::Applied;Rec.Message=C.Kind==TEXT("recipe_charge")?TEXT("새 장입 초기화 · 새 작업자 상태 확인 필요"):C.Kind==TEXT("batch_resume")?TEXT("남은 양 재개 접수 · 기존 작업자 재개 승인 확인 중"):C.Kind==TEXT("batch_start")?TEXT("자동 시작 접수 · 확정 실행값으로 배치 생성. 배치 완료는 진행 상태에서 별도 확인"):TEXT("처리 완료 · 설정/조회는 장비 명령을 발행하지 않습니다.");
   if(C.Kind.StartsWith(TEXT("batch_"))){R.BatchId=A.RunId.ToString(EGuidFormats::DigitsWithHyphens);R.Data->SetStringField(TEXT("batch_id"),R.BatchId);}
  }else if(Rec.Message.IsEmpty())Rec.Message=TEXT("처리 실패 · 기존 설정·파일을 유지합니다.");
 }
@@ -110,14 +113,14 @@ TSharedPtr<FJsonObject> FProcessWebBatch::Describe(UProcessControlService& S,dou
 
  for(int I=0;I<6;++I){if(!A.UsesSupplier(I))continue;const auto* Entry=A.EntryFor(I);auto V=Obj();const FString Id=FString::Printf(TEXT("supply-%c"),'a'+I);V->SetStringField(TEXT("id"),Id);V->SetStringField(TEXT("label"),Entry?Entry->DisplayName:I==0?A.RecipeMaterialA:I==1?A.RecipeMaterialB:A.RecipeMaterialC);
   const auto* M=P.Recovery.Materials.FindByPredicate([I](const auto& X){return X.Supplier==I;});const bool Known=Proven&&M;double Passed=0,Transit=0,Remaining=0,Supply=0;
-  if(Known){Passed=(M->SupplyConnector+M->Weighing+M->Pipe+M->Receiver+M->MixerConnector+M->Mixer)*P.ModelParticleMassKg;Transit=(M->SupplyConnector+M->Pipe+M->MixerConnector)*P.ModelParticleMassKg;
+  if(Known){Passed=(M->SupplyConnector+M->Weighing+M->Pipe+M->Receiver+M->MixerConnector+M->Mixer)*P.SourceKg(M->Supplier);Transit=(M->SupplyConnector+M->Pipe+M->MixerConnector)*P.SourceKg(M->Supplier);
    const double Target=A.DoseFor(I,false);
-   const bool Final=!M->SelectedIds.IsEmpty();Supply=Final?0:A.BatchMode==EProcessBatchMode::Full?M->Source*P.ModelParticleMassKg:FMath::Max(0.,Target-Passed);
-   Remaining=Final?FMath::Max(0,M->SelectedIds.Num()-M->Mixer)*P.ModelParticleMassKg:Passed-M->Mixer*P.ModelParticleMassKg;
+   const bool Final=!M->SelectedIds.IsEmpty();Supply=Final?0:A.BatchMode==EProcessBatchMode::Full?M->Source*P.SourceKg(M->Supplier):FMath::Max(0.,Target-Passed);
+   Remaining=Final?FMath::Max(0,M->SelectedIds.Num()-M->Mixer)*P.SourceKg(M->Supplier):Passed-M->Mixer*P.SourceKg(M->Supplier);
    if(Supply>0)Lines.Add(FString::Printf(TEXT("%c 공급호퍼 → 칭량호퍼 추가 공급 %.6g g"),'A'+I,Supply*1000));
    if(Remaining>0)Lines.Add(FString::Printf(TEXT("%c 칭량·배관·수취 경로 → 혼합기 남은 이송 %.6g g (연결부/배관 %.6g g 포함)"),'A'+I,Remaining*1000,Transit*1000));
   }
-  Number(V,TEXT("already_passed_kg"),Passed,Known);Number(V,TEXT("transit_kg"),Transit,Known);Number(V,TEXT("additional_supply_kg"),Supply,Known);Number(V,TEXT("remaining_transfer_kg"),Remaining,Known);Number(V,TEXT("receiver_kg"),Known?M->Receiver*P.ModelParticleMassKg:0,Known);Number(V,TEXT("mixer_kg"),Known?M->Mixer*P.ModelParticleMassKg:0,Known);Materials.Add(MakeShared<FJsonValueObject>(V));
+  Number(V,TEXT("already_passed_kg"),Passed,Known);Number(V,TEXT("transit_kg"),Transit,Known);Number(V,TEXT("additional_supply_kg"),Supply,Known);Number(V,TEXT("remaining_transfer_kg"),Remaining,Known);Number(V,TEXT("receiver_kg"),Known?M->Receiver*P.SourceKg(M->Supplier):0,Known);Number(V,TEXT("mixer_kg"),Known?M->Mixer*P.SourceKg(M->Supplier):0,Known);Materials.Add(MakeShared<FJsonValueObject>(V));
  }
  if(Ready&&A.MixerAppliedSimulationSeconds>=0&&A.MixingElapsedSeconds<A.MixingDurationSeconds)Lines.Add(FString::Printf(TEXT("%g RPM으로 남은 혼합 %.2g초 재개"),A.TargetMixerRPM,FMath::Max(0.,A.MixingDurationSeconds-A.MixingElapsedSeconds)));
  R->SetArrayField(TEXT("materials"),Materials);R->SetStringField(TEXT("movement_summary"),Ready?(Lines.IsEmpty()?TEXT("추가 투입 없음 · 확인된 남은 혼합/종료 단계만 진행"):FString::Join(Lines,TEXT(" / "))):TEXT("남은 양 확인 중 · 전체 정지 확인 후 배치 상태 확인을 선택하세요."));O->SetObjectField(TEXT("recovery"),R);return O;

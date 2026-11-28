@@ -66,7 +66,7 @@ void UProcessControlUI::RefreshDoseControls()
  const auto& V=S->AutoSettings;const auto& Snap=S->State.Snapshot;
  if(auto* T=Cast<UTextBlock>(W->GetWidgetFromName(TEXT("AutoDoseSummary"))))T->SetText(FText::FromString(
   FString::Printf(TEXT("선택: %s · 적용 목표 %.6f g ± %.6f g\n입자당 %.9f g · 현재 A 상류 %.6f g\n계량 오차와 이송 질량 보존 오차(%.6f g)는 별개입니다.\n%s"),
-   V.BatchMode==EProcessBatchMode::Full?TEXT("A 전량"):(V.BatchMode==EProcessBatchMode::SequentialAB?TEXT("A·B 순차 계량"):TEXT("A 목표량")),V.TargetMassKg*1000,V.WeighingToleranceKg*1000,Snap.ModelParticleMassKg*1000,Snap.SequentialBatch.A.SourceCount*Snap.ModelParticleMassKg*1000,Snap.Transfer.Criteria.MassErrorKg*1000,*DoseMessage)+FString::Printf(TEXT("\nB 적용 목표 %.6f g ± %.6f g · B 상류 %.6f g"),V.TargetMassBKg*1000,V.WeighingToleranceBKg*1000,Snap.SequentialBatch.B.SourceCount*Snap.ModelParticleMassKg*1000)));
+   V.BatchMode==EProcessBatchMode::Full?TEXT("A 전량"):(V.BatchMode==EProcessBatchMode::SequentialAB?TEXT("A·B 순차 계량"):TEXT("A 목표량")),V.TargetMassKg*1000,V.WeighingToleranceKg*1000,Snap.SourceKg(0)*1000,Snap.SequentialBatch.A.SourceCount*Snap.SourceKg(0)*1000,Snap.Transfer.Criteria.MassErrorKg*1000,*DoseMessage)+FString::Printf(TEXT("\nB 적용 목표 %.6f g ± %.6f g · B 상류 %.6f g"),V.TargetMassBKg*1000,V.WeighingToleranceBKg*1000,Snap.SequentialBatch.B.SourceCount*Snap.SourceKg(1)*1000)));
 }
 
 void UProcessControlUI::SelectSequentialBatch(){if(Is3D())return;if(auto* S=Service.Get()){FString Why;DoseMessage=S->SetAutomaticBatchMode(EProcessBatchMode::SequentialAB,Why)?TEXT("A 다음 B 계량 · 각각 허용 범위 확인 후 함께 혼합"):Why;Refresh();}}

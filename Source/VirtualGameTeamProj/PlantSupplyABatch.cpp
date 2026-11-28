@@ -27,7 +27,7 @@ void FPlantSupplyABatch::SelectSource(int32 Supplier)
     State=FPlantABatchSnapshot();
     State.Supported=true;
     State.InitialCount=State.TotalCount=Sequential.Materials[Supplier].InitialCount;
-    State.InitialKg=State.TotalKg=State.TotalCount*Mass.ParticleMassKg;
+    State.InitialKg=State.TotalKg=State.TotalCount*Mass.ForSource(Sequential.ActiveSupplier);
 }
 void FPlantSupplyABatch::Observe(const std::vector<powder::Grain>& P,double Time)
 {
@@ -45,6 +45,7 @@ void FPlantSupplyABatch::Observe(const std::vector<powder::Grain>& P,double Time
     for(auto& Entry:Sequential.Materials){auto* M=&Entry;M->SourceCount=M->SelectedCount=M->ReceiverCount=M->MixerCount=M->ConnectorCount=0;M->CohortHash=1469598103934665603LL;}
     State.SourceCount=State.ConnectorCount=State.WeighingCount=State.PipeCount=State.ReceiverCount=State.MixerConnectorCount=State.MixerCount=State.UnknownCount=State.ForeignCount=0;
     State.InventorySourceCount=0;TArray<int32> CurrentWeighing;
+    State.ObservedCohortKg=0;Feed.ReceiverKg=Feed.ConnectorKg=Feed.MixerKg=0;
     for(int32 I=0;I<IsA.Num();++I)
     {
         const auto Region=Mass.Classify(P[I]);
@@ -96,12 +97,13 @@ void FPlantSupplyABatch::Observe(const std::vector<powder::Grain>& P,double Time
                 if(Feed.OpeningRevision>0&&UnexpectedSeen.IsValidIndex(I)&&!UnexpectedSeen[I]){UnexpectedSeen[I]=1;++Feed.AdditionalInflowCount;}}
             continue;
         }
+        State.ObservedCohortKg+=Mass.ForId(I);
         // Upstream membership is bounded by the selected hopper route above its gate.
         if(Region==EPlantMassRegion::Weighing)++State.WeighingCount;
         else if(Region==EPlantMassRegion::Pipe)++State.PipeCount;
-        else if(Region==EPlantMassRegion::Receiver)++State.ReceiverCount;
-        else if(Downstream==EPlantMixerRegion::Mixer)++State.MixerCount;
-        else if(Downstream==EPlantMixerRegion::Connector)++State.MixerConnectorCount;
+        else if(Region==EPlantMassRegion::Receiver){++State.ReceiverCount;Feed.ReceiverKg+=Mass.ForId(I);}
+        else if(Downstream==EPlantMixerRegion::Mixer){++State.MixerCount;Feed.MixerKg+=Mass.ForId(I);}
+        else if(Downstream==EPlantMixerRegion::Connector){++State.MixerConnectorCount;Feed.ConnectorKg+=Mass.ForId(I);}
         else if(Path==Sequential.ActiveSupplier)++State.ConnectorCount;
         else if(AtSource)++State.SourceCount;
         else ++State.UnknownCount;
@@ -115,13 +117,10 @@ void FPlantSupplyABatch::Observe(const std::vector<powder::Grain>& P,double Time
     // While an occupied gate is still open, publish the additional mass already through it.
     // Once actual closure is recorded this remains the immutable closure result.
     if(State.SupplyCloseRequestedRevision>0&&State.SupplyClosedRevision==0)
-        State.ClosingExtraKg=(State.InitialCount-State.InventorySourceCount)*Mass.ParticleMassKg-State.CloseRequestedPassedKg;
+        State.ClosingExtraKg=(State.InitialCount-State.InventorySourceCount)*Mass.ForSource(Sequential.ActiveSupplier)-State.CloseRequestedPassedKg;
     if(CurrentWeighing!=WeighingIds||WeighingStableSince<0){WeighingIds=MoveTemp(CurrentWeighing);WeighingStableSince=Time;++State.WeighingSetRevision;}
     State.WeighingStableSeconds=Time-WeighingStableSince;
     State.Valid=State.Error.IsEmpty();Recovery.Valid=State.Valid&&State.UnknownCount==0;Feed.Valid=State.Valid;Feed.ObservedSimulationSeconds=Time;
-    Feed.ReceiverKg=State.ReceiverCount*Mass.ParticleMassKg;
-    Feed.ConnectorKg=State.MixerConnectorCount*Mass.ParticleMassKg;
-    Feed.MixerKg=State.MixerCount*Mass.ParticleMassKg;
     if(Feed.OpeningRevision<=0)return;
     if(Feed.MixerKg>0&&Feed.FirstArrivalSimulationSeconds<0)Feed.FirstArrivalSimulationSeconds=Time;
     if(State.ForeignCount||State.UnknownCount||State.SourceCount||State.ConnectorCount||State.WeighingCount||State.PipeCount){
@@ -145,7 +144,7 @@ bool FPlantSupplyABatch::Capture(const std::vector<powder::Grain>& P,double Time
     {State.Error=TEXT("초기 A 원료 전량이 공급호퍼에 있고 공정이 비어 있는 새 배치만 시작할 수 있습니다. 초기화 후 확인하세요.");State.Valid=false;return false;}
     ExistingMixer.Init(0,IsA.Num());UnexpectedSeen.Init(0,IsA.Num());State.InitialMixerCount=0;
     for(int32 I=0;I<IsA.Num();++I)if(!IsA[I]&&Geometry.Classify(P[I])==EPlantMixerRegion::Mixer){ExistingMixer[I]=1;++State.InitialMixerCount;}
-    Feed.InitialMixerKg=State.InitialMixerCount*Mass.ParticleMassKg;
+    Feed.InitialMixerKg=0;for(int32 I=0;I<ExistingMixer.Num();++I)if(ExistingMixer[I])Feed.InitialMixerKg+=Mass.ForId(I);
     State.CaptureRevision=Revision;State.CapturedSimulationSeconds=Time;return true;
 }
 bool FPlantSupplyABatch::VerifyOpening(const std::vector<powder::Grain>& P,double Time,int64 Revision)
@@ -164,7 +163,7 @@ void FPlantSupplyABatch::InvalidateCapture()
  Sequential=FPlantSequentialBatchSnapshot();Sequential.Materials.SetNum(6);for(auto& IDs:Cohorts)IDs.Reset();
  InitialFeed=FPlantMixerFeedSnapshot();IsA.Reset();
  for(int32 Label:Labels){IsA.Add(Label==0);if(Label==0)++State.InitialCount;if(Sequential.Materials.IsValidIndex(Label))++Sequential.Materials[Label].InitialCount;}
- State.InitialKg=State.InitialCount*Mass.ParticleMassKg;
+ State.InitialKg=State.InitialCount*Mass.ForSource(Sequential.ActiveSupplier);
  State.CaptureRevision=0;State.CapturedSimulationSeconds=-1;State.InitialMixerCount=0;
  State.TotalCount=State.InitialCount;State.TotalKg=State.InitialKg;SelectedDose.Empty();WeighingIds.Empty();WeighingStableSince=-1;
  State.WeighingSetRevision=0;State.WeighingStableSeconds=0;State.DoseFinalized=false;
@@ -227,17 +226,17 @@ void FPlantSupplyABatch::SupplyCloseRequested(const std::vector<powder::Grain>& 
  if(State.CaptureRevision<=0||State.SupplyCloseRequestedRevision>0)return;
  Observe(P,Time);if(!State.Valid)return;
  State.SupplyCloseRequestedRevision=Revision;State.SupplyCloseRequestedSeconds=Time;
- State.CloseRequestedWeighingKg=State.WeighingCount*Mass.ParticleMassKg;
- State.CloseRequestedConnectorKg=State.ConnectorCount*Mass.ParticleMassKg;
- State.CloseRequestedPassedKg=(State.InitialCount-State.InventorySourceCount)*Mass.ParticleMassKg;
+ State.CloseRequestedWeighingKg=State.WeighingCount*Mass.ForSource(Sequential.ActiveSupplier);
+ State.CloseRequestedConnectorKg=State.ConnectorCount*Mass.ForSource(Sequential.ActiveSupplier);
+ State.CloseRequestedPassedKg=(State.InitialCount-State.InventorySourceCount)*Mass.ForSource(Sequential.ActiveSupplier);
 }
 void FPlantSupplyABatch::SupplyClosed(const std::vector<powder::Grain>& P,double Time,int64 Revision)
 {
  if(State.SupplyCloseRequestedRevision<=0||State.SupplyClosedRevision>0)return;
  Observe(P,Time);if(!State.Valid)return;
  State.SupplyClosedRevision=Revision;State.SupplyClosedSeconds=Time;
- State.ClosedWeighingKg=State.WeighingCount*Mass.ParticleMassKg;State.ClosedConnectorKg=State.ConnectorCount*Mass.ParticleMassKg;
- State.ClosedPassedKg=(State.InitialCount-State.InventorySourceCount)*Mass.ParticleMassKg;
+ State.ClosedWeighingKg=State.WeighingCount*Mass.ForSource(Sequential.ActiveSupplier);State.ClosedConnectorKg=State.ConnectorCount*Mass.ForSource(Sequential.ActiveSupplier);
+ State.ClosedPassedKg=(State.InitialCount-State.InventorySourceCount)*Mass.ForSource(Sequential.ActiveSupplier);
  State.ClosingExtraKg=State.ClosedPassedKg-State.CloseRequestedPassedKg;
 }
 void FPlantSupplyABatch::RejectDose(int64 Revision,const FString& Reason)
@@ -249,13 +248,14 @@ bool FPlantSupplyABatch::FinalizeDose(const std::vector<powder::Grain>& P,double
  if(Revision>0&&State.DoseFinalizeRevision==Revision)return State.DoseFinalized;
  if(Revision>0&&State.DoseRejectedRevision==Revision)return false;
  Observe(P,Time);
- FString Why=PlantDose::Validate(TargetKg,ToleranceKg,Mass.ParticleMassKg,State.InitialKg);
+ FString Why=PlantDose::Validate(TargetKg,ToleranceKg,Mass.ForSource(Sequential.ActiveSupplier),State.InitialKg);
  if(!State.Valid||CaptureRevision<=0||State.CaptureRevision!=CaptureRevision||Revision<=0||State.DoseFinalized||State.ForeignCount||State.UnknownCount||
     State.ConnectorCount||State.PipeCount||State.ReceiverCount||State.MixerCount||State.MixerConnectorCount||State.WeighingCount<=0||
     State.SourceCount+State.WeighingCount!=State.TotalCount||State.WeighingStableSeconds<Criteria.StableSimulationSeconds||!Why.IsEmpty()){
   RejectDose(Revision,TEXT("최종 계량의 배치·공급 잔류·동일 입자 안정 조건 미확인: ")+Why);return false;}
- State.DoseTargetKg=TargetKg;State.DoseToleranceKg=ToleranceKg;State.DoseFinalKg=State.WeighingCount*Mass.ParticleMassKg;State.DoseFinalSimulationSeconds=Time;
- if(FMath::Abs(State.DoseFinalKg-TargetKg)>ToleranceKg+1e-12){
+ State.DoseTargetKg=TargetKg;State.DoseToleranceKg=ToleranceKg;State.DoseFinalKg=State.WeighingCount*Mass.ForSource(Sequential.ActiveSupplier);State.DoseFinalSimulationSeconds=Time;
+ if((ToleranceKg==0 && WeighingIds.Num()!=FMath::RoundToInt(TargetKg/Mass.ForSource(Sequential.ActiveSupplier))) ||
+    FMath::Abs(State.DoseFinalKg-TargetKg)>ToleranceKg+1e-12){
   RejectDose(Revision,FString::Printf(TEXT("계량 범위 벗어남 · 목표 %.9f g ± %.9f g · 확정 %.9f g · 차이 %+.9f g"),TargetKg*1000,ToleranceKg*1000,State.DoseFinalKg*1000,(State.DoseFinalKg-TargetKg)*1000));return false;}
  SelectedDose.Init(0,IsA.Num());for(int32 I:WeighingIds)SelectedDose[I]=1;
  State.TotalCount=WeighingIds.Num();State.TotalKg=State.DoseFinalKg;State.DoseFinalized=true;State.DoseFinalizeRevision=Revision;
@@ -318,9 +318,9 @@ bool FPlantSupplyABatch::BeginAdditive(const std::vector<powder::Grain>& P,doubl
  ExistingMixer.Init(0,Labels.Num());UnexpectedSeen.Init(0,Labels.Num());int32 Existing=0;
  for(int32 I=0;I<Labels.Num();++I)if(!IsA[I]&&Geometry.Classify(P[I])==EPlantMixerRegion::Mixer){ExistingMixer[I]=1;++Existing;}
 
- State.InitialKg=State.TotalKg=State.TotalCount*Mass.ParticleMassKg;State.InitialMixerCount=Existing;
+ State.InitialKg=State.TotalKg=State.TotalCount*Mass.ForSource(Sequential.ActiveSupplier);State.InitialMixerCount=Existing;
  State.CaptureRevision=Revision;State.CapturedSimulationSeconds=Time;
- Feed=FPlantMixerFeedSnapshot();Feed.Supported=true;Feed.InitialMixerKg=Existing*Mass.ParticleMassKg;StableSince=-1;
+ Feed=FPlantMixerFeedSnapshot();Feed.Supported=true;for(int32 I=0;I<ExistingMixer.Num();++I)if(ExistingMixer[I])Feed.InitialMixerKg+=Mass.ForId(I);StableSince=-1;
  WeighingIds.Empty();WeighingStableSince=-1;
  Sequential.TransitionRevision=Revision;Sequential.Reason=TEXT("일반 원료 혼합기 보관 · 첨가제 초기 입자 확정");
  Observe(P,Time);return State.Valid&&State.ForeignCount==0&&State.UnknownCount==0;

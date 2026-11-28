@@ -131,14 +131,14 @@ bool FPlantFeedPreparation::Evaluate(const std::vector<powder::Grain>& P,double 
     if(!GeometryError.IsEmpty())return Fail(GeometryError);
     if(P.size()!=Count||!FMath::IsFinite(Time)||Time<LastTime)return Fail(TEXT("입자 ID·좌표·해석 시간을 확인할 수 없습니다."));
     const bool NewTime=LastTime<0||Time>LastTime;LastTime=Time;State.ObservedSimulationSeconds=Time;
-    TArray<int32> Ids;State.SupplyResidualCount=0;State.SupplyResidualByPath.Init(0,6);
+    State.WeighingKg=State.SupplyResidualKg=0;TArray<int32> Ids;State.SupplyResidualCount=0;State.SupplyResidualByPath.Init(0,6);
     for(int32 I=0;I<int32(P.size());++I)
     {
         const auto Region=Mass.Classify(P[I]);if(Region==EPlantMassRegion::Invalid)return Fail(TEXT("입자 좌표가 유효하지 않습니다."));
-        if(Region==EPlantMassRegion::Weighing)Ids.Add(I);
-        else if(const int32 Path=SupplyPath(P[I]);Path!=INDEX_NONE){++State.SupplyResidualCount;++State.SupplyResidualByPath[Path];}
+        if(Region==EPlantMassRegion::Weighing){Ids.Add(I);State.WeighingKg+=Mass.ForId(I);}
+        else if(const int32 Path=SupplyPath(P[I]);Path!=INDEX_NONE){State.SupplyResidualKg+=Mass.ForId(I);++State.SupplyResidualCount;++State.SupplyResidualByPath[Path];}
     }
-    State.WeighingCount=Ids.Num();State.WeighingKg=Ids.Num()*Mass.ParticleMassKg;State.SupplyResidualKg=State.SupplyResidualCount*Mass.ParticleMassKg;
+    State.WeighingCount=Ids.Num();
     if(C.Suppliers||Applied)
     {ResetStability();State.State=EPlantFeedPreparationState::WaitingValves;State.Reason=TEXT("공급 밸브 닫힘 확인 중 · 공급 A~F의 요청·실제 닫힘이 필요합니다.");return false;}
     if(State.SupplyResidualCount)
@@ -163,17 +163,18 @@ void FPlantFeedPreparation::Opened(double BaselineTime,double AppliedTime)
     State.Reason=BaselineTime<State.SupplyConfirmedSimulationSeconds?TEXT("공급 완료 확인 · 기존 이송 기준량 유지 후 출구 재개방 적용 확인"):TEXT("공급 완료·기준량 확보 후 출구 열림 적용 확인");
 }
 
-void FPlantFeedPreparation::CountSupplyConnectors(const std::vector<powder::Grain>& Positions,int32 (&Counts)[6]) const
+void FPlantFeedPreparation::CountSupplyConnectors(const std::vector<powder::Grain>& Positions,int32 (&Counts)[6],double* MassKg) const
 {
-    int32 CountsAtSource[6]{};
+    int32 CountsAtSource[6]{};double Weights[6]{};
     for(int32& N:Counts)N=-1;
     if(!State.Enabled||!GeometryError.IsEmpty()||Positions.size()!=Count)return;
-    for(const auto& P:Positions){
+    for(size_t Id=0;Id<Positions.size();++Id){
+        const auto& P=Positions[Id];
         if(Mass.Classify(P)==EPlantMassRegion::Invalid)return;
         const int32 Source=SupplyPath(P);
-        if(Source>=0&&Source<6)++CountsAtSource[Source];
+        if(Source>=0&&Source<6){++CountsAtSource[Source];Weights[Source]+=Mass.ForId(Id);}
     }
-    for(int I=0;I<6;++I)Counts[I]=CountsAtSource[I];
+    for(int I=0;I<6;++I){Counts[I]=CountsAtSource[I];if(MassKg)MassKg[I]=Weights[I];}
 }
 int32 FPlantFeedPreparation::SupplyAInventory(const std::vector<powder::Grain>& Positions,int32 Supplier) const
 {

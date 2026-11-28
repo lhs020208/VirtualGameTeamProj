@@ -75,7 +75,7 @@ void UProcessControlUI::RefreshOperationGuidance()
    const auto* Material=S.Recovery.Materials.FindByPredicate([&](const FPlantRecoveryMaterial& V){return V.Supplier==I;});
    Totals+=FString::Printf(TEXT("%c  "),TCHAR('A'+I));
    if(!Proven||!Material||Material->Unknown){Totals+=TEXT("확인 중 · 배치 상태 확인 필요\n");continue;}
-   const auto& V=*Material;const double Unit=S.ModelParticleMassKg;const bool Final=!V.SelectedIds.IsEmpty();
+   const auto& V=*Material;const double Unit=S.SourceKg(V.Supplier);const bool Final=!V.SelectedIds.IsEmpty();
    const double Passed=(V.SupplyConnector+V.Weighing+V.Pipe+V.Receiver+V.MixerConnector+V.Mixer)*Unit;
    const double Target=A.DoseFor(I,false);
    const double Remaining=Final?FMath::Max(0,V.SelectedIds.Num()-V.Mixer)*Unit:A.BatchMode==EProcessBatchMode::Full?V.Source*Unit:FMath::Max(0.,Target-Passed);

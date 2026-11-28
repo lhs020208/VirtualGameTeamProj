@@ -52,14 +52,14 @@ FString FProcessAutoRun::CanRecover(const FProcessControlMachine& M,double Now) 
  const double Target=State.DoseFor(Supplier,false);
  const double Tol=State.DoseFor(Supplier,true);
  if(!B.DoseFinalized){
-  const double Passed=(B.ConnectorCount+B.WeighingCount)*S.ModelParticleMassKg;
+  const double Passed=(B.ConnectorCount+B.WeighingCount)*S.SourceKg(S.SequentialBatch.ActiveSupplier);
   if(State.StopInventory.Materials.IsValidIndex(Supplier)){
    const TSet<int32> CurrentPassed(R.Materials[Supplier].PassedIds);
    for(int32 Id:State.StopInventory.Materials[Supplier].PassedIds)if(!CurrentPassed.Contains(Id))return FString::Printf(TEXT("정지 시 통과 입자 ID %d의 현재 배치 경로 보존 미확인"),Id);
   }
   if(B.PipeCount||B.ReceiverCount||B.MixerCount||B.MixerConnectorCount||B.SourceCount+B.ConnectorCount+B.WeighingCount!=B.TotalCount)return TEXT("계량 확정 전 예상하지 않은 배출/입자 누락 · 재개 보류");
   if(State.BatchMode!=EProcessBatchMode::Full&&Passed>Target+Tol)return TEXT("이미 공급한 양이 계량 상한을 초과했습니다. 재개할 수 없습니다.");
- }else if(B.SourceCount||B.ConnectorCount||B.WeighingCount+B.PipeCount+B.ReceiverCount+B.MixerConnectorCount+B.MixerCount!=B.TotalCount||FMath::Abs(B.TotalCount*S.ModelParticleMassKg-B.TotalKg)>S.Transfer.Criteria.MassErrorKg)return TEXT("확정 입자 목록·질량과 현재 위치 불일치");
+ }else if(B.SourceCount||B.ConnectorCount||B.WeighingCount+B.PipeCount+B.ReceiverCount+B.MixerConnectorCount+B.MixerCount!=B.TotalCount||FMath::Abs(B.ObservedCohortKg-B.TotalKg)>S.Transfer.Criteria.MassErrorKg)return TEXT("확정 입자 목록·질량과 현재 위치 불일치");
  if(State.AdditiveEnabled&&State.AdditiveScheduled&&State.MixerAppliedSimulationSeconds>=0&&State.AdditiveOpenRevision==0&&
    (S.PhysicalSeconds>=State.AdditiveDueSeconds||R.AutomaticMixSeconds>=State.AdditiveDelaySeconds))return TEXT("미실행 예약 시점 경과 · 늦은 자동 투입 금지");
  const bool Delivered=S.SequentialBatch.AdditiveActive&&B.TotalCount>0&&B.MixerCount==B.TotalCount&&S.MixerFeed.State==EPlantTransferState::Complete&&S.MixerFeed.CloseRevision>S.MixerFeed.OpeningRevision&&S.MixerFeed.OpeningRevision>0;
@@ -80,7 +80,7 @@ bool FProcessAutoRun::Recover(FProcessControlMachine& M,double Now)
  }
  State.FinalAKg=Q.A.FinalKg;State.FinalBKg=Q.B.FinalKg;State.FinalAdditiveKg=Q.Additive.FinalKg;
  State.DoseFinalized=B.DoseFinalized;State.DoseFinalizeRevision=B.DoseFinalizeRevision;State.FinalDoseKg=B.DoseFinalKg;State.FinalDoseSimulationSeconds=B.DoseFinalSimulationSeconds;
- const double Passed=(B.ConnectorCount+B.WeighingCount)*S.ModelParticleMassKg;
+ const double Passed=(B.ConnectorCount+B.WeighingCount)*S.SourceKg(S.SequentialBatch.ActiveSupplier);
  State.RemainingSupplyKg=B.DoseFinalized?0:FMath::Max(0.,(State.BatchMode==EProcessBatchMode::Full?B.InitialKg:State.TargetMassKg)-Passed);
  if(Q.AdditiveActive&&B.TotalCount>0&&B.MixerCount==B.TotalCount&&S.MixerFeed.State==EPlantTransferState::Complete&&S.MixerFeed.CloseRevision>S.MixerFeed.OpeningRevision&&S.MixerFeed.OpeningRevision>0){State.AdditiveDelivered=true;State.AdditiveClosedSeconds=S.MixerFeed.ClosedSimulationSeconds;}
  State.RecoveryNext=RecoveryPlan(S);
@@ -125,7 +125,7 @@ EProcessAutoStage FProcessAutoRun::RecoveryPlan(const FPlantSimulationSnapshot& 
  const double Target=State.DoseFor(Q.ActiveSupplier,false);
  const double Tol=State.DoseFor(Q.ActiveSupplier,true);
  if(!B.DoseFinalized){
-  const double Passed=(B.WeighingCount+B.ConnectorCount)*S.ModelParticleMassKg;
+  const double Passed=(B.WeighingCount+B.ConnectorCount)*S.SourceKg(S.SequentialBatch.ActiveSupplier);
   const bool Enough=State.BatchMode==EProcessBatchMode::Full?B.SourceCount==0:Passed>=Target-Tol;
   return Enough?(B.ConnectorCount?EProcessAutoStage::RecoveryClearPressure:EProcessAutoStage::WeighingStable):EProcessAutoStage::SupplyPressure;
  }

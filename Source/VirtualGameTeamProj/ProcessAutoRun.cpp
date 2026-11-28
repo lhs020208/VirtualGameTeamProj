@@ -1,3 +1,4 @@
+#include "ProcessRecipe.h"
 #include "ProcessAutoRun.h"
 #include "ProcessRecipe.h"
 #include "ProcessStagePressure.h"
@@ -58,6 +59,13 @@ FString FProcessAutoRun::CanStart(const FProcessControlMachine& M,double Now) co
  if(!FMath::IsFinite(Settings.MixingDurationSeconds)||Settings.MixingDurationSeconds<=0)return TEXT("혼합기 패널에서 양수 혼합 시간(초)을 적용한 뒤 시작하세요.");
  if(M.IsStopping()||M.StopStage==EProcessStopStage::Failed)return TEXT("전체 정지의 적용 결과를 먼저 확인하세요.");
  for(const auto& Pair:M.History)if(Pair.Value.IsPending())return TEXT("이전 명령 적용 확인 중입니다.");
+ if(Settings.RequiredDiametersMm.Num()==6){
+  for(int32 I=0;I<6;++I){
+   if(S.InitialSupplierCounts.IsValidIndex(I)&&S.InitialSupplierCounts[I]>0&&
+     FMath::Abs(S.SourceKg(I)-ProcessRecipe::GrainKg(Settings.RequiredDiametersMm[I]))>1e-13)
+    return TEXT("적용 지름과 현재 장입이 다릅니다. 전체 정지 후 새 장입을 적용하세요.");
+  }
+ }
  if(!Settings.Entries.IsEmpty()){
   const auto PlanWhy=ProcessRecipe::ValidateEntries(Settings.Entries,Settings.AdditiveEnabled);
   if(!PlanWhy.IsEmpty())return PlanWhy;
@@ -73,7 +81,7 @@ FString FProcessAutoRun::CanStart(const FProcessControlMachine& M,double Now) co
    const auto& Mat=S.SequentialBatch.Materials[E.Supplier];
    if(Mat.InitialCount==0)return Prefix+TEXT("장입 원료 없음");
    if(Mat.InitialCount!=Mat.SourceCount)return Prefix+TEXT("원료 상류 보존 미확인");
-   const auto Why=PlantDose::Validate(E.TargetKg,E.ToleranceKg,S.ModelParticleMassKg,Mat.SourceCount*S.ModelParticleMassKg);
+   const auto Why=PlantDose::Validate(E.TargetKg,E.ToleranceKg,S.SourceKg(E.Supplier),Mat.SourceCount*S.SourceKg(E.Supplier));
    if(!Why.IsEmpty())return Prefix+Why;
   }
  }else{
@@ -85,7 +93,7 @@ FString FProcessAutoRun::CanStart(const FProcessControlMachine& M,double Now) co
  if(Settings.BatchMode==EProcessBatchMode::SequentialAB){
   const auto& BMaterial=S.SequentialBatch.B;
   if(!S.SupplyBBrake.Supported||!S.SupplyBBrake.Valid||!S.SupplyBPurge.Supported||!S.SupplyBPurge.Valid||BMaterial.SourceCount!=BMaterial.InitialCount)return TEXT("B 상류 재고·제동·하류 공기 구성 미확인");
-  const auto Why=PlantDose::Validate(Settings.TargetMassBKg,Settings.WeighingToleranceBKg,S.ModelParticleMassKg,BMaterial.SourceCount*S.ModelParticleMassKg);if(!Why.IsEmpty())return TEXT("B: ")+Why;
+  const auto Why=PlantDose::Validate(Settings.TargetMassBKg,Settings.WeighingToleranceBKg,S.SourceKg(1),BMaterial.SourceCount*S.SourceKg(1));if(!Why.IsEmpty())return TEXT("B: ")+Why;
  }
  if(Settings.AdditiveEnabled){
   if(Settings.BatchMode!=EProcessBatchMode::SequentialAB||Settings.AdditiveSupplier!=2)return TEXT("첨가제는 A·B 순차 배치의 C 호퍼만 지원합니다.");
@@ -93,7 +101,7 @@ FString FProcessAutoRun::CanStart(const FProcessControlMachine& M,double Now) co
      (Settings.AdditiveScheduled&&Settings.AdditiveDelaySeconds>=Settings.MixingDurationSeconds))return TEXT("예약 시각 N은 0 이상이며 혼합 종료 시각보다 앞서야 합니다.");
   const auto& C=S.SequentialBatch.Additive;
   if(!S.SupplyCBrake.Supported||!S.SupplyCBrake.Valid||!S.SupplyCPurge.Supported||!S.SupplyCPurge.Valid||C.SourceCount!=C.InitialCount)return TEXT("첨가제 C 초기 재고·제동·하류 공기 구성 미확인");
-  const auto Why=PlantDose::Validate(Settings.AdditiveTargetKg,Settings.AdditiveToleranceKg,S.ModelParticleMassKg,C.SourceCount*S.ModelParticleMassKg);
+  const auto Why=PlantDose::Validate(Settings.AdditiveTargetKg,Settings.AdditiveToleranceKg,S.SourceKg(2),C.SourceCount*S.SourceKg(2));
   if(!Why.IsEmpty())return TEXT("첨가제 C: ")+Why;
  }
  }
@@ -122,7 +130,7 @@ bool FProcessAutoRun::Start(FGuid Id,FProcessControlMachine& M,double Now)
   State.TargetMassKg=State.DoseFor(State.ActiveSupplier,false);State.WeighingToleranceKg=State.DoseFor(State.ActiveSupplier,true);
  }
  LastClockSequence=-1;
- State.InitialAvailableKg=State.Entries.IsEmpty()?M.Snapshot.SupplyABatch.TotalKg:M.Snapshot.SequentialBatch.Materials[State.ActiveSupplier].SourceCount*M.Snapshot.ModelParticleMassKg;PreviousPassedKg=0;PreviousPassedTime=-1;LastWeighingSetRevision=-1;
+ State.InitialAvailableKg=State.Entries.IsEmpty()?M.Snapshot.SupplyABatch.TotalKg:M.Snapshot.SequentialBatch.Materials[State.ActiveSupplier].SourceCount*M.Snapshot.SourceKg(State.ActiveSupplier);PreviousPassedKg=0;PreviousPassedTime=-1;LastWeighingSetRevision=-1;
  State.MixingDurationSeconds=State.MixingRemainingSeconds=Settings.MixingDurationSeconds;
  State.TargetMixerRPM=ConfiguredRPM(M.Snapshot);State.Active=true;State.StartedSimulationSeconds=M.Snapshot.PhysicalSeconds;M.AutomationActive=true;
  Enter(EProcessAutoStage::InitialStop,M.Snapshot,Now);return true;

@@ -191,7 +191,7 @@ bool UProcessControlService::SetAutomaticTargetMass(double TargetKg,double Toler
  if(AutoRun.State.Active||State.IsStopping()){Reason=TEXT("자동 실행·전체 정지 중 계량 설정 변경 불가");return false;}
  const auto& S=State.Snapshot;
  if(!State.Connected||!S.SupplyABatch.Valid||S.Validity!=EPlantValueValidity::Valid){Reason=TEXT("실제 A 공급 가능량을 확인할 수 없습니다.");return false;}
- Reason=PlantDose::Validate(TargetKg,ToleranceKg,S.ModelParticleMassKg,S.SupplyABatch.InventorySourceCount*S.ModelParticleMassKg);
+ Reason=PlantDose::Validate(TargetKg,ToleranceKg,S.SourceKg(0),S.SupplyABatch.InventorySourceCount*S.SourceKg(0));
  if(!Reason.IsEmpty())return false;
  AutoSettings.TargetMassKg=TargetKg;AutoSettings.WeighingToleranceKg=ToleranceKg;AutoRun.Settings=AutoSettings;return true;
 }
@@ -203,7 +203,7 @@ bool UProcessControlService::SetAutomaticBTargetMass(double TargetKg,double Tole
  if(AutoRun.State.Active||State.IsStopping()){Reason=TEXT("자동 실행·전체 정지 중 B 설정 변경 불가");return false;}
  const auto& S=State.Snapshot;
  if(!State.Connected||!S.SupplyABatch.Valid||S.Validity!=EPlantValueValidity::Valid){Reason=TEXT("실제 B 공급 가능량 미확인");return false;}
- Reason=PlantDose::Validate(TargetKg,ToleranceKg,S.ModelParticleMassKg,S.SequentialBatch.B.SourceCount*S.ModelParticleMassKg);
+ Reason=PlantDose::Validate(TargetKg,ToleranceKg,S.SourceKg(1),S.SequentialBatch.B.SourceCount*S.SourceKg(1));
  if(!Reason.IsEmpty())return false;
  AutoSettings.TargetMassBKg=TargetKg;AutoSettings.WeighingToleranceBKg=ToleranceKg;AutoRun.Settings=AutoSettings;return true;
 }
@@ -219,7 +219,7 @@ bool UProcessControlService::SetAutomaticAdditive(bool Enabled,int32 Supplier,bo
  if(Scheduled&&AutoSettings.MixingDurationSeconds>0&&Delay>=AutoSettings.MixingDurationSeconds){Reason=TEXT("예약 시각은 설정 혼합 종료보다 앞서야 합니다.");return false;}
  const auto& S=State.Snapshot;
  if(!State.Connected||S.Validity!=EPlantValueValidity::Valid||!S.SupplyABatch.Valid||!PlantPurgeFor(S,Supplier).Valid||!PlantBrakeFor(S,Supplier).Valid){Reason=TEXT("첨가제 재고·제동·공기 작업자 확인값이 없습니다.");return false;}
- Reason=PlantDose::Validate(TargetKg,ToleranceKg,S.ModelParticleMassKg,S.SequentialBatch.Materials.IsValidIndex(Supplier)?S.SequentialBatch.Materials[Supplier].SourceCount*S.ModelParticleMassKg:0);
+ Reason=PlantDose::Validate(TargetKg,ToleranceKg,S.SourceKg(Supplier),S.SequentialBatch.Materials.IsValidIndex(Supplier)?S.SequentialBatch.Materials[Supplier].SourceCount*S.SourceKg(Supplier):0);
  if(!Reason.IsEmpty()){Reason=TEXT("첨가제 C: ")+Reason;return false;}
  if(Supplier!=2){
   if(AutoSettings.BatchMode!=EProcessBatchMode::SequentialAB){Reason=TEXT("A·B 순차 모드 또는 호퍼 선택 레시피를 먼저 설정하세요.");return false;}

@@ -1,12 +1,33 @@
 // Recipe configuration only. The native service revalidates the complete JSON authoritatively.
-export const batchKinds=['recipe_list','recipe_load','recipe_save','recipe_apply','batch_start','batch_check','batch_resume','batch_abandon'];
+export const batchKinds=['recipe_list','recipe_load','recipe_save','recipe_apply','recipe_charge','batch_start','batch_check','batch_resume','batch_abandon'];
 export const readKinds=['recipe_list','recipe_load'];
 export const isBatch=k=>batchKinds.includes(k);
 export const emptyRecipe=()=>({schema:'virtual-game-team.batch-recipe',version:2,name:'',mode:'a_full',units:{mass:'kg',time:'simulation_s',speed:'rpm',pressure:'Pa_g'},feed_order:['supply-a'],materials:[{hopper_id:'supply-a',display_name:'원료 A',target_kg:0,tolerance_kg:0}],mixing:{target_rpm:0,duration_s:0},additive:{enabled:false,hopper_id:'supply-c',scheduled:false,delay_s:0},hopper_pressure_targets:{supply_to_weighing:{'supply-common':500,weigher:-500,receiver:0},weighing_to_receiver:{'supply-common':0,weigher:500,receiver:-1000}}});
 const exact=(o,keys)=>o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).length===keys.length&&keys.every(k=>Object.hasOwn(o,k));
 const num=v=>typeof v==='number'&&Number.isFinite(v),name=v=>typeof v==='string'&&v.trim()===v&&v.length>0&&v.length<=80&&!/[\x00-\x1f\x7f]/.test(v);
+export function grainKg(mm){
+ const radius=Math.fround(mm*.0005);
+ return (4/3)*Math.PI*1200*radius*radius*radius;
+}
+export const validDiameter=mm=>Number.isFinite(mm)&&mm>=2&&mm<20&&Math.fround(mm*.0005)<Math.fround(.01);
 export function decodeRecipe(text){
  if(typeof text!=='string'||text.length>8192)throw Error('레시피 크기·형식 오류');let r;try{r=JSON.parse(text);}catch{throw Error('손상된 레시피 JSON');}
+ let particles;
+ if(r?.version===5){
+  particles=r.particle_settings;
+  const ids=[...'abcdef'].map(k=>'supply-'+k);
+  if(!exact(particles,ids))throw Error('A~F 입자 설정 누락');
+  for(const id of ids){
+   const p=particles[id];
+   if(!exact(p,['diameter_mm','target_basis','target_count'])||!validDiameter(p.diameter_mm)||!Number.isSafeInteger(p.target_count)||p.target_count<0||p.target_count>1000000||p.target_basis!==(p.target_count?'count':'mass'))throw Error(id+' 지름 또는 목표 개수 오류');
+   if(p.target_count){
+    const m=Array.isArray(r.materials)&&r.materials.find(m=>m?.hopper_id===id);
+    if(!m||m.enabled===false||r.mode==='a_full'||m.tolerance_kg!==0||Math.abs(m.target_kg-p.target_count*grainKg(p.diameter_mm))>1e-13*Math.max(1,m.target_kg))throw Error(id+' 개수 기준과 목표 질량 불일치');
+   }
+  }
+  delete r.particle_settings;
+  r.version=r.hopper_pressure_targets?.supplier_feed_pa?4:r.mode==='hopper_sequence'?3:2;
+ }
  const fields=['schema','version','name','mode','units','feed_order','materials','mixing','additive'];
  if(![1,2,3,4].includes(r?.version))throw Error('지원하지 않는 레시피 버전');if(r.version>=2)fields.push('hopper_pressure_targets');
  if(!exact(r,fields)||r.schema!=='virtual-game-team.batch-recipe')throw Error('레시피 규격·필드 오류');
@@ -42,6 +63,7 @@ export function decodeRecipe(text){
      !ids.every(id=>within(p.supplier_feed_pa[id],1000))||!within(f['supply-common'],1000)||!within(f.weigher,1000)||!within(f.receiver,0)||
      t['supply-common']!==0||!within(t.weigher,1000)||!within(t.receiver,0))throw Error('공급원 또는 단계 압력 범위·단위 오류');
  }else if(!exact(p,['supply_to_weighing','weighing_to_receiver'])||!exact(f,k)||!exact(t,k)||f['supply-common']!==500||f.weigher!==-500||f.receiver!==0||t['supply-common']!==0||t.weigher!==500||!num(t.receiver)||t.receiver<-1000||t.receiver>0)throw Error('단계 압력: 공급 +0.5/−0.5/0 고정, 이송 0/+0.5/수취 −1~0 kPa(g)');
+ if(particles){r.version=5;r.particle_settings=particles;}
  return r;
 }
 export function validateBatchCommand(c){
@@ -52,7 +74,7 @@ export function validateBatchCommand(c){
  if(['recipe_save','recipe_apply'].includes(c.kind))decodeRecipe(c.recipe_json);
  if(c.kind==='recipe_load'&&!c.file_id)throw Error('목록에서 불러올 레시피 선택 필요');
  if(c.kind==='recipe_save'&&c.file_id&&(!c.confirm||!c.file_version))throw Error('덮어쓰기 대상·버전·명시적 확인 필요');
- if(['recipe_apply','batch_start'].includes(c.kind)&&(!/^(0|[1-9]\d{0,18})$/.test(c.recipe_revision??'')||!c.recipe_fingerprint))throw Error('현재 적용 설정 버전 확인 필요');
+ if(['recipe_apply','recipe_charge','batch_start'].includes(c.kind)&&(!/^(0|[1-9]\d{0,18})$/.test(c.recipe_revision??'')||!c.recipe_fingerprint))throw Error('현재 적용 설정 버전 확인 필요');
  if(['batch_check','batch_resume','batch_abandon'].includes(c.kind)&&!c.batch_id)throw Error('대상 배치 확인 필요');
  if(c.kind==='batch_resume'&&!c.check_token)throw Error('명시적 배치 상태 확인 필요');
  if(c.kind==='batch_abandon'&&!c.confirm)throw Error('대상 배치 포기 확인 필요');return true;
