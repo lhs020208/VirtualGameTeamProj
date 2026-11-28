@@ -35,4 +35,3 @@ def run():
     equipment=[w for w in ws["widgets"] if w["widgetName"] in ["Equipment"+str(i) for i in range(9)]]
     assert len(equipment)==9
     return {"summary":{"equipment":len(equipment),"wired_button_events":len(bound),"hover_seconds":2.5,"widget_count":len(ws["widgets"]),"runtime_input_tested":False},"graphs":exported,"widgets":ws}
-

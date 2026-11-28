@@ -1,0 +1,104 @@
+{
+  "records": [
+    {
+      "scene": "initial",
+      "dt_a": 1e-05,
+      "dt_b": 5e-06,
+      "position_max_m": 1.9311904907226562e-05,
+      "position_rms_m": 1.9311904907226562e-05,
+      "velocity_rms_m_s": 5.550157478959457e-06,
+      "centroid_difference_m": 1.9311904907226562e-05,
+      "mean_speed_a": 0.3139300048351288,
+      "mean_speed_b": 0.3139355331659317
+    },
+    {
+      "scene": "initial",
+      "dt_a": 5e-06,
+      "dt_b": 2.5e-06,
+      "position_max_m": 2.0265579223632812e-05,
+      "position_rms_m": 2.014672262120069e-05,
+      "velocity_rms_m_s": 6.9188259326693316e-06,
+      "centroid_difference_m": 2.014636993408203e-05,
+      "mean_speed_a": 0.3139355331659317,
+      "mean_speed_b": 0.31392885744571686
+    },
+    {
+      "scene": "initial",
+      "dt_a": 1e-05,
+      "dt_b": 2.5e-06,
+      "position_max_m": 3.9577484130859375e-05,
+      "position_rms_m": 3.945845491535321e-05,
+      "velocity_rms_m_s": 1.7536583983808488e-06,
+      "centroid_difference_m": 3.9458274841308594e-05,
+      "mean_speed_a": 0.3139300048351288,
+      "mean_speed_b": 0.31392885744571686
+    },
+    {
+      "scene": "transfer",
+      "dt_a": 1e-05,
+      "dt_b": 5e-06,
+      "position_max_m": 0.02207038136096426,
+      "position_rms_m": 0.0010058184898439802,
+      "velocity_rms_m_s": 0.0909087273077522,
+      "centroid_difference_m": 0.00037250956744740794,
+      "mean_speed_a": 0.6096228876685519,
+      "mean_speed_b": 0.5816374533437947
+    },
+    {
+      "scene": "transfer",
+      "dt_a": 5e-06,
+      "dt_b": 2.5e-06,
+      "position_max_m": 0.021980639928194427,
+      "position_rms_m": 0.0009422393066885634,
+      "velocity_rms_m_s": 0.08924275763157903,
+      "centroid_difference_m": 0.00011736080101729985,
+      "mean_speed_a": 0.5816374533437947,
+      "mean_speed_b": 0.5782768301827174
+    },
+    {
+      "scene": "transfer",
+      "dt_a": 1e-05,
+      "dt_b": 2.5e-06,
+      "position_max_m": 0.02894289125342856,
+      "position_rms_m": 0.001435275069590424,
+      "velocity_rms_m_s": 0.11659400542904216,
+      "centroid_difference_m": 0.00047801051083411905,
+      "mean_speed_a": 0.6096228876685519,
+      "mean_speed_b": 0.5782768301827174
+    },
+    {
+      "scene": "mixing",
+      "dt_a": 1e-05,
+      "dt_b": 5e-06,
+      "position_max_m": 0.014998221229153704,
+      "position_rms_m": 0.0005144870591080229,
+      "velocity_rms_m_s": 0.03627919704426047,
+      "centroid_difference_m": 4.651531216252898e-05,
+      "mean_speed_a": 0.009172131749588027,
+      "mean_speed_b": 0.01495537813435308
+    },
+    {
+      "scene": "mixing",
+      "dt_a": 5e-06,
+      "dt_b": 2.5e-06,
+      "position_max_m": 0.02915632788834593,
+      "position_rms_m": 0.0009955999555678649,
+      "velocity_rms_m_s": 0.06537586450196252,
+      "centroid_difference_m": 0.00014714591156777856,
+      "mean_speed_a": 0.01495537813435308,
+      "mean_speed_b": 0.04078163816901707
+    },
+    {
+      "scene": "mixing",
+      "dt_a": 1e-05,
+      "dt_b": 2.5e-06,
+      "position_max_m": 0.031636085686162864,
+      "position_rms_m": 0.0011297161184601055,
+      "velocity_rms_m_s": 0.0668893746451944,
+      "centroid_difference_m": 0.00019321264217366579,
+      "mean_speed_a": 0.009172131749588027,
+      "mean_speed_b": 0.04078163816901707
+    }
+  ],
+  "interpretation": "Baseline sensitivity, not experimental validation or proof of convergence. No physical setting in the adopted level is changed by this diagnostic."
+}

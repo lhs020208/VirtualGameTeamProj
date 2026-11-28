@@ -1,0 +1,5 @@
+actual block limits [-0.689524, 0.501516] rad; build_s=0.163889
+CPU stall angle=0.501516 peak reaction_Nm=53951.3 trip=1
+1 warning generated.
+OpenCL stall angle=0.501516 trip=1
+PASS actual geometry, continuous sweep, rotated boxes, fixed reaction, trip, reverse, reset, CPU/OpenCL

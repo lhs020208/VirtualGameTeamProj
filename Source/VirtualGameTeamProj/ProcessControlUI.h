@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "CoreMinimal.h"
 #include "ProcessControlTypes.h"
 #include "ProcessRecipe.h"
@@ -11,6 +11,7 @@ class UVerticalBox;
 class UCanvasPanel;
 class UBorder;
 class UProcessNumericField;
+class UWrapBox;
 
 /** Runtime-only bindings to the existing widget; no asset graph or physics writes. */
 UCLASS()
@@ -22,6 +23,9 @@ public:
     bool Attach(UUserWidget* Widget, UProcessControlService* Service);
     void Detach();
     void Refresh();
+    UFUNCTION() void ToggleParticleSettings();
+    UFUNCTION() void ApplyParticleSettings();
+    UFUNCTION() void ClearParticleDraft();
     UFUNCTION() void ToggleOperatorDetails();
     UFUNCTION() void ToggleIndividualSettings();
     UFUNCTION() void ToggleRecipes();
@@ -67,12 +71,21 @@ public:
     UFUNCTION() void Pause();
 private:
     bool OperatorLayoutBuilt=false,OperatorDetailsOpen=false,IndividualSettingsOpen=false;
+    bool ParticleSettingsOpen=false;
+    FString ParticleSettingsMessage;
+    UPROPERTY(Transient) TObjectPtr<UBorder> ParticleSettingsPanel;
+    UPROPERTY(Transient) TArray<TObjectPtr<UProcessNumericField>> ParticleCountFields;
+    void BuildParticleControls(UCanvasPanel* Root);
+    void RefreshParticleControls();
     UPROPERTY(Transient) TObjectPtr<UBorder> OperatorDetails;
     UPROPERTY(Transient) TArray<TObjectPtr<UProcessNumericField>> NumericFields;
     TMap<FString,FString> LastCompactText;
     TMap<FString,FString> OriginalDisplayText;
     void BuildOperatorLayout(UCanvasPanel* Root);
     void RefreshOperatorLayout();
+    void BuildResponsiveOperatorLayout(UCanvasPanel* Root);
+    void RefreshResponsiveOperatorLayout();
+    UPROPERTY(Transient) TArray<TObjectPtr<UWrapBox>> ResponsiveRecipeRows;
     void RefreshOperationGuidance();
     void RememberRecoveryCheck();
     bool RecoveryCheckCurrent() const;

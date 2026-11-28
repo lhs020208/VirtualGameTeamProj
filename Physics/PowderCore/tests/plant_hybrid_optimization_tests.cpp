@@ -12,7 +12,7 @@ int main(int argc,char**argv){try{
  auto dist=[](auto a,auto b){return std::hypot(std::hypot(a.x-b.x,a.y-b.y),a.z-b.z);};double maxP=0,maxN=0,maxV=0;size_t count=0,different=0;
  for(float angle:{0.f,.35f,1.1f})for(bool shell:{false,true})for(size_t start=0;start<probes.size();start+=30){
   std::vector<powder::Grain> points(probes.begin()+start,probes.begin()+std::min(start+30,probes.size()));
-  for(auto& q:points){if(q.w==1){float y=q.y,z=q.z-.9f;q.y=std::cos(angle)*y-std::sin(angle)*z;q.z=.9f+std::sin(angle)*y+std::cos(angle)*z;}q.w=0;}
+  for(auto& q:points){if(q.w==1){auto pivot=c.plant_data[1];float y=q.y-pivot.y,z=q.z-pivot.z;q.y=pivot.y+std::cos(angle)*y-std::sin(angle)*z;q.z=pivot.z+std::sin(angle)*y+std::cos(angle)*z;}q.w=0;}
   auto a=base.inspect_boundaries(points,angle,false,shell),b=candidate.inspect_boundaries(points,angle,false,shell);
   auto repeated=candidate.inspect_boundaries(points,angle,false,shell);for(size_t i=0;i<b.size();++i)if(dist(repeated[i].position,b[i].position)>0||dist(repeated[i].normal,b[i].normal)>0||dist(repeated[i].velocity,b[i].velocity)>0)throw std::runtime_error("memo changed query");
   for(size_t i=0;i<a.size();++i){double dp=dist(a[i].position,b[i].position);maxP=std::max(maxP,dp);maxN=std::max(maxN,double(dist(a[i].normal,b[i].normal)));maxV=std::max(maxV,double(dist(a[i].velocity,b[i].velocity)));different+=dp>1e-6;}count+=points.size();

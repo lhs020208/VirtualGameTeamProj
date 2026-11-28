@@ -18,6 +18,10 @@
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SOverlay.h"
+#include "Styling/CoreStyle.h"
+#include "Widgets/Layout/SScrollBox.h"
+#include "Widgets/Layout/SDPIScaler.h"
+#include "Misc/ConfigCacheIni.h"
 
 APlantVisibilityController::APlantVisibilityController()
 {
@@ -94,8 +98,29 @@ TSharedRef<SWidget> APlantVisibilityController::BuildPanel()
     };
     TSharedRef<SWidget> Simulation=SNullWidget::NullWidget;
     if(GetWorld()&&GetWorld()->IsGameWorld())for(TActorIterator<APowderPlantTest>It(GetWorld());It;++It){Simulation=It->BuildSimulationPanel();break;}
-    return SNew(SBorder).Padding(12).BorderBackgroundColor(FLinearColor(.035f,.045f,.06f,.96f))
+    int32 Percent = 125;
+    GConfig->GetInt(TEXT("PlantDisplay"), TEXT("PanelScalePercent"), Percent, GGameUserSettingsIni);
+    const auto Scale = MakeShared<int32>(FMath::Clamp(Percent, 100, 200));
+    auto ScaleButton = [Scale](int32 Step, const TCHAR* Label)
+    {
+        return SNew(SButton).IsFocusable(false)
+            .OnClicked_Lambda([Scale, Step]()
+            {
+                *Scale = FMath::Clamp(*Scale + Step, 100, 200);
+                GConfig->SetInt(TEXT("PlantDisplay"), TEXT("PanelScalePercent"), *Scale, GGameUserSettingsIni);
+                GConfig->Flush(false, GGameUserSettingsIni);
+                return FReply::Handled();
+            })
+            [SNew(STextBlock).Text(FText::FromString(Label))];
+    };
+    return SNew(SBox).MaxDesiredHeight(680)[SNew(SScrollBox)+SScrollBox::Slot()[SNew(SDPIScaler).DPIScale_Lambda([Scale]() { return *Scale / 100.f; })[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).Padding(12).BorderBackgroundColor(FLinearColor(.035f,.045f,.06f,.96f))
         [SNew(SVerticalBox)
+        + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,6)
+            [SNew(SHorizontalBox)
+            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,8,0)
+                [SNew(STextBlock).Text_Lambda([Scale]() { return FText::FromString(FString::Printf(TEXT("화면 배율 %d%%"), *Scale)); })]
+            + SHorizontalBox::Slot().AutoWidth()[ScaleButton(-25, TEXT("축소"))]
+            + SHorizontalBox::Slot().AutoWidth()[ScaleButton(25, TEXT("확대"))]]
         + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,8)
             [SNew(STextBlock).Text(FText::FromString(TEXT("공정 설비 표시 · 물리 계산과 독립")))]
         + SVerticalBox::Slot().AutoHeight()
@@ -116,7 +141,7 @@ TSharedRef<SWidget> APlantVisibilityController::BuildPanel()
                     WeakThis->ViewMode == EPlantViewMode::Cutaway ? TEXT("전면 개방") : TEXT("숨김");
                 return FText::FromString(FString::Printf(TEXT("현재: %s | 프레임: %s"),Mode,WeakThis->bShowFrames?TEXT("표시"):TEXT("숨김")));
             })]
-        + SVerticalBox::Slot().AutoHeight().Padding(0,14,0,0)[Simulation]];
+        + SVerticalBox::Slot().AutoHeight().Padding(0,14,0,0)[Simulation]]]]];
 }
 
 void APlantVisibilityController::OpenDisplayPanel()
@@ -126,15 +151,55 @@ void APlantVisibilityController::OpenDisplayPanel()
     {
         if (!ViewportPanel && GetWorld()->GetGameViewport())
         {
-            ViewportPanel = SNew(SOverlay)
-                .Visibility_Lambda([World = TWeakObjectPtr<UWorld>(GetWorld())]()
-                {
-                    // The read-only screen must not expose the legacy manual controls underneath it.
-                    const auto* UI = World.IsValid() ? World->GetSubsystem<UProcessUIStateSubsystem>() : nullptr;
-                    return UI && UI->StatusWidget && UI->StatusWidget->IsInViewport() ? EVisibility::Collapsed : EVisibility::Visible;
-                })
-                + SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(16)[BuildPanel()];
-            GetWorld()->GetGameViewport()->AddViewportWidgetContent(ViewportPanel.ToSharedRef(), 30);
+            const TWeakObjectPtr<APlantVisibilityController> Self(this);
+            const TWeakObjectPtr<UWorld> World(GetWorld());
+            auto Visibility = [World](bool Observation)
+            {
+                const auto* UI = World.IsValid() ? World->GetSubsystem<UProcessUIStateSubsystem>() : nullptr;
+                const bool Active = UI && UI->StatusWidget && UI->StatusWidget->IsInViewport();
+                return (Observation ? Active && UI->IsObservationViewActive() : !Active)
+                    ? EVisibility::SelfHitTestInvisible : EVisibility::Collapsed;
+            };
+            auto ModeButton = [Self](const TCHAR* Label, EPlantViewMode Mode) -> TSharedRef<SWidget>
+            {
+                return SNew(SButton).IsFocusable(false).ContentPadding(FMargin(10,6))
+                    .ButtonColorAndOpacity_Lambda([Self,Mode]() { return Self.IsValid() && Self->ViewMode==Mode ? FLinearColor(.15f,.55f,.8f) : FLinearColor(.22f,.25f,.3f); })
+                    .OnClicked_Lambda([Self,Mode]() { if(Self.IsValid())Self->SetViewMode(Mode);return FReply::Handled(); })
+                    [SNew(STextBlock).Text(FText::FromString(Label))];
+            };
+            ViewportPanel = SNew(SOverlay).Visibility(EVisibility::SelfHitTestInvisible)
+                + SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(16)
+                [SNew(SBox).Visibility_Lambda([Visibility](){return Visibility(false);})[BuildPanel()]]
+                + SOverlay::Slot()
+                [SNew(SBox).Visibility_Lambda([Visibility](){return Visibility(true);})
+                    [SNew(SOverlay).Visibility(EVisibility::SelfHitTestInvisible)
+                        + SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(TAttribute<FMargin>::CreateLambda([World]()
+                        {
+                            // Follow the UMG content area instead of assuming a fixed footer height/DPI.
+                            const auto* UI=World.IsValid()?World->GetSubsystem<UProcessUIStateSubsystem>():nullptr;
+                            const auto* Area=UI&&UI->StatusWidget?UI->StatusWidget->GetWidgetFromName(TEXT("OperatorViewportArea")):nullptr;
+                            if(Area){
+                                const auto& G=UI->StatusWidget->GetCachedGeometry();const auto& A=Area->GetCachedGeometry();
+                                const auto Bottom=G.AbsoluteToLocal(A.LocalToAbsolute(A.GetLocalSize()));
+                                return FMargin(20,0,0,FMath::Max(8.f,float(G.GetLocalSize().Y-Bottom.Y)+8.f));
+                            }
+                            return FMargin(20,0,0,170);
+                        }))
+                        [SNew(SBorder).Padding(10).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
+                            .BorderBackgroundColor(FLinearColor(.035f,.045f,.06f,.92f))
+                            [SNew(SVerticalBox)
+                                + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,8)
+                                [SNew(SCheckBox).IsFocusable(false)
+                                    .IsChecked_Lambda([Self](){return Self.IsValid()&&Self->bShowFrames?ECheckBoxState::Checked:ECheckBoxState::Unchecked;})
+                                    .OnCheckStateChanged_Lambda([Self](ECheckBoxState State){if(Self.IsValid())Self->SetFramesVisible(State==ECheckBoxState::Checked);})
+                                    [SNew(STextBlock).Text(FText::FromString(TEXT("지지 프레임 표시")))]]
+                                + SVerticalBox::Slot().AutoHeight()
+                                [SNew(SHorizontalBox)
+                                    + SHorizontalBox::Slot().AutoWidth()[ModeButton(TEXT("설비 전체"),EPlantViewMode::Full)]
+                                    + SHorizontalBox::Slot().AutoWidth().Padding(4,0)[ModeButton(TEXT("전면 개방"),EPlantViewMode::Cutaway)]
+                                    + SHorizontalBox::Slot().AutoWidth()[ModeButton(TEXT("설비 숨김"),EPlantViewMode::Hidden)]]
+                            ]]]];
+            GetWorld()->GetGameViewport()->AddViewportWidgetContent(ViewportPanel.ToSharedRef(), 130);
         }
         return;
     }

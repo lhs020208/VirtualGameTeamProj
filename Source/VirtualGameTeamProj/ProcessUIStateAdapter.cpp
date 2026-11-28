@@ -1,4 +1,4 @@
-#include "ProcessUIStateAdapter.h"
+﻿#include "ProcessUIStateAdapter.h"
 #include "ProcessControlService.h"
 #include "ProcessControlUI.h"
 #include "ProcessDisplay.h"
@@ -212,6 +212,9 @@ FProcessEquipmentSnapshot UProcessUIStateAdapter::BuildEquipment(const FString& 
             Validity!=EPlantValueValidity::Valid?Validity:S->AppliedPressureValid?Validity:EPlantValueValidity::Unknown);
     }
     R.SimulationTime = Value(S->PhysicalSeconds, TEXT("s"), Validity);
+    int32 ValveIndex=ProcessPlantBinding::SupplierIndex(Id);if(Id==TEXT("weigher"))ValveIndex=S->RequestedSuppliers.Num();if(Id==TEXT("receiver"))ValveIndex=S->RequestedSuppliers.Num()+1;
+    if(Id==TEXT("mixer"))R.MixerDrive=S->MixerDrive;
+    if(S->ValveActuators.IsValidIndex(ValveIndex)){R.HasValveActuator=true;R.ValveActuator=S->ValveActuators[ValveIndex];}
     if (Id.StartsWith(TEXT("supply-")))
     {
         const int32 Index = Id[7] - TCHAR('a');
@@ -320,7 +323,9 @@ void UProcessUIStateAdapter::Format(const FProcessEquipmentSnapshot& S, FText& S
         const FString Applied = S.AppliedRPM.Validity == EPlantValueValidity::Valid ?
             ProcessDisplay::Number(S.AppliedRPM.Value)+TEXT(" RPM") : TEXT("미확인");
         Valve = FText::FromString(TEXT("목표 RPM  ")+ProcessDisplay::Number(S.RequestedRPM.Value)+TEXT("\n계산 적용  ")+Applied);
+        if(S.MixerDrive.Supported){const auto& D=S.MixerDrive;Valve=FText::FromString(FString::Printf(TEXT("%s · 목표 %.2f / 실제 %.3f RPM\n구동 %.2f / 접촉 %.2f Nm\n전력 %.1f W · 적산 %.1f J"),D.Tripped?TEXT("과부하 정지"):D.Stopped?TEXT("정지"):TEXT("전동 구동"),S.RequestedRPM.Value,D.ActualRPM,D.MotorTorqueNm,D.ContactTorqueNm,D.ElectricalWatts,D.EnergyJoules));}
     }
+    else if(S.HasValveActuator){const auto& A=S.ValveActuator;Valve=FText::FromString(FString::Printf(TEXT("%s · %.1f° / 90°\n구동 %.2f Nm · 접촉 %.2f Nm\n전력 %.1f W · 적산 %.2f J (%g V)"),*PlantValveStatus(A),A.AngleDegrees,A.MotorTorqueNm,A.ContactTorqueNm,A.ElectricalWatts,A.EnergyJoules,A.Voltage));}
     else if (S.ValveRequestedOpen.Validity == EPlantValueValidity::Valid)
     {
         const bool Requested = S.ValveRequestedOpen.Value != 0, Applied = S.ValveAppliedOpen.Value != 0;
@@ -523,7 +528,7 @@ bool UProcessUIStateSubsystem::OpenForActor(APowderPlantTest* Actor)
     auto* PC = GetWorld()->GetFirstPlayerController();
     if (!PC) return false;
     Close();
-    auto* Class = LoadClass<UUserWidget>(nullptr, TEXT("/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2_C"));
+    auto* Class = LoadClass<UUserWidget>(nullptr, TEXT("/Game/ProcessPlant_20261111_LowPoly/UI/WBP_ProcessUIV2.WBP_ProcessUIV2_C"));
     if (!Class) return false;
     StatusWidget = CreateWidget<UUserWidget>(PC, Class);
     if (!StatusWidget) return false;

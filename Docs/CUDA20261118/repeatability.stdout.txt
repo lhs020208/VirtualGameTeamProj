@@ -1,0 +1,329 @@
+[
+  {
+    "scene": "initial",
+    "comparisons": [
+      {
+        "comparison": "baseline_repeat",
+        "pairs": 15,
+        "metrics": {
+          "position_max_m": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          },
+          "position_rms_m": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          },
+          "velocity_rms_m_s": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          },
+          "centroid_difference_m": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          }
+        }
+      },
+      {
+        "comparison": "cuda_vs_baseline",
+        "pairs": 18,
+        "metrics": {
+          "position_max_m": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          },
+          "position_rms_m": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          },
+          "velocity_rms_m_s": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          },
+          "centroid_difference_m": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          }
+        }
+      },
+      {
+        "comparison": "optimized_vs_cuda",
+        "pairs": 9,
+        "metrics": {
+          "position_max_m": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          },
+          "position_rms_m": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          },
+          "velocity_rms_m_s": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          },
+          "centroid_difference_m": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          }
+        }
+      },
+      {
+        "comparison": "optimized_vs_baseline",
+        "pairs": 18,
+        "metrics": {
+          "position_max_m": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          },
+          "position_rms_m": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          },
+          "velocity_rms_m_s": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          },
+          "centroid_difference_m": {
+            "min": 0.0,
+            "max": 0.0,
+            "median": 0.0
+          }
+        }
+      }
+    ]
+  },
+  {
+    "scene": "transfer",
+    "comparisons": [
+      {
+        "comparison": "baseline_repeat",
+        "pairs": 15,
+        "metrics": {
+          "position_max_m": {
+            "min": 0.0006725381802489896,
+            "max": 0.008857784264772003,
+            "median": 0.00745976077838066
+          },
+          "position_rms_m": {
+            "min": 5.0304677337184304e-05,
+            "max": 0.0003113880510211196,
+            "median": 0.000207414373700204
+          },
+          "velocity_rms_m_s": {
+            "min": 0.01660962223136845,
+            "max": 0.0485630109756349,
+            "median": 0.03748061860804953
+          },
+          "centroid_difference_m": {
+            "min": 2.2135648449896676e-06,
+            "max": 3.702802027276442e-05,
+            "median": 1.3540802938224453e-05
+          }
+        }
+      },
+      {
+        "comparison": "cuda_vs_baseline",
+        "pairs": 18,
+        "metrics": {
+          "position_max_m": {
+            "min": 0.0038265916169266446,
+            "max": 0.007771337706698077,
+            "median": 0.006323187763577402
+          },
+          "position_rms_m": {
+            "min": 0.00014099420482439318,
+            "max": 0.000285421518699458,
+            "median": 0.00019676469390627198
+          },
+          "velocity_rms_m_s": {
+            "min": 0.02985711796110841,
+            "max": 0.044481905775580914,
+            "median": 0.035955799533864394
+          },
+          "centroid_difference_m": {
+            "min": 3.6080871676563243e-06,
+            "max": 3.821276372768187e-05,
+            "median": 1.727300669824634e-05
+          }
+        }
+      },
+      {
+        "comparison": "optimized_vs_cuda",
+        "pairs": 9,
+        "metrics": {
+          "position_max_m": {
+            "min": 0.010890304820384961,
+            "max": 0.015216831735957845,
+            "median": 0.014497234151355745
+          },
+          "position_rms_m": {
+            "min": 0.0003065089453144791,
+            "max": 0.0003476288253423102,
+            "median": 0.0003419596145603962
+          },
+          "velocity_rms_m_s": {
+            "min": 0.044797041329850816,
+            "max": 0.049250044868282335,
+            "median": 0.04843204108256566
+          },
+          "centroid_difference_m": {
+            "min": 1.4423767880650998e-05,
+            "max": 4.421477163588704e-05,
+            "median": 3.897972802249154e-05
+          }
+        }
+      },
+      {
+        "comparison": "optimized_vs_baseline",
+        "pairs": 18,
+        "metrics": {
+          "position_max_m": {
+            "min": 0.008839776698811879,
+            "max": 0.015414939718131694,
+            "median": 0.011363178630116055
+          },
+          "position_rms_m": {
+            "min": 0.00029269169293979195,
+            "max": 0.0003377744567401153,
+            "median": 0.00032158539303449107
+          },
+          "velocity_rms_m_s": {
+            "min": 0.04405754050052728,
+            "max": 0.0503975644062115,
+            "median": 0.0457505847659566
+          },
+          "centroid_difference_m": {
+            "min": 1.032929936323774e-05,
+            "max": 4.3519635121119455e-05,
+            "median": 3.2325120832761046e-05
+          }
+        }
+      }
+    ]
+  },
+  {
+    "scene": "mixing",
+    "comparisons": [
+      {
+        "comparison": "baseline_repeat",
+        "pairs": 15,
+        "metrics": {
+          "position_max_m": {
+            "min": 0.0,
+            "max": 0.015499677601632436,
+            "median": 0.012730283772669899
+          },
+          "position_rms_m": {
+            "min": 0.0,
+            "max": 0.0002584770362916864,
+            "median": 0.00019173003759313041
+          },
+          "velocity_rms_m_s": {
+            "min": 0.0,
+            "max": 0.024763409332395684,
+            "median": 0.022192018215937616
+          },
+          "centroid_difference_m": {
+            "min": 0.0,
+            "max": 4.7506758093144135e-06,
+            "median": 3.66898974559513e-06
+          }
+        }
+      },
+      {
+        "comparison": "cuda_vs_baseline",
+        "pairs": 18,
+        "metrics": {
+          "position_max_m": {
+            "min": 0.0,
+            "max": 0.015499677601632436,
+            "median": 0.012730283772669899
+          },
+          "position_rms_m": {
+            "min": 0.0,
+            "max": 0.0002584770362916864,
+            "median": 0.00019173003759313041
+          },
+          "velocity_rms_m_s": {
+            "min": 0.0,
+            "max": 0.02507908179357587,
+            "median": 0.02274552821404793
+          },
+          "centroid_difference_m": {
+            "min": 0.0,
+            "max": 4.7506758093144135e-06,
+            "median": 3.66898974559513e-06
+          }
+        }
+      },
+      {
+        "comparison": "optimized_vs_cuda",
+        "pairs": 9,
+        "metrics": {
+          "position_max_m": {
+            "min": 0.0,
+            "max": 0.015499677601632436,
+            "median": 0.0038412721542678053
+          },
+          "position_rms_m": {
+            "min": 0.0,
+            "max": 0.0002584770362916864,
+            "median": 0.00011833576876402477
+          },
+          "velocity_rms_m_s": {
+            "min": 0.0,
+            "max": 0.02507908179357587,
+            "median": 0.02072899401602938
+          },
+          "centroid_difference_m": {
+            "min": 0.0,
+            "max": 2.023077932002639e-06,
+            "median": 7.74268836549992e-07
+          }
+        }
+      },
+      {
+        "comparison": "optimized_vs_baseline",
+        "pairs": 18,
+        "metrics": {
+          "position_max_m": {
+            "min": 0.0,
+            "max": 0.015499677601632436,
+            "median": 0.012730283772669899
+          },
+          "position_rms_m": {
+            "min": 0.0,
+            "max": 0.0002584770362916864,
+            "median": 0.00019173003759313041
+          },
+          "velocity_rms_m_s": {
+            "min": 0.0,
+            "max": 0.024763409332395684,
+            "median": 0.022192018215937616
+          },
+          "centroid_difference_m": {
+            "min": 0.0,
+            "max": 4.7506758093144135e-06,
+            "median": 3.66898974559513e-06
+          }
+        }
+      }
+    ]
+  }
+]

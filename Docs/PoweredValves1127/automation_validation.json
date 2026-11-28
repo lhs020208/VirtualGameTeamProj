@@ -1,0 +1,24 @@
+{
+  "succeeded": 4,
+  "succeededWithWarnings": 0,
+  "failed": 0,
+  "notRun": 0,
+  "tests": [
+    {
+      "fullTestPath": "ProcessUI.Control.PoweredValves",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "ProcessUI.Control.Protocol",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "ProcessUI.Control.StopSequence",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "ProcessUI.ReadOnly.MappingAndFreshness",
+      "state": "Success"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "command": [
+    "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\Intermediate\\CUDABaseline\\cuda_plant_bench.exe",
+    "0",
+    "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\SourceAssets\\ProcessPlant_20261111_LowPoly\\Simulation",
+    "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\Docs\\CUDA20261118\\fixtures\\mixing.bin",
+    "2",
+    "3200",
+    "D:\\GitHub\\VirtualGameTeamProj_CUDA_20261118\\Docs\\CUDA20261118\\benchmark_graph\\mixing_r2_s0",
+    "15",
+    "1e-05"
+  ],
+  "executable_sha256": "d15e0742258ad1dbdf945e73edd6144f74f5ff0f6f215db6028b05e1ee271cb9",
+  "start_unix_s": 1794997582.5977414,
+  "finish_unix_s": 1794997586.451856,
+  "stdout": "backend=0 sim_s=0.032 wall_s=3.27718 rate=0.00976448\n",
+  "stderr": "",
+  "returncode": 0,
+  "telemetry": [
+    {
+      "unix_s": 1794997582.645757,
+      "returncode": 0,
+      "csv": "2026/11/18 19:26:22.638, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P0, 99, 4, 2820, 9001, 44, 78.60, 2974"
+    },
+    {
+      "unix_s": 1794997583.2104645,
+      "returncode": 0,
+      "csv": "2026/11/18 19:26:23.203, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 13, 3, 2820, 8751, 39, 59.79, 3174"
+    },
+    {
+      "unix_s": 1794997583.775635,
+      "returncode": 0,
+      "csv": "2026/11/18 19:26:23.768, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 44, 53.30, 3174"
+    },
+    {
+      "unix_s": 1794997584.3368163,
+      "returncode": 0,
+      "csv": "2026/11/18 19:26:24.329, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 3, 2820, 8751, 45, 69.53, 3174"
+    },
+    {
+      "unix_s": 1794997584.878897,
+      "returncode": 0,
+      "csv": "2026/11/18 19:26:24.872, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 45, 77.47, 3178"
+    },
+    {
+      "unix_s": 1794997585.4285972,
+      "returncode": 0,
+      "csv": "2026/11/18 19:26:25.421, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 100, 4, 2820, 8751, 45, 77.51, 3178"
+    },
+    {
+      "unix_s": 1794997585.9729154,
+      "returncode": 0,
+      "csv": "2026/11/18 19:26:25.965, GPU-b7ebcc63-547a-34fe-f3a9-501beaa2fd8e, NVIDIA GeForce RTX 4060 Ti, 610.88, P2, 99, 4, 2820, 8751, 45, 77.60, 3178"
+    }
+  ],
+  "telemetry_window": "entire process, including initialization; other GPU users not stopped"
+}

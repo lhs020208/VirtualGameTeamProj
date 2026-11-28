@@ -1,4 +1,4 @@
-#include "ProcessControlTypes.h"
+﻿#include "ProcessControlTypes.h"
 #include "ProcessPlantBinding.h"
 
 int32 PlantControl::PressureTarget(const FString& Id)
@@ -181,6 +181,8 @@ bool FProcessControlMachine::Matches(const FProcessCommandRecord& R) const
     if (R.Command == EProcessCommand::Valve)
     {
         const bool Want=R.Value!=0;
+        const int32 VI=IsSupplier(R.EquipmentId)?R.EquipmentId[7]-TCHAR('a'):R.EquipmentId==TEXT("weigher")?Snapshot.RequestedSuppliers.Num():Snapshot.RequestedSuppliers.Num()+1;
+        if(Snapshot.ValveActuators.IsValidIndex(VI)){const auto& V=Snapshot.ValveActuators[VI];if(V.Tripped||!(Want?V.Open:V.Closed))return false;}
         if (IsSupplier(R.EquipmentId))
         {
             const int32 I=R.EquipmentId[7]-TCHAR('a');
@@ -199,13 +201,13 @@ bool FProcessControlMachine::Matches(const FProcessCommandRecord& R) const
         if (R.EquipmentId==TEXT("receiver")) return Snapshot.RequestedReceiverOpen==Want && Snapshot.AppliedReceiverOpen==Want;
     }
     if(R.SpeedRun>0)return R.Revision>0&&Snapshot.MixRun==R.SpeedRun&&Snapshot.SpeedAppliedRevision==R.Revision&&
-        Snapshot.WorkerMixerEnabled&&Snapshot.AppliedRPMValid&&Snapshot.AppliedRPM==double(float(R.Value));
+        Snapshot.WorkerMixerEnabled&&Snapshot.AppliedRPMValid&&Snapshot.MixerTargetApplied(R.Value);
     if (R.Command==EProcessCommand::MixerRPM)
         return Snapshot.WorkerTargetRPM==R.Value && Snapshot.RequestedRPM==R.Value &&
-            (!Snapshot.WorkerMixerEnabled || (Snapshot.AppliedRPMValid && Snapshot.AppliedRPM==double(float(R.Value))));
+            (!Snapshot.WorkerMixerEnabled || (Snapshot.AppliedRPMValid && Snapshot.MixerTargetApplied(R.Value)));
     if (R.Command==EProcessCommand::MixerEnabled)
         return Snapshot.RequestedMixerEnabled==(R.Value!=0) && Snapshot.WorkerMixerEnabled==(R.Value!=0) && Snapshot.AppliedRPMValid &&
-            Snapshot.AppliedRPM==(R.Value!=0 ? double(float(Snapshot.WorkerTargetRPM)) : 0.0);
+            Snapshot.MixerTargetApplied(R.Value!=0?Snapshot.WorkerTargetRPM:0);
     if (R.Command==EProcessCommand::Resume) return Snapshot.Execution==EPlantExecutionState::Running && Snapshot.RequestedRunning;
     if (R.Command==EProcessCommand::Pause) return Snapshot.Execution==EPlantExecutionState::Paused && !Snapshot.RequestedRunning;
     return false;
@@ -213,6 +215,7 @@ bool FProcessControlMachine::Matches(const FProcessCommandRecord& R) const
 
 bool FProcessControlMachine::AllClosed() const
 {
+    for(const auto& V:Snapshot.ValveActuators)if(!V.Closed||V.Tripped)return false;
     if (!ProcessPlantBinding::SupportedCount(Snapshot.RequestedSuppliers.Num()) || Snapshot.AppliedSupplierMask!=0 || Snapshot.AppliedHopperOpen || Snapshot.AppliedReceiverOpen ||
         Snapshot.RequestedHopperOpen || Snapshot.RequestedReceiverOpen || Snapshot.RequestedMixerEnabled || Snapshot.WorkerMixerEnabled ||
         !Snapshot.AppliedRPMValid || Snapshot.AppliedRPM!=0) return false;
@@ -236,7 +239,7 @@ FProcessCommandRecord FProcessControlMachine::Submit(FGuid Id, int64 Epoch, cons
     FProcessCommandRecord R;
     R.RequestId=Id; R.Epoch=Epoch; R.Connection=Connection; R.EquipmentId=Equipment; R.Command=Command; R.Value=Value;
     R.SpeedRun=DispatchMixRun;
-    R.AcceptedAt=Now; R.Deadline=Now+FMath::Max(0.1,CommandTimeoutSeconds); R.BaselineSequence=Snapshot.Sequence;
+    R.AcceptedAt=Now; R.MotionStartSeconds=Snapshot.PhysicalSeconds; R.Deadline=Now+FMath::Max(0.1,CommandTimeoutSeconds); R.BaselineSequence=Snapshot.Sequence;
     R.PreparedOpening=Command==EProcessCommand::Valve&&Equipment==TEXT("weigher")&&Value==1&&Snapshot.FeedPreparation.Enabled&&!Snapshot.AppliedHopperOpen;
     if(R.PreparedOpening)R.Deadline=Now+TransferPreparationTimeoutSeconds;
     // Mechanical protected closure includes upstream isolation and gravity clearing.
@@ -343,6 +346,7 @@ void FProcessControlMachine::Observe(const FPlantSimulationSnapshot& State, doub
     }
     if(IsStopping())
     {
+        if(auto* R=History.Find(StopRequest);R&&(!State.ValveActuators.IsEmpty()||State.MixerDrive.Supported)&&State.PhysicalSeconds-R->MotionStartSeconds<60&&State.Execution==EPlantExecutionState::Running){StopDeadline=Now+StopTimeoutSeconds;R->Deadline=StopDeadline;}
         if(Now>=StopDeadline)FailStop(TEXT("전체 정지 제한 시간을 초과했습니다."),Now,Send);
         else if(StopStage==EProcessStopStage::Requested || StopStage==EProcessStopStage::Closing)
         {
@@ -393,6 +397,19 @@ void FProcessControlMachine::Observe(const FPlantSimulationSnapshot& State, doub
             const auto& B=PlantBrakeFor(State,ProcessPlantBinding::SupplierIndex(R.EquipmentId));
             R.Message=!B.Valid?TEXT("A 제동 상태 미확인"):(B.Required&&!B.Applied?TEXT("A 공급 제동 적용 확인 중"):
                 FString::Printf(TEXT("게이트 비움·실제 닫힘 확인 중 · 점유 %d개 · 닫힘 보호 유지"),B.GateOccupancyCount));
+        }
+        if(State.MixerDrive.Supported&&(R.Command==EProcessCommand::MixerEnabled||R.Command==EProcessCommand::MixerRPM)){
+            if(State.MixerDrive.Tripped&&R.Value!=0){R.Status=EProcessCommandStatus::Failed;R.Message=TEXT("혼합기 과부하 정지 · 부하를 해소하고 정지 후 재시작하세요.");continue;}
+            if(State.Execution==EPlantExecutionState::Running&&State.PhysicalSeconds-R.MotionStartSeconds<60)R.Deadline=Now+CommandTimeoutSeconds;
+            R.Message=FString::Printf(TEXT("전동 구동 응답 대기 · 실제 %.3f RPM · %.1f W"),State.AppliedRPM,State.MixerDrive.ElectricalWatts);
+        }
+        if(R.Command==EProcessCommand::Valve&&!State.ValveActuators.IsEmpty()){
+            const int32 VI=IsSupplier(R.EquipmentId)?R.EquipmentId[7]-TCHAR('a'):R.EquipmentId==TEXT("weigher")?State.RequestedSuppliers.Num():State.RequestedSuppliers.Num()+1;
+            if(State.ValveActuators.IsValidIndex(VI)){const auto& V=State.ValveActuators[VI];
+                if(V.Tripped){R.Status=EProcessCommandStatus::Failed;R.Message=TEXT("밸브 과부하 정지 · 하중 제거 후 반대 방향 요청 또는 초기화 필요");continue;}
+                if(State.Execution==EPlantExecutionState::Running&&State.PhysicalSeconds-R.MotionStartSeconds<60&&(!R.PreparedOpening||State.FeedPreparation.State==EPlantFeedPreparationState::Opened))R.Deadline=Now+CommandTimeoutSeconds;
+                R.Message=FString::Printf(TEXT("실제 축 회전 대기 · %.1f° / 90° · %.2f Nm"),V.AngleDegrees,V.MotorTorqueNm);
+            }
         }
         if(State.Sequence>R.BaselineSequence && (R.SpeedRun>0||State.ProcessedControlRevision>=R.Revision) && Matches(R))
         {

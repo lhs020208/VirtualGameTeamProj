@@ -1,0 +1,308 @@
+{
+  "snapshot": "p_00014.8901.csv",
+  "t": 14.8901,
+  "count": 20000,
+  "unique_ids": 20000,
+  "finite": true,
+  "regions": {
+    "wh": {
+      "count": 1,
+      "species": [
+        0,
+        1
+      ],
+      "bounds_m": [
+        [
+          -0.0783161,
+          -0.096052,
+          0.780217
+        ],
+        [
+          -0.0783161,
+          -0.096052,
+          0.780217
+        ]
+      ],
+      "particles": [
+        [
+          10590.0,
+          1.0,
+          -0.0783161,
+          -0.096052,
+          0.780217
+        ]
+      ]
+    },
+    "mixer": {
+      "count": 19837,
+      "species": [
+        9894,
+        9943
+      ],
+      "bounds_m": [
+        [
+          2.7724,
+          -0.25463,
+          0.577005
+        ],
+        [
+          3.20404,
+          0.265777,
+          0.640026
+        ]
+      ]
+    },
+    "ring": {
+      "count": 159,
+      "species": [
+        105,
+        54
+      ],
+      "bounds_m": [
+        [
+          2.86304,
+          -0.136928,
+          2.13476
+        ],
+        [
+          3.13682,
+          0.136921,
+          2.13897
+        ]
+      ]
+    },
+    "pipe": {
+      "count": 3,
+      "species": [
+        1,
+        2
+      ],
+      "bounds_m": [
+        [
+          2.19984,
+          -2.38414e-05,
+          2.623
+        ],
+        [
+          2.75203,
+          -4.90665e-06,
+          2.623
+        ]
+      ],
+      "particles": [
+        [
+          7452.0,
+          0.0,
+          2.75203,
+          -1.45634e-05,
+          2.623
+        ],
+        [
+          10437.0,
+          1.0,
+          2.57118,
+          -2.38414e-05,
+          2.623
+        ],
+        [
+          11895.0,
+          1.0,
+          2.19984,
+          -4.90665e-06,
+          2.623
+        ]
+      ]
+    },
+    "unclassified": {
+      "count": 0,
+      "species": [
+        0,
+        0
+      ],
+      "particles": []
+    }
+  },
+  "movement": [
+    {
+      "from_snapshot": "p_00004.0037.csv",
+      "elapsed_physical_s": 10.8864,
+      "wh": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      },
+      "mixer": {
+        "max_displacement_m": 2.0849705307584188,
+        "mean_displacement_m": 1.611702193779839,
+        "over_2mm": 19837
+      },
+      "ring": {
+        "max_displacement_m": 0.2165781700650753,
+        "mean_displacement_m": 0.035804358818863076,
+        "over_2mm": 159
+      },
+      "pipe": {
+        "max_displacement_m": 0.20926010953863097,
+        "mean_displacement_m": 0.15526006249681043,
+        "over_2mm": 3
+      }
+    },
+    {
+      "from_snapshot": "p_00004.9173.csv",
+      "elapsed_physical_s": 9.9728,
+      "wh": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      },
+      "mixer": {
+        "max_displacement_m": 1.657483420631036,
+        "mean_displacement_m": 1.5909735706002535,
+        "over_2mm": 19837
+      },
+      "ring": {
+        "max_displacement_m": 0.05097821883392854,
+        "mean_displacement_m": 0.03210160343480945,
+        "over_2mm": 159
+      },
+      "pipe": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      }
+    },
+    {
+      "from_snapshot": "p_00006.0066.csv",
+      "elapsed_physical_s": 8.883500000000002,
+      "wh": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      },
+      "mixer": {
+        "max_displacement_m": 1.5345415457018423,
+        "mean_displacement_m": 0.7167223205115459,
+        "over_2mm": 19817
+      },
+      "ring": {
+        "max_displacement_m": 0.003878061887077131,
+        "mean_displacement_m": 2.4390326333818433e-05,
+        "over_2mm": 1
+      },
+      "pipe": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      }
+    },
+    {
+      "from_snapshot": "p_00006.9592.csv",
+      "elapsed_physical_s": 7.9309,
+      "wh": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      },
+      "mixer": {
+        "max_displacement_m": 0.9098323207554511,
+        "mean_displacement_m": 0.2937270896190118,
+        "over_2mm": 19526
+      },
+      "ring": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      },
+      "pipe": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      }
+    },
+    {
+      "from_snapshot": "p_00008.0520.csv",
+      "elapsed_physical_s": 6.838100000000001,
+      "wh": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      },
+      "mixer": {
+        "max_displacement_m": 0.36088556548953654,
+        "mean_displacement_m": 0.010763979108291064,
+        "over_2mm": 9345
+      },
+      "ring": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      },
+      "pipe": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      }
+    },
+    {
+      "from_snapshot": "p_00010.0379.csv",
+      "elapsed_physical_s": 4.8522,
+      "wh": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      },
+      "mixer": {
+        "max_displacement_m": 0.08800361867923379,
+        "mean_displacement_m": 0.0004568605445389644,
+        "over_2mm": 618
+      },
+      "ring": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      },
+      "pipe": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      }
+    },
+    {
+      "from_snapshot": "p_00012.0016.csv",
+      "elapsed_physical_s": 2.8885000000000005,
+      "wh": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      },
+      "mixer": {
+        "max_displacement_m": 0.06434206635444664,
+        "mean_displacement_m": 2.5400495704958686e-05,
+        "over_2mm": 35
+      },
+      "ring": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      },
+      "pipe": {
+        "max_displacement_m": 0.0,
+        "mean_displacement_m": 0.0,
+        "over_2mm": 0
+      }
+    }
+  ],
+  "rotor": {
+    "axis": "X",
+    "pivot_m": [
+      3,
+      0,
+      0.9
+    ],
+    "max_swept_radius_m": 0.2647109709180055,
+    "bottom_m": 0.6352890290819946,
+    "grain_radius_m": 0.002,
+    "mixer_grains_in_possible_swept_radius": 0,
+    "min_grain_axis_distance_m": 0.3163249296742829
+  }
+}

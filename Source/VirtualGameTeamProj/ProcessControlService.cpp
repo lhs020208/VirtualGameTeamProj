@@ -1,15 +1,34 @@
-#include "ProcessControlService.h"
+﻿#include "ProcessControlService.h"
 #include "PlantDoseValidation.h"
 #include "PlantDoseTrace.h"
 #include "PowderPlantTest.h"
 #include "ProcessPlantBinding.h"
 #include "HAL/PlatformTime.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "HAL/FileManager.h"
+#include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
+namespace {
+FString ParticleSettingsFile(){return FPaths::ProjectSavedDir()/TEXT("ProcessUI/ParticleCounts.json");}
+bool SaveParticleCounts(const FString& Directory,const TArray<int32>& Counts){
+ auto Json=MakeShared<FJsonObject>();Json->SetNumberField(TEXT("version"),1);Json->SetStringField(TEXT("data_directory"),Directory);TArray<TSharedPtr<FJsonValue>> Values;for(int32 N:Counts)Values.Add(MakeShared<FJsonValueNumber>(N));Json->SetArrayField(TEXT("counts"),Values);FString Text;FJsonSerializer::Serialize(Json,TJsonWriterFactory<>::Create(&Text));
+ const FString Path=ParticleSettingsFile(),Temp=Path+TEXT(".tmp");IFileManager::Get().MakeDirectory(*FPaths::GetPath(Path),true);
+ return FFileHelper::SaveStringToFile(Text,*Temp,FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM)&&IFileManager::Get().Move(*Path,*Temp,true,true)==COPY_OK;
+}
+}
+bool UProcessControlService::LoadParticleCounts(const FString& Directory,TArray<int32>& Counts){
+ FString Text,Stored;TSharedPtr<FJsonObject> Json;double Version=0;const TArray<TSharedPtr<FJsonValue>>* Values=nullptr;
+ if(!FFileHelper::LoadFileToString(Text,*ParticleSettingsFile())||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Json)||!Json.IsValid()||!Json->TryGetNumberField(TEXT("version"),Version)||Version!=1||!Json->TryGetStringField(TEXT("data_directory"),Stored)||Stored!=Directory||!Json->TryGetArrayField(TEXT("counts"),Values)||!ProcessPlantBinding::SupportedCount(Values->Num()))return false;
+ TArray<int32> Parsed;for(const auto& Value:*Values){double N=0;if(!Value.IsValid()||!Value->TryGetNumber(N)||!FMath::IsFinite(N)||N<0||N>100000||N!=FMath::FloorToDouble(N))return false;Parsed.Add(int32(N));}Counts=MoveTemp(Parsed);return true;
+}
 
 bool UProcessControlService::Attach(APowderPlantTest* Actor)
 {
     if(Source.Get()==Actor && State.Connected)return true;
     Detach();
-    if(!IsValid(Actor)||!Actor->ClaimControl(this))return false;
+    if(!IsValid(Actor))return false;
+    if(!Actor->ClaimControl(this))return false;
     Source=Actor;State.CommandTimeoutSeconds=CommandTimeoutSeconds;State.StopTimeoutSeconds=StopTimeoutSeconds;
     State.TransferPreparationTimeoutSeconds=Actor->TransferPreparationTimeoutSeconds;
     State.TimeoutPolicy=StopFailurePolicy==TEXT("Freeze")?EProcessTimeoutPolicy::Freeze:StopFailurePolicy==TEXT("KeepClosing")?EProcessTimeoutPolicy::KeepClosing:EProcessTimeoutPolicy::Unspecified;
@@ -335,4 +354,16 @@ FProcessCommandRecord UProcessControlService::RequestStagePressure(FGuid Id,int6
          TransferId!=(A.Stage==EProcessAutoStage::Transferring?A.TransferId:0))Why=TEXT("압력 요청의 배치·공급원·단계가 변경되었습니다. 현재 구간에서 다시 입력하세요.");
  if(!Why.IsEmpty())return State.Submit(Id,Epoch,Equipment,EProcessCommand::Pressure,Pa,FPlatformTime::Seconds(),Transport(),Why);
  return AutoRun.RequestStagePressure(Id,Epoch,TransferId,Pa,State,FPlatformTime::Seconds(),Transport(),Equipment);
+}
+
+bool UProcessControlService::ApplyParticleCounts(const TArray<int32>& Counts,FString& Reason){
+ check(IsInGameThread());auto* Actor=Source.Get();
+ if(!Actor){Reason=TEXT("연결된 설비가 없습니다.");return false;}
+ if(WebOwnsControl()){Reason=LocalOperatorReason();return false;}
+ if(!Actor->SetInitialParticleCounts(Counts,Reason))return false;
+ // The actor reset changes the epoch and cancels old pending/automatic operations.
+ AutoRun.Cancel(TEXT("입자 수 변경으로 초기화했습니다."));State.AutomationActive=false;
+ Tick();
+ if(!SaveParticleCounts(Actor->DataDirectory,Counts)){Reason=TEXT("입자 수는 적용했지만 설정 파일 저장에 실패했습니다.");return true;}
+ Reason=TEXT("입자 수 적용·초기화 완료. 레시피는 유지됩니다.");return true;
 }

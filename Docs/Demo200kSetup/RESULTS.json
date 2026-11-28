@@ -1,0 +1,170 @@
+{
+  "level": {
+    "level": "/Game/ProcessPlant_Demo20261119/L_ProcessPlant_Demo30FPS_1119",
+    "visual_copies": 10,
+    "display_particles": 200000,
+    "solver_particles": 2500,
+    "originals_preserved": true,
+    "backup": "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\Demo20261119\\EditorHost\\Intermediate\\Demo200kSetup\\L_ProcessPlant_Demo30FPS_before_200k.umap"
+  },
+  "installation": {
+    "module": "D:\\GitHub\\VirtualGameTeamProj\\Binaries\\Win64\\Demo200k20261119_VirtualGameTeamProj_40c3eb2e28.dll",
+    "sha256": "40c3eb2e28f4b76ecd49f8dcf4ad56ef5c17321006f1cee8f98f5fe887d6a54b",
+    "manifest": "D:\\GitHub\\VirtualGameTeamProj\\Binaries\\Win64\\UnrealEditor.modules",
+    "next_launch_only": true,
+    "performance_pass": false,
+    "configuration_pass": true
+  },
+  "configuration": {
+    "display_particles": 200000,
+    "solver_particles": 2500,
+    "physical_input_particles": 20000,
+    "visual_copies": 10,
+    "physical_mass_unchanged": true,
+    "incremental_instance_updates": true,
+    "reused_transform_buffers": true
+  },
+  "cleanup": {
+    "removed_empty_directories": [
+      "Collections",
+      "DEM\\Emitters",
+      "DEM\\Settings",
+      "Developers",
+      "Developers\\lpet2",
+      "Developers\\lpet2\\Collections",
+      "ProcessPlant_20261029\\Assets",
+      "ProcessPlant_20261029\\Assets\\Materials",
+      "ProcessPlant_20261029\\Assets\\StaticMeshes",
+      "ProcessPlant_20261029\\ImportSettings",
+      "ProcessPlant_20261029\\Materials\\Cutaway",
+      "ProcessPlant_20261029\\TestSeals",
+      "ProcessPlant_20261029\\TestSeals\\StaticMeshes",
+      "ProcessPlant_20261103",
+      "ProcessPlant_20261103\\Assets",
+      "ProcessPlant_20261103\\Assets\\Materials",
+      "ProcessPlant_20261103\\Assets\\StaticMeshes",
+      "ProcessPlant_20261104",
+      "ProcessPlant_20261104\\Assets",
+      "ProcessPlant_20261104\\Assets\\Materials",
+      "ProcessPlant_20261104\\Assets\\StaticMeshes",
+      "ProcessPlant_20261110_LowPoly",
+      "ProcessPlant_20261110_LowPoly\\Assets",
+      "ProcessPlant_20261110_LowPoly\\Assets\\Materials",
+      "ProcessPlant_20261110_LowPoly\\Assets\\StaticMeshes",
+      "ProcessPlant_20261110_LowPoly\\Materials",
+      "__ExternalActors__",
+      "__ExternalObjects__"
+    ],
+    "removed_count": 28,
+    "asset_files_deleted": 0,
+    "kept_top_level_folders": [
+      "DEM",
+      "ProcessPlant_20261029",
+      "ProcessPlant_20261111_LowPoly",
+      "ProcessPlant_CUDA_20261118",
+      "ProcessPlant_Demo20261119"
+    ],
+    "shared_materials": {
+      "/Game/ProcessPlant_20261029/Materials/M_PlantCutaway": [
+        "/Game/ProcessPlant_20261111_LowPoly/Materials/MI_black_Cut",
+        "/Game/ProcessPlant_20261111_LowPoly/Materials/MI_grey_Cut"
+      ],
+      "/Game/ProcessPlant_20261029/Materials/M_PlantSimple": [
+        "/Game/ProcessPlant_20261111_LowPoly/Materials/MI_black_Solid",
+        "/Game/ProcessPlant_20261111_LowPoly/Materials/MI_blue_Solid",
+        "/Game/ProcessPlant_20261111_LowPoly/Materials/MI_bronze_Solid",
+        "/Game/ProcessPlant_20261111_LowPoly/Materials/MI_grey_Solid"
+      ]
+    },
+    "note": "Collections and Developers can be recreated empty by Unreal startup; old unused dated folders were removed."
+  },
+  "verification": {
+    "staged": {
+      "model": "demo constrained routes and coarse soft contacts",
+      "rendered": true,
+      "wall_s": 150.026997797,
+      "sim_s": 150.025007824,
+      "rate": 0.999986736,
+      "frames": 2929,
+      "fps": 19.523152786,
+      "p95_ms": 55.60060218,
+      "p99_ms": 58.672402054,
+      "display_particles": 200000,
+      "solver_particles": 2500,
+      "WH": 0,
+      "RH": 0,
+      "MX": 20000,
+      "performance_pass": false,
+      "error": false,
+      "width": 1920,
+      "height": 1080,
+      "physical_input_particles": 20000,
+      "configuration_pass": true,
+      "visual_copies": 10
+    },
+    "installed": {
+      "model": "demo constrained routes and coarse soft contacts",
+      "rendered": true,
+      "wall_s": 90.015197501,
+      "sim_s": 89.99167136,
+      "rate": 0.999738643,
+      "frames": 1759,
+      "fps": 19.541144705,
+      "p95_ms": 55.46399951,
+      "p99_ms": 59.775900096,
+      "display_particles": 200000,
+      "solver_particles": 2500,
+      "WH": 0,
+      "RH": 0,
+      "MX": 20000,
+      "performance_pass": false,
+      "error": false,
+      "width": 1920,
+      "height": 1080,
+      "physical_input_particles": 20000,
+      "configuration_pass": true,
+      "visual_copies": 10
+    },
+    "opencl": {
+      "count": 20000,
+      "physical_s": 0.00687999983,
+      "actual_rate": 0.0123349679,
+      "wh": 0,
+      "rh": 0,
+      "mixer": 0,
+      "failed": false
+    },
+    "cuda": {
+      "count": 20000,
+      "physical_s": 0.00607999985,
+      "actual_rate": 0.0139508637,
+      "wh": 0,
+      "rh": 0,
+      "mixer": 0,
+      "failed": false
+    },
+    "original_levels_and_inputs": {
+      "Content\\ProcessPlant_20261111_LowPoly\\L_ProcessPlant_LowPoly_1111.umap": true,
+      "Content\\ProcessPlant_CUDA_20261118\\L_ProcessPlant_CUDA_1118.umap": true,
+      "SourceAssets\\ProcessPlant_20261111_LowPoly\\Simulation\\runtime.plant": true,
+      "SourceAssets\\ProcessPlant_20261111_LowPoly\\Simulation\\runtime.routes": true,
+      "SourceAssets\\ProcessPlant_20261111_LowPoly\\Simulation\\test_charge.csv": true
+    }
+  },
+  "source_sha256": {
+    "Source/VirtualGameTeamProj/PowderPlantTest.cpp": "5b1c924c21506bd78c2035658f012066346b84a6e908691f6aa740ba48aa93f6",
+    "Source/VirtualGameTeamProj/PowderPlantTest.h": "40424df3dbed54208623e758adb64917c36ecfb40d9b5b683681d75ecd251040",
+    "Source/VirtualGameTeamProj/PowderPlantDemo.inl": "0038740676ff32e8646245ee4dbc847fabb469248f81e765d786f6adfabed3ed",
+    "Physics/PowderCore/include/powder/demo_plant.hpp": "92084cef05e169116195096f9449da1ba5f54568fa3a1cf925739a8e7871f6b6",
+    "Content/ProcessPlant_Demo20261119/L_ProcessPlant_Demo30FPS_1119.umap": "83aed069773f2536f06baafb44d7e8df211ac653f7edc90a7febde030790ae8e"
+  },
+  "usage_ko": "기존 에디터를 재시작한 뒤 L_ProcessPlant_Demo30FPS_1119 레벨을 열어 실행. 기존 실행 중인 에디터는 핫리로드하거나 종료하지 않았음.",
+  "limitations": [
+    "200,000 visual markers, not 200,000 independent physical particles",
+    "Measured in offscreen game mode with the original editor left running; no claim of 30fps acceptance",
+    "Original OpenCL and CUDA checks are short launch/advance compatibility tests"
+  ],
+  "git_head": "87a44c842f6b7e2309be473010e6d65e583bc2e6",
+  "commits_created": false,
+  "new_git_worktrees": false
+}

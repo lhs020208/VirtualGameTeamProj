@@ -1,0 +1,11 @@
+{
+  "epoch": 1793951093.943825,
+  "handles": [
+    "unregistered <_DelegateHandle object at 0x00000240108B3B30>",
+    "unregistered <_DelegateHandle object at 0x000002401E6A1A70>",
+    "unregistered <_DelegateHandle object at 0x000002401E6A3CB0>"
+  ],
+  "physical_seconds": 14.89007962384494,
+  "running": false,
+  "pie": true
+}

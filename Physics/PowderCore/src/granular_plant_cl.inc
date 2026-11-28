@@ -31,7 +31,7 @@ float3 plant_mesh(float3 p,float r,int root,__global const float4* data,float3* 
    if(any(p<fmin(a,fmin(b,c))-r)||any(p>fmax(a,fmax(b,c))+r))continue;
 #endif
    float3 q=plant_closest(p,a,b,c),d=p-q;float l=length(d);if(l<r){
-float3 n=l>1.e-9f?d/l:normalize(cross(b-a,c-a)),delta=n*(r-l);p+=delta;*correction+=delta;}
+float3 n=l>1.e-9f?d/l:normalize(cross(b-a,c-a));float3 move=n*(r-l);*correction+=move;p+=move;}
   }
 #if PLANT_THREADED
  at=next;
@@ -68,14 +68,14 @@ float3 plant_hybrid_shape(float3 p,float r,int k,int type,__global const float4*
  if(type==1){float3 a=d[k].xyz,b=d[k+1].xyz,c=d[k+2].xyz;
   if(any(p<fmin(a,fmin(b,c))-r)||any(p>fmax(a,fmax(b,c))+r))return p;
   float3 q=plant_closest(p,a,b,c),delta=p-q;float len=length(delta);
-  if(len<r){float3 shift=(len>1.e-9f?delta/len:normalize(cross(b-a,c-a)))*(r-len);p+=shift;*correction+=shift;}return p;
+  if(len<r){float3 move=(len>1.e-9f?delta/len:normalize(cross(b-a,c-a)))*(r-len);*correction+=move;p+=move;}return p;
  }
  // Experimental finite annular cylinder: open bore, annular end faces.
  if(type==4){float3 axis=d[k+1].xyz,q=p-d[k].xyz;float z=dot(q,axis);float3 radial=q-z*axis;float rho=length(radial);
   float inner=d[k+2].x-rho,outer=rho-d[k+2].y,dr=fmax(inner,outer),dz=fabs(z)-d[k+1].w;
   float2 out=fmax((float2)(dr,dz),(float2)(0));float len=length(out),distance=len+fmin(fmax(dr,dz),0.f);
   if(distance<r){float3 nr=rho>1.e-9f?radial/rho:(float3)(1,0,0);if(inner>outer)nr=-nr;float3 nz=axis*copysign(1.f,z),n;
-   if(dr>0&&dz>0)n=(nr*out.x+nz*out.y)/len;else n=dr>dz?nr:nz;float3 shift=n*(r-distance);p+=shift;*correction+=shift;
+   if(dr>0&&dz>0)n=(nr*out.x+nz*out.y)/len;else n=dr>dz?nr:nz;float3 move=n*(r-distance);*correction+=move;p+=move;
   }return p;
  }
  float3 h=(float3)(d[k+1].w,d[k+2].w,d[k+3].w),q=plant_box_local(p,k,d),gap=fabs(q)-h;
@@ -107,7 +107,7 @@ float3 plant_hybrid_shape(float3 p,float r,int k,int type,__global const float4*
   if(distance<r){float2 radial=dl>1.e-9f?(inside?nearest-q.xy:q.xy-nearest)/dl:(float2)(1,0);float3 n;
    if(lateral>0&&dz>0)n=(float3)(radial*outside.x,copysign(outside.y,q.z))/len;
    else if(lateral>dz)n=(float3)(radial,0);else n=(float3)(0,0,copysign(1.f,q.z));
-   float3 delta=n*(r-distance),shift=delta.x*d[k+1].xyz+delta.y*d[k+2].xyz+delta.z*d[k+3].xyz;p+=shift;*correction+=shift;
+   float3 delta=n*(r-distance);float3 move=delta.x*d[k+1].xyz+delta.y*d[k+2].xyz+delta.z*d[k+3].xyz;*correction+=move;p+=move;
   }return p;
  }
 
@@ -118,7 +118,7 @@ float3 plant_hybrid_shape(float3 p,float r,int k,int type,__global const float4*
   else if(gap.y>=gap.z)n=(float3)(0,copysign(1.f,q.y),0);
   else n=(float3)(0,0,copysign(1.f,q.z));
   // Add displacement in world coordinates; avoid a lossy world/local round trip.
-  float3 delta=n*(r-distance),shift=delta.x*d[k+1].xyz+delta.y*d[k+2].xyz+delta.z*d[k+3].xyz;p+=shift;*correction+=shift;
+  float3 delta=n*(r-distance);float3 move=delta.x*d[k+1].xyz+delta.y*d[k+2].xyz+delta.z*d[k+3].xyz;*correction+=move;p+=move;
  }return p;
 }
 )CLC"
@@ -245,7 +245,8 @@ float3 plant_hybrid(float3 p,float r,int root,int end,__global const float4* d,f
 #if PLANT_BOUNDARY_AUDIT
  // Diagnostic same-input oracle: exact original leaf admission and shape order,
  // without new bounds/masks/cache. Any difference poisons the step, never hides it.
- float3 auditCorrection=(float3)(0);int at=root;
+ float3 auditCorrection=(float3)(0);
+ int at=root;
  while(at<end){float4 lo=d[at],hi=d[at+1];int next=lo.w>=0?(int)hi.w:at+2;
   if(any(p<lo.xyz-r)||any(p>hi.xyz+r)){at=next;continue;}
   if(lo.w>=0){at=(int)lo.w;continue;}
@@ -260,14 +261,13 @@ int plant_hybrid_reference_zone(float3 p,float r,__global const float4* d){
  return p.z<d[14].z+pad&&fabs(p.y)<d[14].w+pad&&((p.x>d[14].x-pad&&p.x<d[14].y+pad)||(p.x>d[15].x-pad&&p.x<d[15].y+pad));
 }
 float3 plant_boundary_ref_uncached(float3 p,float r,float angle,__global const float4* d,float3* wn,float3* wv,float3 reference){
- // Metre-scale float positions can erase components of a nanometre contact
- // correction. Normalizing (projected - initial) then invents an axis normal.
- // Preserve geometric projection vectors before adding them to positions.
- float3 accumulated=(float3)(0);float3* correction=&accumulated;
- float3 initial=p;int referenceZone=d[10].x==2.f&&plant_hybrid_reference_zone(p,r,d);p=d[10].x==2.f&&!referenceZone?plant_hybrid(p,r,(int)d[12].x,(int)d[13].x,d,correction):(d[10].x==1.f?plant_obb_walls(p,r,d,correction):plant_mesh(p,r,(int)d[0].x,d,correction));if(d[10].x==2.f&&!referenceZone&&plant_hybrid_reference_zone(p,r,d)){referenceZone=1;accumulated=(float3)(0);p=plant_mesh(initial,r,(int)d[0].x,d,correction);}int phase=(int)d[4].x;
+ // Sum geometric projections before rounding them into world positions.
+ float3 displacement=(float3)(0);float3* correction=&displacement;
+ float3 initial=p;int referenceZone=d[10].x==2.f&&plant_hybrid_reference_zone(p,r,d);p=d[10].x==2.f&&!referenceZone?plant_hybrid(p,r,(int)d[12].x,(int)d[13].x,d,correction):(d[10].x==1.f?plant_obb_walls(p,r,d,correction):plant_mesh(p,r,(int)d[0].x,d,correction));if(d[10].x==2.f&&!referenceZone&&plant_hybrid_reference_zone(p,r,d)){referenceZone=1;displacement=(float3)(0);p=plant_mesh(initial,r,(int)d[0].x,d,correction);}int phase=(int)d[4].x;
+ if(d[10].x==1.f)displacement=p-initial;
  // Configurable horizontal valve disks: xyz/radius plus open phase.
  int gates=(int)d[5].x,gatecount=(int)d[5].y;
- for(int j=0;j<gatecount;++j){int k=gates+2*j;int open=phase==(int)d[k+1].x;if(d[k+1].z==1.f)open=d[k+1].y==1.f;
+ for(int j=0;j<gatecount&&!PLANT_POWERED_VALVES;++j){int k=gates+2*j;int open=phase==(int)d[k+1].x;if(d[k+1].z==1.f)open=d[k+1].y==1.f;
   float4 gate=d[k];if(!open){
    // Finite cylinder: round the rim by the particle radius. A radial entry
    // must not be snapped to a distant top/bottom plane.
@@ -278,14 +278,17 @@ float3 plant_boundary_ref_uncached(float3 p,float r,float angle,__global const f
     if(dr>0.f&&dz>0.f)normal=(float3)(axis.x*outside.x,axis.y*outside.x,copysign(outside.y,z))/length(outside);
     else if(dr>dz)normal=(float3)(axis.x,axis.y,0);
     else normal=(float3)(0,0,copysign(1.f,z));
-    float3 shift=normal*(r-distance);p+=shift;accumulated+=shift;
+    float3 move=normal*(r-distance);displacement+=move;p+=move;
    }
   }
  }
- float3 delta=accumulated;*wn=length(delta)>1.e-9f?normalize(delta):(float3)(0);*wv=(float3)(0);
+ float3 delta=displacement;*wn=length(delta)>1.e-9f?normalize(delta):(float3)(0);*wv=(float3)(0);
+ #if !PLANT_POWERED_MIXER
  float3 pivot=d[1].xyz,rotated=plant_rotate(p-pivot,-angle)+pivot;
+ displacement=(float3)(0);
  float3 moved=d[10].x==2.f&&!referenceZone?plant_hybrid(rotated,r,(int)d[12].y,(int)d[13].y,d,correction):plant_mesh(rotated,r,(int)d[0].y,d,correction),shift=plant_rotate(moved-rotated,angle);
- if(length(shift)>1.e-9f){p+=shift;*wn=normalize(shift);*wv=(float3)(0,-(p.z-pivot.z),p.y-pivot.y);}
+ if(length(displacement)>1.e-9f){p+=shift;*wn=plant_rotate(normalize(displacement),angle);*wv=(float3)(0,-(p.z-pivot.z),p.y-pivot.y);}
+ #endif
  return p;
 }
 float3 plant_boundary_ref(float3 p,float r,float angle,__global const float4* d,float3* wn,float3* wv,float3 reference){

@@ -1,0 +1,17 @@
+{
+  "pid": 26452,
+  "exit_code": 6,
+  "wall_s": 7.123435735702515,
+  "command": [
+    "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Build\\BatchFiles\\Build.bat",
+    "VirtualGameTeamProjEditor",
+    "Win64",
+    "Development",
+    "D:\\GitHub\\VirtualGameTeamProj\\VirtualGameTeamProj.uproject",
+    "-WaitMutex",
+    "-NoHotReloadFromIDE",
+    "-NoLiveCoding",
+    "-MaxParallelActions=2",
+    "-NoUBA"
+  ]
+}

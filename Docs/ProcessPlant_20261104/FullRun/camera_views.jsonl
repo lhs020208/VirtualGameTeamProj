@@ -1,0 +1,15 @@
+{"name": "01_receiver_context", "position_cm": [450, 280, 320], "target_cm": [270, 0, 200], "epoch": 1793950420.3008544, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "01_receiver_context", "position_cm": [450, 280, 320], "target_cm": [270, 0, 200], "epoch": 1793950499.0338118, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "02_ring_close", "position_cm": [325, 48, 240], "target_cm": [300, 0, 213.5], "epoch": 1793950513.1394362, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "03_pipe_context", "position_cm": [285, 130, 305], "target_cm": [220, 0, 255], "epoch": 1793950542.0996282, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "04_pipe_close", "position_cm": [249, 48, 279], "target_cm": [249, 0, 262.3], "epoch": 1793950576.4359424, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "04_pipe_close_b", "position_cm": [240, 60, 282], "target_cm": [240, 0, 262.3], "epoch": 1793950613.5962346, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "05_pipe_left_blue", "position_cm": [219.984, 22, 270], "target_cm": [219.984, 0, 262.3], "epoch": 1793950652.6741412, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "06_pipe_blue_coupling", "position_cm": [257.118, 22, 270], "target_cm": [257.118, 0, 262.3], "epoch": 1793950680.109589, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "07_pipe_red_receiver", "position_cm": [275.203, 22, 270], "target_cm": [275.203, 0, 262.3], "epoch": 1793950711.4796357, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "08_wh_context", "position_cm": [70, 145, 175], "target_cm": [0, 0, 110], "epoch": 1793950741.335702, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "09_wh_close", "position_cm": [-4.83161, 15.3948, 93.0217], "target_cm": [-7.83161, -9.6052, 78.0217], "epoch": 1793950769.696567, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "09_wh_inside", "position_cm": [0, -3, 105], "target_cm": [-7.83161, -9.6052, 78.0217], "epoch": 1793950807.2434762, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "09_wh_inside_correct_y", "position_cm": [0, -3, 101], "target_cm": [-7.83161, 9.6052, 78.0217], "epoch": 1793950862.087063, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "10_wh_inner_context", "position_cm": [0, -15, 135], "target_cm": [0, 0, 78], "epoch": 1793950898.1384478, "physical_seconds": 14.89007962384494, "running": false}
+{"name": "11_final_overview", "position_cm": [450, 280, 320], "target_cm": [270, 0, 200], "epoch": 1793950933.4948294, "physical_seconds": 14.89007962384494, "running": false}

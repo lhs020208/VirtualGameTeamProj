@@ -28,21 +28,28 @@ FPlantMixerGeometry::FPlantMixerGeometry(const powder::GranularConfig& C,bool En
  if(!Enabled)return;
  if(C.plant_data.size()<16){Error=TEXT("혼합기 해석 형상 데이터 없음");return;}
  const auto& D=C.plant_data;const auto G=D[powder::plant_receiver_gate(D)];ReceiverGateZ=G.z;
- if(FMath::Abs(G.x-3)>1e-5||FMath::Abs(G.y)>1e-5||FMath::Abs(G.z-2.16)>1e-5||
-    FMath::Abs(D[1].x-3)>1e-5||FMath::Abs(D[1].z-1.105)>1e-5){Error=TEXT("현재 LowPoly 수취·혼합기 형상 계약 불일치");return;}
- // Actual vessel: x inner end planes 2.625..3.375, lower half ellipse
- // y radius .225 / z radius .1625 about z=1.105, flat lid inner face 1.2675.
- struct FProbe{FVector3d O,V;double Expected;};
- const FProbe Probes[]={{{3,0,1.15},{0,0,-1},1.15-.9425},{{2.9,0,1.15},{0,0,1},1.2675-1.15},
-  {{3,0,1.15},{1,0,0},.375},{{3,0,1.15},{-1,0,0},.375},{{3,0,1.15},{0,1,0},.225},
-  {{3,0,1.0},{0,1,0},.225*FMath::Sqrt(1-FMath::Square((1.-1.105)/.1625))},
-  {{3,0,1.29},{0,1,0},.022},{{3,0,1.32},{0,1,0},.022},{{3,0,1.8},{0,1,0},.136}};
- for(const auto& P:Probes)if(FMath::Abs(WallRay(D,P.O,P.V)-P.Expected)>1e-4){Error=TEXT("혼합기 집계 경계와 현재 충돌 삼각형 불일치");return;}
- // The reducer and nozzle were NOT scaled with the vessel. Probe the current bore,
- // including the curved BV272 ferrule, rather than copying a FlowTest box.
- const double Heights[]={double(1.2675f),1.31,1.35,1.685,1.71,1.89,2.11,2.12,2.13,2.14,2.15,double(G.z)};
+ CentreX=D[1].x;CentreY=D[1].y;AxisZ=D[1].z;
+ if(FMath::Abs(G.x-CentreX)>1e-5||FMath::Abs(G.y-CentreY)>1e-5||FMath::Abs(G.z-2.16)>1e-5){Error=TEXT("현재 LowPoly 수취·혼합기 형상 계약 불일치");return;}
+ // Read the active vessel instead of using the former half-size mixer bounds.
+ // Probe away from the end shaft seals and the inlet hole. This supports the
+ // existing elliptical trough and the revised circular trough, not arbitrary vessels.
+ const FVector3d O(CentreX,CentreY,AxisZ+.1);
+ MinX=CentreX-WallRay(D,O,{-1,0,0});MaxX=CentreX+WallRay(D,O,{1,0,0});
+ FloorZ=O.Z-WallRay(D,O,{0,0,-1});RadiusZ=AxisZ-FloorZ;
+ RadiusY=WallRay(D,{CentreX,CentreY,AxisZ+.01},{0,1,0});
+ ChamberTopZ=O.Z+WallRay(D,{CentreX-.1,CentreY,O.Z},{0,0,1});
+ if(MinX>=CentreX-.1||MaxX<=CentreX+.1||MaxX-MinX>1.8||RadiusY<.1||RadiusY>.5||
+    RadiusZ<.05||RadiusZ>.5||ChamberTopZ<=AxisZ+.1||ChamberTopZ>=1.31){Error=TEXT("혼합기 집계 경계 측정 실패");return;}
+ for(double X:{CentreX-.04,CentreX+.04})for(double F:{-.75,-.5,0.,.3})for(double Sign:{-1.,1.}){
+  const double R=RadiusY*(F<0?FMath::Sqrt(1-F*F):1.);
+  if(FMath::Abs(WallRay(D,{X,CentreY,AxisZ+F*RadiusZ},{0,Sign,0})-R)>1e-4){Error=TEXT("혼합기 집계 경계와 현재 충돌 삼각형 불일치");return;}
+ }
+ // The reducer and nozzle remain unchanged. Just above the lid avoids counting
+ // coplanar lid triangles as the cylindrical inlet wall.
+ const double Heights[]={ChamberTopZ,1.31,1.35,1.685,1.71,1.89,2.11,2.12,2.13,2.14,2.15,double(G.z)};
  for(double Z:Heights){double Radius=0;
-  for(int I=0;I<8;++I){const double T=UE_DOUBLE_PI*2*I/8;Radius=FMath::Max(Radius,WallRay(D,{3,0,Z},{FMath::Cos(T),FMath::Sin(T),0}));}
+  const double ProbeZ=Z==ChamberTopZ?Z+1e-5:Z;
+  for(int I=0;I<8;++I){const double T=UE_DOUBLE_PI*2*I/8;Radius=FMath::Max(Radius,WallRay(D,{CentreX,CentreY,ProbeZ},{FMath::Cos(T),FMath::Sin(T),0}));}
   if(Radius<.021||Radius>.141){Error=TEXT("수취→혼합기 연결부 내경 확인 불가");return;}
   ConnectorProfile.Add({Z,Radius+1e-6}); // float triangle precision only; not a mass tolerance
  }
@@ -51,15 +58,15 @@ EPlantMixerRegion FPlantMixerGeometry::Classify(const powder::Grain& P) const
 {
  if(!FMath::IsFinite(P.x)||!FMath::IsFinite(P.y)||!FMath::IsFinite(P.z))return EPlantMixerRegion::Invalid;
  if(!Supported||!Error.IsEmpty())return EPlantMixerRegion::Outside;
- const double X=double(P.x)-3,Y=P.y,Z=P.z;
+ const double X=double(P.x)-CentreX,Y=double(P.y)-CentreY,Z=P.z;
  if(Z>=ChamberTopZ&&Z<ReceiverGateZ){
   for(int I=1;I<ConnectorProfile.Num();++I)if(Z<=ConnectorProfile[I].X){
    const auto A=ConnectorProfile[I-1],B=ConnectorProfile[I];const double R=FMath::Lerp(A.Y,B.Y,(Z-A.X)/(B.X-A.X));
    return X*X+Y*Y<=R*R?EPlantMixerRegion::Connector:EPlantMixerRegion::Outside;
   }
  }
- if(P.x>double(2.625f)&&P.x<double(3.375f)&&Z>=double(.9425f)&&Z<ChamberTopZ){
-  const double R=Z<double(1.105f)? .225*FMath::Sqrt(FMath::Max(0.,1-FMath::Square((Z-1.105)/.1625))):.225;
+ if(P.x>MinX&&P.x<MaxX&&Z>=FloorZ&&Z<ChamberTopZ){
+  const double R=Z<AxisZ?RadiusY*FMath::Sqrt(FMath::Max(0.,1-FMath::Square((Z-AxisZ)/RadiusZ))):RadiusY;
   if(FMath::Abs(Y)<=R)return EPlantMixerRegion::Mixer;
  }
  return EPlantMixerRegion::Outside;

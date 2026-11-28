@@ -1,0 +1,9 @@
+{
+  "particles": 200,
+  "radius_m": 0.002,
+  "dt_s": 1e-05,
+  "physical_seconds": 0.006079999846406281,
+  "all_eight_closed": true,
+  "error": "",
+  "data_directory": "SourceAssets/PlantRevision1125/Simulation"
+}

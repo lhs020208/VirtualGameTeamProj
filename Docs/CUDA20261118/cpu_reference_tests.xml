@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Win32-ninja"
+	tests="9"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname="PC"
+	time="12"
+	timestamp="2026-11-18T19:00:58"
+	>
+	<testcase name="physics_gas_pressure_ports" classname="physics_gas_pressure_ports" time="0.0252949" status="run">
+		<properties/>
+		<system-out>gas pressure ports: equilibrium, inlet/outlet, conservation, gradient, rejection, legacy equivalence passed
+</system-out>
+	</testcase>
+	<testcase name="rotation_friction" classname="rotation_friction" time="0.153625" status="run">
+		<properties/>
+		<system-out>rolling v=0.713483 omega=1.42977 energy=0.356742
+incline rolling speed=0.695287 reference=0.696052
+oblique max angular momentum error=2.51354e-13
+PASS rotation and friction
+</system-out>
+	</testcase>
+	<testcase name="hertz_mindlin" classname="hertz_mindlin" time="0.248232" status="run">
+		<properties/>
+		<system-out>PASS Hertz-Mindlin
+reference peak=0.000361572189001 time=0.0106420645123
+fine e=0.999999999983 peak=0.000361572189037 time=0.0106420645104
+elastic e errors coarse/fine=4.24376089825e-11 / 1.73998593311e-11
+damped e coarse/fine/reference=0.943358194107 / 0.94335009328 / 0.943349418313
+</system-out>
+	</testcase>
+	<testcase name="rolling_resistance" classname="rolling_resistance" time="11.2744" status="run">
+		<properties/>
+		<system-out>slope_mu0 x=1.39757 speed=1.39753 KE=1.36869
+slope_mu0.2 x=0.00136729 speed=7.48942e-15 KE=3.52725e-29
+slope_dt_half x=0.00136729 speed=9.51587e-15
+pile_mu0 spread=2.82295 KE=5.98424 energy_excess=0
+pile_mu0.2 spread=1.00462 KE=1.23412e-12 energy_excess=0
+rolling resistance PASS
+</system-out>
+	</testcase>
+	<testcase name="contact_adhesion" classname="contact_adhesion" time="0.525764" status="run">
+		<properties/>
+		<system-out>bound_energy_error=7.27439e-09 half_dt_error=3.63668e-09 separation=0.998977
+escape_energy_error=9.72432e-07 separation=1.01853 off_separation=1.00277
+wall_hold_z=0.499266 released_z=0.551695 box_z=0.499266
+contact adhesion PASS
+</system-out>
+	</testcase>
+	<testcase name="static_triangle_mesh" classname="static_triangle_mesh" time="0.445015" status="run">
+		<properties/>
+		<system-out>PASS static triangle mesh: face/edge/vertex, transformed box equivalence, units/topology/ports, thin wall atomic guard, BVH, seams and clumps
+plane_max_position_error_m=1.17961e-16
+clump_max_z_error_m=1.04083e-17
+triangle_checks=28896 / brute=205312
+pipe_final_z_m=-0.0314647
+</system-out>
+	</testcase>
+	<testcase name="prescribed_moving_walls" classname="prescribed_moving_walls" time="0.056168" status="run">
+		<properties/>
+		<system-out>PASS prescribed wall poses, relative slip/rolling, reaction torque, work balance, zero-motion equivalence and atomic guards
+work_energy_error_J=3.9193e-05,1.96157e-05,9.81266e-06
+clump_wall_work_J=1.64995e-05
+</system-out>
+	</testcase>
+	<testcase name="optimization_timestep_scale" classname="optimization_timestep_scale" time="0.049407" status="run">
+		<properties/>
+		<system-out>PASS unchanged bound, mass/stiffness/damping/contact sensitivity, radius/RPM/translation guards and rejected state atomicity
+</system-out>
+	</testcase>
+	<testcase name="physics_air_contract" classname="physics_air_contract" time="0.0454859" status="run">
+		<properties/>
+		<system-out>PASS air contract, direct diameter, Stokes/Newton, dissipation, buoyancy, convergence, guards
+</system-out>
+	</testcase>
+</testsuite>

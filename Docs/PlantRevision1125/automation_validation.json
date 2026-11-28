@@ -1,0 +1,50 @@
+{
+  "failed": 0,
+  "notRun": 0,
+  "tests": [
+    {
+      "testDisplayName": "MixerGeometryAndCohort",
+      "fullTestPath": "ProcessUI.AutoA.MixerGeometryAndCohort",
+      "tags": [],
+      "state": "Success",
+      "deviceInstance": [
+        "66C2EAB04436575101E994B698F41251"
+      ],
+      "duration": 0.05938420072197914,
+      "dateTime": "2026.11.25-09.43.41",
+      "entries": [
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogTemp: BATCH_FOREIGN id=2 supplier=1 region=혼합기/보관 이탈 sim=1.050000000",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.25-09.43.41"
+        }
+      ],
+      "warnings": 1,
+      "errors": 0,
+      "artifacts": []
+    },
+    {
+      "testDisplayName": "RevisedMixerGeometry",
+      "fullTestPath": "ProcessUI.AutoA.RevisedMixerGeometry",
+      "tags": [],
+      "state": "Success",
+      "deviceInstance": [
+        "66C2EAB04436575101E994B698F41251"
+      ],
+      "duration": 0.05905270203948021,
+      "dateTime": "2026.11.25-09.43.41",
+      "entries": [],
+      "warnings": 0,
+      "errors": 0,
+      "artifacts": []
+    }
+  ],
+  "passed_including_warnings": 2,
+  "succeeded_without_warnings": 1
+}

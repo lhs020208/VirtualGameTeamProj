@@ -1,0 +1,15 @@
+{
+  "inlet": {
+    "count": 595,
+    "t_s": 0.299999993294,
+    "below_valve_z_2_133_m": 595,
+    "below_inlet_z_1_265_m": 595
+  },
+  "discharge_entry": {
+    "count": 224,
+    "t_s": 0.499999988824,
+    "below_valve_z_2_133_m": 224,
+    "below_inlet_z_1_265_m": 60
+  },
+  "old_valve_coordinates": "Independent direct initialization at old wall locations rejected by velocity guard. Old radial positions fall on/inside the replacement wall thickness."
+}

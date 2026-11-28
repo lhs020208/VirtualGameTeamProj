@@ -1,0 +1,33 @@
+{
+  "particle_id": 19261,
+  "species": "B",
+  "position_m": [
+    0.306363791227,
+    1.40037477016,
+    2.02166008949
+  ],
+  "particle_radius_m": 0.002,
+  "nearest_surfaces": [
+    {
+      "mesh": "P101B_RigidRoute_ID44",
+      "nearest_triangle": 13375,
+      "centre_to_surface_m": 0.0020039203968854947,
+      "contact_point_m": [
+        0.30665671748259987,
+        1.4012118799002282,
+        2.019863109120422
+      ]
+    },
+    {
+      "mesh": "P101C_RigidRoute_ID44",
+      "nearest_triangle": 2144,
+      "centre_to_surface_m": 0.7554934374285039,
+      "contact_point_m": [
+        0.9656798569953412,
+        1.031933414673217,
+        2.039649724960327
+      ]
+    }
+  ],
+  "interpretation": "Geometric proximity only; not a measured force balance. Full simulation remains running unchanged."
+}

@@ -1,0 +1,14 @@
+{
+  "level": "/Game/ProcessPlant_20261111_LowPoly/L_ProcessPlant_LowPoly_1111.L_ProcessPlant_LowPoly_1111",
+  "actor": "Plant_Pressure_Grains_LowPoly",
+  "particle_count": 200,
+  "powered_mixer": true,
+  "mixer_input_power_w": 1302.0,
+  "mixer_max_torque_nm": 750.0,
+  "mixer_inertia_kg_m2": 60.0,
+  "mixer_drive_efficiency": 0.8,
+  "mixer_power_fraction": 1.0,
+  "mixer_ramp_seconds": 2.0,
+  "mixer_brake_torque_nm": 100.0,
+  "mixer_trip_seconds": 2.0
+}

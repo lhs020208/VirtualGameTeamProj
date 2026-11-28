@@ -1,0 +1,14 @@
+{
+  "requested_utc": "2026-11-10T10:17:51.275950+00:00",
+  "requested_change": "Record B residual/stopped observation without satisfying old long-stall criterion; proceed with actual 19999 arrivals through real valves and pressures, retain ID19261",
+  "executed": false,
+  "simulation_reset": false,
+  "reason": "Both computer-use runtimes failed to initialize (kernel assets path error 3); no live command receiver in current harness; no listening control TCP endpoint in test UE process. Existing state preserved and still computing.",
+  "current_stage": "B_to_WH",
+  "sim_s": 3.58143990953,
+  "old_rule_stagnation_check_sim_s": 12.64687993313,
+  "recent_rate": 0.0008835424130996312,
+  "estimated_hours_to_old_check": 2.8500927029627214,
+  "test_editor_pid": 17164,
+  "original_editor_pid": 28368
+}

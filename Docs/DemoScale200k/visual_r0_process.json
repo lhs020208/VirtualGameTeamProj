@@ -1,0 +1,40 @@
+{
+  "pid": 38240,
+  "exit_code": 0,
+  "wall_s": 171.67814445495605,
+  "command": [
+    "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor-Cmd.exe",
+    "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\Demo20261119\\EditorHost\\VirtualGameTeamProj.uproject",
+    "/Game/ProcessPlant_Demo20261119/L_ProcessPlant_Demo30FPS_1119",
+    "-game",
+    "-RenderOffscreen",
+    "-windowed",
+    "-ForceRes",
+    "-ResX=1920",
+    "-ResY=1080",
+    "-DemoBenchmarkSeconds=150",
+    "-DemoBenchmarkOutput=D:\\GitHub\\VirtualGameTeamProj\\Docs\\DemoScale200k\\visual_r0",
+    "-ExecCmds=stat unit",
+    "-ScaleCopies=10",
+    "-unattended",
+    "-nosound",
+    "-nosplash",
+    "-NoLiveCoding",
+    "-NoMessaging",
+    "-notrace",
+    "-DisablePlugins=ModelContextProtocol",
+    "-stdout",
+    "-FullStdOutLogOutput",
+    "-abslog=D:\\GitHub\\VirtualGameTeamProj\\Docs\\DemoScale200k\\visual_r0.log"
+  ],
+  "timer_policy": {
+    "scope": "own offscreen child only",
+    "before": {
+      "control": 0,
+      "state": 0
+    },
+    "control": 4,
+    "state": 0,
+    "reason": "Honor Unreal timer resolution while window is hidden; https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setprocessinformation"
+  }
+}

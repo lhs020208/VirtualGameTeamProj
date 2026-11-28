@@ -1,0 +1,10 @@
+{
+  "unreal_build": "Development Editor UE 5.8 / 1135",
+  "automation": {
+    "succeeded": 11,
+    "failed": 0,
+    "notRun": 0
+  },
+  "core_empty_tests": "0 GPU 0.0356101 CPU 0.0356101 contact 0\n1 GPU 0.0356101 CPU 0.0356101 contact 0\n2 GPU 0.0356101 CPU 0.0356101 contact 0\n3 GPU 0.0356101 CPU 0.0356101 contact 0\n4 GPU 0.0356101 CPU 0.0356101 contact 0\n5 GPU 0.0356101 CPU 0.0356101 contact 0\n6 GPU 0.0356101 CPU 0.0356101 contact 0\n7 GPU 0.016347 CPU 0.016347 contact 0\nPASS independent counts, 20400 nonoverlapping generated grains, zero GPU allocation, clock, valves, powered mixer and CPU/OpenCL equivalence",
+  "mixer_regression": "unloaded rpm=14.9937 angle=3.15967 energy_J=163.036\nloaded rpm=13.9941 torque=502.96 watts=868.502\njam rpm=0 tripped=1\nreal paddle contact_Nm=-0.30106 expected=-0.30106 rpm=-0.00028749\nproduction mesh contact integration_s=0.02001 rpm=0.075 powered_valves=8\nPASS powered mixer: ramp, load, stall, electricity, braking, reset, actual mesh reaction"
+}

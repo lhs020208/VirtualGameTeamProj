@@ -1,0 +1,9 @@
+{
+  "source": "Docs\\ProcessPlant_20261110_LowPoly\\FullProcess\\20261110_182948\\00413_mix_15RPM.csv",
+  "source_sha256": "0ee76d9aa400ce9c6984affc7cdb86a7dbf74f40dfa34b80c35a7f82ff1caee7",
+  "count": 910,
+  "all_exact_coordinates_match": true,
+  "transform": "UE cm = (x,-y,z)*100",
+  "diameter_m": 0.004,
+  "physics_started": false
+}

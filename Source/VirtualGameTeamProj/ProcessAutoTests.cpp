@@ -1,4 +1,4 @@
-#include "ProcessAutoRun.h"
+﻿#include "ProcessAutoRun.h"
 #include "PlantSupplyABatch.h"
 #include "PlantDoseValidation.h"
 #include "Misc/AutomationTest.h"
@@ -175,6 +175,29 @@ bool FAutoMixerCohort::RunTest(const FString&){try{
  }catch(const std::exception& E){AddError(UTF8_TO_TCHAR(E.what()));return false;}return true;
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRevisedMixerGeometry,"ProcessUI.AutoA.RevisedMixerGeometry",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FRevisedMixerGeometry::RunTest(const FString&){try{
+ powder::GranularConfig C;C.plant=true;C.radius=.002f;C.count=2;
+ const FString Root=FPaths::ProjectDir()/TEXT("SourceAssets/PlantRevision1125/Simulation");
+ C.plant_data=powder::read_plant_data(TCHAR_TO_UTF8(*(Root/TEXT("runtime.plant"))));
+ FPlantMixerGeometry G(C,true);
+ TestTrue(*G.Error,G.Error.IsEmpty());TestEqual(TEXT("revised lid from actual triangles"),G.ChamberTopZ,1.225,1e-5);
+ TestTrue(TEXT("new left extent is mixer"),G.Classify({2.3f,0,.95f,0})==EPlantMixerRegion::Mixer);
+ TestTrue(TEXT("new lower floor is mixer"),G.Classify({3,0,.59f,0})==EPlantMixerRegion::Mixer);
+ TestTrue(TEXT("curved corner outside is excluded"),G.Classify({3,.3f,.6f,0})==EPlantMixerRegion::Outside);
+ TestTrue(TEXT("neck remains connector"),G.Classify({3,0,1.24f,0})==EPlantMixerRegion::Connector);
+ TestTrue(TEXT("beyond end wall excluded"),G.Classify({3.8f,0,.95f,0})==EPlantMixerRegion::Outside);
+ auto Routes=powder::read_plant_routes(TCHAR_TO_UTF8(*(Root/TEXT("runtime.routes"))));
+ FPlantTransferSettings Limits;FPlantTransferTelemetry Mass(C,Routes,Limits);FPlantFeedPreparation Prep(C,Routes,Mass,.5,true);
+ FPlantSupplyABatch B(C,{0,0},Mass,Prep,true);std::vector<powder::Grain> P{{-1.2f,1.4f,2.4f,0},{-1.2f,1.4f,2.5f,0}};
+ TestTrue(TEXT("revised geometry accepted for batch"),B.Capture(P,0,8));
+ P[0]={3,0,2.7f,0};P[1]={3,.01f,2.7f,0};TestTrue(TEXT("feed admitted"),B.BeginMixerFeed(P,.1,8,9));
+ P[0]={2.3f,0,.95f,0};P[1]={3,0,.59f,0};B.Observe(P,.2);B.Observe(P,.8);
+ TestEqual(TEXT("new vessel inventory counted"),B.MixerSnapshot().MixerKg,2*Mass.ParticleMassKg);
+ TestTrue(TEXT("new vessel residence completes"),B.MixerSnapshot().State==EPlantTransferState::Complete);
+ }catch(const std::exception& E){AddError(UTF8_TO_TCHAR(E.what()));return false;}return true;
+}
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FTimedMixClock,"ProcessUI.AutoA.TimedMixClockAndStop",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
 bool FTimedMixClock::RunTest(const FString&){
  FAutoFixture F;F.A.Settings.MixingDurationSeconds=0;TestFalse(TEXT("unset duration prevents start"),F.Start());
@@ -195,6 +218,20 @@ bool FTimedMixClock::RunTest(const FString&){
  TestEqual(TEXT("target-to-stop overshoot recorded"),F.A.State.MixingStopOverrunSeconds,.04,1e-9);
  return true;
 }
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPoweredMixRundown,"ProcessUI.AutoA.PoweredMixerRundown",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FPoweredMixRundown::RunTest(const FString&){
+ FAutoFixture F;F.ArmMixing();auto& S=F.M.Snapshot;S.MixerDrive.Supported=true;S.MixerDrive.PowerFraction=1;S.MixerDrive.Stopped=false;S.MixerDrive.TargetRPM=15;S.AppliedRPM=14;
+ F.Tick(.16);TestTrue(TEXT("loaded actual RPM reaches scheduled stop"),F.A.State.Stage==EProcessAutoStage::StopMixer);
+ const int64 Rev=F.A.State.MixerStopRequestRevision;F.Queued.Empty();
+ auto Publish=[&](){auto P=F.M.Snapshot;P.Sequence++;P.PhysicalSeconds+=.01;F.Now+=.1;P.PublishedWallSeconds=F.Now;F.M.Observe(P,F.Now,F.Transport);F.A.Tick(F.M,F.Now,F.Send);};
+ Publish();TestTrue(TEXT("in-flight pre-stop snapshot is accepted"),F.A.State.Stage==EProcessAutoStage::StopMixer);
+ S.ProcessedControlRevision=S.RequestedControlRevision=Rev;S.RequestedMixerEnabled=S.WorkerMixerEnabled=false;S.MixerDrive.TargetRPM=0;S.AppliedRPM=10;
+ Publish();TestTrue(TEXT("physical rundown is not premature completion or RPM failure"),F.A.State.Stage==EProcessAutoStage::StopMixer&&F.A.State.Active);
+ S.AppliedRPM=0;S.MixerDrive.Stopped=true;S.AppliedRPMRevision=Rev;S.AppliedRPMSimulationSeconds=S.PhysicalSeconds;
+ Publish();TestTrue(TEXT("actual stop confirms timed mix"),F.A.State.Stage==EProcessAutoStage::Complete&&!F.A.State.Active);
+ return true;
+}
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FTimedMixFaults,"ProcessUI.AutoA.TimedMixCancellationAndFaults",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
 bool FTimedMixFaults::RunTest(const FString&){
  FAutoFixture F;F.ArmMixing();F.A.Cancel(TEXT("whole stop during mixing"));F.M.AutomationActive=false;

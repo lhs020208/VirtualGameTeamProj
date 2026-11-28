@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "PlantSimulationSnapshot.h"
@@ -9,6 +9,16 @@ class APlantVisibilityController;
 class UProcessControlService;
 struct FPlantRuntime;
 class SWidget;
+
+UENUM(BlueprintType)
+enum class EPlantComputeBackend : uint8 {
+ OpenCL UMETA(DisplayName="OpenCL"),
+ Cuda UMETA(Hidden),
+ CudaGraph UMETA(Hidden),
+ CudaPtx UMETA(DisplayName="CUDA (preserved arithmetic)"),
+ CudaPtxGraph UMETA(DisplayName="CUDA Graph (preserved arithmetic)")
+};
+struct FPlantDemoRuntime;
 USTRUCT()
 struct FPlantRotorVisual {
  GENERATED_BODY()
@@ -18,6 +28,9 @@ struct FPlantRotorVisual {
 UCLASS()
 class VIRTUALGAMETEAMPROJ_API APowderPlantTest:public AActor {
  GENERATED_BODY()
+ TMap<AActor*,FTransform> ValveInitialTransforms;
+ TArray<FVector> ValvePivotsCm;
+
 public:
  APowderPlantTest();~APowderPlantTest();
  virtual void BeginPlay() override;
@@ -25,11 +38,57 @@ public:
  virtual void EndPlay(const EEndPlayReason::Type Reason) override;
  UPROPERTY(EditAnywhere,Category="Plant|Test",meta=(ClampMin="0",ClampMax="4")) int32 SectionTest=0;
  UPROPERTY(EditAnywhere,Category="Plant|Test") FString DataDirectory=TEXT("SourceAssets/ProcessPlantPhysics");
+ // Existing levels keep OpenCL. The isolated CUDA level opts in explicitly.
+ // Applies on ResetSimulation. Supply is a fraction of nominal 24 V gearbox availability.
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive") bool PoweredValves=false;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="0",ClampMax="1")) double ValvePowerFraction=1;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="0.1")) double SmallValveTorqueNm=10;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="0.1")) double LargeValveTorqueNm=100;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="1")) double SmallValveElectricalW=15;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="1")) double LargeValveElectricalW=45;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="0.1")) double SmallValveTravelSeconds=11;
+ UPROPERTY(EditAnywhere,Category="Plant|Valve Drive",meta=(ClampMin="0.1")) double LargeValveTravelSeconds=24;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive") bool PoweredMixer=false;
+ // All drive parameters apply on ResetSimulation; RPM remains the operator speed target.
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="1")) double MixerInputPowerW=1302;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0.001")) double MixerMaxTorqueNm=750;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0.001")) double MixerInertiaKgM2=60;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0.01",ClampMax="0.99")) double MixerDriveEfficiency=.8;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0",ClampMax="1")) double MixerPowerFraction=1;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0.1")) double MixerRampSeconds=2;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0")) double MixerBrakeTorqueNm=100;
+ UPROPERTY(EditAnywhere,Category="Plant|Mixer Drive",meta=(ClampMin="0.1")) double MixerTripSeconds=2;
+ UPROPERTY(EditAnywhere,Category="Plant|Compute") EPlantComputeBackend ComputeBackend=EPlantComputeBackend::OpenCL;
+ UPROPERTY(VisibleAnywhere,Category="Plant|Status") FString ComputeDevice;
+ // Opt-in only: old OpenCL/CUDA maps retain their original solver.
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Plant|Demo") bool DemoRealtime=false;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Plant|Demo") bool DemoAutoCycle=false;
+ // Presentation only. Apply changes with ResetSimulation; physical input stays unchanged.
+ UPROPERTY(EditAnywhere,Category="Plant|Demo",meta=(ClampMin="1",ClampMax="10")) int32 DemoVisualCopies=10;
+ UPROPERTY(VisibleAnywhere,Category="Plant|Status") int32 DisplayedParticleCount=0;
+ UPROPERTY(VisibleAnywhere,Category="Plant|Status") int32 SolverParticleCount=0;
+ // Blender-world metres. Per-level geometry settings; legacy levels retain defaults.
+ UPROPERTY(EditAnywhere,Category="Plant|Geometry") FVector MixerPivotM=FVector(3,0,.9);
  // Observation bounds in solver metres, serialized by each level; legacy defaults are preserved.
  UPROPERTY(EditAnywhere,Category="Plant|Observation") FVector MixerBoundsMinM=FVector(2.25,-.45,.57);
  UPROPERTY(EditAnywhere,Category="Plant|Observation") FVector MixerBoundsMaxM=FVector(3.75,.45,1.31);
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Plant|Control") bool Running=true;
  UPROPERTY(meta=(DeprecatedProperty,DeprecationMessage="Simulation now runs without a rate cap; this saved value is ignored.")) double TargetRate=.1;
+ UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Plant|Pressure") double SupplyGaugePa=0;
+ UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Plant|Pressure") double WeighingGaugePa=0;
+ UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Plant|Pressure") double ReceiverGaugePa=0;
+ UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Plant|Pressure") int32 PressureStage=0;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Plant|Pressure") bool PressureManualOverride=false;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Plant|Pressure") FVector AppliedGaugePa=FVector::ZeroVector;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Plant|Pressure") double WeighingRegulatorM3s=0;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Plant|Pressure") double TransferFlowM3s=0;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Plant|Pressure") bool PressureApplied=false;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Plant|Pressure") FString PressureMessage;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Plant|Pressure") FString RunLogPath;
+ UFUNCTION(BlueprintCallable,Category="Plant|Pressure") bool SetPressureTargets(double SupplyPa,double WeighingPa,double ReceiverPa);
+ UFUNCTION(BlueprintCallable,Category="Plant|Pressure") bool ApplyPressurePreset(int32 StageIndex);
+ UFUNCTION(BlueprintCallable,Category="Plant|Pressure") bool SavePressureProfile();
+ UFUNCTION(BlueprintCallable,Category="Plant|Pressure") bool LoadPressureProfile();
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Plant|Control",meta=(ClampMin="0",ClampMax="3000")) double TestPressureDropPa=1000;
     // Existing LowPoly level serializes this property. Legacy levels keep their existing pressure model.
     UPROPERTY(EditAnywhere,Category="Plant|Pressure") bool RegulatedPressureEnabled=false;
@@ -41,6 +100,11 @@ public:
  UPROPERTY(EditAnywhere,Category="Plant|Test",meta=(ClampMin="0")) double ReceiverTransferSeconds=2.;
  UPROPERTY(EditAnywhere,Category="Plant|Transfer Observation",meta=(ToolTip="Provisional model-mass completion criteria. LowPoly requested-opening readiness reuses the stable simulation interval. Applied on initialization; no target-mass cutoff.")) FPlantTransferSettings TransferSettings;
  UPROPERTY(EditAnywhere,Category="Plant|Transfer Preparation",meta=(ClampMin="1",ToolTip="LowPoly trial wall-clock limit for a user-requested opening. Stability reuses TransferSettings.StableSimulationSeconds. Timeout cancels, never opens.")) double TransferPreparationTimeoutSeconds=1800;
+ // Independent initial charge. Changing it resets the run, never rewrites a recipe/CSV.
+ UPROPERTY(EditAnywhere,Category="Plant|Particles") bool OverrideParticleCounts=false;
+ UPROPERTY(EditAnywhere,Category="Plant|Particles") TArray<int32> InitialParticleCountsOverride;
+ UFUNCTION(BlueprintCallable,Category="Plant|Particles") bool SetInitialParticleCounts(const TArray<int32>& Counts,FString& Reason);
+ UFUNCTION(BlueprintPure,Category="Plant|Particles") TArray<int32> GetInitialParticleCounts() const {return InitialSupplierCounts;}
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") int32 ParticleCount=0;
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") int32 InWeighingHopper=0;
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") int32 InReceiver=0;
@@ -51,6 +115,7 @@ public:
  UPROPERTY(VisibleAnywhere,Category="Plant|Status") FString Error;
  UFUNCTION(CallInEditor,BlueprintCallable,Category="Plant") void ResetSimulation();
  UFUNCTION(CallInEditor,BlueprintCallable,Category="Plant") void ExportSnapshot();
+ UFUNCTION(BlueprintCallable,Category="Plant") bool ExportSnapshotToFile(const FString& FilePath);
  UFUNCTION(BlueprintPure,Category="Plant|Read Only") FPlantSimulationSnapshot GetSimulationSnapshot() const;
  TSharedRef<SWidget> BuildSimulationPanel();
  UFUNCTION(BlueprintCallable,Category="Plant") void ToggleSupplier(int32 Index);
@@ -108,9 +173,24 @@ private:
  UPROPERTY() TArray<FPlantRotorVisual> Rotor;
  UPROPERTY() TArray<TObjectPtr<AActor>> ValveVisuals;
  UPROPERTY() TObjectPtr<APlantVisibilityController> Display;
+ TArray<FVector> VisualOffsets;
+ FVector VisualScale=FVector::OneVector;
+ TArray<TArray<FTransform>> InstanceTransforms;
+ FPlantDemoRuntime* DemoRuntime=nullptr;
  FPlantRuntime* Runtime=nullptr;
  double LastShow=0;uint64 Generation=0;
  double SmokeSeconds=0,SmokeWallLimit=120,SmokeStart=0;bool SmokeShot=false;
- float PreviousMaxFPS=0;
+
+ int32 SmokeWarmFrames=0;
+ float PreviousMaxFPS=0,AppliedMaxFPS=0;
+ void ApplySimulationFrameRate();
+ double DemoTestSeconds=0,DemoTestStart=0,DemoLastFrame=0,DemoNextSample=0;
+ int32 DemoWarmFrames=0,DemoAutoStage=-1,DemoShotStage=0,DemoCameraStage=0;
+ TArray<double> DemoFrames;
+ FString DemoOutput,DemoTrace;
+ void TickDemo(double DeltaSeconds);
+ void ResetDemoSimulation();void BeginDemoPlay();void ShowDemo();void TickDemoRuntime(float D);
+ TSharedRef<SWidget> BuildDemoPanel();
+ TSharedRef<SWidget> BuildPressurePanel();
  void Stop();void Show();void CacheRotor();
 };

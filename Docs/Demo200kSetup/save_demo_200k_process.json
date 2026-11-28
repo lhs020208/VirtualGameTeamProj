@@ -1,0 +1,24 @@
+{
+  "pid": 51032,
+  "exit_code": 0,
+  "wall_s": 7.569580793380737,
+  "command": [
+    "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor-Cmd.exe",
+    "D:\\GitHub\\VirtualGameTeamProj\\Intermediate\\Demo20261119\\EditorHost\\VirtualGameTeamProj.uproject",
+    "-run=pythonscript",
+    "-script=D:\\GitHub\\VirtualGameTeamProj\\Scripts\\demo_publish_level.py",
+    "-EnablePlugins=PythonScriptPlugin,EditorScriptingUtilities",
+    "-nullrhi",
+    "-unattended",
+    "-nosound",
+    "-nosplash",
+    "-NoLiveCoding",
+    "-NoMessaging",
+    "-notrace",
+    "-DisablePlugins=ModelContextProtocol",
+    "-stdout",
+    "-FullStdOutLogOutput",
+    "-abslog=D:\\GitHub\\VirtualGameTeamProj\\Docs\\Demo200kSetup\\save_demo_200k.log"
+  ],
+  "timer_policy": null
+}

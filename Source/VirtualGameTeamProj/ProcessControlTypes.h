@@ -31,7 +31,7 @@ struct FProcessCommandRecord
     double Value = 0;
     EProcessCommandStatus Status = EProcessCommandStatus::Accepted;
     FString Message;
-    double AcceptedAt = 0, Deadline = 0;
+    double AcceptedAt = 0, Deadline = 0, MotionStartSeconds=0;
     bool IndividualPressure=false;
     FGuid PressureStage,PressureBatch;
     int32 PressureSupplier=INDEX_NONE;

@@ -1,0 +1,35 @@
+{
+  "notice": "Recorded coordinate reconstruction, NOT a live simulation",
+  "sim_s": 8.02191979735,
+  "particle_diameter_m": 0.004,
+  "groups": {},
+  "display": "existing render cutaway materials; frame hidden; recorded particles only; original render meshes",
+  "shots": [
+    {
+      "name": "mixer",
+      "camera_cm": [
+        322,
+        87,
+        132
+      ],
+      "target_cm": [
+        300,
+        0,
+        111
+      ]
+    },
+    {
+      "name": "bed",
+      "camera_cm": [
+        315,
+        51,
+        119
+      ],
+      "target_cm": [
+        300,
+        0,
+        99
+      ]
+    }
+  ]
+}

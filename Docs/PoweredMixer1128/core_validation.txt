@@ -1,0 +1,7 @@
+unloaded rpm=14.9937 angle=3.15967 energy_J=163.036
+loaded rpm=13.9941 torque=502.96 watts=868.502
+jam rpm=0 tripped=1
+real paddle contact_Nm=-0.30106 expected=-0.30106 rpm=-0.00028749
+1 warning generated.
+production mesh contact integration_s=0.02001 rpm=0.075 powered_valves=8
+PASS powered mixer: ramp, load, stall, electricity, braking, reset, actual mesh reaction

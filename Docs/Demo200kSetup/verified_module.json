@@ -1,0 +1,10 @@
+{
+  "sha256": "40c3eb2e28f4b76ecd49f8dcf4ad56ef5c17321006f1cee8f98f5fe887d6a54b",
+  "display_particles": 200000,
+  "solver_particles": 2500,
+  "tests": [
+    "verify_staged",
+    "original_opencl",
+    "original_cuda"
+  ]
+}

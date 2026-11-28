@@ -1,0 +1,135 @@
+{
+  "level_load_wall_s": 0.859000000054948,
+  "cases": [
+    {
+      "case": "initial_20k_zero_pressure",
+      "sim_s": 0.0,
+      "wall_s": 1.1559999999590218,
+      "applied": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "targets": [
+        500.0,
+        -500.0,
+        0.0
+      ]
+    },
+    {
+      "case": "preset_manual_profile_invalid_atomic",
+      "sim_s": 0.0015999999595806003,
+      "wall_s": 0.2029999999795109,
+      "applied": [
+        500.0,
+        -500.0,
+        0.0
+      ],
+      "targets": [
+        700.0,
+        -300.0,
+        -800.0
+      ]
+    },
+    {
+      "case": "forward_flow",
+      "sim_s": 0.0031999999191612005,
+      "wall_s": 0.1880000000819564,
+      "applied": [
+        700.0,
+        -300.0,
+        -800.0
+      ],
+      "targets": [
+        700.0,
+        -300.0,
+        -800.0
+      ]
+    },
+    {
+      "case": "receiver_open_vent",
+      "sim_s": 0.004319999890867621,
+      "wall_s": 0.2029999999795109,
+      "applied": [
+        700.0,
+        -300.0,
+        0.0
+      ],
+      "targets": [
+        700.0,
+        -300.0,
+        -800.0
+      ]
+    },
+    {
+      "case": "pause_queue",
+      "sim_s": 0.005599999858532101,
+      "wall_s": 1.0,
+      "applied": [
+        700.0,
+        -300.0,
+        0.0
+      ],
+      "targets": [
+        600.0,
+        -200.0,
+        -700.0
+      ]
+    },
+    {
+      "case": "paused_applied_unchanged",
+      "sim_s": 0.005599999858532101,
+      "wall_s": 1.0,
+      "applied": [
+        700.0,
+        -300.0,
+        0.0
+      ],
+      "targets": [
+        600.0,
+        -200.0,
+        -700.0
+      ]
+    },
+    {
+      "case": "reset_preserves_targets",
+      "sim_s": 0.0,
+      "wall_s": 0.39099999994505197,
+      "applied": [
+        600.0,
+        -200.0,
+        0.0
+      ],
+      "targets": [
+        600.0,
+        -200.0,
+        -700.0
+      ]
+    },
+    {
+      "case": "reset_20k_closed_and_pressure_restored",
+      "sim_s": 0.0,
+      "wall_s": 0.39000000001396984,
+      "applied": [
+        600.0,
+        -200.0,
+        -700.0
+      ],
+      "targets": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "run_logs": [
+    "D:/GitHub/VirtualGameTeamProj/Saved/PlantPressureRuns/20261111T090406Z_5E80790744FE3E3A5018E98BD8DD7EF5.csv",
+    "D:/GitHub/VirtualGameTeamProj/Saved/PlantPressureRuns/20261111T090409Z_FFFC39F24CD874A099C9A3AB06AB0A5C.csv"
+  ],
+  "groups": [
+    10000,
+    10000
+  ],
+  "ready_wall_s": 2.01500000001397,
+  "total_test_wall_s": 8.422000000020489
+}

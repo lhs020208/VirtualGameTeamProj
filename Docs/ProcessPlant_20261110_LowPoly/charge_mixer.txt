@@ -1,0 +1,2 @@
+worst reference delta at -0.0267457,-1.39561,2.30016 angle=0 delta=0.000724585
+PASS full charge initial walls/finite state; local mixer inlet, confinement and rotation

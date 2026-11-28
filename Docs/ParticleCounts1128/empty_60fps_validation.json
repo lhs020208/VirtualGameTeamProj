@@ -1,0 +1,15 @@
+{
+  "previous_max_fps": 0.0,
+  "frames": 600,
+  "sample_wall_s": 10.0,
+  "average_fps": 60.0,
+  "simulation_rate": 1.0000000474974513,
+  "mechanical_publications_per_s": 62.5,
+  "actual_rpm": 14.993712089917171,
+  "positive_particles_restore_30fps": true,
+  "zero_restores_60fps": true,
+  "end_play_max_fps": 0.0,
+  "wall_seconds": 15.09399999998277,
+  "timing_method": "600 frame callbacks over a 10-second monotonic wall-clock interval; subframe timings omitted due to clock quantization",
+  "unreal_build": "UE 5.8 Development Editor / 1136"
+}

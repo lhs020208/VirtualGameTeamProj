@@ -1,0 +1,29 @@
+{
+  "utc": "2026-11-10T10:29:38.980640+00:00",
+  "pid": 17164,
+  "from_stage": 1,
+  "to_stage": 2,
+  "sim_s": 4.16095989489,
+  "reason": "Test procedure adjustment to fulfill the full-path inspection request. The user requested full inspection and records; the 10-second criterion was internally chosen.",
+  "expected_cohort_count": 19999,
+  "residual": {
+    "sim_s": "4.16095989489",
+    "id": "19261",
+    "species": "1",
+    "x_m": "0.306363791227",
+    "y_m": "1.40037477016",
+    "z_m": "2.02166008949"
+  },
+  "particle_count_unchanged": 20000,
+  "physics_parameters_changed": false,
+  "reset": false,
+  "requested_pressures_Pa_g": [
+    0,
+    500,
+    -1000
+  ],
+  "requested_supplier_mask": 0,
+  "requested_WH_open": true,
+  "requested_RH_open": false,
+  "attribution_corrected": true
+}

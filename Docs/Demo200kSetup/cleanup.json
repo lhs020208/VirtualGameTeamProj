@@ -1,0 +1,13 @@
+{
+  "root": "D:\\GitHub\\VirtualGameTeamProj\\Content",
+  "removed_empty_directories": [
+    "Developers\\lpet2\\Collections",
+    "Developers\\lpet2",
+    "Collections",
+    "Developers"
+  ],
+  "removed_count": 4,
+  "asset_files_before": 2294,
+  "asset_files_after": 2294,
+  "assets_deleted": 0
+}

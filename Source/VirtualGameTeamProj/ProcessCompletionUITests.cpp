@@ -26,7 +26,7 @@ bool FProcessCompletionUI::RunTest(const FString&)
  World->InitializeActorsForPlay(FURL());
  auto* Player=NewObject<ULocalPlayer>(GEngine);
  auto* PC=World->SpawnActor<APlayerController>();PC->SetPlayer(Player);
- auto* Class=LoadClass<UUserWidget>(nullptr,TEXT("/Game/ProcessUIV2/Widgets/WBP_ProcessUIV2.WBP_ProcessUIV2_C"));
+ auto* Class=LoadClass<UUserWidget>(nullptr,TEXT("/Game/ProcessPlant_20261111_LowPoly/UI/WBP_ProcessUIV2.WBP_ProcessUIV2_C"));
  auto* W=Class?CreateWidget<UUserWidget>(PC,Class):nullptr;
  if(!TestNotNull(TEXT("existing real 2D widget"),W)){World->DestroyWorld(false);GEngine->DestroyWorldContext(World);return false;}
  auto* Adapter=NewObject<UProcessUIStateAdapter>(World);

@@ -4,25 +4,44 @@ No particle path prescription. Route coordinates only define gas cells. Source
 walls independently constrain the 3D particles. Explicit test sleeves close
 unresolved assembly gaps; never modifies the supplied blend.
 """
-import json, math, struct, re
+import argparse, fnmatch, json, math, struct, re
 from pathlib import Path
 import numpy as np
 from collections import defaultdict
 ROOT=Path(__file__).resolve().parents[1]
-DIR=ROOT/'SourceAssets/ProcessPlantPhysics'
+parser=argparse.ArgumentParser()
+parser.add_argument('--source', type=Path, default=ROOT/'SourceAssets/ProcessPlantPhysics')
+parser.add_argument('--mixer-pivot', type=float, nargs=3, default=[3,0,.9], help='Source-world shaft axis point in metres')
+args=parser.parse_args();DIR=args.source
 manifest=json.loads((DIR/'manifest.json').read_text(encoding='utf-8'))
 packed=[[0.,0.,0.,0.] for _ in range(16)]
 selected=[];triangles=[];overrides=[]
 def mesh(name):return json.loads((DIR/(name+'.json')).read_text(encoding='utf-8'))
+continuous='COLLISION_RH201_PowderPath_Static'
+metadata={item['id']:item for item in manifest['meshes']}
+latest=continuous in metadata
+exclusions=json.loads(metadata[continuous]['properties']['render_collision_exclusions']) if latest else []
+# The delivered continuous discharge collider replaces the static shells
+# from BV272 through P202. The manual valve disc remains a runtime gate.
+continuous_discharge = 'COLLISION_RH201_DischargePath_Static' in metadata
+if continuous_discharge:
+    exclusions += ['BV272_110_*', 'BV272_111_*', 'DP_1[123]0_*', 'P202_Reducer*']
 def add_source(name):
     d=mesh(name);v=np.array(d['vertices']);t=np.array(d['triangles'])
-    if name=='Collision_WH101_Inspection_Lid':
+    if name==continuous:
+        # Local .218 discharge and .69 inlet align with world 2.21 and 2.682.
+        if np.allclose(v.min(0),[-.25,-.25,.218],atol=.001):
+            v=v*[-1,-1,1]+[3,0,1.992]
+            overrides.append(dict(kind='receiver_transform',source=name))
+        assert np.allclose(v.min(0),[1.9,-.25,2.21],atol=.001)
+    if name=='Collision_WH101_Inspection_Lid' and not latest:
         v+=np.array([.195,.195,1.837]);overrides.append(dict(kind='translation',source=name,delta_m=[.195,.195,1.837]))
     triangles.extend(v[t].tolist());selected.append(name)
 for item in manifest['meshes']:
     n=item['id']
+    if any(fnmatch.fnmatchcase(n,pat) for pat in exclusions):continue
     collision=item['dedicated_collision'] and n not in ['MX-301_Collision_Rotor','CollisionPreview_ASSUMED_VT_MovingGate']
-    wall=bool(re.match(r'(P101[A-Z]_(OutletNeck|RigidRoute|WeighingFlexibleJoint)|V101[A-Z]_Body|P201_(Expansion_44|LowRoute)|P202_Reducer|PL_1[234]0_|FH122S_110_Smooth_liner$|DP_1[123]0_|RH201_(110_|120_|121_|130_|140_|210_|211_|215_|Filter_)|BV122_PIPE_(Receiver_side|Weighing_side)|BV(122|272)_11[01]_|(PL_C|RH201_C).*_(Seal|Gasket|Ferrule))',n))
+    wall=bool(re.match(r'(P10[12][A-Z]_(OutletNeck|RigidRoute|WeighingFlexibleJoint)|V101[A-Z]_Body|P201_(Expansion_44|LowRoute)|P202_Reducer|PL_1[234]0_|FH122S_110_Smooth_liner$|DP_1[123]0_|RH201_(110_|120_|121_|130_|140_|210_|211_|215_|Filter_)|BV122_PIPE_(Receiver_side|Weighing_side)|BV(122|272)_11[01]_|(PL_C|RH201_C).*_(Seal|Gasket|Ferrule))',n))
     if collision or wall:add_source(n)
 def sleeve(a,b,ra,rb,name):
     a=np.array(a);b=np.array(b);axis=b-a;axis/=np.linalg.norm(axis);u=np.cross(axis,[0,0,1] if abs(axis[2])<.9 else [0,1,0]);u/=np.linalg.norm(u);v=np.cross(axis,u)
@@ -35,8 +54,8 @@ def sleeve(a,b,ra,rb,name):
 # Existing source endpoints leave this 100 mm axial gap. Match both bores.
 sleeve([.7,0,1.712],[.7,0,1.812],.061,.065,'Test_PL_cuff_connection')
 # Closed valve-body split seams and receiver gasket seats are real interfaces.
-sleeve([2.167,0,2.682],[2.173,0,2.682],.064,.064,'Test_BV122_seal')
-sleeve([3,0,2.157],[3,0,2.163],.139,.139,'Test_BV272_seal')
+if not latest:sleeve([2.167,0,2.682],[2.173,0,2.682],.064,.064,'Test_BV122_seal')
+if not continuous_discharge:sleeve([3,0,2.157],[3,0,2.163],.139,.139,'Test_BV272_seal')
 def bvh(ts):
     ts=np.asarray(ts,dtype=float);area=np.linalg.norm(np.cross(ts[:,1]-ts[:,0],ts[:,2]-ts[:,0]),axis=1);ts=ts[area>1e-12]
     def node(ids):
@@ -67,7 +86,10 @@ def join(*parts):
 routes=[]
 for supplier in manifest['suppliers']:
     name=supplier['id'];letter=name[-1];bounds=supplier['cylinder_bounds_m'];x=(bounds[0][0]+bounds[1][0])/2;y=(bounds[0][1]+bounds[1][1])/2
-    pipe=rings('P101'+letter+'_RigidRoute_ID44',96);end=pipe[-1]
+    prefix=next(n for n in ('P101'+letter,'P102'+letter) if n+'_RigidRoute_ID44' in metadata)
+    pipe=rings(prefix+'_RigidRoute_ID44',96);end=pipe[-1]
+    port=next(p['position_m'] for p in manifest['ports'] if p['id']=='PORT_WH-101.IN_'+letter)
+    assert math.dist(end[:2],port[:2])<.001 and math.dist(pipe[0][:2],[x,y])<.001
     route=join([[x,y,3.3,.35],[x,y,2.6,.35],[x,y,2.3,.022],[x,y,2.2,.022]],pipe,[[*end[:2],1.77,.022]])
     entry=dict(id=name+'->WH101',phase=0,points=route)
     if letter in 'AC':
@@ -98,7 +120,7 @@ for route in routes:
         aa,bb=route['box_cell'];i=len(packed);route['cells'].append(i);packed.extend([aa,bb,[0,0,1,route['phase']]])
         cells.append(dict(route=route['id'],a=aa,b=bb,packed_index=i,rectangular=True))
 packed[0]=[staticroot,rotorroot,airoffset,len(cells)]
-packed[1]=[3,0,.9,1200];packed[2]=[-2,-1,-.2,0];packed[3]=[5,2.2,4.5,0];packed[4]=[0,0,0,0];packed[5]=[gateoffset,len(gates)//2,0,0]
+packed[1]=[*args.mixer_pivot,1200];packed[2]=[-2,-2.2 if latest else -1,-.2,0];packed[3]=[5,2.2,4.5,0];packed[4]=[0,0,0,0];packed[5]=[gateoffset,len(gates)//2,0,0]
 # Broad phase for gas cells; exact circular-tube membership is still tested on GPU.
 origin=np.array(packed[2][:3]);h=.1;dims=np.ceil((np.array(packed[3][:3])-origin)/h).astype(int);bins=defaultdict(list)
 for cell in cells:
@@ -113,5 +135,6 @@ with (DIR/'runtime.plant').open('wb') as f:
     f.write(struct.pack('<I',len(packed)));f.write(np.array(packed,dtype='<f4').tobytes())
 (DIR/'runtime.routes').write_text(str(len(routes))+'\n'+'\n'.join(str(r['phase'])+' '+str(len(r['cells']))+' '+' '.join(map(str,r['cells'])) for r in routes)+'\n')
 report=dict(schema='plant-runtime/1',source_sha256=manifest['sha256'],model='1D quasi-steady single-phase pipe pressure + 3D approximate granular contacts; one-way gas drag',calibrated=False,static_triangles=staticcount,rotor_triangles=rotorcount,selected_meshes=selected,test_overrides=overrides,flow_cells=cells,routes=routes,particle_file='test_charge.csv',gate_count=len(gates)//2,gate_data=gates,closed_gate_half_thickness_m=.003,scope_limitations=['No resolved 3D turbulence','No powder back reaction/plug pressure loss','No compressible chamber transient','Closed pressure interfaces are boundary assumptions; no full 3D watertight-volume certification'],ready_for_simulation=False)
+report['mixer_pivot_m']=args.mixer_pivot
 (DIR/'runtime_manifest.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 print('PLANT_RUNTIME',staticcount,rotorcount,len(cells),'triangles/rotor/cells',len(packed)*16,'bytes')

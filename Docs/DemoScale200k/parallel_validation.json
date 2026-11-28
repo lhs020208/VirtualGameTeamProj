@@ -1,0 +1,8 @@
+{
+  "threads": 12,
+  "same_equations": true,
+  "reference_hash": "13480736430539112723",
+  "parallel_hash": "13480736430539112723",
+  "bitwise_identical_at_50s": true,
+  "installed": false
+}

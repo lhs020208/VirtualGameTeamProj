@@ -1,0 +1,2 @@
+cache builds=317072 reuses=14152 overflows=528 memo=165612
+queries=165612 position=0 normal=0 velocity=0 over1um=0

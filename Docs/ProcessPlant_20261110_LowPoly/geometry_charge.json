@@ -1,0 +1,11 @@
+{
+  "count": 20000,
+  "minimum_center_distance_m": 0.0047999999999999154,
+  "diameter_m": 0.004,
+  "solid_volume_l": 0.6702064327658226,
+  "rotor_max_sweep_radius_m": 0.13235553852756912,
+  "rotor_lowest_z_m": 0.9726444614724309,
+  "mixer_floor_z_m": 0.941,
+  "blade_floor_clearance_m": 0.03164446147243094,
+  "source_sha256": "93d21f408c7c4d0f2e22252acfb9b285bf6ba5a72922d63e8c4ebdfd52e84034"
+}

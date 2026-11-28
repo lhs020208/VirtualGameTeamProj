@@ -1,0 +1,16 @@
+{
+  "compiler": "NVIDIA OpenCL compiler CL-38566155; frozen PTX 9.3, sm_89",
+  "execution": "CUDA Driver API, no OpenCL runtime dependency",
+  "source_sha256": "b0aeca5c8646b7b519699b75e2b4148167523580f6d53ba44b8894eecb6efe5e",
+  "artifact_sha256": "9a26cb3ae46f1eb25d0d8d6263626c789d57d756a74e2146d4caa04c3ce45b5a",
+  "transformations": [
+    "OpenCL global offset is zero",
+    "graph angle supplied from a device array; unchanged host accumulation"
+  ],
+  "source": "Intermediate/CUDA/generated/plant_preprocess.cpp",
+  "regeneration": [
+    "python -B Scripts/cuda_generate_kernels.py",
+    "python -B Scripts/cuda_opencl_inspect.py",
+    "python -B Scripts/cuda_prepare_ptx.py"
+  ]
+}

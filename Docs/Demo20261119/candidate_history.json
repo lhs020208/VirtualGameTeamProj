@@ -1,0 +1,7 @@
+{
+  "rendered_probe01": "Excluded: actual viewport was 888x500, corrected with ForceRes",
+  "rendered_1080_probe02": "90-second 1080p overview probe passed; not the final camera-tour series",
+  "acceptance_r0": "Stopped own process after dense-hopper latency; no acceptance result",
+  "final_r0": "Stopped own process: display-lock reduction alone did not remove dense-hopper cost",
+  "accepted_r0_r1_r2": "Final model adds explicit presentation resting states; three serial 300-second rendered camera-tour trials"
+}

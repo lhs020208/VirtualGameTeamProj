@@ -1,4 +1,4 @@
-#include "ProcessControlUI.h"
+﻿#include "ProcessControlUI.h"
 #include "ProcessControlService.h"
 #include "ProcessNumericField.h"
 #include "ProcessDisplay.h"
@@ -72,6 +72,7 @@ void UProcessControlUI::BuildOperatorLayout(UCanvasPanel* Root)
  Canvas(Header,FAnchors(0,0,1,0),FMargin(0,0,0,80),50);
  if(Title){Nav->AddChildToHorizontalBox(Title)->SetSize(FSlateChildSize(ESlateSizeRule::Fill));Put(W,TEXT("Title"),TEXT("분체 공정 · 운전"));Font(Cast<UTextBlock>(Title),28,FLinearColor::White);}
  for(const TCHAR* N:{TEXT("View2D"),TEXT("View3D"),TEXT("RecipeToggle")})if(auto* X=Get(N)){X->RemoveFromParent();auto* S=Nav->AddChildToHorizontalBox(X);S->SetPadding(FMargin(5,0));Style(Cast<UButton>(X));}
+ auto* ParticleButton=Button(TEXT("ParticleSettingsToggle"),TEXT("입자 설정"));Nav->AddChildToHorizontalBox(ParticleButton)->SetPadding(FMargin(5,0));ParticleButton->OnClicked.AddDynamic(this,&UProcessControlUI::ToggleParticleSettings);BuildParticleControls(Root);
  auto* Details=Button(TEXT("OperatorDetailsToggle"),TEXT("상세 보기"));Nav->AddChildToHorizontalBox(Details)->SetPadding(FMargin(5,0));Details->OnClicked.AddDynamic(this,&UProcessControlUI::ToggleOperatorDetails);
  auto* StatePanel=Tree->ConstructWidget<UBorder>(UBorder::StaticClass(),TEXT("OperatorStatePanel"));StatePanel->SetPadding(FMargin(20,10));
  Canvas(StatePanel,FAnchors(0,0,1,0),FMargin(20,90,20,128),5);
@@ -85,11 +86,11 @@ void UProcessControlUI::BuildOperatorLayout(UCanvasPanel* Root)
  auto* Design=Cast<USizeBox>(Get(TEXT("DesignSize")));Design->RemoveFromParent();Design->SetWidthOverride(1100);Design->SetHeightOverride(730);
  auto* Panel=Cast<UVerticalBox>(Get(TEXT("PanelContents")));Panel->RemoveFromParent();
  Body->SetContent(Columns);
- auto* Scale=Tree->ConstructWidget<UScaleBox>();Scale->SetStretch(EStretch::ScaleToFit);Scale->SetContent(Design);
- FSlateChildSize LeftSize(ESlateSizeRule::Fill);LeftSize.Value=1.7f;Columns->AddChildToHorizontalBox(Scale)->SetSize(LeftSize);
+ auto* Scale=Tree->ConstructWidget<UScaleBox>(UScaleBox::StaticClass(),TEXT("OperatorDiagramScale"));Scale->SetStretch(EStretch::ScaleToFit);Scale->SetContent(Design);
+ FSlateChildSize LeftSize(ESlateSizeRule::Fill);LeftSize.Value=1.3f;Columns->AddChildToHorizontalBox(Scale)->SetSize(LeftSize);
  auto* Side=Tree->ConstructWidget<UScrollBox>(UScrollBox::StaticClass(),TEXT("OperatorSideScroll"));Side->SetScrollbarThickness(FVector2D(12,12));
  auto* SideSlot=Columns->AddChildToHorizontalBox(Side);SideSlot->SetSize(FSlateChildSize(ESlateSizeRule::Fill));SideSlot->SetPadding(FMargin(20,0,0,0));
- auto* Right=Tree->ConstructWidget<UVerticalBox>();Side->AddChild(Right);
+ auto* Right=Tree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass(),TEXT("OperatorSideContent"));Side->AddChild(Right);
  Right->AddChildToVerticalBox(Text(TEXT("SelectedOverview"),TEXT(""),24))->SetPadding(FMargin(0,0,0,5));
  Move(PressureControls,Right);
  for(const TCHAR* N:{TEXT("RPMLabel"),TEXT("RPMInput"),TEXT("SetRPM")})Move(Get(N),Right);
@@ -175,6 +176,7 @@ void UProcessControlUI::BuildOperatorLayout(UCanvasPanel* Root)
  Numeric(TEXT("RecipeRPM"),TEXT("RPM"),1,0,30,true);Numeric(TEXT("RPMInput"),TEXT("RPM"),1,0,30);
  Numeric(TEXT("RecipeReceiverPressure"),TEXT("kPa(g)"),.1,-1,0);
  Numeric(TEXT("PressureInput"),TEXT("kPa(g)"),.1,-1,1);Numeric(TEXT("PurgePressureInput"),TEXT("kPa(g)"),.1,0,1);
+ BuildResponsiveOperatorLayout(Root);
  OperatorLayoutBuilt=true;
 }
 
@@ -189,7 +191,7 @@ void UProcessControlUI::RefreshOperatorLayout()
  const bool In3D=Is3D(),Fresh=M.Connected&&Snap.Validity==EPlantValueValidity::Valid&&FPlatformTime::Seconds()>=Snap.PublishedWallSeconds&&FPlatformTime::Seconds()-Snap.PublishedWallSeconds<=2.;
  const bool Same=A.Epoch==Snap.Epoch&&A.Connection==M.Connection,Complete=Same&&A.Stage==EProcessAutoStage::Complete&&!A.Active;
  auto Show=[&](const TCHAR* N,bool B){if(auto* X=W->GetWidgetFromName(N))X->SetVisibility(B?ESlateVisibility::Visible:ESlateVisibility::Collapsed);};
- Show(TEXT("Help"),false);Show(TEXT("BodyBackground"),!In3D&&!RecipeOpen);GlobalControls->SetVisibility(ESlateVisibility::Visible);
+ Show(TEXT("Help"),false);Show(TEXT("BodyBackground"),!In3D&&!RecipeOpen&&!ParticleSettingsOpen);GlobalControls->SetVisibility(ESlateVisibility::Visible);
  Show(TEXT("PanelContents"),!Selected().IsEmpty());Show(TEXT("OperatorSelectHint"),Selected().IsEmpty());
  for(const TCHAR* N:{TEXT("PanelBlocker"),TEXT("HoverCard"),TEXT("SelectHint"),TEXT("DiagramNote"),TEXT("TransferStart"),TEXT("TransferStop"),TEXT("PanelDescription"),TEXT("PanelState")})Show(N,false);
  OperatorDetails->SetVisibility(OperatorDetailsOpen?ESlateVisibility::Visible:ESlateVisibility::Collapsed);
@@ -198,6 +200,7 @@ void UProcessControlUI::RefreshOperatorLayout()
  if(auto* B=Cast<UButton>(W->GetWidgetFromName(TEXT("RecipeToggle"))))if(auto* T=Cast<UTextBlock>(B->GetContent()))T->SetText(FText::FromString(TEXT("설정 · 레시피")));
  for(const TCHAR* N:{TEXT("View2D"),TEXT("View3D"),TEXT("RecipeToggle"),TEXT("OperatorDetailsToggle"),TEXT("ValveOpen"),TEXT("ValveClose"),TEXT("ManualResume"),TEXT("ManualPause")})Style(Cast<UButton>(W->GetWidgetFromName(N)),21);
  Style(Cast<UButton>(W->GetWidgetFromName(TEXT("AutoStartA"))),25,true);Style(Cast<UButton>(W->GetWidgetFromName(TEXT("ResumeBatch"))),25,true);Style(Cast<UButton>(W->GetWidgetFromName(TEXT("GlobalStop"))),28,false,true);
+ RefreshParticleControls();
  FString Title=A.RunId.IsValid()&&Same?Stage(A):(S->RecipeRevision>0?TEXT("시작 대기 · 레시피 적용됨"):TEXT("설정 대기 · 레시피를 적용하세요"));
  FString Why=A.RunId.IsValid()&&Same?(A.RecoveryPending&&!A.RecoveryReason.IsEmpty()?A.RecoveryReason:A.Reason):M.StopDescription();
  bool Error=A.Stage==EProcessAutoStage::Failed||M.StopStage==EProcessStopStage::Failed;
@@ -214,6 +217,7 @@ void UProcessControlUI::RefreshOperatorLayout()
  if(Complete&&!Error&&!M.IsStopping())Why=TEXT("확정 원료 전량 도착 · 혼합 시간 충족 · 계산 적용 RPM 0 확인");
  if(A.Active&&A.AdditiveScheduled&&!A.AdditiveDelivered&&A.AdditiveDueSeconds>=0&&A.AdditiveOpenAppliedSeconds<0)
   Why=FString::Chr(TCHAR('A'+A.AdditiveSupplier))+TEXT(" 투입까지 ")+ProcessDisplay::Number(FMath::Max(0.,A.AdditiveDueSeconds-Snap.PhysicalSeconds))+TEXT("초 · ")+Why;
+ if(Snap.EquipmentOnly&&!Error&&!M.IsStopping())Why=TEXT("입자 0개 · 설비 동작 1배속 · ")+Why;
  Put(W,TEXT("OperatorStage"),Title);Put(W,TEXT("OperatorReason"),ProcessDisplay::CompactText(Why));
  if(auto* P=Cast<UBorder>(W->GetWidgetFromName(TEXT("OperatorStatePanel"))))P->SetBrushColor(Error?FLinearColor(1,.86f,.85f):Complete?FLinearColor(.80f,.94f,.85f):FLinearColor(.86f,.93f,.98f));
  if(auto* T=Cast<UTextBlock>(W->GetWidgetFromName(TEXT("OperatorStage"))))T->SetColorAndOpacity(Error?Red:Complete?FLinearColor(.02f,.32f,.14f):Blue);
@@ -233,7 +237,7 @@ void UProcessControlUI::RefreshOperatorLayout()
  }
  Summary+=TEXT("\n계산 적용 RPM  ")+(Fresh&&Snap.AppliedRPMValid?ProcessDisplay::Number(Snap.AppliedRPM):FString(TEXT("미확인")));
  if(A.MixingDurationSeconds>0&&Same)Summary+=TEXT("\n혼합  ")+ProcessDisplay::Number(A.MixingElapsedSeconds)+TEXT(" / ")+ProcessDisplay::Number(A.MixingDurationSeconds)+TEXT("초");
- Summary+=TEXT("\n시뮬레이션 계산값 · 모델 기준");Put(W,TEXT("OperatorSummary"),Summary);
+ Summary+=Snap.EquipmentOnly?TEXT("\n입자 없음 · 설비 동작 1배속"):FString::Printf(TEXT("\n입자 %d개 · 물리 계산"),Snap.TotalParticleCount);Summary+=TEXT("\n시뮬레이션 계산값 · 모델 기준");Put(W,TEXT("OperatorSummary"),Summary);
  // Retain unrounded diagnostic evidence in a separate explicit view.
  FString Exact=FString::Printf(TEXT("정밀 수치 · 스냅샷 %lld / 초기화 %lld\n해석 시간 %.17g초\n칭량 %.17g kg / 배관 %.17g kg / 수취 %.17g kg\n요청 압력 [%.17g, %.17g, %.17g] Pa(g)\n적용 압력 [%.17g, %.17g, %.17g] Pa(g)\n목표 RPM %.17g / 계산 적용 RPM %.17g\n\n현재 진단: %s\n작업자: %s\n\n"),Snap.Sequence,Snap.Epoch,Snap.PhysicalSeconds,Snap.WeighingMass.Kg,Snap.PipeMass.Kg,Snap.ReceiverMass.Kg,Snap.RequestedGaugePressurePa.X,Snap.RequestedGaugePressurePa.Y,Snap.RequestedGaugePressurePa.Z,Snap.AppliedGaugePressurePa.X,Snap.AppliedGaugePressurePa.Y,Snap.AppliedGaugePressurePa.Z,Snap.RequestedRPM,Snap.AppliedRPM,*Why,*Snap.Error);
  Exact+=TEXT("적용 레시피 원본 설정\n")+ProcessRecipe::Encode(R)+TEXT("\n\n단계별 진단 / 이력\n");
@@ -273,6 +277,7 @@ void UProcessControlUI::RefreshOperatorLayout()
   else if(I==6)Caption=TEXT("현재량\n")+ProcessDisplay::Mass(Snap.WeighingMass.Kg,Fresh&&Snap.WeighingMass.Validity==EPlantValueValidity::Valid)+TEXT("\n")+(Fresh?(Snap.AppliedHopperOpen?TEXT("열림"):TEXT("닫힘")):TEXT("미확인"));
   else if(I==7)Caption=TEXT("현재량\n")+ProcessDisplay::Mass(Snap.ReceiverMass.Kg,Fresh&&Snap.ReceiverMass.Validity==EPlantValueValidity::Valid)+TEXT("\n")+(Fresh?(Snap.AppliedReceiverOpen?TEXT("열림"):TEXT("닫힘")):TEXT("미확인"));
   else Caption=(Fresh&&Snap.AppliedRPMValid?ProcessDisplay::Number(Snap.AppliedRPM):TEXT("미확인"))+TEXT(" RPM");
+  if(Fresh&&Snap.ValveActuators.IsValidIndex(I))Caption=PlantValveStatus(Snap.ValveActuators[I]);
   T->SetText(FText::FromString(Caption));Font(T,18);T->SetAutoWrapText(false);
   if(auto* B=Cast<UButton>(T->GetParent())){auto Style=B->GetStyle();Style.NormalPadding=Style.PressedPadding=FMargin(4);B->SetStyle(Style);}
  }
@@ -313,4 +318,5 @@ void UProcessControlUI::RefreshOperatorLayout()
   if(N==TEXT("RecipeDelay"))Compare(TEXT("RecipeMixSeconds"),false);
   F->Refresh(Applied,Known,Cross);
  }
+ RefreshResponsiveOperatorLayout();
 }

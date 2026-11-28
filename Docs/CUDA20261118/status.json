@@ -1,0 +1,11 @@
+{
+  "implementation": "CUDA Driver + Graph + identical grid reset; isolated level integrated",
+  "physical_realism_goal": "not achieved: experimental data absent and baseline time-step sensitivity remains",
+  "native_cuda_cpp": "implemented prototype; not accepted after accuracy gate failure",
+  "short_numerical_migration": "passed",
+  "long_trajectory_identity": false,
+  "end_to_end_performance_comparison": false,
+  "solver_three_stage_comparison": true,
+  "original_preserved": true,
+  "commits_created": false
+}

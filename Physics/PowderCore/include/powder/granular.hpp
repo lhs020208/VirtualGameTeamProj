@@ -2,6 +2,8 @@
 #include <array>
 #include "material.hpp"
 #include "air.hpp"
+#include "plant_actuator.hpp"
+#include "plant_mixer_drive.hpp"
 #include <memory>
 #include <string>
 #include <vector>
@@ -11,8 +13,8 @@
 namespace powder {
 // Indices: clear, build, predict, contact(+boundary if fused), velocity(+probe if fused), projection, probe, readback, candidate build.
 struct GranularTiming {
- std::array<double,17> gpu_seconds{};
- std::array<std::uint64_t,17> calls{};
+ std::array<double,21> gpu_seconds{};
+ std::array<std::uint64_t,21> calls{};
  double advance_wall=0,snapshot_wall=0,submit_wall=0,guard_wait_wall=0,profile_collect_wall=0;
  double advance_thread_cpu=0,submit_thread_cpu=0,gpu_batch_span=0,gpu_intercommand_gap=0;
  bool profiling_enabled=false,split_boundaries=false,candidates_enabled=false;
@@ -32,11 +34,12 @@ struct GranularGasField {
  std::vector<Grain> gradient_epsilon; // xyz Pa/m, w porosity; 0 = solid
 };
 struct GranularGasExchange {std::vector<Grain> impulse_volume;std::vector<float> drag_rate_kg_s;unsigned steps=0;}; // xyz gas N*s, w time-mean deposited m3
+enum class GranularBackend { OpenCL=0, Cuda=1, CudaGraph=2, CudaPtx=3, CudaPtxGraph=4 };
 struct GranularConfig {
  // Immutable plant radii indexed by persistent particle ID; radius is the broad-phase maximum.
  std::vector<float> plant_particle_radii;
  std::array<float,6> plant_supplier_radii{};
-unsigned plant_wall_mode=0;bool plant_boundary_audit=false;bool plant_triangle_fast=false;bool plant_threaded=false;bool plant=false;std::vector<Grain> plant_data;float cohesion_gamma_j_m2=0,wall_adhesion_gamma_j_m2=0;bool simple_box=false;bool coupled_air=false;GranularAir air;unsigned diagnostic_local_size=128;bool rotation=false;float rolling_friction=0;bool binary_materials=false;std::array<GranularMaterial,2> materials{};float cross_friction=.4f;unsigned count=30000,iterations=16;bool fast_bounds=true,profile=false,test_mixer=false,profile_split=false,candidates=false,candidate_reuse=false,candidate_audit=false,boundary_candidates=false,kernel_optimize=false;float candidate_skin_ratio=.5f;unsigned candidate_capacity=64;float radius=0,dt=.00025f,friction=.4f;};
+PlantMixerStops mixer_stops;bool plant_powered_mixer=false; PlantMixerDriveSettings mixer_drive;bool plant_powered_valves=false; PlantActuatorSettings small_valve,large_valve=PlantActuatorSettings::large();GranularBackend backend=GranularBackend::OpenCL;std::string cuda_ptx_file="SourceAssets/PowderCUDA/plant_sm89.ptx";unsigned plant_wall_mode=0;bool plant_boundary_audit=false;bool plant_triangle_fast=false;bool plant_threaded=false;bool plant=false;std::vector<Grain> plant_data;float cohesion_gamma_j_m2=0,wall_adhesion_gamma_j_m2=0;bool simple_box=false;bool coupled_air=false;GranularAir air;unsigned diagnostic_local_size=128;bool rotation=false;float rolling_friction=0;bool binary_materials=false;std::array<GranularMaterial,2> materials{};float cross_friction=.4f;unsigned count=30000,iterations=16;bool fast_bounds=true,profile=false,test_mixer=false,profile_split=false,candidates=false,candidate_reuse=false,candidate_audit=false,boundary_candidates=false,kernel_optimize=false;float candidate_skin_ratio=.5f;unsigned candidate_capacity=64;float radius=0,dt=.00025f,friction=.4f;};
 // Idealized braked feeder: finite distributed support and viscous resistance in an
 // upstream control volume. Not a pressure setting, wall insertion, or particle reset.
 struct PlantFeedBrake { Grain region{}; float response_time_s=.001f; bool enabled=false; }; // xy centre, z lower face, w radius
@@ -52,7 +55,13 @@ public:
  GranularGPU(GranularConfig config,const std::vector<Grain>& positions,const std::vector<Grain>& velocities);~GranularGPU();
  GranularGPU(const GranularGPU&)=delete;GranularGPU& operator=(const GranularGPU&)=delete;
  void advance(unsigned steps,float rpm,bool gate_open);
+ void update_plant_controls(const std::vector<Grain>&); // Only known gate/flow fields; geometry cannot be replaced.
  void update_plant_field(const std::vector<Grain>&);
+ std::vector<PlantActuatorState> plant_valve_states();
+ void set_plant_valve_power(unsigned valve,float fraction);
+ PlantMixerDriveState plant_mixer_state()const;
+ void set_plant_mixer_power(float fraction);
+ std::vector<Grain> plant_mixer_contact_snapshot(); // Diagnostic: accelerations followed by reaction ledgers.
  void set_plant_feed_brake(const PlantFeedBrake&, unsigned supplier=0);
  void set_gas_field(const GranularGasField&); // Required before coupled advance. Clears exchange ledger.
  GranularGasExchange gas_exchange(); // Same CIC weights for applied particle impulse and gas reaction.
